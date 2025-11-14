@@ -1,9 +1,7 @@
 import './globals.css'
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
-import { ApolloProvider } from '@apollo/client'
-import { client } from '@/lib/apollo'
-import React from 'react'
+import ClientLayout from '@/components/ClientLayout'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -36,11 +34,9 @@ export default function RootLayout({
   return (
     <html lang="id">
       <body className={inter.className}>
-        <ErrorBoundary>
-          <ApolloProvider client={client}>
-            {children}
-          </ApolloProvider>
-        </ErrorBoundary>
+        <ClientLayout>
+          {children}
+        </ClientLayout>
       </body>
     </html>
   )
