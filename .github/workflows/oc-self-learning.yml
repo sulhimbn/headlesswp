@@ -48,7 +48,11 @@ jobs:
       pull-requests: write
       issues: write
       actions: write
-
+      
+    env:
+      GH_TOKEN: ${{ github.token }}
+      IFLOW_API_KEY: ${{ secrets.IFLOW_API_KEY }}
+      
     steps:
       - name: Harden runner
         uses: step-security/harden-runner@v2
@@ -67,12 +71,12 @@ jobs:
         timeout-minutes: 20
         run: |
           opencode run Anda adalah orkestrator repositori headlesswp, analisa secara mendalam repositori meliputi code, log, sejarah commit, pr issue dan log github action, buat file markdown todo \
-            --model "${IFLOW_MODEL}" \
+            --model iflowcn/glm-4.6 \
             --share false \
       - name: Run OpenCode2
         id: run_agent2
         timeout-minutes: 20
         run: |
           opencode run Anda adalah agen orkestrator lakukan tugas di file markdown todo kemudian commit dan push ke branch Dev \
-            --model "${IFLOW_MODEL}" \
+            --model iflowcn/qwen3-coder-plus \
             --share false \
