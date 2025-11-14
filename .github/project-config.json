@@ -1,0 +1,119 @@
+{
+  "project_name": "HeadlessWP Project Management",
+  "description": "Project board for managing WordPress headless development",
+  "columns": [
+    {
+      "name": "📋 Backlog",
+      "description": "Items waiting to be prioritized"
+    },
+    {
+      "name": "🎯 To Do", 
+      "description": "Prioritized items ready for work"
+    },
+    {
+      "name": "🔄 In Progress",
+      "description": "Currently being worked on"
+    },
+    {
+      "name": "👀 Review",
+      "description": "Ready for code review"
+    },
+    {
+      "name": "✅ Done",
+      "description": "Completed items"
+    }
+  ],
+  "labels": [
+    {
+      "name": "priority: critical",
+      "color": "d73a4a",
+      "description": "Must be done immediately"
+    },
+    {
+      "name": "priority: high", 
+      "color": "fbca04",
+      "description": "High priority items"
+    },
+    {
+      "name": "priority: medium",
+      "color": "0075ca", 
+      "description": "Normal priority items"
+    },
+    {
+      "name": "priority: low",
+      "color": "7057ff",
+      "description": "Nice to have items"
+    },
+    {
+      "name": "type: feature",
+      "color": "2ea44f",
+      "description": "New functionality"
+    },
+    {
+      "name": "type: bug",
+      "color": "d73a4a", 
+      "description": "Bug fixes"
+    },
+    {
+      "name": "type: enhancement",
+      "color": "1f883d",
+      "description": "Improvements to existing features"
+    },
+    {
+      "name": "type: documentation",
+      "color": "0075ca",
+      "description": "Documentation updates"
+    },
+    {
+      "name": "component: backend",
+      "color": "6f42c1",
+      "description": "Backend/WordPress related"
+    },
+    {
+      "name": "component: frontend", 
+      "color": "0366d6",
+      "description": "Frontend/UI related"
+    },
+    {
+      "name": "component: api",
+      "color": "e36209",
+      "description": "API/GraphQL related"
+    },
+    {
+      "name": "status: blocked",
+      "color": "b60205",
+      "description": "Blocked by dependencies"
+    },
+    {
+      "name": "status: triage-needed",
+      "color": "fbca04", 
+      "description": "Needs prioritization"
+    }
+  ],
+  "milestones": [
+    {
+      "title": "Phase 1: Foundation",
+      "description": "WordPress headless backend setup",
+      "due_on": "2025-11-28",
+      "state": "open"
+    },
+    {
+      "title": "Phase 2: Frontend Integration", 
+      "description": "Frontend consuming WordPress API",
+      "due_on": "2025-12-12",
+      "state": "open"
+    },
+    {
+      "title": "Phase 3: Content Management",
+      "description": "Full content management capabilities", 
+      "due_on": "2025-12-26",
+      "state": "open"
+    },
+    {
+      "title": "Phase 4: Production Ready",
+      "description": "Deployable production system",
+      "due_on": "2026-01-09", 
+      "state": "open"
+    }
+  ]
+}
