@@ -69,22 +69,29 @@ export interface GraphQLPost {
   excerpt: string;
   slug: string;
   date: string;
-  author: {
+  author?: {
     node: {
       name: string;
       slug: string;
     };
   };
-  featuredImage: {
+  featuredImage?: {
     node: {
       sourceUrl: string;
       altText: string;
     };
   };
-  categories: {
+  categories?: {
     nodes: WordPressCategory[];
   };
-  tags: {
+  tags?: {
     nodes: WordPressTag[];
   };
+}
+
+export interface GraphQLResponse {
+  posts?: {
+    nodes: GraphQLPost[];
+  };
+  post?: GraphQLPost | null;
 }
