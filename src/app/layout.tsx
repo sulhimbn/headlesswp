@@ -6,6 +6,7 @@ import ClientLayout from '@/components/ClientLayout'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://mitrabantennews.com'),
   title: 'Mitra Banten News - Berita Terkini Banten',
   description: 'Portal berita terkini dan terpercaya dari Banten',
   keywords: 'berita banten, mitra banten news, berita terkini',
