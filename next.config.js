@@ -1,8 +1,11 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+<<<<<<< HEAD
   experimental: {
     appDir: true,
   },
+=======
+>>>>>>> 64406f1d72c806faff9755f9f93db2a79475480c
   images: {
     domains: ['mitrabantennews.com', 'www.mitrabantennews.com'],
   },
