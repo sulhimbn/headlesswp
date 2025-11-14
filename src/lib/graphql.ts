@@ -1,5 +1,5 @@
 import { gql } from '@apollo/client';
-import { GraphQLPost } from '@/types/wordpress';
+import { GraphQLPost } from '../types/wordpress';
 
 export const GET_POSTS = gql`
   query GetPosts($first: Int!, $after: String) {
