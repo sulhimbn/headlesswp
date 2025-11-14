@@ -4,21 +4,22 @@ import { client } from '@/lib/apollo'
 import Link from 'next/link'
 import Image from 'next/image'
 import React from 'react'
+import { GraphQLPost } from '@/types/wordpress'
 
-async function getLatestPosts() {
-  const { data } = await client.query({
+async function getLatestPosts(): Promise<GraphQLPost[]> {
+  const { data } = await client.query<{ posts: { nodes: GraphQLPost[] } }>({
     query: GET_POSTS,
     variables: { first: 6 }
   })
-  return data.posts.nodes
+  return data.posts?.nodes || []
 }
 
-async function getCategoryPosts() {
-  const { data } = await client.query({
+async function getCategoryPosts(): Promise<GraphQLPost[]> {
+  const { data } = await client.query<{ posts: { nodes: GraphQLPost[] } }>({
     query: GET_POSTS_BY_CATEGORY,
     variables: { categorySlug: 'berita-utama', first: 3 }
   })
-  return data.posts.nodes
+  return data.posts?.nodes || []
 }
 
 export default async function HomePage() {
