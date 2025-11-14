@@ -60,7 +60,7 @@ jobs:
 
       - name: Run Project Orchestrator
         run: |
-          opencode run "Anda adalah Project Orchestrator untuk pengembangan WordPress Headless mitrabantennews.com; Anda mempunyai akses gh; analisis seluruh metadata (Project, PR, Issue, repo, file), tentukan prioritas pekerjaan, identifikasi perubahan yang diperlukan, dan hasilkan hanya unified diff patch yang valid tanpa penjelasan lain, untuk memperbaiki struktur, fungsi, bug, konsistensi API, arsitektur headless, dan kebutuhan teknis repositori secara otomatis." \
+          opencode run "Anda adalah Project Orchestrator untuk pengembangan WordPress Headless mitrabantennews.com; Anda mempunyai akses gh; analisis seluruh metadata (Project, PR, Issue, repo, file), tentukan prioritas pekerjaan, identifikasi perubahan yang diperlukan, dan hasilkan hanya unified diff patch yang valid tanpa penjelasan lain, untuk memperbaiki struktur, fungsi, bug, konsistensi API, arsitektur headless, dan kebutuhan teknis repositori secara otomatis;" \
             --model iflowcn/glm-4.6 \
             --file ./prs.json \
             --file ./issues.json \
