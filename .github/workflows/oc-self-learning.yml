@@ -88,26 +88,29 @@ jobs:
         id: run_agent
         timeout-minutes: 20
         run: |
-          opencode run --model ${IFLOW_MODEL} \
+          cat <<'PROMPT' > prompt.txt
+            You are iFlow Level3 orchestrator.
+            Tasks:
+            1) Prioritize tasks: issues > open PRs > maintenance.
+            2) For a chosen task, generate:
+               - actions to fix (commands + files to change).
+               - required checks (lint/test).
+               - a 'risk' score [0-1] and 'explain' text.
+            3) If proposing changes to repo configs, write them to /.iflow/ as files and create a new branch + PR. NEVER push directly to main or modify workflow files.
+            4) Produce a JSON report with keys:
+               { "task": "...", "actions": [...], "risk": 0.xx, "score": 0.xx, "explain": "..." }
+            5) Use past-feedback (labels iflow/ok, iflow/bad, comments +1/-1) to estimate expected success.
+            PROMPT
+
+          opencode run --model "${IFLOW_MODEL}" \
             --file ./pr_meta.json \
             --file ./issue_meta.json \
             --file ./run_metadata.json \
             --file ./quality_summary.json \
             --share false \
-            "$(cat <<'PROMPT'
-              You are iFlow Level3 orchestrator.
-              Tasks:
-              1) Prioritize tasks: issues > open PRs > maintenance.
-              2) For a chosen task, generate:
-                 - actions to fix (commands + files to change).
-                 - required checks (lint/test).
-                 - a 'risk' score [0-1] and 'explain' text.
-              3) If proposing changes to repo configs, write them to /.iflow/ as files and create a new branch + PR. NEVER push directly to main or modify workflow files.
-              4) Produce a JSON report with keys:
-                 { "task": "...", "actions": [...], "risk": 0.xx, "score": 0.xx, "explain": "..." }
-              5) Use past-feedback (labels iflow/ok, iflow/bad, comments +1/-1) to estimate expected success.
-              PROMPT
-              )" > agent_output.json || true
+            --input-file prompt.txt \
+            > agent_output.json || true
+
           cat agent_output.json || true
 
       - name: Save dataset artifact (for offline training/eval)
