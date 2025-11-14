@@ -3,13 +3,14 @@ import { client } from '@/lib/apollo'
 import Link from 'next/link'
 import Image from 'next/image'
 import React from 'react'
+import { GraphQLPost, GraphQLResponse } from '@/types/wordpress'
 
-async function getAllPosts() {
-  const { data } = await client.query({
+async function getAllPosts(): Promise<GraphQLPost[]> {
+  const { data } = await client.query<GraphQLResponse>({
     query: GET_POSTS,
     variables: { first: 50 }
   })
-  return data.posts.nodes
+  return data?.posts?.nodes || []
 }
 
 export default async function BeritaPage() {
@@ -41,7 +42,7 @@ export default async function BeritaPage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {posts.map((post: any) => (
+          {posts.map((post: GraphQLPost) => (
             <article key={post.id} className="bg-white rounded-lg shadow-md overflow-hidden">
               {post.featuredImage?.node && (
                 <div className="relative h-48">

@@ -73,12 +73,16 @@ export interface GraphQLPost {
     node: {
       name: string;
       slug: string;
+      avatar?: {
+        url: string;
+      };
     };
   };
-  featuredImage: {
+  featuredImage?: {
     node: {
       sourceUrl: string;
       altText: string;
+      caption?: string;
     };
   };
   categories: {
@@ -86,5 +90,19 @@ export interface GraphQLPost {
   };
   tags: {
     nodes: WordPressTag[];
+  };
+}
+
+export interface GraphQLResponse {
+  post?: GraphQLPost;
+  posts?: {
+    nodes: GraphQLPost[];
+    pageInfo: {
+      hasNextPage: boolean;
+      endCursor: string;
+    };
+  };
+  categories?: {
+    nodes: WordPressCategory[];
   };
 }

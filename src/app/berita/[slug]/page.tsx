@@ -5,10 +5,11 @@ import Image from 'next/image'
 import Link from 'next/link'
 import React from 'react'
 import DOMPurify from 'dompurify'
+import { GraphQLPost, GraphQLResponse } from '@/types/wordpress'
 
-async function getPost(slug: string) {
+async function getPost(slug: string): Promise<GraphQLPost | null> {
   try {
-    const { data } = await client.query({
+    const { data } = await client.query<GraphQLResponse>({
       query: GET_POST_BY_SLUG,
       variables: { slug },
       errorPolicy: 'all' // This allows partial results even if there are errors
