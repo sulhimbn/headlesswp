@@ -70,13 +70,13 @@ jobs:
         id: run_agent1
         timeout-minutes: 20
         run: |
-          opencode run Anda adalah orkestrator repositori headlesswp, analisa secara mendalam repositori meliputi code, log, sejarah commit, pr issue dan log github action, buat file markdown todo \
+          opencode run Anda adalah orkestrator repositori headlesswp, analisa secara mendalam repositori meliputi code, log, sejarah commit, pr issue dan log github action, buat file markdown todo yang berisi daftar tugas yang harus dikerjakan oleh agent lain. \
             --model iflowcn/glm-4.6 \
             --share false \
       - name: Run OpenCode2
         id: run_agent2
         timeout-minutes: 20
         run: |
-          opencode run Anda adalah agen orkestrator lakukan tugas di file markdown todo kemudian commit dan push ke branch Dev \
+          opencode run Anda adalah agen orkestrator, lakukan tugas di file markdown todo dan beri ceklist tugas yang telah selesai, kemudian commit dan push ke branch dev. \
             --model iflowcn/qwen3-coder-plus \
             --share false \

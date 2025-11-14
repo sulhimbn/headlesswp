@@ -1,0 +1,3 @@
+GITHUB_REPOSITORY=sulhimbn/headlesswp
+GITHUB_REF=refs/heads/main
+GITHUB_SHA=3b4071e23d2a1d43692dab64292af84afc78937a

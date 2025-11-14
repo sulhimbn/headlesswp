@@ -1,37 +1,48 @@
-# headlesswp
-Project wordpress headless untuk https://mitrabantennews.com
-### **🚀 Immediate Action Items**
-#### **Priority 1 - Foundation Setup**
-1. **Initialize Project Structure**
-   - Create WordPress backend configuration
-   - Setup headless CMS architecture
-   - Configure REST API/GraphQL endpoints
-2. **Establish Development Standards**
-   - Define coding conventions
-   - Setup testing framework
-   - Create documentation templates
-#### **Priority 2 - Technical Architecture**
-1. **Backend Setup**
-   - WordPress installation & configuration
-   - Headless plugins setup (WPGraphQL, REST API)
-   - Authentication system
-2. **Frontend Planning**
-   - Choose frontend framework (React/Next.js/Vue)
-   - Define component structure
-   - Setup build process
-### **📈 Roadmap Recommendations**
-#### **Phase 1 (Week 1-2): Foundation**
-- [ ] WordPress installation & basic configuration
-- [ ] Headless plugins setup
-- [ ] Basic API endpoint testing
-- [ ] Development environment setup
-#### **Phase 2 (Week 3-4): Frontend Integration**
-- [ ] Frontend framework setup
-- [ ] API integration
-- [ ] Basic component development
-- [ ] Routing implementation
-#### **Phase 3 (Week 5-6): Content Management**
-- [ ] Custom post types setup
-- [ ] Content modeling
-- [ ] Admin interface optimization
-- [ ] Performance optimization
+# HeadlessWP
+
+WordPress headless untuk https://mitrabantennews.com
+
+## Deskripsi
+
+Proyek ini merupakan implementasi WordPress dalam arsitektur headless, di mana WordPress berfungsi sebagai backend CMS dan menyediakan API untuk frontend modern.
+
+## Prasyarat
+
+- Docker & Docker Compose
+- Node.js (untuk frontend)
+
+## Setup Development Environment
+
+1. Clone repository ini
+2. Jalankan docker-compose:
+   ```bash
+   docker-compose up -d
+   ```
+3. Akses WordPress di http://localhost:8080
+4. Akses phpMyAdmin di http://localhost:8081
+
+## Struktur Proyek
+
+```
+headlesswp/
+├── docker-compose.yml      # Konfigurasi Docker
+├── wp-config.php          # Konfigurasi WordPress
+├── wp-content/            # Theme dan plugin WordPress
+└── README.md             # Dokumentasi
+```
+
+## WordPress API Endpoints
+
+- REST API: http://localhost:8080/wp-json/wp/v2/
+- GraphQL: http://localhost:8080/graphql (setelah install plugin WPGraphQL)
+
+## Development Workflow
+
+1. Buat branch baru untuk setiap fitur
+2. Lakukan perubahan di branch tersebut
+3. Buat pull request ke branch Dev
+4. Setelah review, merge ke Dev
+
+## Contributing
+
+Silakan ikuti pedoman kontribusi di TODO.md
