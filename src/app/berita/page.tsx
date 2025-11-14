@@ -6,11 +6,16 @@ import React from 'react'
 import { GraphQLPost } from '@/types/wordpress'
 
 async function getAllPosts(): Promise<GraphQLPost[]> {
-  const { data } = await client.query<{ posts: { nodes: GraphQLPost[] } }>({
-    query: GET_POSTS,
-    variables: { first: 50 }
-  })
-  return data.posts?.nodes || []
+  try {
+    const { data } = await client.query<{ posts: { nodes: GraphQLPost[] } }>({
+      query: GET_POSTS,
+      variables: { first: 50 }
+    })
+    return data.posts?.nodes || []
+  } catch (error) {
+    console.warn('Failed to fetch posts during build:', error)
+    return []
+  }
 }
 
 export default async function BeritaPage() {

@@ -7,19 +7,29 @@ import React from 'react'
 import { GraphQLPost } from '@/types/wordpress'
 
 async function getLatestPosts(): Promise<GraphQLPost[]> {
-  const { data } = await client.query<{ posts: { nodes: GraphQLPost[] } }>({
-    query: GET_POSTS,
-    variables: { first: 6 }
-  })
-  return data.posts?.nodes || []
+  try {
+    const { data } = await client.query<{ posts: { nodes: GraphQLPost[] } }>({
+      query: GET_POSTS,
+      variables: { first: 6 }
+    })
+    return data.posts?.nodes || []
+  } catch (error) {
+    console.warn('Failed to fetch latest posts during build:', error)
+    return []
+  }
 }
 
 async function getCategoryPosts(): Promise<GraphQLPost[]> {
-  const { data } = await client.query<{ posts: { nodes: GraphQLPost[] } }>({
-    query: GET_POSTS_BY_CATEGORY,
-    variables: { categorySlug: 'berita-utama', first: 3 }
-  })
-  return data.posts?.nodes || []
+  try {
+    const { data } = await client.query<{ posts: { nodes: GraphQLPost[] } }>({
+      query: GET_POSTS_BY_CATEGORY,
+      variables: { categorySlug: 'berita-utama', first: 3 }
+    })
+    return data.posts?.nodes || []
+  } catch (error) {
+    console.warn('Failed to fetch category posts during build:', error)
+    return []
+  }
 }
 
 export default async function HomePage() {
