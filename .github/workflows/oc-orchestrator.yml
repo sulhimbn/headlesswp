@@ -1,0 +1,70 @@
+name: OC Orchestrator
+
+on:
+  schedule:
+    - cron: '*/30 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: read
+  issues: read
+  actions: read
+
+concurrency:
+  group: orchestrator-${{ github.workflow }}
+  cancel-in-progress: false
+
+jobs:
+  orchestrator:
+    if: github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    permissions:
+      id-token: write
+      contents: write
+      pull-requests: write
+      issues: write
+      actions: write
+      repository-projects: write
+
+    env:
+      GH_TOKEN: ${{ github.token }}
+      ORCHESTRATOR_API_KEY: ${{ secrets.ORCHESTRATOR_API_KEY }}
+      PROJECT_GOAL: "WordPress Headless for mitrabantennews.com"
+
+    steps:
+      - name: Harden runner
+        uses: step-security/harden-runner@v2
+        with:
+          egress-policy: audit
+
+      - name: Checkout repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
+
+      - name: Collect metadata (PRs, Issues, Repo, Runtime)
+        id: collect_meta
+        run: |
+          gh pr list --state open --json number,title,url,labels,author,mergeable > prs.json
+          gh issue list --state open --json number,title,url,labels,author > issues.json
+          echo "{\"repository\":\"$GITHUB_REPOSITORY\",\"sha\":\"$GITHUB_SHA\",\"ref\":\"$GITHUB_REF\"}" > repo_meta.json
+          uname -a > runner_info.txt
+
+      - name: Install OpenCode CLI
+        run: |
+          curl -fsSL https://opencode.ai/install | bash
+          echo "$HOME/.opencode/bin" >> $GITHUB_PATH
+
+      - name: Run Project Orchestrator
+        run: |
+          opencode run "Anda adalah Project Orchestrator untuk pengembangan WordPress Headless mitrabantennews.com; Anda mempunyai akses gh; analisis seluruh metadata (Project, PR, Issue, repo, file), tentukan prioritas pekerjaan, identifikasi perubahan yang diperlukan, dan hasilkan hanya unified diff patch yang valid tanpa penjelasan lain, untuk memperbaiki struktur, fungsi, bug, konsistensi API, arsitektur headless, dan kebutuhan teknis repositori secara otomatis." \
+            --model iflowcn/glm-4.6 \
+            --file ./prs.json \
+            --file ./issues.json \
+            --file ./repo_meta.json \
+            --file ./runner_info.txt \
+            --var PROJECT_GOAL="$PROJECT_GOAL" \
+            --share false
