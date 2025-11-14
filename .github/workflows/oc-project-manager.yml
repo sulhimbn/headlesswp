@@ -1,5 +1,3 @@
-ubah workflow ini untuk project orchestrator; prompt harus satu baris; sesuaikan juga environtment variabel dan metadata untuk project orchestrator; goal repositori adalah membuat wordpress headless untuk https://mitrabantennews.com
-
 name: OC Project Manager
 
 on:
