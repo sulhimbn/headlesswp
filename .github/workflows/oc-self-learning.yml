@@ -63,16 +63,6 @@ jobs:
         with:
           fetch-depth: 1
 
-      - name: Install deps: gh & jq & node (used by agent)
-        run: |
-          sudo apt-get update -y
-          sudo apt-get install -y jq
-          curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
-          sudo apt-get update -y
-          sudo apt-get install -y gh
-          # node used by some analysis tools if needed
-          sudo apt-get install -y nodejs npm || true
-
       - name: Collect context: PRs, Issues, Workflow metadata
         id: collect_meta
         run: |
@@ -80,28 +70,6 @@ jobs:
           gh issue list --state open --json number,title,url,author,labels > issue_meta.json || true
           gh api repos/${GITHUB_REPOSITORY}/actions/runs --paginate > runs_list.json || true
           echo "collected"
-
-      - name: Run static analysis & tests locally (if present)
-        id: quality_checks
-        run: |
-          # attempt to run common checks; failures won't stop the workflow
-          if [ -f package.json ]; then
-            npm ci || true
-            npm test --silent || true
-            npm run lint --silent || true
-          fi
-          # python
-          if [ -f requirements.txt ]; then
-            python -m pip install -r requirements.txt || true
-            pytest -q || true
-          fi
-          # save a basic quality summary
-          cat > quality_summary.json <<'EOF'
-          {
-            "has_node": $( [ -f package.json ] && echo true || echo false ),
-            "has_python": $( [ -f requirements.txt ] && echo true || echo false )
-          }
-          EOF
 
       - name: Build dataset record for this run
         id: build_dataset
