@@ -3,6 +3,7 @@ import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import { ApolloProvider } from '@apollo/client'
 import { client } from '@/lib/apollo'
+import ErrorBoundary from '@/components/ErrorBoundary'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -35,9 +36,11 @@ export default function RootLayout({
   return (
     <html lang="id">
       <body className={inter.className}>
-        <ApolloProvider client={client}>
-          {children}
-        </ApolloProvider>
+        <ErrorBoundary>
+          <ApolloProvider client={client}>
+            {children}
+          </ApolloProvider>
+        </ErrorBoundary>
       </body>
     </html>
   )
