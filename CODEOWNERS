@@ -1,0 +1,38 @@
+# CODEOWNERS File
+# This file controls who is automatically requested for review in pull requests.
+
+# Global owners - will be requested for review on all PRs
+* @sulhimbn
+
+# Specific file patterns and their owners
+
+# Documentation
+*.md @sulhimbn
+
+# Configuration files
+*.json @sulhimbn
+*.yml @sulhimbn
+*.yaml @sulhimbn
+*.config.* @sulhimbn
+
+# Security sensitive files
+.env* @sulhimbn
+wp-config.php @sulhimbn
+docker-compose.yml @sulhimbn
+Dockerfile* @sulhimbn
+
+# GitHub workflows and CI/CD
+.github/** @sulhimbn
+
+# Source code by directory
+src/** @sulhimbn
+wp-content/** @sulhimbn
+
+# Test files
+__tests__/** @sulhimbn
+*.test.* @sulhimbn
+*.spec.* @sulhimbn
+
+# Default fallback if no other rule matches
+# This line should be last
+* @sulhimbn
