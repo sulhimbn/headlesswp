@@ -56,7 +56,7 @@
 ## 📝 TODO List - Prioritas
 
 ### 🔥 **URGENT (Week 1)**
-- [ ] **Investigasi workflow failures**
+- [x] **Investigasi workflow failures**
   - Debug kenapa beberapa runs gagal dalam 0 detik
   - Optimize timeout dan concurrency settings
   - Add error handling dan logging
@@ -67,7 +67,7 @@
   - Setup database configuration
   - Install essential plugins (WPGraphQL, REST API)
 
-- [ ] **Create Development Environment**
+- [x] **Create Development Environment**
   - Setup docker-compose untuk local development
   - Create environment configuration files
   - Setup development scripts
