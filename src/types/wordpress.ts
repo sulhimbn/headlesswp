@@ -69,7 +69,7 @@ export interface GraphQLPost {
   excerpt: string;
   slug: string;
   date: string;
-  author: {
+  author?: {
     node: {
       name: string;
       slug: string;
@@ -85,24 +85,17 @@ export interface GraphQLPost {
       caption?: string;
     };
   };
-  categories: {
+  categories?: {
     nodes: WordPressCategory[];
   };
-  tags: {
+  tags?: {
     nodes: WordPressTag[];
   };
 }
 
 export interface GraphQLResponse {
-  post?: GraphQLPost;
   posts?: {
     nodes: GraphQLPost[];
-    pageInfo: {
-      hasNextPage: boolean;
-      endCursor: string;
-    };
   };
-  categories?: {
-    nodes: WordPressCategory[];
-  };
+  post?: GraphQLPost | null;
 }

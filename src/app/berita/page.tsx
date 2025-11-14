@@ -3,14 +3,14 @@ import { client } from '@/lib/apollo'
 import Link from 'next/link'
 import Image from 'next/image'
 import React from 'react'
-import { GraphQLPost, GraphQLResponse } from '@/types/wordpress'
+import { GraphQLPost } from '@/types/wordpress'
 
 async function getAllPosts(): Promise<GraphQLPost[]> {
-  const { data } = await client.query<GraphQLResponse>({
+  const { data } = await client.query<{ posts: { nodes: GraphQLPost[] } }>({
     query: GET_POSTS,
     variables: { first: 50 }
   })
-  return data?.posts?.nodes || []
+  return data.posts?.nodes || []
 }
 
 export default async function BeritaPage() {
