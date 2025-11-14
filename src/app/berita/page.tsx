@@ -42,7 +42,7 @@ export default async function BeritaPage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {posts.map((post: any) => (
+          {posts.map((post: GraphQLPost) => (
             <article key={post.id} className="bg-white rounded-lg shadow-md overflow-hidden">
               {post.featuredImage?.node && (
                 <div className="relative h-48">

@@ -49,7 +49,7 @@ export default async function HomePage() {
         <section className="mb-12">
           <h2 className="text-3xl font-bold text-gray-900 mb-6">Berita Utama</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {categoryPosts.map((post: any) => (
+            {categoryPosts.map((post: GraphQLPost) => (
               <article key={post.id} className="bg-white rounded-lg shadow-md overflow-hidden">
                 {post.featuredImage?.node && (
                   <div className="relative h-48">
@@ -87,7 +87,7 @@ export default async function HomePage() {
         <section>
           <h2 className="text-3xl font-bold text-gray-900 mb-6">Berita Terkini</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {latestPosts.map((post: any) => (
+            {latestPosts.map((post: GraphQLPost) => (
               <article key={post.id} className="bg-white rounded-lg shadow-md overflow-hidden">
                 {post.featuredImage?.node && (
                   <div className="relative h-48">

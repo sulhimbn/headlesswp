@@ -73,12 +73,16 @@ export interface GraphQLPost {
     node: {
       name: string;
       slug: string;
+      avatar?: {
+        url: string;
+      };
     };
   };
   featuredImage?: {
     node: {
       sourceUrl: string;
       altText: string;
+      caption?: string;
     };
   };
   categories?: {
