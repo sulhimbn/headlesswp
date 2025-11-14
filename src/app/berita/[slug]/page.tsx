@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
 import React from 'react'
+import DOMPurify from 'dompurify'
 
 async function getPost(slug: string) {
   try {
