@@ -63,12 +63,7 @@ jobs:
           echo "GITHUB_REPOSITORY=${GITHUB_REPOSITORY}" > gh_action_env.txt
           echo "GITHUB_REF=${GITHUB_REF}" >> gh_action_env.txt
           echo "GITHUB_SHA=${GITHUB_SHA}" >> gh_action_env.txt
-          cat > metadata_sources.json <<'EOF'
-          {
-            "gh_cli_help": "https://cli.github.com/manual/gh_help_environment",
-            "opencode_cli_run": "https://opencode.ai/docs/cli/#run-1"
-          }
-          EOF
+          cat > metadata_sources.json
           echo "✅ Saved environment metadata files."
 
       - name: Summarize collected metadata
