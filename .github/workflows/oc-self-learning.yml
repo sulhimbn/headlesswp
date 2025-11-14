@@ -63,7 +63,7 @@ jobs:
         with:
           fetch-depth: 1
 
-      - name: Collect context: PRs, Issues, Workflow metadata
+      - name: Collect context:PRs, Issues, Workflow metadata
         id: collect_meta
         run: |
           gh pr list --state open --json number,title,url,author,labels,headRefName,mergeable > pr_meta.json || true
