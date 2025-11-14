@@ -2,6 +2,7 @@ import { GET_POSTS } from '@/lib/graphql'
 import { client } from '@/lib/apollo'
 import Link from 'next/link'
 import Image from 'next/image'
+import React from 'react'
 
 async function getAllPosts() {
   const { data } = await client.query({
