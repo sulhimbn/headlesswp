@@ -31,7 +31,7 @@ jobs:
 
     env:
       GH_TOKEN: ${{ github.token }}
-      ORCHESTRATOR_API_KEY: ${{ secrets.ORCHESTRATOR_API_KEY }}
+      IFLOW_API_KEY: ${{ secrets.IFLOW_API_KEY }}
       PROJECT_GOAL: "WordPress Headless for mitrabantennews.com"
 
     steps:
@@ -66,4 +66,5 @@ jobs:
             --file ./issues.json \
             --file ./repo_meta.json \
             --file ./runner_info.txt \
+            --var PROJECT_GOAL="$PROJECT_GOAL" \
             --share false
