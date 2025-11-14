@@ -1,4 +1,4 @@
-name: oc - issue solver
+name: oc - pr handler
 
 on:
   schedule:
