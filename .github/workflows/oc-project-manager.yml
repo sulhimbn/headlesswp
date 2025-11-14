@@ -91,7 +91,7 @@ jobs:
 
       - name: Run OpenCode agent
         run: |
-          opencode run "Berperanlah sebagai GitHub Project Manager yang mengelola backlog, memprioritasi pekerjaan, mencegah duplikasi issue, memantau PR dan CI/CD, serta membuat rekomendasi roadmap dan perbaikan secara profesional, terstruktur, dan berorientasi pada aksi, commit dan push hasil kerja anda ke branch Dev." \
+          opencode run Anda mempunyai akses penuh ke github cli, tugas anda adalah menjaga repositori tetap efisien, efektif, aman dan menerapkan praktek terbaik github, selalu buat pr jika anda melakukan perubahan. \
             --model iflowcn/glm-4.6 \
             --file ./pr_meta.json \
             --file ./issue_meta.json \

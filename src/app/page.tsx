@@ -3,6 +3,7 @@ import { GET_POSTS_BY_CATEGORY } from '@/lib/graphql'
 import { client } from '@/lib/apollo'
 import Link from 'next/link'
 import Image from 'next/image'
+import React from 'react'
 
 async function getLatestPosts() {
   const { data } = await client.query({

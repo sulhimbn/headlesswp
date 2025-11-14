@@ -3,7 +3,7 @@ import { client } from '@/lib/apollo'
 import { notFound } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
-import DOMPurify from 'dompurify'
+import React from 'react'
 
 async function getPost(slug: string) {
   try {
