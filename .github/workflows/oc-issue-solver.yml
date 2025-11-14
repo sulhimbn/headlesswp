@@ -16,18 +16,12 @@ concurrency:
   group: ${{ github.workflow }}-global
   cancel-in-progress: false
 
-env:
-  IFLOW_MODEL: iflowcn/qwen3-coder-plus
-
 jobs:
-
   opencode:
     name: opencode - issue solver
     runs-on: ubuntu-latest
     timeout-minutes: 40
-    if: |
-      github.event_name == 'workflow_dispatch' ||
-      github.event_name == 'schedule'
+    if: github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
 
     permissions:
       id-token: write
