@@ -12,12 +12,13 @@ permissions:
   actions: read
 
 concurrency:
-  group: orchestrator-${{ github.workflow }}
+  group: ${{ github.workflow }}-${{ github.event.issue.number || github.event.pull_request.number }}
   cancel-in-progress: false
 
 jobs:
-  orchestrator:
+  opencode:
     if: github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
+      
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
@@ -32,7 +33,6 @@ jobs:
     env:
       GH_TOKEN: ${{ github.token }}
       IFLOW_API_KEY: ${{ secrets.IFLOW_API_KEY }}
-      PROJECT_GOAL: "WordPress Headless for mitrabantennews.com"
 
     steps:
       - name: Harden runner
@@ -45,26 +45,58 @@ jobs:
         with:
           fetch-depth: 1
 
-      - name: Collect metadata (PRs, Issues, Repo, Runtime)
+      - name: Collect metadata from open PRs and Issues
         id: collect_meta
         run: |
-          gh pr list --state open --json number,title,url,labels,author,mergeable > prs.json
-          gh issue list --state open --json number,title,url,labels,author > issues.json
-          echo "{\"repository\":\"$GITHUB_REPOSITORY\",\"sha\":\"$GITHUB_SHA\",\"ref\":\"$GITHUB_REF\"}" > repo_meta.json
-          uname -a > runner_info.txt
+          echo "Collecting PRs and Issues metadata..."
+          gh pr list --state open --json number,title,url,author,labels,headRefName,mergeable > pr_meta.json
+          gh issue list --state open --json number,title,url,author,labels > issue_meta.json
+          echo "✅ Saved metadata to pr_meta.json and issue_meta.json"
+
+      - name: Collect GitHub CLI / Runner environment metadata
+        id: collect_env
+        run: |
+          echo "Collecting GH CLI and runner environment metadata..."
+          gh --version > gh_cli_version.txt || true
+          gh auth status --show-token 2>/dev/null || gh auth status > gh_auth_status.txt || true
+          uname -a > runner_uname.txt || true
+          echo "GITHUB_REPOSITORY=${GITHUB_REPOSITORY}" > gh_action_env.txt
+          echo "GITHUB_REF=${GITHUB_REF}" >> gh_action_env.txt
+          echo "GITHUB_SHA=${GITHUB_SHA}" >> gh_action_env.txt
+          cat > metadata_sources.json <<'EOF'
+          {
+            "gh_cli_help": "https://cli.github.com/manual/gh_help_environment",
+            "opencode_cli_run": "https://opencode.ai/docs/cli/#run-1"
+          }
+          EOF
+          echo "✅ Saved environment metadata files."
+
+      - name: Summarize collected metadata
+        run: |
+          echo "=== Open Pull Requests ==="
+          cat pr_meta.json | jq . || true
+          echo "=== Open Issues ==="
+          cat issue_meta.json | jq . || true
+          echo "=== GH CLI Version ==="
+          cat gh_cli_version.txt || true
+          echo "=== Runner Info ==="
+          cat runner_uname.txt || true
+          echo "=== GH Env ==="
+          cat gh_action_env.txt || true
 
       - name: Install OpenCode CLI
         run: |
           curl -fsSL https://opencode.ai/install | bash
           echo "$HOME/.opencode/bin" >> $GITHUB_PATH
 
-      - name: Run Project Orchestrator
+      - name: Run OpenCode agent
         run: |
           opencode run "Anda adalah Project Orchestrator untuk pengembangan WordPress Headless mitrabantennews.com, Anda mempunyai akses gh, analisis seluruh metadata (Project, PR, Issue, repo, file), tentukan prioritas pekerjaan, identifikasi perubahan yang diperlukan, dan hasilkan hanya unified diff patch yang valid tanpa penjelasan lain, untuk memperbaiki struktur, fungsi, bug, konsistensi API, arsitektur headless, dan kebutuhan teknis repositori secara otomatis." \
             --model iflowcn/glm-4.6 \
-            --file ./prs.json \
-            --file ./issues.json \
-            --file ./repo_meta.json \
-            --file ./runner_info.txt \
-            --var PROJECT_GOAL="$PROJECT_GOAL" \
+            --file ./pr_meta.json \
+            --file ./issue_meta.json \
+            --file ./gh_cli_version.txt \
+            --file ./gh_action_env.txt \
+            --file ./metadata_sources.json \
             --share false
+
