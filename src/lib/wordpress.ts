@@ -1,11 +1,7 @@
 import axios from 'axios';
 import { WordPressPost, WordPressCategory, WordPressTag, WordPressMedia, WordPressAuthor } from '@/types/wordpress';
 
-<<<<<<< HEAD
-const WORDPRESS_API_URL = process.env.NEXT_PUBLIC_WORDPRESS_API_URL || 'https://mitrabantennews.com/wp-json';
-=======
 const WORDPRESS_API_URL = process.env.NEXT_PUBLIC_WORDPRESS_API_URL || 'https://www.mitrabantennews.com/wp-json';
->>>>>>> 64406f1d72c806faff9755f9f93db2a79475480c
 
 const api = axios.create({
   baseURL: WORDPRESS_API_URL,
