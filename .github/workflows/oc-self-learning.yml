@@ -70,7 +70,7 @@ jobs:
         id: run_agent1
         timeout-minutes: 20
         run: |
-          opencode run Anda adalah orkestrator repositori headlesswp, analisa secara mendalam repositori meliputi code, log, sejarah commit, pr issue dan log github action, buat file markdown todo yang berisi daftar tugas yang harus dikerjakan oleh agent lain. \
+          opencode run Anda adalah orkestrator repositori headlesswp yang mengelola project repositori (https://github.com/sulhimbn/headlesswp/projects), analisa secara mendalam repositori meliputi code, log, sejarah commit, pr issue dan log github action, buat/update projects kemudian buat/update roadmap, daftar tugas, dll. \
             --model iflowcn/glm-4.6 \
             --share false \
       - name: Run OpenCode2
