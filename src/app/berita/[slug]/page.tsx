@@ -9,10 +9,12 @@ async function getPost(slug: string) {
   try {
     const { data } = await client.query({
       query: GET_POST_BY_SLUG,
-      variables: { slug }
+      variables: { slug },
+      errorPolicy: 'all' // This allows partial results even if there are errors
     })
-    return data.post
+    return data?.post || null
   } catch (error) {
+    console.error(`Error fetching post with slug ${slug}:`, error)
     return null
   }
 }
@@ -21,6 +23,12 @@ export default async function PostPage({ params }: { params: { slug: string } })
   const post = await getPost(params.slug)
 
   if (!post) {
+    notFound()
+  }
+
+  // Validate required fields
+  if (!post.title || !post.content) {
+    console.error('Post is missing required fields:', post)
     notFound()
   }
 
@@ -89,10 +97,10 @@ export default async function PostPage({ params }: { params: { slug: string } })
               {post.title}
             </h1>
 
-            <div 
-              className="prose prose-lg max-w-none text-gray-700"
-              dangerouslySetInnerHTML={{ __html: post.content }}
-            />
+<div 
+  className="prose prose-lg max-w-none text-gray-700"
+  dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.content) }}
+/>
 
             {post.tags?.nodes?.length > 0 && (
               <div className="mt-8 pt-6 border-t">
