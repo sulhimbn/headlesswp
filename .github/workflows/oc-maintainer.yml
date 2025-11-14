@@ -300,7 +300,7 @@ jobs:
               - You did not introduce unnecessary risk or unrelated changes.
               - You left the repository in a cleaner, safer, and more maintainable state than before.
 
-PROMPT
+          PROMPT
           )" \
             --model iflowcn/glm-4.6 \
             --share false
