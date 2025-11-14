@@ -91,7 +91,7 @@ jobs:
 
       - name: Run OpenCode agent
         run: |
-          opencode run Anda mempunyai akses penuh ke github cli, tugas anda adalah menjaga repositori tetap efisien, efektif, aman dan menerapkan praktek terbaik github. \
+          opencode run Anda mempunyai akses penuh ke github cli, tugas anda adalah menjaga repositori tetap efisien, efektif, aman dan menerapkan praktek terbaik github, selalu buat pr jika anda melakukan perubahan. \
             --model iflowcn/glm-4.6 \
             --file ./pr_meta.json \
             --file ./issue_meta.json \
