@@ -1,7 +1,7 @@
 import { wordpressAPI } from '@/lib/wordpress'
 import { WordPressPost } from '@/types/wordpress'
 import Link from 'next/link'
-import Image from 'next/image'
+import { OptimizedImage } from '@/lib/image-optimization'
 import React from 'react'
 
 function createFallbackPost(id: string, title: string): WordPressPost {
@@ -53,6 +53,8 @@ async function getCategoryPosts(): Promise<WordPressPost[]> {
   }
 }
 
+export const revalidate = 300; // Revalidate every 5 minutes
+
 export default async function HomePage() {
   const latestPosts = await getLatestPosts()
   const categoryPosts = await getCategoryPosts()
@@ -84,8 +86,8 @@ export default async function HomePage() {
               <article key={post.id} className="bg-white rounded-lg shadow-md overflow-hidden">
                 {post.featured_media > 0 && (
                   <div className="relative h-48">
-                    <Image
-                      src="/placeholder-image.jpg" // Will be replaced with actual media URL
+                    <OptimizedImage
+                      media={null} // Will be replaced with actual media data
                       alt={post.title.rendered}
                       fill
                       className="object-cover"
@@ -122,8 +124,8 @@ export default async function HomePage() {
               <article key={post.id} className="bg-white rounded-lg shadow-md overflow-hidden">
                 {post.featured_media > 0 && (
                   <div className="relative h-48">
-                    <Image
-                      src="/placeholder-image.jpg" // Will be replaced with actual media URL
+                    <OptimizedImage
+                      media={null} // Will be replaced with actual media data
                       alt={post.title.rendered}
                       fill
                       className="object-cover"

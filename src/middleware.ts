@@ -49,6 +49,22 @@ export function middleware(request: NextRequest) {
     'accelerometer=()'
   ].join(', '))
   
+  // Performance headers
+  response.headers.set('X-DNS-Prefetch-Control', 'on')
+  
+  // Cache control for static assets
+  if (request.nextUrl.pathname.includes('/_next/static') || 
+      request.nextUrl.pathname.includes('/_next/image') ||
+      request.nextUrl.pathname.match(/\.(css|js|ico|png|jpg|jpeg|gif|webp|avif|svg)$/)) {
+    response.headers.set('Cache-Control', 'public, max-age=31536000, immutable')
+  } else if (request.nextUrl.pathname === '/') {
+    // Home page - cache for 5 minutes
+    response.headers.set('Cache-Control', 'public, max-age=300, stale-while-revalidate=600')
+  } else if (request.nextUrl.pathname.startsWith('/berita')) {
+    // News pages - cache for 10 minutes
+    response.headers.set('Cache-Control', 'public, max-age=600, stale-while-revalidate=1200')
+  }
+  
   return response
 }
 

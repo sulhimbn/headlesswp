@@ -15,6 +15,8 @@ async function getPost(slug: string): Promise<WordPressPost | null> {
   }
 }
 
+export const revalidate = 600; // Revalidate every 10 minutes for individual posts
+
 export default async function PostPage({ params }: { params: { slug: string } }) {
   const post = await getPost(params.slug)
 
