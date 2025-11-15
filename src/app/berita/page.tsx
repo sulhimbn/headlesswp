@@ -3,6 +3,7 @@ import { WordPressPost } from '@/types/wordpress'
 import Link from 'next/link'
 import Image from 'next/image'
 import React from 'react'
+import DOMPurify from 'dompurify'
 
 async function getAllPosts(): Promise<WordPressPost[]> {
   try {
@@ -62,7 +63,7 @@ export default async function BeritaPage() {
                 </Link>
                 <p 
                   className="text-gray-600 mb-3"
-                  dangerouslySetInnerHTML={{ __html: post.excerpt.rendered }}
+                  dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.excerpt.rendered) }}
                 />
                 <div className="text-sm text-gray-500">
                   {new Date(post.date).toLocaleDateString('id-ID', {
