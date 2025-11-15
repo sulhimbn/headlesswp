@@ -2,15 +2,8 @@ name: oc - self-learning orchestrator
 
 on:
   schedule:
-    - cron: '*/30 * * * *'
+    - cron: '0 0 * * *'
   workflow_dispatch:
-  issue_comment:
-    types: [created]
-  pull_request:
-    types: [opened, reopened, synchronize]
-  push:
-    branches:
-      - main
 
 permissions:
   contents: read
@@ -25,9 +18,6 @@ concurrency:
 
 env:
   IFLOW_MODEL: iflowcn/qwen3-coder-plus
-  POLICY_DIR: .iflow
-  DATASET_PREFIX: iflow-dataset
-  SCORE_THRESHOLD_AUTO_MERGE: '0.88' # contoh threshold (0-1)
 
 jobs:
 
@@ -35,12 +25,7 @@ jobs:
     name: opencode - main agent runner
     runs-on: ubuntu-latest
     timeout-minutes: 40
-    if: |
-      github.event_name == 'workflow_dispatch' ||
-      github.event_name == 'schedule' ||
-      github.event_name == 'pull_request' ||
-      github.event_name == 'issue_comment' ||
-      github.event_name == 'push'
+    if: github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
 
     permissions:
       id-token: write
@@ -70,13 +55,37 @@ jobs:
         id: run_agent1
         timeout-minutes: 20
         run: |
-          opencode run Anda adalah orkestrator repositori headlesswp yang mengelola project repositori (https://github.com/sulhimbn/headlesswp/projects), analisa secara mendalam repositori meliputi code, log, sejarah commit, pr issue dan log github action, buat/update projects kemudian buat/update roadmap, daftar tugas, dll. \
+          opencode run "$(cat <<'PROMPT'
+          Anda adalah Orchestrator utama untuk repositori Headless WordPress.
+          Repositori: https://github.com/sulhimbn/headlesswp
+          
+          Tugas Anda:          
+          1. **Analisis Mendalam Repositori**
+             - Analisis seluruh struktur kode, arsitektur, modul, API, workflow, konfigurasi, dan folder.
+             - Analisis commit history, PR, issue, discussion, dan logs GitHub Actions.
+             - Identifikasi inkonsistensi, error, smell code, technical debt, arsitektur yang kurang optimal, dan potensi otomatisasi.          
+          2. **Manajemen Project GitHub**
+             - Buat atau update **Projects** pada repositori.
+             - Atur kolom, status, metadata, prioritas, dan kategori task.
+             - Sinkronkan PR dan issue otomatis ke project yang relevan.          
+          3. **Roadmap & Prioritization**
+             - Buat/update roadmap jangka pendek, menengah, dan panjang.
+             - Prioritaskan tasks berdasarkan dampak teknis, dependensi, resiko, dan urgensi.          
+          4. **Task Generation**
+             - Hasilkan daftar tugas granular dan actionable.
+             - Formatkan dalam bentuk issue/PR atau patch jika diperlukan.
+             - Sertakan konteks teknis dan alasan prioritas.          
+          5. **Issue Management**
+             - Hasilkan daftar issue granular dan actionable, pastikan tidak ada issue duplikat.
+             - Formatkan dalam bentuk issue.
+             - Sertakan konteks teknis dan alasan prioritas.
+             - Beri label untuk setiap issue berdasarkan kategori dan prioritas
+          6. **Document Management**
+             - Semua dokumen (kecuali readme) dalam folder 'docs'.
+             - Update dokumen agar sesuai dengan kondisi repo terkini.
+          
+          Jalankan seluruh tugas dengan sangat hati-hati, mendalam, dan konsisten.
+          PROMPT
+          )" \
             --model iflowcn/glm-4.6 \
-            --share false \
-      - name: Run OpenCode2
-        id: run_agent2
-        timeout-minutes: 20
-        run: |
-          opencode run Anda adalah agen orkestrator, lakukan tugas di file markdown todo dan beri ceklist tugas yang telah selesai, kemudian commit dan push ke branch dev. \
-            --model iflowcn/qwen3-coder-plus \
             --share false \
