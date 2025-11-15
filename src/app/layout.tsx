@@ -34,6 +34,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="id">
+      <head>
+        <meta name="csp-nonce" content="" />
+      </head>
       <body className={inter.className}>
         <ClientLayout>
           {children}

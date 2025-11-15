@@ -192,12 +192,88 @@ npm run test:watch
 npm test -- --coverage
 ```
 
+## Security and Dependency Management
+
+### Security Audits
+
+```bash
+# Run security audit (moderate and above)
+npm run audit:security
+
+# Run full security audit (including low severity)
+npm run audit:full
+```
+
+### Dependency Management
+
+```bash
+# Check for outdated dependencies
+npm run deps:check
+
+# Update dependencies (patch and minor versions)
+npm run deps:update
+
+# Install dependencies (clean install)
+npm ci
+```
+
+### Security Guidelines
+
+- Always run `npm run audit:security` before committing changes
+- Keep dependencies updated to avoid security vulnerabilities
+- Use `npm ci` for clean installs in CI/CD environments
+- Report security vulnerabilities privately following the Security Policy
+
 ### Writing Tests
 
 - Test components and utilities
 - Mock external dependencies
 - Test error cases
 - Maintain good coverage
+
+## Dependency Management
+
+### Security Updates
+
+This project takes dependency security seriously. Follow these guidelines:
+
+1. **Regular Security Audits**
+   ```bash
+   npm audit        # Check for vulnerabilities
+   npm audit fix    # Automatically fix vulnerabilities
+   ```
+
+2. **Keeping Dependencies Updated**
+   ```bash
+   npm outdated     # Check for outdated packages
+   npm update       # Update packages within version ranges
+   ```
+
+3. **Version Strategy**
+   - **Apollo Client**: Stay on v3.x to avoid breaking changes
+   - **React/Next.js**: Update cautiously due to potential breaking changes
+   - **Security patches**: Apply immediately regardless of version
+   - **Dev dependencies**: Can be updated more frequently
+
+4. **Before Updating Dependencies**
+   - Check breaking changes in release notes
+   - Run full test suite: `npm test`
+   - Run type checking: `npm run typecheck`
+   - Test build process: `npm run build`
+   - Verify application functionality
+
+5. **Automated Security Scanning**
+   - CI/CD pipeline includes automated security scanning
+   - High/critical vulnerabilities block deployments
+   - Security updates are prioritized over feature updates
+
+### Adding New Dependencies
+
+1. **Evaluate necessity** - Can the requirement be met with existing dependencies?
+2. **Check security** - Research the package's security history
+3. **Minimize impact** - Prefer smaller, focused packages
+4. **Document purpose** - Add comments explaining why the dependency is needed
+5. **Test thoroughly** - Ensure compatibility with existing code
 
 ## Security
 
