@@ -1,4 +1,4 @@
-import { wordpressAPI } from '@/lib/wordpress'
+import { graphqlWordPressAPI } from '@/lib/wordpress-graphql'
 import { WordPressPost } from '@/types/wordpress'
 import Link from 'next/link'
 import Image from 'next/image'
@@ -25,7 +25,7 @@ function createFallbackPost(id: string, title: string): WordPressPost {
 
 async function getLatestPosts(): Promise<WordPressPost[]> {
   try {
-    return await wordpressAPI.getPosts({ per_page: 6 })
+    return await graphqlWordPressAPI.getPosts({ per_page: 6 })
   } catch (error) {
     console.warn('Failed to fetch latest posts during build:', error)
     // Return fallback posts for better UX
@@ -41,7 +41,7 @@ async function getCategoryPosts(): Promise<WordPressPost[]> {
   try {
     // For now, get the first 3 posts as category posts
     // In a real implementation, you'd filter by category
-    return await wordpressAPI.getPosts({ per_page: 3 })
+    return await graphqlWordPressAPI.getPosts({ per_page: 3 })
   } catch (error) {
     console.warn('Failed to fetch category posts during build:', error)
     // Return fallback posts for better UX

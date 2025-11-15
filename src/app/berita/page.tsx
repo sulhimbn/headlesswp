@@ -1,4 +1,4 @@
-import { wordpressAPI } from '@/lib/wordpress'
+import { graphqlWordPressAPI } from '@/lib/wordpress-graphql'
 import { WordPressPost } from '@/types/wordpress'
 import Link from 'next/link'
 import Image from 'next/image'
@@ -6,7 +6,7 @@ import React from 'react'
 
 async function getAllPosts(): Promise<WordPressPost[]> {
   try {
-    return await wordpressAPI.getPosts({ per_page: 50 })
+    return await graphqlWordPressAPI.getPosts({ per_page: 50 })
   } catch (error) {
     console.warn('Failed to fetch posts during build:', error)
     return []
