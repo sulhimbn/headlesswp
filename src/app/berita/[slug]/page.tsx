@@ -1,20 +1,14 @@
-import { GET_POST_BY_SLUG } from '@/lib/graphql'
-import { client } from '@/lib/apollo'
+import { wordpressAPI } from '@/lib/wordpress'
+import { convertRestToGraphQL, GraphQLPost } from '@/lib/api-adapter'
 import { notFound } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
 import React from 'react'
-import DOMPurify from 'dompurify'
-import { GraphQLPost } from '@/types/wordpress'
 
 async function getPost(slug: string): Promise<GraphQLPost | null> {
   try {
-    const { data } = await client.query<{ post: GraphQLPost | null }>({
-      query: GET_POST_BY_SLUG,
-      variables: { slug },
-      errorPolicy: 'all' // This allows partial results even if there are errors
-    })
-    return data?.post || null
+    const post = await wordpressAPI.getPost(slug)
+    return post ? convertRestToGraphQL(post) : null
   } catch (error) {
     console.error(`Error fetching post with slug ${slug}:`, error)
     return null
@@ -101,7 +95,7 @@ export default async function PostPage({ params }: { params: { slug: string } })
 
 <div 
   className="prose prose-lg max-w-none text-gray-700"
-  dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.content) }}
+  dangerouslySetInnerHTML={{ __html: post.content }}
 />
 
             {post.tags?.nodes && post.tags.nodes.length > 0 && (

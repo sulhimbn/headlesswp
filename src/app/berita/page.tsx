@@ -1,17 +1,13 @@
-import { GET_POSTS } from '@/lib/graphql'
-import { client } from '@/lib/apollo'
+import { wordpressAPI } from '@/lib/wordpress'
+import { convertRestToGraphQL, GraphQLPost } from '@/lib/api-adapter'
 import Link from 'next/link'
 import Image from 'next/image'
 import React from 'react'
-import { GraphQLPost } from '@/types/wordpress'
 
 async function getAllPosts(): Promise<GraphQLPost[]> {
   try {
-    const { data } = await client.query<{ posts: { nodes: GraphQLPost[] } }>({
-      query: GET_POSTS,
-      variables: { first: 50 }
-    })
-    return data.posts?.nodes || []
+    const posts = await wordpressAPI.getPosts({ per_page: 50 })
+    return posts.map(convertRestToGraphQL)
   } catch (error) {
     console.warn('Failed to fetch posts during build:', error)
     return []
