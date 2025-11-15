@@ -1,5 +1,6 @@
 import { wordpressAPI } from '@/lib/wordpress';
 import { WordPressPost } from '@/types/wordpress';
+import { mockPosts, mockCategories, mockTags, mockMedia, mockAuthors } from './fixtures/wordpress-data';
 
 describe('WordPress REST API', () => {
   it('should have wordpressAPI object', () => {
@@ -23,25 +24,82 @@ describe('WordPress REST API', () => {
   });
 
   it('should handle WordPress post structure', () => {
-    const mockPost: WordPressPost = {
-      id: 1,
-      title: { rendered: 'Test Post' },
-      content: { rendered: '<p>Test content</p>' },
-      excerpt: { rendered: '<p>Test excerpt</p>' },
-      slug: 'test-post',
-      date: '2024-01-01T00:00:00',
-      modified: '2024-01-01T00:00:00',
-      author: 1,
-      featured_media: 0,
-      categories: [],
-      tags: [],
-      status: 'publish',
-      type: 'post',
-      link: 'https://example.com/test-post'
-    };
+    const mockPost: WordPressPost = mockPosts[0];
 
-    expect(mockPost.title.rendered).toBe('Test Post');
-    expect(mockPost.content.rendered).toContain('Test content');
-    expect(mockPost.slug).toBe('test-post');
+    expect(mockPost.title.rendered).toBe('Berita Pertama: Teknologi Terbaru');
+    expect(mockPost.content.rendered).toContain('teknologi terbaru');
+    expect(mockPost.slug).toBe('berita-pertama-teknologi-terbaru');
+    expect(mockPost.categories).toContain(1);
+    expect(mockPost.tags).toContain(1);
+  });
+
+  it('should validate mock data structure', () => {
+    // Validate posts structure
+    mockPosts.forEach(post => {
+      expect(post).toHaveProperty('id');
+      expect(post).toHaveProperty('title.rendered');
+      expect(post).toHaveProperty('content.rendered');
+      expect(post).toHaveProperty('excerpt.rendered');
+      expect(post).toHaveProperty('slug');
+      expect(post).toHaveProperty('date');
+      expect(post).toHaveProperty('status');
+      expect(post).toHaveProperty('type');
+    });
+
+    // Validate categories structure
+    mockCategories.forEach(category => {
+      expect(category).toHaveProperty('id');
+      expect(category).toHaveProperty('name');
+      expect(category).toHaveProperty('slug');
+      expect(category).toHaveProperty('count');
+    });
+
+    // Validate tags structure
+    mockTags.forEach(tag => {
+      expect(tag).toHaveProperty('id');
+      expect(tag).toHaveProperty('name');
+      expect(tag).toHaveProperty('slug');
+      expect(tag).toHaveProperty('count');
+    });
+
+    // Validate media structure
+    mockMedia.forEach(media => {
+      expect(media).toHaveProperty('id');
+      expect(media).toHaveProperty('source_url');
+      expect(media).toHaveProperty('media_type');
+      expect(media).toHaveProperty('mime_type');
+    });
+
+    // Validate authors structure
+    mockAuthors.forEach(author => {
+      expect(author).toHaveProperty('id');
+      expect(author).toHaveProperty('name');
+      expect(author).toHaveProperty('slug');
+      expect(author).toHaveProperty('avatar_urls');
+    });
+  });
+
+  it('should have consistent data relationships', () => {
+    const firstPost = mockPosts[0];
+    
+    // Check that category references exist
+    expect(firstPost.categories.length).toBeGreaterThan(0);
+    firstPost.categories.forEach(catId => {
+      expect(mockCategories.find(cat => cat.id === catId)).toBeDefined();
+    });
+
+    // Check that tag references exist
+    expect(firstPost.tags.length).toBeGreaterThan(0);
+    firstPost.tags.forEach(tagId => {
+      expect(mockTags.find(tag => tag.id === tagId)).toBeDefined();
+    });
+
+    // Check that author reference exists
+    expect(mockAuthors.find(author => author.id === firstPost.author)).toBeDefined();
+
+    // Check that media reference exists if featured_media is not 0
+    if (firstPost.featured_media > 0) {
+      expect(mockMedia.find(media => media.id === firstPost.featured_media)).toBeDefined();
+    }
   });
 });
