@@ -192,6 +192,38 @@ npm run test:watch
 npm test -- --coverage
 ```
 
+## Security and Dependency Management
+
+### Security Audits
+
+```bash
+# Run security audit (moderate and above)
+npm run audit:security
+
+# Run full security audit (including low severity)
+npm run audit:full
+```
+
+### Dependency Management
+
+```bash
+# Check for outdated dependencies
+npm run deps:check
+
+# Update dependencies (patch and minor versions)
+npm run deps:update
+
+# Install dependencies (clean install)
+npm ci
+```
+
+### Security Guidelines
+
+- Always run `npm run audit:security` before committing changes
+- Keep dependencies updated to avoid security vulnerabilities
+- Use `npm ci` for clean installs in CI/CD environments
+- Report security vulnerabilities privately following the Security Policy
+
 ### Writing Tests
 
 - Test components and utilities
