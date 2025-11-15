@@ -1,6 +1,34 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { apiSecurity } from '@/lib/api-security'
 
 export function middleware(request: NextRequest) {
+  // Handle CORS preflight requests
+  if (request.method === 'OPTIONS') {
+    const origin = request.headers.get('origin')
+    const corsHeaders = apiSecurity.getCORSHeaders(origin || '')
+    
+    return new NextResponse(null, {
+      status: 200,
+      headers: corsHeaders
+    })
+  }
+
+  // Validate API requests
+  const validation = apiSecurity.validateRequest(request)
+  if (!validation.allowed) {
+    const errorResponse = new NextResponse(
+      JSON.stringify({ error: validation.message }),
+      {
+        status: validation.status || 403,
+        headers: {
+          'Content-Type': 'application/json',
+          ...validation.headers
+        }
+      }
+    )
+    return errorResponse
+  }
+
   const response = NextResponse.next()
   
   // Generate a simple nonce for inline scripts and styles
@@ -31,6 +59,22 @@ export function middleware(request: NextRequest) {
   ].join('; ')
   
   response.headers.set('Content-Security-Policy', csp)
+  
+  // Add rate limit headers
+  if (validation.headers) {
+    Object.entries(validation.headers).forEach(([key, value]) => {
+      response.headers.set(key, value)
+    })
+  }
+  
+  // Add CORS headers for allowed origins
+  const origin = request.headers.get('origin')
+  if (origin) {
+    const corsHeaders = apiSecurity.getCORSHeaders(origin)
+    Object.entries(corsHeaders).forEach(([key, value]) => {
+      response.headers.set(key, value)
+    })
+  }
   
   // Additional security headers
   response.headers.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload')
@@ -69,11 +113,11 @@ export const config = {
   matcher: [
     /*
      * Match all request paths except for the ones starting with:
-     * - api (API routes)
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
+     * Note: We now include API routes to apply security middleware
      */
-    '/((?!api|_next/static|_next/image|favicon.ico).*)',
+    '/((?!_next/static|_next/image|favicon.ico).*)',
   ],
 }
