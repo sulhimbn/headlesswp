@@ -199,6 +199,50 @@ npm test -- --coverage
 - Test error cases
 - Maintain good coverage
 
+## Dependency Management
+
+### Security Updates
+
+This project takes dependency security seriously. Follow these guidelines:
+
+1. **Regular Security Audits**
+   ```bash
+   npm audit        # Check for vulnerabilities
+   npm audit fix    # Automatically fix vulnerabilities
+   ```
+
+2. **Keeping Dependencies Updated**
+   ```bash
+   npm outdated     # Check for outdated packages
+   npm update       # Update packages within version ranges
+   ```
+
+3. **Version Strategy**
+   - **Apollo Client**: Stay on v3.x to avoid breaking changes
+   - **React/Next.js**: Update cautiously due to potential breaking changes
+   - **Security patches**: Apply immediately regardless of version
+   - **Dev dependencies**: Can be updated more frequently
+
+4. **Before Updating Dependencies**
+   - Check breaking changes in release notes
+   - Run full test suite: `npm test`
+   - Run type checking: `npm run typecheck`
+   - Test build process: `npm run build`
+   - Verify application functionality
+
+5. **Automated Security Scanning**
+   - CI/CD pipeline includes automated security scanning
+   - High/critical vulnerabilities block deployments
+   - Security updates are prioritized over feature updates
+
+### Adding New Dependencies
+
+1. **Evaluate necessity** - Can the requirement be met with existing dependencies?
+2. **Check security** - Research the package's security history
+3. **Minimize impact** - Prefer smaller, focused packages
+4. **Document purpose** - Add comments explaining why the dependency is needed
+5. **Test thoroughly** - Ensure compatibility with existing code
+
 ## Security
 
 If you discover a security vulnerability, please follow our [Security Policy](SECURITY.md) and report it privately.
