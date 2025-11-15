@@ -4,21 +4,32 @@ import { client } from '@/lib/apollo'
 import Link from 'next/link'
 import Image from 'next/image'
 import React from 'react'
+import { GraphQLPost } from '@/types/wordpress'
 
-async function getLatestPosts() {
-  const { data } = await client.query({
-    query: GET_POSTS,
-    variables: { first: 6 }
-  })
-  return data.posts.nodes
+async function getLatestPosts(): Promise<GraphQLPost[]> {
+  try {
+    const { data } = await client.query<{ posts: { nodes: GraphQLPost[] } }>({
+      query: GET_POSTS,
+      variables: { first: 6 }
+    })
+    return data.posts?.nodes || []
+  } catch (error) {
+    console.warn('Failed to fetch latest posts during build:', error)
+    return []
+  }
 }
 
-async function getCategoryPosts() {
-  const { data } = await client.query({
-    query: GET_POSTS_BY_CATEGORY,
-    variables: { categorySlug: 'berita-utama', first: 3 }
-  })
-  return data.posts.nodes
+async function getCategoryPosts(): Promise<GraphQLPost[]> {
+  try {
+    const { data } = await client.query<{ posts: { nodes: GraphQLPost[] } }>({
+      query: GET_POSTS_BY_CATEGORY,
+      variables: { categorySlug: 'berita-utama', first: 3 }
+    })
+    return data.posts?.nodes || []
+  } catch (error) {
+    console.warn('Failed to fetch category posts during build:', error)
+    return []
+  }
 }
 
 export default async function HomePage() {
@@ -48,7 +59,7 @@ export default async function HomePage() {
         <section className="mb-12">
           <h2 className="text-3xl font-bold text-gray-900 mb-6">Berita Utama</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {categoryPosts.map((post: any) => (
+            {categoryPosts.map((post: GraphQLPost) => (
               <article key={post.id} className="bg-white rounded-lg shadow-md overflow-hidden">
                 {post.featuredImage?.node && (
                   <div className="relative h-48">
@@ -86,7 +97,7 @@ export default async function HomePage() {
         <section>
           <h2 className="text-3xl font-bold text-gray-900 mb-6">Berita Terkini</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {latestPosts.map((post: any) => (
+            {latestPosts.map((post: GraphQLPost) => (
               <article key={post.id} className="bg-white rounded-lg shadow-md overflow-hidden">
                 {post.featuredImage?.node && (
                   <div className="relative h-48">

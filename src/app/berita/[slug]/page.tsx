@@ -4,10 +4,12 @@ import { notFound } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
 import React from 'react'
+import DOMPurify from 'dompurify'
+import { GraphQLPost } from '@/types/wordpress'
 
-async function getPost(slug: string) {
+async function getPost(slug: string): Promise<GraphQLPost | null> {
   try {
-    const { data } = await client.query({
+    const { data } = await client.query<{ post: GraphQLPost | null }>({
       query: GET_POST_BY_SLUG,
       variables: { slug },
       errorPolicy: 'all' // This allows partial results even if there are errors
@@ -78,7 +80,7 @@ export default async function PostPage({ params }: { params: { slug: string } })
                 </span>
               </div>
               
-              {post.categories?.nodes?.length > 0 && (
+              {post.categories?.nodes && post.categories.nodes.length > 0 && (
                 <div className="flex flex-wrap gap-2 mb-4">
                   {post.categories.nodes.map((category: any) => (
                     <Link
@@ -102,7 +104,7 @@ export default async function PostPage({ params }: { params: { slug: string } })
   dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.content) }}
 />
 
-            {post.tags?.nodes?.length > 0 && (
+            {post.tags?.nodes && post.tags.nodes.length > 0 && (
               <div className="mt-8 pt-6 border-t">
                 <h3 className="text-sm font-semibold text-gray-500 mb-3">Tags</h3>
                 <div className="flex flex-wrap gap-2">

@@ -3,13 +3,19 @@ import { client } from '@/lib/apollo'
 import Link from 'next/link'
 import Image from 'next/image'
 import React from 'react'
+import { GraphQLPost } from '@/types/wordpress'
 
-async function getAllPosts() {
-  const { data } = await client.query({
-    query: GET_POSTS,
-    variables: { first: 50 }
-  })
-  return data.posts.nodes
+async function getAllPosts(): Promise<GraphQLPost[]> {
+  try {
+    const { data } = await client.query<{ posts: { nodes: GraphQLPost[] } }>({
+      query: GET_POSTS,
+      variables: { first: 50 }
+    })
+    return data.posts?.nodes || []
+  } catch (error) {
+    console.warn('Failed to fetch posts during build:', error)
+    return []
+  }
 }
 
 export default async function BeritaPage() {
@@ -41,7 +47,7 @@ export default async function BeritaPage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {posts.map((post: any) => (
+          {posts.map((post: GraphQLPost) => (
             <article key={post.id} className="bg-white rounded-lg shadow-md overflow-hidden">
               {post.featuredImage?.node && (
                 <div className="relative h-48">
