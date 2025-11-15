@@ -1,0 +1,12 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "types": ["jest", "node"],
+    "lib": ["dom", "dom.iterable", "es6"]
+  },
+  "include": [
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "__tests__/**/*"
+  ]
+}
