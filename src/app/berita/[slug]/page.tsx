@@ -1,14 +1,14 @@
 import { wordpressAPI } from '@/lib/wordpress'
-import { convertRestToGraphQL, GraphQLPost } from '@/lib/api-adapter'
+import { WordPressPost } from '@/types/wordpress'
 import { notFound } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
 import React from 'react'
 
-async function getPost(slug: string): Promise<GraphQLPost | null> {
+async function getPost(slug: string): Promise<WordPressPost | null> {
   try {
     const post = await wordpressAPI.getPost(slug)
-    return post ? convertRestToGraphQL(post) : null
+    return post || null
   } catch (error) {
     console.error(`Error fetching post with slug ${slug}:`, error)
     return null
@@ -23,7 +23,7 @@ export default async function PostPage({ params }: { params: { slug: string } })
   }
 
   // Validate required fields
-  if (!post.title || !post.content) {
+  if (!post.title.rendered || !post.content.rendered) {
     console.error('Post is missing required fields:', post)
     notFound()
   }
@@ -47,13 +47,13 @@ export default async function PostPage({ params }: { params: { slug: string } })
         </div>
       </header>
 
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+<main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <article className="bg-white rounded-lg shadow-lg overflow-hidden">
-          {post.featuredImage?.node && (
+          {post.featured_media > 0 && (
             <div className="relative h-96">
               <Image
-                src={post.featuredImage.node.sourceUrl}
-                alt={post.featuredImage.node.altText || post.title}
+                src="/placeholder-image.jpg" // Will be replaced with actual media URL
+                alt={post.title.rendered}
                 fill
                 className="object-cover"
               />
@@ -63,7 +63,7 @@ export default async function PostPage({ params }: { params: { slug: string } })
           <div className="p-8">
             <div className="mb-6">
               <div className="flex items-center space-x-4 text-sm text-gray-500 mb-4">
-                <span>By {post.author?.node?.name || 'Admin'}</span>
+                <span>By Admin</span>
                 <span>•</span>
                 <span>
                   {new Date(post.date).toLocaleDateString('id-ID', {
@@ -74,42 +74,40 @@ export default async function PostPage({ params }: { params: { slug: string } })
                 </span>
               </div>
               
-              {post.categories?.nodes && post.categories.nodes.length > 0 && (
+              {post.categories.length > 0 && (
                 <div className="flex flex-wrap gap-2 mb-4">
-                  {post.categories.nodes.map((category: any) => (
-                    <Link
-                      key={category.id}
-                      href={`/kategori/${category.slug}`}
-                      className="bg-red-100 text-red-800 text-xs px-2 py-1 rounded-full hover:bg-red-200"
+                  {post.categories.map((categoryId: number) => (
+                    <span
+                      key={categoryId}
+                      className="bg-red-100 text-red-800 text-xs px-2 py-1 rounded-full"
                     >
-                      {category.name}
-                    </Link>
+                      Category {categoryId}
+                    </span>
                   ))}
                 </div>
               )}
             </div>
 
             <h1 className="text-4xl font-bold text-gray-900 mb-6">
-              {post.title}
+              {post.title.rendered}
             </h1>
 
 <div 
   className="prose prose-lg max-w-none text-gray-700"
-  dangerouslySetInnerHTML={{ __html: post.content }}
-/>
+  dangerouslySetInnerHTML={{ __html: post.content.rendered }}
+ />
 
-            {post.tags?.nodes && post.tags.nodes.length > 0 && (
+            {post.tags.length > 0 && (
               <div className="mt-8 pt-6 border-t">
                 <h3 className="text-sm font-semibold text-gray-500 mb-3">Tags</h3>
                 <div className="flex flex-wrap gap-2">
-                  {post.tags.nodes.map((tag: any) => (
-                    <Link
-                      key={tag.id}
-                      href={`/tag/${tag.slug}`}
-                      className="bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded-full hover:bg-gray-200"
+                  {post.tags.map((tagId: number) => (
+                    <span
+                      key={tagId}
+                      className="bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded-full"
                     >
-                      #{tag.name}
-                    </Link>
+                      #{tagId}
+                    </span>
                   ))}
                 </div>
               </div>
