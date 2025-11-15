@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { WordPressPost, WordPressCategory, WordPressTag, WordPressMedia, WordPressAuthor } from '@/types/wordpress';
+import { apiSecurity } from './api-security';
 
 const WORDPRESS_API_URL = process.env.NEXT_PUBLIC_WORDPRESS_API_URL || 'http://localhost:8080/wp-json';
 
@@ -7,15 +8,63 @@ const api = axios.create({
   baseURL: WORDPRESS_API_URL,
   headers: {
     'Content-Type': 'application/json',
+    'User-Agent': 'HeadlessWP-Client/1.0',
+    'X-Requested-With': 'XMLHttpRequest'
   },
   timeout: 10000, // 10 second timeout
 });
 
-// Add retry logic for failed requests
+// Add request interceptor for security
+api.interceptors.request.use(
+  (config) => {
+    // Add API key if authentication is enabled
+    const apiKey = process.env.WORDPRESS_API_KEY;
+    if (apiKey) {
+      config.headers['X-API-Key'] = apiKey;
+    }
+
+    // Validate and sanitize URL parameters
+    if (config.params) {
+      Object.keys(config.params).forEach(key => {
+        if (typeof config.params[key] === 'string') {
+          config.params[key] = apiSecurity.sanitizeInput(config.params[key]);
+        }
+      });
+    }
+
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
+// Add response interceptor for security and retry logic
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    // Validate response data for basic security
+    if (response.data && typeof response.data === 'object') {
+      // Add basic validation to ensure data structure is safe
+      Object.keys(response.data).forEach(key => {
+        if (typeof response.data[key] === 'string') {
+          response.data[key] = apiSecurity.sanitizeInput(response.data[key]);
+        }
+      });
+    }
+    return response;
+  },
   async (error) => {
     const config = error.config;
+    
+    // Handle rate limiting
+    if (error.response?.status === 429) {
+      const retryAfter = error.response.headers['retry-after'];
+      const delay = retryAfter ? parseInt(retryAfter) * 1000 : 60000;
+      
+      if (!config._rateLimitRetry) {
+        config._rateLimitRetry = true;
+        await new Promise(resolve => setTimeout(resolve, delay));
+        return api(config);
+      }
+    }
     
     // Retry on network errors or 5xx errors
     if (!config._retry && (!error.response || error.response.status >= 500)) {
@@ -37,7 +86,32 @@ api.interceptors.response.use(
 // Helper function to use index.php fallback for REST API
 const getApiUrl = (path: string) => {
   const baseUrl = process.env.NEXT_PUBLIC_WORDPRESS_URL || 'http://localhost:8080';
+  
+  // Validate API path for security
+  if (!apiSecurity.validateAPIPath(path)) {
+    throw new Error(`Invalid API path: ${path}`);
+  }
+  
   return `${baseUrl}/index.php?rest_route=${path}`;
+};
+
+// Helper function to validate and sanitize search parameters
+const validateSearchParams = (params: any) => {
+  const sanitized: any = {};
+  
+  Object.keys(params).forEach(key => {
+    if (params[key] !== undefined && params[key] !== null) {
+      if (typeof params[key] === 'string') {
+        sanitized[key] = apiSecurity.sanitizeInput(params[key]);
+      } else if (typeof params[key] === 'number') {
+        sanitized[key] = Math.max(0, params[key]); // Ensure non-negative numbers
+      } else {
+        sanitized[key] = params[key];
+      }
+    }
+  });
+  
+  return sanitized;
 };
 
 export const wordpressAPI = {
@@ -49,12 +123,21 @@ export const wordpressAPI = {
     tag?: number;
     search?: string;
   }): Promise<WordPressPost[]> => {
-    const response = await api.get(getApiUrl('/wp/v2/posts'), { params });
+    const sanitizedParams = params ? validateSearchParams(params) : {};
+    // Limit per_page to prevent excessive data requests
+    if (sanitizedParams.per_page && sanitizedParams.per_page > 100) {
+      sanitizedParams.per_page = 100;
+    }
+    const response = await api.get(getApiUrl('/wp/v2/posts'), { params: sanitizedParams });
     return response.data;
   },
 
   getPost: async (slug: string): Promise<WordPressPost> => {
-    const response = await api.get(getApiUrl('/wp/v2/posts'), { params: { slug } });
+    const sanitizedSlug = apiSecurity.sanitizeInput(slug);
+    if (!sanitizedSlug) {
+      throw new Error('Invalid post slug');
+    }
+    const response = await api.get(getApiUrl('/wp/v2/posts'), { params: { slug: sanitizedSlug } });
     return response.data[0];
   },
 
@@ -99,7 +182,14 @@ export const wordpressAPI = {
 
   // Search
   search: async (query: string): Promise<WordPressPost[]> => {
-    const response = await api.get(getApiUrl('/wp/v2/search'), { params: { search: query } });
+    const sanitizedQuery = apiSecurity.sanitizeInput(query);
+    if (!sanitizedQuery || sanitizedQuery.length < 2) {
+      throw new Error('Search query must be at least 2 characters');
+    }
+    if (sanitizedQuery.length > 100) {
+      throw new Error('Search query too long');
+    }
+    const response = await api.get(getApiUrl('/wp/v2/search'), { params: { search: sanitizedQuery } });
     return response.data;
   },
 };
