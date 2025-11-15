@@ -1,7 +1,110 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { 
+  rateLimit, 
+  getClientIdentifier, 
+  validateApiKey, 
+  validateOrigin,
+  sanitizeInput 
+} from '@/lib/api-security'
 
 export function middleware(request: NextRequest) {
   const response = NextResponse.next()
+  
+  // Get client identifier for rate limiting
+  const clientId = getClientIdentifier(request)
+  
+  // Apply rate limiting based on route type
+  let rateLimitType: 'default' | 'api' | 'auth' = 'default'
+  
+  if (request.nextUrl.pathname.startsWith('/api/')) {
+    rateLimitType = 'api'
+    
+    // Special rate limiting for auth-related endpoints
+    if (request.nextUrl.pathname.includes('auth') || 
+        request.nextUrl.pathname.includes('login')) {
+      rateLimitType = 'auth'
+    }
+  }
+  
+  // Check rate limiting
+  const rateLimitResult = rateLimit(clientId, rateLimitType)
+  
+  if (!rateLimitResult.success) {
+    return new NextResponse(
+      JSON.stringify({
+        error: 'Too Many Requests',
+        message: `Rate limit exceeded. Try again in ${rateLimitResult.retryAfter} seconds.`,
+        retryAfter: rateLimitResult.retryAfter,
+      }),
+      {
+        status: 429,
+        headers: {
+          'Content-Type': 'application/json',
+          'X-RateLimit-Limit': rateLimitResult.limit.toString(),
+          'X-RateLimit-Remaining': rateLimitResult.remaining.toString(),
+          'X-RateLimit-Reset': rateLimitResult.resetTime.toString(),
+          'Retry-After': rateLimitResult.retryAfter?.toString() || '',
+        },
+      }
+    )
+  }
+  
+  // Add rate limit headers to successful responses
+  response.headers.set('X-RateLimit-Limit', rateLimitResult.limit.toString())
+  response.headers.set('X-RateLimit-Remaining', rateLimitResult.remaining.toString())
+  response.headers.set('X-RateLimit-Reset', rateLimitResult.resetTime.toString())
+  
+  // API security for API routes
+  if (request.nextUrl.pathname.startsWith('/api/')) {
+    // Validate API key (skip for CSP report endpoint)
+    if (!request.nextUrl.pathname.includes('/api/csp-report')) {
+      if (!validateApiKey(request)) {
+        return new NextResponse(
+          JSON.stringify({
+            error: 'Unauthorized',
+            message: 'Valid API key required',
+          }),
+          {
+            status: 401,
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          }
+        )
+      }
+    }
+    
+    // Validate origin for API routes
+    if (!validateOrigin(request)) {
+      return new NextResponse(
+        JSON.stringify({
+          error: 'Forbidden',
+          message: 'Origin not allowed',
+        }),
+        {
+          status: 403,
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      )
+    }
+    
+    // Add CORS headers for API routes
+    const origin = request.headers.get('origin')
+    if (origin && validateOrigin(request)) {
+      response.headers.set('Access-Control-Allow-Origin', origin)
+      response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
+      response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-API-Key')
+      response.headers.set('Access-Control-Allow-Credentials', 'true')
+      response.headers.set('Access-Control-Max-Age', '86400')
+    }
+    
+    // Handle preflight requests
+    if (request.method === 'OPTIONS') {
+      return new NextResponse(null, { status: 200 })
+    }
+  }
   
   // Generate a simple nonce for inline scripts and styles
   // Using a simple random string generator that works in Edge Runtime
@@ -69,11 +172,10 @@ export const config = {
   matcher: [
     /*
      * Match all request paths except for the ones starting with:
-     * - api (API routes)
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
      */
-    '/((?!api|_next/static|_next/image|favicon.ico).*)',
+    '/((?!_next/static|_next/image|favicon.ico).*)',
   ],
 }
