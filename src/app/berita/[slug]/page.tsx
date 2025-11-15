@@ -1,4 +1,4 @@
-import { wordpressAPI } from '@/lib/wordpress'
+import { graphqlWordPressAPI } from '@/lib/wordpress-graphql'
 import { WordPressPost } from '@/types/wordpress'
 import { notFound } from 'next/navigation'
 import Image from 'next/image'
@@ -7,7 +7,7 @@ import React from 'react'
 
 async function getPost(slug: string): Promise<WordPressPost | null> {
   try {
-    const post = await wordpressAPI.getPost(slug)
+    const post = await graphqlWordPressAPI.getPost(slug)
     return post || null
   } catch (error) {
     console.error(`Error fetching post with slug ${slug}:`, error)
