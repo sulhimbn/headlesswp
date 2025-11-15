@@ -5,15 +5,84 @@
 @layer base {
   html {
     font-family: 'Inter', sans-serif;
+    scroll-behavior: smooth;
+  }
+  
+  body {
+    @apply text-gray-900 bg-gray-50;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  
+  /* Ensure proper touch target sizes */
+  button, a, input, textarea, select {
+    @apply min-h-[44px] min-w-[44px];
+  }
+  
+  /* Improve readability on mobile */
+  p, li {
+    @apply text-base leading-relaxed;
+  }
+  
+  /* Responsive typography */
+  h1 {
+    @apply text-2xl sm:text-3xl lg:text-4xl;
+  }
+  
+  h2 {
+    @apply text-xl sm:text-2xl lg:text-3xl;
+  }
+  
+  h3 {
+    @apply text-lg sm:text-xl lg:text-2xl;
   }
 }
 
 @layer components {
   .btn-primary {
-    @apply bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition-colors;
+    @apply bg-red-600 text-white px-4 py-3 sm:px-6 sm:py-3 rounded-md hover:bg-red-700 transition-colors font-medium min-h-[44px] flex items-center justify-center;
   }
   
   .btn-secondary {
-    @apply bg-gray-200 text-gray-800 px-4 py-2 rounded-md hover:bg-gray-300 transition-colors;
+    @apply bg-gray-200 text-gray-800 px-4 py-3 sm:px-6 sm:py-3 rounded-md hover:bg-gray-300 transition-colors font-medium min-h-[44px] flex items-center justify-center;
+  }
+  
+  .container-responsive {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+  
+  .article-grid {
+    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6;
+  }
+  
+  .article-grid-large {
+    @apply grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6;
+  }
+  
+  .nav-link {
+    @apply text-gray-700 hover:text-red-600 font-medium transition-colors py-2 px-1 rounded-md hover:bg-gray-50;
+  }
+  
+  .card-hover {
+    @apply transition-all duration-200 hover:shadow-lg hover:-translate-y-1;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+  
+  .text-pretty {
+    text-wrap: pretty;
+  }
+  
+  /* Safe area insets for mobile devices */
+  .safe-top {
+    padding-top: env(safe-area-inset-top);
+  }
+  
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
   }
 }
