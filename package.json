@@ -13,10 +13,8 @@
     "test:watch": "jest --watch"
   },
   "dependencies": {
-    "@apollo/client": "^3.14.0",
     "axios": "^1.7.9",
     "dompurify": "^3.3.0",
-    "graphql": "^16.8.0",
     "next": "^14.2.33",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
@@ -40,7 +38,7 @@
     "headless",
     "nextjs",
     "react",
-    "graphql"
+    "rest-api"
   ],
   "author": "Mitra Banten News",
   "license": "MIT",
