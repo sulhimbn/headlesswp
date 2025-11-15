@@ -17,14 +17,14 @@ define('WP_DEBUG_LOG', true);
 define('WP_DEBUG_DISPLAY', true);
 
 // ** Authentication Unique Keys and Salts ** //
-define('AUTH_KEY',         'put-your-unique-phrase-here');
-define('SECURE_AUTH_KEY',  'put-your-unique-phrase-here');
-define('LOGGED_IN_KEY',    'put-your-unique-phrase-here');
-define('NONCE_KEY',        'put-your-unique-phrase-here');
-define('AUTH_SALT',        'put-your-unique-phrase-here');
-define('SECURE_AUTH_SALT', 'put-your-unique-phrase-here');
-define('LOGGED_IN_SALT',   'put-your-unique-phrase-here');
-define('NONCE_SALT',       'put-your-unique-phrase-here');
+define('AUTH_KEY',         getenv('WP_AUTH_KEY') ?: 'generate-secure-key-here');
+define('SECURE_AUTH_KEY',  getenv('WP_SECURE_AUTH_KEY') ?: 'generate-secure-key-here');
+define('LOGGED_IN_KEY',    getenv('WP_LOGGED_IN_KEY') ?: 'generate-secure-key-here');
+define('NONCE_KEY',        getenv('WP_NONCE_KEY') ?: 'generate-secure-key-here');
+define('AUTH_SALT',        getenv('WP_AUTH_SALT') ?: 'generate-secure-key-here');
+define('SECURE_AUTH_SALT', getenv('WP_SECURE_AUTH_SALT') ?: 'generate-secure-key-here');
+define('LOGGED_IN_SALT',   getenv('WP_LOGGED_IN_SALT') ?: 'generate-secure-key-here');
+define('NONCE_SALT',       getenv('WP_NONCE_SALT') ?: 'generate-secure-key-here');
 
 // ** WordPress absolute path ** //
 if (!defined('ABSPATH')) {
