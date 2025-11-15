@@ -1,13 +1,12 @@
 import { wordpressAPI } from '@/lib/wordpress'
-import { convertRestToGraphQL, GraphQLPost } from '@/lib/api-adapter'
+import { WordPressPost } from '@/types/wordpress'
 import Link from 'next/link'
 import Image from 'next/image'
 import React from 'react'
 
-async function getAllPosts(): Promise<GraphQLPost[]> {
+async function getAllPosts(): Promise<WordPressPost[]> {
   try {
-    const posts = await wordpressAPI.getPosts({ per_page: 50 })
-    return posts.map(convertRestToGraphQL)
+    return await wordpressAPI.getPosts({ per_page: 50 })
   } catch (error) {
     console.warn('Failed to fetch posts during build:', error)
     return []
@@ -43,13 +42,13 @@ export default async function BeritaPage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {posts.map((post: GraphQLPost) => (
+          {posts.map((post: WordPressPost) => (
             <article key={post.id} className="bg-white rounded-lg shadow-md overflow-hidden">
-              {post.featuredImage?.node && (
+              {post.featured_media > 0 && (
                 <div className="relative h-48">
                   <Image
-                    src={post.featuredImage.node.sourceUrl}
-                    alt={post.featuredImage.node.altText || post.title}
+                    src="/placeholder-image.jpg" // Will be replaced with actual media URL
+                    alt={post.title.rendered}
                     fill
                     className="object-cover"
                   />
@@ -58,12 +57,12 @@ export default async function BeritaPage() {
               <div className="p-4">
                 <Link href={`/berita/${post.slug}`}>
                   <h3 className="text-xl font-semibold text-gray-900 mb-2 hover:text-red-600">
-                    {post.title}
+                    {post.title.rendered}
                   </h3>
                 </Link>
                 <p 
                   className="text-gray-600 mb-3"
-                  dangerouslySetInnerHTML={{ __html: post.excerpt }}
+                  dangerouslySetInnerHTML={{ __html: post.excerpt.rendered }}
                 />
                 <div className="text-sm text-gray-500">
                   {new Date(post.date).toLocaleDateString('id-ID', {

@@ -4,7 +4,7 @@ WordPress headless untuk https://mitrabantennews.com
 
 ## Deskripsi
 
-Proyek ini merupakan implementasi WordPress dalam arsitektur headless, di mana WordPress berfungsi sebagai backend CMS dan menyediakan API untuk frontend modern.
+Proyek ini merupakan implementasi WordPress dalam arsitektur headless, di mana WordPress berfungsi sebagai backend CMS dan menyediakan REST API untuk frontend modern berbasis Next.js.
 
 ## Prasyarat
 
@@ -25,16 +25,37 @@ Proyek ini merupakan implementasi WordPress dalam arsitektur headless, di mana W
 
 ```
 headlesswp/
-├── docker-compose.yml      # Konfigurasi Docker
-├── wp-config.php          # Konfigurasi WordPress
-├── wp-content/            # Theme dan plugin WordPress
-└── README.md             # Dokumentasi
+├── src/                   # Next.js frontend application
+│   ├── app/              # App Router pages
+│   ├── components/       # React components
+│   ├── lib/             # API clients and utilities
+│   └── types/           # TypeScript type definitions
+├── docker-compose.yml    # Konfigurasi Docker
+├── wp-config.php        # Konfigurasi WordPress
+├── wp-content/          # Theme dan plugin WordPress
+└── README.md           # Dokumentasi
 ```
+
+## API Architecture
+
+**REST API Only Strategy**
+
+Aplikasi ini menggunakan WordPress REST API sebagai satu-satunya metode pengambilan data. Keputusan ini dibuat untuk:
+
+- **Performance**: Overhead lebih rendah dibandingkan GraphQL
+- **Compatibility**: REST API native di WordPress, tidak perlu plugin tambahan
+- **Maintenance**: Kode lebih sederhana dan mudah dipelihara
+- **Bundle Size**: Ukuran bundle lebih kecil tanpa dependencies GraphQL
 
 ## WordPress API Endpoints
 
 - REST API: http://localhost:8080/wp-json/wp/v2/
-- GraphQL: http://localhost:8080/graphql (setelah install plugin WPGraphQL)
+- Available endpoints:
+  - `/wp/v2/posts` - Artikel berita
+  - `/wp/v2/categories` - Kategori
+  - `/wp/v2/tags` - Tag
+  - `/wp/v2/media` - Media/gambar
+  - `/wp/v2/users` - Author/penulis
 
 ## Development Workflow
 

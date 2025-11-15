@@ -1,37 +1,54 @@
 import { wordpressAPI } from '@/lib/wordpress'
-import { convertRestToGraphQL, createFallbackPost, GraphQLPost } from '@/lib/api-adapter'
+import { WordPressPost } from '@/types/wordpress'
 import Link from 'next/link'
 import Image from 'next/image'
 import React from 'react'
 
-async function getLatestPosts(): Promise<GraphQLPost[]> {
+function createFallbackPost(id: string, title: string): WordPressPost {
+  return {
+    id: parseInt(id),
+    title: { rendered: title },
+    content: { rendered: '<p>Maaf, artikel tidak dapat dimuat saat ini. Silakan coba lagi nanti.</p>' },
+    excerpt: { rendered: 'Maaf, artikel tidak dapat dimuat saat ini. Silakan coba lagi nanti.' },
+    slug: `fallback-${id}`,
+    date: new Date().toISOString(),
+    modified: new Date().toISOString(),
+    author: 0,
+    featured_media: 0,
+    categories: [],
+    tags: [],
+    status: 'publish',
+    type: 'post',
+    link: ''
+  }
+}
+
+async function getLatestPosts(): Promise<WordPressPost[]> {
   try {
-    const posts = await wordpressAPI.getPosts({ per_page: 6 })
-    return posts.map(convertRestToGraphQL)
+    return await wordpressAPI.getPosts({ per_page: 6 })
   } catch (error) {
     console.warn('Failed to fetch latest posts during build:', error)
     // Return fallback posts for better UX
     return [
-      createFallbackPost('fallback-1'),
-      createFallbackPost('fallback-2'),
-      createFallbackPost('fallback-3')
+      createFallbackPost('1', 'Berita Utama 1'),
+      createFallbackPost('2', 'Berita Utama 2'),
+      createFallbackPost('3', 'Berita Utama 3')
     ]
   }
 }
 
-async function getCategoryPosts(): Promise<GraphQLPost[]> {
+async function getCategoryPosts(): Promise<WordPressPost[]> {
   try {
     // For now, get the first 3 posts as category posts
     // In a real implementation, you'd filter by category
-    const posts = await wordpressAPI.getPosts({ per_page: 3 })
-    return posts.map(convertRestToGraphQL)
+    return await wordpressAPI.getPosts({ per_page: 3 })
   } catch (error) {
     console.warn('Failed to fetch category posts during build:', error)
     // Return fallback posts for better UX
     return [
-      createFallbackPost('fallback-cat-1'),
-      createFallbackPost('fallback-cat-2'),
-      createFallbackPost('fallback-cat-3')
+      createFallbackPost('cat-1', 'Berita Kategori 1'),
+      createFallbackPost('cat-2', 'Berita Kategori 2'),
+      createFallbackPost('cat-3', 'Berita Kategori 3')
     ]
   }
 }
@@ -63,13 +80,13 @@ export default async function HomePage() {
         <section className="mb-12">
           <h2 className="text-3xl font-bold text-gray-900 mb-6">Berita Utama</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {categoryPosts.map((post: GraphQLPost) => (
+            {categoryPosts.map((post: WordPressPost) => (
               <article key={post.id} className="bg-white rounded-lg shadow-md overflow-hidden">
-                {post.featuredImage?.node && (
+                {post.featured_media > 0 && (
                   <div className="relative h-48">
                     <Image
-                      src={post.featuredImage.node.sourceUrl}
-                      alt={post.featuredImage.node.altText || post.title}
+                      src="/placeholder-image.jpg" // Will be replaced with actual media URL
+                      alt={post.title.rendered}
                       fill
                       className="object-cover"
                     />
@@ -78,12 +95,12 @@ export default async function HomePage() {
                 <div className="p-4">
                   <Link href={`/berita/${post.slug}`}>
                     <h3 className="text-xl font-semibold text-gray-900 mb-2 hover:text-red-600">
-                      {post.title}
+                      {post.title.rendered}
                     </h3>
                   </Link>
                   <p 
                     className="text-gray-600 mb-3"
-                    dangerouslySetInnerHTML={{ __html: post.excerpt }}
+                    dangerouslySetInnerHTML={{ __html: post.excerpt.rendered }}
                   />
                   <div className="text-sm text-gray-500">
                     {new Date(post.date).toLocaleDateString('id-ID', {
@@ -101,13 +118,13 @@ export default async function HomePage() {
         <section>
           <h2 className="text-3xl font-bold text-gray-900 mb-6">Berita Terkini</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {latestPosts.map((post: GraphQLPost) => (
+            {latestPosts.map((post: WordPressPost) => (
               <article key={post.id} className="bg-white rounded-lg shadow-md overflow-hidden">
-                {post.featuredImage?.node && (
+                {post.featured_media > 0 && (
                   <div className="relative h-48">
                     <Image
-                      src={post.featuredImage.node.sourceUrl}
-                      alt={post.featuredImage.node.altText || post.title}
+                      src="/placeholder-image.jpg" // Will be replaced with actual media URL
+                      alt={post.title.rendered}
                       fill
                       className="object-cover"
                     />
@@ -116,12 +133,12 @@ export default async function HomePage() {
                 <div className="p-4">
                   <Link href={`/berita/${post.slug}`}>
                     <h3 className="text-xl font-semibold text-gray-900 mb-2 hover:text-red-600">
-                      {post.title}
+                      {post.title.rendered}
                     </h3>
                   </Link>
                   <p 
                     className="text-gray-600 mb-3"
-                    dangerouslySetInnerHTML={{ __html: post.excerpt }}
+                    dangerouslySetInnerHTML={{ __html: post.excerpt.rendered }}
                   />
                   <div className="text-sm text-gray-500">
                     {new Date(post.date).toLocaleDateString('id-ID', {
