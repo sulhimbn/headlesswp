@@ -62,40 +62,18 @@ export interface WordPressAuthor {
   link: string;
 }
 
-export interface GraphQLPost {
-  id: string;
-  title: string;
-  content: string;
-  excerpt: string;
-  slug: string;
-  date: string;
-  author?: {
-    node: {
-      name: string;
-      slug: string;
-      avatar?: {
-        url: string;
-      };
-    };
-  };
-  featuredImage?: {
-    node: {
-      sourceUrl: string;
-      altText: string;
-      caption?: string;
-    };
-  };
-  categories?: {
-    nodes: WordPressCategory[];
-  };
-  tags?: {
-    nodes: WordPressTag[];
-  };
+// Enhanced types for better developer experience
+export interface WordPressPostWithDetails extends WordPressPost {
+  author_details?: WordPressAuthor;
+  featured_media_details?: WordPressMedia;
+  categories_details?: WordPressCategory[];
+  tags_details?: WordPressTag[];
 }
 
-export interface GraphQLResponse {
-  posts?: {
-    nodes: GraphQLPost[];
+export interface WordPressApiResponse<T> {
+  data: T;
+  headers: {
+    'x-wp-total': string;
+    'x-wp-totalpages': string;
   };
-  post?: GraphQLPost | null;
 }
