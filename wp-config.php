@@ -26,6 +26,19 @@ define('SECURE_AUTH_SALT', getenv('WP_SECURE_AUTH_SALT') ?: 'generate-secure-key
 define('LOGGED_IN_SALT',   getenv('WP_LOGGED_IN_SALT') ?: 'generate-secure-key-here');
 define('NONCE_SALT',       getenv('WP_NONCE_SALT') ?: 'generate-secure-key-here');
 
+// ** Security hardening ** //
+define('DISALLOW_FILE_EDIT', true);
+define('DISALLOW_FILE_MODS', true);
+define('AUTOMATIC_UPDATER_DISABLED', false);
+define('WP_AUTO_UPDATE_CORE', true);
+define('WP_DEBUG', false);
+define('WP_DEBUG_LOG', false);
+define('WP_DEBUG_DISPLAY', false);
+
+// ** Disable theme and plugin installation/updates ** //
+define('FS_METHOD', 'direct');
+define('WP_CONTENT_URL', '/wp-content');
+
 // ** WordPress absolute path ** //
 if (!defined('ABSPATH')) {
     define('ABSPATH', __DIR__ . '/');
