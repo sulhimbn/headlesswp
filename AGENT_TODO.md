@@ -1,8 +1,8 @@
 # 📋 TODO HeadlessWP - Daftar Tugas untuk Agent
 
-> **Status Repositori:** Foundation Phase - Critical Issues Need Immediate Attention  
+> **Status Repositori:** Foundation Phase - Critical Issues Addressed  
 > **Timeline:** 6 Weeks Development Roadmap  
-> **Priority:** Fix Foundation Before Feature Development
+> **Priority:** Continue Foundation Before Feature Development
 
  --- 
 
@@ -62,13 +62,13 @@
 ## 🟡 **HIGH PRIORITY - Week 1-2**
 
 ### **4. Create Development Workflow**
-**Priority:** 🟡 High | **Estimasi:** 2-3 jam
-- [ ] Create `develop` branch from `main`
-- [ ] Setup branch protection rules
-- [ ] Configure pre-commit hooks (husky + lint-staged)
-- [ ] Add Prettier configuration
-- [ ] Setup conventional commits standard
-- **Files:** `.husky/`, `.prettierrc`, GitHub settings
+ **Priority:** 🟡 High | **Estimasi:** 2-3 jam
+ - [x] Create `develop` branch from `main`
+ - [ ] Setup branch protection rules
+ - [ ] Configure pre-commit hooks (husky + lint-staged)
+ - [ ] Add Prettier configuration
+ - [ ] Setup conventional commits standard
+ - **Files:** `.husky/`, `.prettierrc`, GitHub settings
 
 ### **5. Implement Basic Testing Infrastructure**
 **Priority:** 🟡 High | **Estimasi:** 4-5 jam
@@ -216,7 +216,7 @@
 
 ## 📝 **NOTES FOR AGENTS**
 
-- **Branch Strategy:** Always work on feature branches from `develop`
+- **Branch Strategy:** Always work on feature branches from `dev`
 - **Commit Standards:** Use conventional commits (`feat:`, `fix:`, `docs:`, etc.)
 - **Testing:** All code must have tests before merging
 - **Documentation:** Update docs for any API or architecture changes
@@ -225,6 +225,6 @@
 
 ---
 
-**📊 Current Status:** Foundation Phase - Critical Issues Identified  
-**🎯 Next Action:** Start with TypeScript compilation errors (Agent 1)  
-**⏰ Timeline:** 6 weeks total, Week 1 critical for project success
+**📊 Current Status:** Foundation Phase - Critical Issues Addressed  
+**🎯 Next Action:** Continue with API integration and testing (Agent 4)  
+**⏰ Timeline:** 6 weeks total, Week 1-2 critical for project success
