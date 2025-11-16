@@ -1,6 +1,7 @@
 import { wordpressAPI } from '@/lib/wordpress'
 import { WordPressPost } from '@/types/wordpress'
 import { notFound } from 'next/navigation'
+import { handleError } from '@/lib/error-handler'
 import Image from 'next/image'
 import Link from 'next/link'
 import React from 'react'
@@ -10,7 +11,11 @@ async function getPost(slug: string): Promise<WordPressPost | null> {
     const post = await wordpressAPI.getPost(slug)
     return post || null
   } catch (error) {
-    console.error(`Error fetching post with slug ${slug}:`, error)
+    handleError(error as Error, {
+      component: 'PostPage',
+      action: 'getPost',
+      additionalData: { slug }
+    })
     return null
   }
 }
@@ -24,7 +29,11 @@ export default async function PostPage({ params }: { params: { slug: string } })
 
   // Validate required fields
   if (!post.title.rendered || !post.content.rendered) {
-    console.error('Post is missing required fields:', post)
+    handleError(new Error('Post is missing required fields'), {
+      component: 'PostPage',
+      action: 'validatePost',
+      additionalData: { post, slug: params.slug }
+    })
     notFound()
   }
 
