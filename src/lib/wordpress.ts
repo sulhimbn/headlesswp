@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { WordPressPost, WordPressCategory, WordPressTag, WordPressMedia, WordPressAuthor } from '@/types/wordpress';
+import { handleError, ErrorType } from '@/lib/error-handler';
 
 const WORDPRESS_API_URL = process.env.NEXT_PUBLIC_WORDPRESS_API_URL || 'http://localhost:8080/wp-json';
 
@@ -16,6 +17,25 @@ api.interceptors.response.use(
   (response) => response,
   async (error) => {
     const config = error.config;
+    
+    // Handle error with centralized error handler
+    const errorType = error.response ? 
+      (error.response.status === 401 ? ErrorType.AUTHENTICATION :
+       error.response.status === 403 ? ErrorType.PERMISSION :
+       error.response.status === 404 ? ErrorType.NOT_FOUND :
+       error.response.status >= 500 ? ErrorType.SYSTEM : ErrorType.NETWORK) :
+      ErrorType.NETWORK;
+
+    handleError(error, {
+      component: 'WordPressAPI',
+      action: config?.url || 'unknown',
+      additionalData: {
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        url: config?.url,
+        method: config?.method?.toUpperCase()
+      }
+    });
     
     // Retry on network errors or 5xx errors
     if (!config._retry && (!error.response || error.response.status >= 500)) {

@@ -1,5 +1,6 @@
 import { wordpressAPI } from '@/lib/wordpress'
 import { WordPressPost } from '@/types/wordpress'
+import { handleError } from '@/lib/error-handler'
 import Link from 'next/link'
 import Image from 'next/image'
 import React from 'react'
@@ -27,7 +28,10 @@ async function getLatestPosts(): Promise<WordPressPost[]> {
   try {
     return await wordpressAPI.getPosts({ per_page: 6 })
   } catch (error) {
-    console.warn('Failed to fetch latest posts during build:', error)
+    handleError(error as Error, {
+      component: 'HomePage',
+      action: 'getLatestPosts'
+    })
     // Return fallback posts for better UX
     return [
       createFallbackPost('1', 'Berita Utama 1'),
@@ -43,7 +47,10 @@ async function getCategoryPosts(): Promise<WordPressPost[]> {
     // In a real implementation, you'd filter by category
     return await wordpressAPI.getPosts({ per_page: 3 })
   } catch (error) {
-    console.warn('Failed to fetch category posts during build:', error)
+    handleError(error as Error, {
+      component: 'HomePage',
+      action: 'getCategoryPosts'
+    })
     // Return fallback posts for better UX
     return [
       createFallbackPost('cat-1', 'Berita Kategori 1'),

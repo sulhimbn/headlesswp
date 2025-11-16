@@ -1,5 +1,6 @@
 import { wordpressAPI } from '@/lib/wordpress'
 import { WordPressPost } from '@/types/wordpress'
+import { handleError } from '@/lib/error-handler'
 import Link from 'next/link'
 import Image from 'next/image'
 import React from 'react'
@@ -8,7 +9,10 @@ async function getAllPosts(): Promise<WordPressPost[]> {
   try {
     return await wordpressAPI.getPosts({ per_page: 50 })
   } catch (error) {
-    console.warn('Failed to fetch posts during build:', error)
+    handleError(error as Error, {
+      component: 'BeritaPage',
+      action: 'getAllPosts'
+    })
     return []
   }
 }
