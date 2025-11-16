@@ -2,6 +2,7 @@ import './globals.css'
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import ClientLayout from '@/components/ClientLayout'
+import PerformanceMonitor from '@/components/PerformanceMonitor'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -38,6 +39,7 @@ export default function RootLayout({
         <meta name="csp-nonce" content="" />
       </head>
       <body className={inter.className}>
+        <PerformanceMonitor />
         <ClientLayout>
           {children}
         </ClientLayout>
