@@ -1,6 +1,8 @@
 'use client'
 
 import React from 'react'
+import { ApolloProvider } from '@apollo/client/react'
+import { apolloClient } from '@/lib/apollo'
 import ErrorBoundary from '@/components/ErrorBoundary'
 
 interface ClientLayoutProps {
@@ -9,8 +11,10 @@ interface ClientLayoutProps {
 
 export default function ClientLayout({ children }: ClientLayoutProps) {
   return (
-    <ErrorBoundary>
-      {children}
-    </ErrorBoundary>
+    <ApolloProvider client={apolloClient}>
+      <ErrorBoundary>
+        {children}
+      </ErrorBoundary>
+    </ApolloProvider>
   )
 }
