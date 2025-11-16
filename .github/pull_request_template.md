@@ -1,24 +1,3 @@
-<<<<<<< HEAD
-## 🚀 Pull Request
-
-### 📋 Task Checklist
-- [ ] Task completed and tested
-- [ ] Code follows project standards
-- [ ] Documentation updated if needed
-- [ ] Tests added/updated if applicable
-
-### 🎯 Related Task
-- Reference the specific task from TODO.md that this PR addresses
-
-### 📝 Changes Made
-<!-- Brief description of what was implemented -->
-
-### 🔍 Review Focus
-<!-- Areas that need special attention during review -->
-
-### ✅ Testing Done
-<!-- Description of testing performed -->
-=======
 ## 📋 Pull Request Template
 
 ### 🎯 Type of Change
@@ -41,6 +20,9 @@ Related to #(issue number)
 - [ ] Change 1
 - [ ] Change 2
 - [ ] Change 3
+
+### 🎯 Related Task
+- Reference the specific task from [docs/backlog/todo.md](docs/backlog/todo.md) that this PR addresses
 
 ### 🧪 Testing
 - [ ] Unit tests pass
@@ -81,4 +63,3 @@ Please pay special attention to:
 - Area 1
 - Area 2
 - Area 3
->>>>>>> 64406f1d72c806faff9755f9f93db2a79475480c

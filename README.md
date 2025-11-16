@@ -66,4 +66,15 @@ Aplikasi ini menggunakan WordPress REST API sebagai satu-satunya metode pengambi
 
 ## Contributing
 
-Silakan ikuti pedoman kontribusi di TODO.md
+Silakan ikuti [pedoman kontribusi](docs/guides/contributing.md) untuk informasi lengkap tentang cara berkontribusi pada proyek ini.
+
+## 📚 Documentation
+
+Semua dokumentasi proyek telah diorganisir dalam folder [`docs/`](docs/):
+
+- **📖 [Guides](docs/guides/)** - Panduan kontribusi, keamanan, dan pengembangan
+- **📋 [Planning](docs/planning/)** - Roadmap, status proyek, dan perencanaan
+- **📝 [Backlog](docs/backlog/)** - Daftar tugas dan backlog
+- **🏛️ [Governance](docs/governance/)** - Kebijakan dan tata kelola proyek
+
+Lihat [README dokumentasi](docs/README.md) untuk indeks lengkap semua dokumentasi.
