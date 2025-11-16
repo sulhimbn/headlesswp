@@ -1,7 +1,20 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
-    domains: ['mitrabantennews.com', 'www.mitrabantennews.com'],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'mitrabantennews.com',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'www.mitrabantennews.com',
+        port: '',
+        pathname: '/**',
+      },
+    ],
   },
   env: {
     WORDPRESS_URL: process.env.WORDPRESS_URL,
