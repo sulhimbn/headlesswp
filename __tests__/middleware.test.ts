@@ -9,9 +9,19 @@ describe('Security Middleware Configuration', () => {
   it('should include WordPress domains in CSP', () => {
     const nextConfig = require('../next.config.js')
     
-    // The domains should be included in the CSP configuration
-    expect(nextConfig.images.domains).toContain('mitrabantennews.com')
-    expect(nextConfig.images.domains).toContain('www.mitrabantennews.com')
+    // The domains should be included in the remotePatterns configuration
+    expect(nextConfig.images.remotePatterns).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          protocol: 'https',
+          hostname: 'mitrabantennews.com'
+        }),
+        expect.objectContaining({
+          protocol: 'https',
+          hostname: 'www.mitrabantennews.com'
+        })
+      ])
+    )
   })
 
   it('should have environment variables for WordPress', () => {
