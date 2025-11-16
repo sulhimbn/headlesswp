@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
 import React from 'react'
+import DOMPurify from 'dompurify'
 
 async function getPost(slug: string): Promise<WordPressPost | null> {
   try {
@@ -94,7 +95,7 @@ export default async function PostPage({ params }: { params: { slug: string } })
 
 <div 
   className="prose prose-lg max-w-none text-gray-700"
-  dangerouslySetInnerHTML={{ __html: post.content.rendered }}
+  dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.content.rendered) }}
  />
 
             {post.tags.length > 0 && (
