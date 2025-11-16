@@ -49,6 +49,17 @@ export interface WordPressMedia {
   alt_text: string;
   media_type: string;
   mime_type: string;
+  media_details?: {
+    width?: number;
+    height?: number;
+    file?: string;
+    sizes?: {
+      thumbnail?: { source_url: string; width: number; height: number };
+      medium?: { source_url: string; width: number; height: number };
+      medium_large?: { source_url: string; width: number; height: number };
+      large?: { source_url: string; width: number; height: number };
+    };
+  };
 }
 
 export interface WordPressAuthor {

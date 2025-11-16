@@ -1,17 +1,34 @@
 /** @type {import('next').NextConfig} */
-const nextConfig = {
+const withBundleAnalyzer = require('@next/bundle-analyzer')({
+  enabled: process.env.ANALYZE === 'true',
+});
+
+const nextConfig = withBundleAnalyzer({
   images: {
     domains: ['mitrabantennews.com', 'www.mitrabantennews.com'],
+    formats: ['image/webp', 'image/avif'],
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+    minimumCacheTTL: 60,
   },
   env: {
     WORDPRESS_URL: process.env.WORDPRESS_URL,
     WORDPRESS_API_URL: process.env.WORDPRESS_API_URL,
   },
+  experimental: {
+    optimizePackageImports: ['axios'],
+  },
+  compress: true,
+  poweredByHeader: false,
   async headers() {
     return [
       {
         source: '/(.*)',
         headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable'
+          },
           {
             key: 'Content-Security-Policy',
             value: [
@@ -64,8 +81,16 @@ const nextConfig = {
           }
         ]
       }
-    ]
-  }
-}
+    ];
+  },
+  async rewrites() {
+    return [
+      {
+        source: '/api/:path*',
+        destination: '/api/:path*',
+      },
+    ];
+  },
+});
 
-module.exports = nextConfig
+module.exports = nextConfig;
