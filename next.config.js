@@ -61,6 +61,10 @@ const nextConfig = {
               'gyroscope=()',
               'accelerometer=()'
             ].join(', ')
+          },
+          {
+            key: 'Cache-Control',
+            value: 'public, s-maxage=300, stale-while-revalidate=600'
           }
         ]
       }
