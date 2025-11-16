@@ -1,6 +1,7 @@
 import './globals.css'
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
+import { headers } from 'next/headers'
 import ClientLayout from '@/components/ClientLayout'
 
 const inter = Inter({ subsets: ['latin'] })
@@ -32,13 +33,17 @@ export default function RootLayout({
 }: {
   children: React.ReactNode
 }) {
+  // Get nonce from middleware headers
+  const headersList = headers()
+  const nonce = headersList.get('x-nonce') || ''
+
   return (
     <html lang="id">
       <head>
-        <meta name="csp-nonce" content="" />
+        <meta name="csp-nonce" content={nonce} />
       </head>
       <body className={inter.className}>
-        <ClientLayout>
+        <ClientLayout nonce={nonce}>
           {children}
         </ClientLayout>
       </body>
