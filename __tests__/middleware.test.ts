@@ -1,15 +1,8 @@
-describe('Security Middleware Configuration', () => {
-  it('should have correct CSP configuration in next.config.js', () => {
+describe('Next.js Configuration', () => {
+  it('should include WordPress domains in image configuration', () => {
     const nextConfig = require('../next.config.js')
     
-    expect(nextConfig.headers).toBeDefined()
-    expect(typeof nextConfig.headers).toBe('function')
-  })
-
-  it('should include WordPress domains in CSP', () => {
-    const nextConfig = require('../next.config.js')
-    
-    // The domains should be included in the CSP configuration
+    // The domains should be included in the image configuration
     expect(nextConfig.images.domains).toContain('mitrabantennews.com')
     expect(nextConfig.images.domains).toContain('www.mitrabantennews.com')
   })
@@ -19,5 +12,12 @@ describe('Security Middleware Configuration', () => {
     
     expect(nextConfig.env.WORDPRESS_URL).toBeDefined()
     expect(nextConfig.env.WORDPRESS_API_URL).toBeDefined()
+  })
+
+  it('should not have CSP headers in next.config.js (moved to middleware)', () => {
+    const nextConfig = require('../next.config.js')
+    
+    // CSP headers should be handled by middleware, not next.config.js
+    expect(nextConfig.headers).toBeUndefined()
   })
 })

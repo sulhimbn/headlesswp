@@ -5,11 +5,12 @@ import ErrorBoundary from '@/components/ErrorBoundary'
 
 interface ClientLayoutProps {
   children: React.ReactNode
+  nonce?: string
 }
 
-export default function ClientLayout({ children }: ClientLayoutProps) {
+export default function ClientLayout({ children, nonce }: ClientLayoutProps) {
   return (
-    <ErrorBoundary>
+    <ErrorBoundary nonce={nonce}>
       {children}
     </ErrorBoundary>
   )

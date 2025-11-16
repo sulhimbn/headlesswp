@@ -10,11 +10,11 @@ export function middleware(request: NextRequest) {
   // Set nonce in headers for client components to use
   response.headers.set('x-nonce', nonce)
   
-  // Enhanced CSP with nonce for dynamic content
+  // Secure CSP with nonce for dynamic content - no unsafe directives
   const csp = [
     "default-src 'self'",
-    `script-src 'self' 'nonce-${nonce}' 'unsafe-inline' 'unsafe-eval' https://mitrabantennews.com https://www.mitrabantennews.com`,
-    `style-src 'self' 'nonce-${nonce}' 'unsafe-inline' https://mitrabantennews.com https://www.mitrabantennews.com`,
+    `script-src 'self' 'nonce-${nonce}' https://mitrabantennews.com https://www.mitrabantennews.com`,
+    `style-src 'self' 'nonce-${nonce}' https://mitrabantennews.com https://www.mitrabantennews.com`,
     "img-src 'self' data: blob: https://mitrabantennews.com https://www.mitrabantennews.com",
     "font-src 'self' data:",
     "connect-src 'self' https://mitrabantennews.com https://www.mitrabantennews.com",
@@ -24,10 +24,13 @@ export function middleware(request: NextRequest) {
     "form-action 'self'",
     "frame-ancestors 'none'",
     "upgrade-insecure-requests",
-    // Report violations in development
+    // Report violations for monitoring
     ...(process.env.NODE_ENV === 'development' ? [
-      `report-uri /api/csp-report`
-    ] : [])
+      `report-uri /api/csp-report`,
+      `report-to csp-endpoint`
+    ] : [
+      `report-to csp-endpoint`
+    ])
   ].join('; ')
   
   response.headers.set('Content-Security-Policy', csp)
