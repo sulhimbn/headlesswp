@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { WordPressPost, WordPressCategory, WordPressTag, WordPressMedia, WordPressAuthor } from '@/types/wordpress';
+import { cacheManager, CACHE_TTL, CACHE_KEYS } from './cache';
 
 const WORDPRESS_API_URL = process.env.NEXT_PUBLIC_WORDPRESS_API_URL || 'http://localhost:8080/wp-json';
 
@@ -49,58 +50,227 @@ export const wordpressAPI = {
     tag?: number;
     search?: string;
   }): Promise<WordPressPost[]> => {
+    const paramsString = JSON.stringify(params || {});
+    const cacheKey = CACHE_KEYS.posts(paramsString);
+    
+    // Try to get from cache first
+    const cached = cacheManager.get<WordPressPost[]>(cacheKey);
+    if (cached) {
+      return cached;
+    }
+
+    // If not in cache, fetch from API
     const response = await api.get(getApiUrl('/wp/v2/posts'), { params });
-    return response.data;
+    const data = response.data;
+    
+    // Cache the result
+    const ttl = params?.search ? CACHE_TTL.SEARCH : CACHE_TTL.POSTS;
+    cacheManager.set(cacheKey, data, ttl);
+    
+    return data;
   },
 
   getPost: async (slug: string): Promise<WordPressPost> => {
+    const cacheKey = CACHE_KEYS.post(slug);
+    
+    // Try to get from cache first
+    const cached = cacheManager.get<WordPressPost>(cacheKey);
+    if (cached) {
+      return cached;
+    }
+
+    // If not in cache, fetch from API
     const response = await api.get(getApiUrl('/wp/v2/posts'), { params: { slug } });
-    return response.data[0];
+    const data = response.data[0];
+    
+    // Cache the result
+    cacheManager.set(cacheKey, data, CACHE_TTL.POST);
+    
+    return data;
   },
 
   getPostById: async (id: number): Promise<WordPressPost> => {
+    const cacheKey = CACHE_KEYS.postById(id);
+    
+    // Try to get from cache first
+    const cached = cacheManager.get<WordPressPost>(cacheKey);
+    if (cached) {
+      return cached;
+    }
+
+    // If not in cache, fetch from API
     const response = await api.get(getApiUrl(`/wp/v2/posts/${id}`));
-    return response.data;
+    const data = response.data;
+    
+    // Cache the result
+    cacheManager.set(cacheKey, data, CACHE_TTL.POST);
+    
+    return data;
   },
 
   // Categories
   getCategories: async (): Promise<WordPressCategory[]> => {
+    const cacheKey = CACHE_KEYS.categories();
+    
+    // Try to get from cache first
+    const cached = cacheManager.get<WordPressCategory[]>(cacheKey);
+    if (cached) {
+      return cached;
+    }
+
+    // If not in cache, fetch from API
     const response = await api.get(getApiUrl('/wp/v2/categories'));
-    return response.data;
+    const data = response.data;
+    
+    // Cache the result
+    cacheManager.set(cacheKey, data, CACHE_TTL.CATEGORIES);
+    
+    return data;
   },
 
   getCategory: async (slug: string): Promise<WordPressCategory> => {
+    const cacheKey = CACHE_KEYS.category(slug);
+    
+    // Try to get from cache first
+    const cached = cacheManager.get<WordPressCategory>(cacheKey);
+    if (cached) {
+      return cached;
+    }
+
+    // If not in cache, fetch from API
     const response = await api.get(getApiUrl('/wp/v2/categories'), { params: { slug } });
-    return response.data[0];
+    const data = response.data[0];
+    
+    // Cache the result
+    cacheManager.set(cacheKey, data, CACHE_TTL.CATEGORIES);
+    
+    return data;
   },
 
   // Tags
   getTags: async (): Promise<WordPressTag[]> => {
+    const cacheKey = CACHE_KEYS.tags();
+    
+    // Try to get from cache first
+    const cached = cacheManager.get<WordPressTag[]>(cacheKey);
+    if (cached) {
+      return cached;
+    }
+
+    // If not in cache, fetch from API
     const response = await api.get(getApiUrl('/wp/v2/tags'));
-    return response.data;
+    const data = response.data;
+    
+    // Cache the result
+    cacheManager.set(cacheKey, data, CACHE_TTL.TAGS);
+    
+    return data;
   },
 
   getTag: async (slug: string): Promise<WordPressTag> => {
+    const cacheKey = CACHE_KEYS.tag(slug);
+    
+    // Try to get from cache first
+    const cached = cacheManager.get<WordPressTag>(cacheKey);
+    if (cached) {
+      return cached;
+    }
+
+    // If not in cache, fetch from API
     const response = await api.get(getApiUrl('/wp/v2/tags'), { params: { slug } });
-    return response.data[0];
+    const data = response.data[0];
+    
+    // Cache the result
+    cacheManager.set(cacheKey, data, CACHE_TTL.TAGS);
+    
+    return data;
   },
 
   // Media
   getMedia: async (id: number): Promise<WordPressMedia> => {
+    const cacheKey = CACHE_KEYS.media(id);
+    
+    // Try to get from cache first
+    const cached = cacheManager.get<WordPressMedia>(cacheKey);
+    if (cached) {
+      return cached;
+    }
+
+    // If not in cache, fetch from API
     const response = await api.get(getApiUrl(`/wp/v2/media/${id}`));
-    return response.data;
+    const data = response.data;
+    
+    // Cache the result
+    cacheManager.set(cacheKey, data, CACHE_TTL.MEDIA);
+    
+    return data;
   },
 
   // Authors
   getAuthor: async (id: number): Promise<WordPressAuthor> => {
+    const cacheKey = CACHE_KEYS.author(id);
+    
+    // Try to get from cache first
+    const cached = cacheManager.get<WordPressAuthor>(cacheKey);
+    if (cached) {
+      return cached;
+    }
+
+    // If not in cache, fetch from API
     const response = await api.get(getApiUrl(`/wp/v2/users/${id}`));
-    return response.data;
+    const data = response.data;
+    
+    // Cache the result
+    cacheManager.set(cacheKey, data, CACHE_TTL.AUTHOR);
+    
+    return data;
   },
 
   // Search
-  search: async (query: string): Promise<WordPressPost[]> => {
+search: async (query: string): Promise<WordPressPost[]> => {
+    const cacheKey = CACHE_KEYS.search(query);
+    
+    // Try to get from cache first
+    const cached = cacheManager.get<WordPressPost[]>(cacheKey);
+    if (cached) {
+      return cached;
+    }
+
+    // If not in cache, fetch from API
     const response = await api.get(getApiUrl('/wp/v2/search'), { params: { search: query } });
-    return response.data;
+    const data = response.data;
+    
+    // Cache the result
+    cacheManager.set(cacheKey, data, CACHE_TTL.SEARCH);
+    
+    return data;
+  },
+
+  // Cache management functions
+  clearCache: (pattern?: string) => {
+    if (pattern) {
+      cacheManager.clearPattern(pattern);
+    } else {
+      cacheManager.clear();
+    }
+  },
+
+  getCacheStats: () => {
+    return cacheManager.getStats();
+  },
+
+  warmCache: async () => {
+    try {
+      // Warm up commonly accessed data
+      await Promise.all([
+        wordpressAPI.getPosts({ per_page: 6 }),
+        wordpressAPI.getCategories(),
+        wordpressAPI.getTags(),
+      ]);
+      console.log('Cache warming completed');
+    } catch (error) {
+      console.warn('Cache warming failed:', error);
+    }
   },
 };
 
