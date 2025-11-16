@@ -7,7 +7,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
     "typecheck": "tsc --noEmit",
     "test": "jest",
     "test:watch": "jest --watch",
@@ -19,17 +19,17 @@
   "dependencies": {
     "axios": "^1.7.9",
     "dompurify": "^3.3.0",
-    "next": "^14.2.33",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "next": "^16.0.3",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.0",
     "@types/jest": "^30.0.0",
     "@types/node": "^24.10.1",
-    "@types/react": "^18.3.26",
-    "@types/react-dom": "^18.3.7",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
     "eslint": "^8.57.1",
     "eslint-config-next": "^14.2.33",
     "jest": "^30.2.0",
