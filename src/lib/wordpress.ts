@@ -1,7 +1,26 @@
 import axios from 'axios';
 import { WordPressPost, WordPressCategory, WordPressTag, WordPressMedia, WordPressAuthor } from '@/types/wordpress';
 
+// API Strategy: REST API
+// This application uses WordPress REST API v2 for all data fetching.
+// Decision made in issue #34: REST API provides simplicity, performance, and WordPress core compatibility.
 const WORDPRESS_API_URL = process.env.NEXT_PUBLIC_WORDPRESS_API_URL || 'http://localhost:8080/wp-json';
+
+// Simple in-memory cache for API responses
+const cache = new Map<string, { data: any; timestamp: number; ttl: number }>();
+
+const getCachedData = (key: string) => {
+  const cached = cache.get(key);
+  if (cached && Date.now() - cached.timestamp < cached.ttl) {
+    return cached.data;
+  }
+  cache.delete(key);
+  return null;
+};
+
+const setCachedData = (key: string, data: any, ttl: number = 300000) => { // 5 minutes default TTL
+  cache.set(key, { data, timestamp: Date.now(), ttl });
+};
 
 const api = axios.create({
   baseURL: WORDPRESS_API_URL,
@@ -49,40 +68,78 @@ export const wordpressAPI = {
     tag?: number;
     search?: string;
   }): Promise<WordPressPost[]> => {
+    const cacheKey = `posts_${JSON.stringify(params || {})}`;
+    const cached = getCachedData(cacheKey);
+    if (cached) return cached;
+    
     const response = await api.get(getApiUrl('/wp/v2/posts'), { params });
+    setCachedData(cacheKey, response.data, 300000); // 5 minutes cache
     return response.data;
   },
 
   getPost: async (slug: string): Promise<WordPressPost> => {
+    const cacheKey = `post_${slug}`;
+    const cached = getCachedData(cacheKey);
+    if (cached) return cached;
+    
     const response = await api.get(getApiUrl('/wp/v2/posts'), { params: { slug } });
-    return response.data[0];
+    const post = response.data[0];
+    setCachedData(cacheKey, post, 600000); // 10 minutes cache
+    return post;
   },
 
   getPostById: async (id: number): Promise<WordPressPost> => {
+    const cacheKey = `post_by_id_${id}`;
+    const cached = getCachedData(cacheKey);
+    if (cached) return cached;
+    
     const response = await api.get(getApiUrl(`/wp/v2/posts/${id}`));
+    setCachedData(cacheKey, response.data, 600000); // 10 minutes cache
     return response.data;
   },
 
   // Categories
   getCategories: async (): Promise<WordPressCategory[]> => {
+    const cacheKey = 'categories';
+    const cached = getCachedData(cacheKey);
+    if (cached) return cached;
+    
     const response = await api.get(getApiUrl('/wp/v2/categories'));
+    setCachedData(cacheKey, response.data, 1800000); // 30 minutes cache
     return response.data;
   },
 
   getCategory: async (slug: string): Promise<WordPressCategory> => {
+    const cacheKey = `category_${slug}`;
+    const cached = getCachedData(cacheKey);
+    if (cached) return cached;
+    
     const response = await api.get(getApiUrl('/wp/v2/categories'), { params: { slug } });
-    return response.data[0];
+    const category = response.data[0];
+    setCachedData(cacheKey, category, 1800000); // 30 minutes cache
+    return category;
   },
 
   // Tags
   getTags: async (): Promise<WordPressTag[]> => {
+    const cacheKey = 'tags';
+    const cached = getCachedData(cacheKey);
+    if (cached) return cached;
+    
     const response = await api.get(getApiUrl('/wp/v2/tags'));
+    setCachedData(cacheKey, response.data, 1800000); // 30 minutes cache
     return response.data;
   },
 
   getTag: async (slug: string): Promise<WordPressTag> => {
+    const cacheKey = `tag_${slug}`;
+    const cached = getCachedData(cacheKey);
+    if (cached) return cached;
+    
     const response = await api.get(getApiUrl('/wp/v2/tags'), { params: { slug } });
-    return response.data[0];
+    const tag = response.data[0];
+    setCachedData(cacheKey, tag, 1800000); // 30 minutes cache
+    return tag;
   },
 
   // Media
@@ -99,8 +156,35 @@ export const wordpressAPI = {
 
   // Search
   search: async (query: string): Promise<WordPressPost[]> => {
+    const cacheKey = `search_${query}`;
+    const cached = getCachedData(cacheKey);
+    if (cached) return cached;
+    
     const response = await api.get(getApiUrl('/wp/v2/search'), { params: { search: query } });
+    setCachedData(cacheKey, response.data, 120000); // 2 minutes cache for search
     return response.data;
+  },
+
+  // Cache management
+  clearCache: (pattern?: string) => {
+    if (pattern) {
+      const keys = Array.from(cache.keys());
+      for (const key of keys) {
+        if (key.includes(pattern)) {
+          cache.delete(key);
+        }
+      }
+    } else {
+      cache.clear();
+    }
+  },
+
+  // Cache statistics
+  getCacheStats: () => {
+    return {
+      size: cache.size,
+      keys: Array.from(cache.keys()),
+    };
   },
 };
 
