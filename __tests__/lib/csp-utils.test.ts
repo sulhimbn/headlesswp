@@ -2,19 +2,17 @@ import { renderHook } from '@testing-library/react'
 import '@testing-library/jest-dom'
 import { useCspNonce, addNonceToScript, addNonceToStyle } from '@/lib/csp-utils'
 
-// Mock document and window for client-side testing
-const mockDocument = {
-  querySelector: jest.fn(),
-} as any
-
-Object.defineProperty(window, 'document', {
-  value: mockDocument,
+// Mock document.querySelector for client-side testing
+const mockQuerySelector = jest.fn()
+Object.defineProperty(document, 'querySelector', {
+  value: mockQuerySelector,
   writable: true,
 })
 
 describe('CSP Utilities', () => {
   beforeEach(() => {
     jest.clearAllMocks()
+    mockQuerySelector.mockReset()
   })
 
   describe('useCspNonce Hook', () => {
@@ -32,24 +30,24 @@ describe('CSP Utilities', () => {
 
     it('should return nonce from meta tag on client-side', () => {
       // Mock meta tag with nonce
-      mockDocument.querySelector.mockReturnValue({
+      mockQuerySelector.mockReturnValue({
         getAttribute: jest.fn().mockReturnValue('test-nonce-123')
       })
 
       const { result } = renderHook(() => useCspNonce())
       expect(result.current).toBe('test-nonce-123')
 
-      expect(mockDocument.querySelector).toHaveBeenCalledWith('meta[name="csp-nonce"]')
+      expect(mockQuerySelector).toHaveBeenCalledWith('meta[name="csp-nonce"]')
     })
 
     it('should return empty string when meta tag not found', () => {
       // Mock no meta tag found
-      mockDocument.querySelector.mockReturnValue(null)
+      mockQuerySelector.mockReturnValue(null)
 
       const { result } = renderHook(() => useCspNonce())
       expect(result.current).toBe('')
 
-      expect(mockDocument.querySelector).toHaveBeenCalledWith('meta[name="csp-nonce"]')
+      expect(mockQuerySelector).toHaveBeenCalledWith('meta[name="csp-nonce"]')
     })
 
     it('should return empty string when meta tag has no content attribute', () => {
@@ -57,7 +55,7 @@ describe('CSP Utilities', () => {
       const mockMeta = {
         getAttribute: jest.fn().mockReturnValue(null)
       }
-      mockDocument.querySelector.mockReturnValue(mockMeta)
+      mockQuerySelector.mockReturnValue(mockMeta)
 
       const { result } = renderHook(() => useCspNonce())
       expect(result.current).toBe('')
@@ -73,7 +71,7 @@ describe('CSP Utilities', () => {
       ]
 
       for (const nonce of testCases) {
-        mockDocument.querySelector.mockReturnValue({
+        mockQuerySelector.mockReturnValue({
           getAttribute: jest.fn().mockReturnValue(nonce)
         })
 
@@ -84,7 +82,7 @@ describe('CSP Utilities', () => {
 
     it('should be reactive to meta tag changes', () => {
       // Initial nonce
-      mockDocument.querySelector.mockReturnValue({
+      mockQuerySelector.mockReturnValue({
         getAttribute: jest.fn().mockReturnValue('initial-nonce')
       })
 
@@ -92,7 +90,7 @@ describe('CSP Utilities', () => {
       expect(result.current).toBe('initial-nonce')
 
       // Change nonce
-      mockDocument.querySelector.mockReturnValue({
+      mockQuerySelector.mockReturnValue({
         getAttribute: jest.fn().mockReturnValue('updated-nonce')
       })
 
@@ -315,7 +313,7 @@ describe('CSP Utilities', () => {
 
   describe('Integration Tests', () => {
     it('should work together: useCspNonce and addNonceToScript', () => {
-      mockDocument.querySelector.mockReturnValue({
+      mockQuerySelector.mockReturnValue({
         getAttribute: jest.fn().mockReturnValue('integration-test-nonce')
       })
 
@@ -329,7 +327,7 @@ describe('CSP Utilities', () => {
     })
 
     it('should work together: useCspNonce and addNonceToStyle', () => {
-      mockDocument.querySelector.mockReturnValue({
+      mockQuerySelector.mockReturnValue({
         getAttribute: jest.fn().mockReturnValue('integration-test-nonce')
       })
 
@@ -343,7 +341,7 @@ describe('CSP Utilities', () => {
     })
 
     it('should handle real-world scenario with mixed content', () => {
-      mockDocument.querySelector.mockReturnValue({
+      mockQuerySelector.mockReturnValue({
         getAttribute: jest.fn().mockReturnValue('real-world-nonce')
       })
 

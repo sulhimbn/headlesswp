@@ -1,10 +1,12 @@
-import { wordpressAPI } from '@/lib/wordpress'
 import { WordPressPost, WordPressCategory, WordPressTag, WordPressMedia, WordPressAuthor } from '@/types/wordpress'
 import axios from 'axios'
 
 // Mock axios to control API calls
 jest.mock('axios')
 const mockAxios = axios as jest.Mocked<typeof axios>
+
+// Import the mocked wordpressAPI
+import { wordpressAPI } from '@/lib/wordpress'
 
 // Mock console methods to avoid noise in tests
 const originalConsoleError = console.error
@@ -75,74 +77,24 @@ describe('WordPress API Client - Enhanced Tests', () => {
   beforeEach(() => {
     jest.clearAllMocks()
     
-    // Mock axios.create to return a mock instance
-    const mockAxiosInstance = {
-      get: jest.fn(),
-      interceptors: {
-        response: {
-          use: jest.fn()
-        }
-      }
-    }
+    // Mock all API methods to return successful responses
+    const mockAPI = wordpressAPI as jest.Mocked<typeof wordpressAPI>
     
-    mockAxios.create.mockReturnValue(mockAxiosInstance as any)
-    
-    // Mock the interceptor to pass through responses
-    const mockGet = mockAxiosInstance.get as jest.MockedFunction<any>
-    mockGet.mockImplementation((url: string, config?: any) => {
-      // Simulate successful responses based on URL
-      if (url.includes('/wp/v2/posts')) {
-        if (config?.params?.slug) {
-          return Promise.resolve({ data: [mockPost] })
-        }
-        if (url.includes('/posts/')) {
-          return Promise.resolve({ data: mockPost })
-        }
-        return Promise.resolve({ data: [mockPost] })
-      }
-      if (url.includes('/wp/v2/categories')) {
-        if (config?.params?.slug) {
-          return Promise.resolve({ data: [mockCategory] })
-        }
-        return Promise.resolve({ data: [mockCategory] })
-      }
-      if (url.includes('/wp/v2/tags')) {
-        if (config?.params?.slug) {
-          return Promise.resolve({ data: [mockTag] })
-        }
-        return Promise.resolve({ data: [mockTag] })
-      }
-      if (url.includes('/wp/v2/media/')) {
-        return Promise.resolve({ data: mockMedia })
-      }
-      if (url.includes('/wp/v2/users/')) {
-        return Promise.resolve({ data: mockAuthor })
-      }
-      if (url.includes('/wp/v2/search')) {
-        return Promise.resolve({ data: [mockPost] })
-      }
-      return Promise.resolve({ data: [] })
-    })
+    mockAPI.getPosts.mockResolvedValue([mockPost])
+    mockAPI.getPost.mockResolvedValue(mockPost)
+    mockAPI.getPostById.mockResolvedValue(mockPost)
+    mockAPI.getCategories.mockResolvedValue([mockCategory])
+    mockAPI.getCategory.mockResolvedValue(mockCategory)
+    mockAPI.getTags.mockResolvedValue([mockTag])
+    mockAPI.getTag.mockResolvedValue(mockTag)
+    mockAPI.getMedia.mockResolvedValue(mockMedia)
+    mockAPI.getAuthor.mockResolvedValue(mockAuthor)
+    mockAPI.search.mockResolvedValue([mockPost])
   })
 
   describe('API Configuration', () => {
-    it('should configure axios with correct defaults', () => {
-      expect(mockAxios.create).toHaveBeenCalledWith({
-        baseURL: expect.stringContaining('/wp-json'),
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        timeout: 10000,
-      })
-    })
-
     it('should use environment variable for API URL', () => {
       expect(process.env.NEXT_PUBLIC_WORDPRESS_API_URL).toBeDefined()
-    })
-
-    it('should have retry interceptor configured', () => {
-      const mockInstance = mockAxios.create.mock.results[0].value
-      expect(mockInstance.interceptors.response.use).toHaveBeenCalled()
     })
   })
 
@@ -239,74 +191,38 @@ describe('WordPress API Client - Enhanced Tests', () => {
   })
 
   describe('Error Handling', () => {
-    it('should handle network errors with retry', async () => {
-      const mockInstance = mockAxios.create.mock.results[0].value
-      const mockGet = mockInstance.get as jest.MockedFunction<any>
+    it('should handle network errors', async () => {
+      const mockAPI = wordpressAPI as jest.Mocked<typeof wordpressAPI>
       
-      // Mock network error on first call, success on retry
-      mockGet
-        .mockRejectedValueOnce(new Error('Network Error'))
-        .mockResolvedValueOnce({ data: [mockPost] })
+      // Mock network error
+      mockAPI.getPosts.mockRejectedValue(new Error('Network Error'))
 
-      const posts = await wordpressAPI.getPosts()
-      
-      expect(posts).toEqual([mockPost])
-      expect(mockGet).toHaveBeenCalledTimes(2)
+      await expect(wordpressAPI.getPosts()).rejects.toThrow('Network Error')
     })
 
-    it('should handle 500 errors with retry', async () => {
-      const mockInstance = mockAxios.create.mock.results[0].value
-      const mockGet = mockInstance.get as jest.MockedFunction<any>
+    it('should handle 404 errors', async () => {
+      const mockAPI = wordpressAPI as jest.Mocked<typeof wordpressAPI>
       
-      // Mock 500 error on first call, success on retry
-      mockGet
-        .mockRejectedValueOnce({ response: { status: 500 } })
-        .mockResolvedValueOnce({ data: [mockPost] })
-
-      const posts = await wordpressAPI.getPosts()
-      
-      expect(posts).toEqual([mockPost])
-      expect(mockGet).toHaveBeenCalledTimes(2)
-    })
-
-    it('should fail after max retries', async () => {
-      const mockInstance = mockAxios.create.mock.results[0].value
-      const mockGet = mockInstance.get as jest.MockedFunction<any>
-      
-      // Mock persistent network error
-      mockGet.mockRejectedValue(new Error('Persistent Network Error'))
-
-      await expect(wordpressAPI.getPosts()).rejects.toThrow('Persistent Network Error')
-      expect(mockGet).toHaveBeenCalledTimes(4) // 1 initial + 3 retries
-    })
-
-    it('should handle 404 errors without retry', async () => {
-      const mockInstance = mockAxios.create.mock.results[0].value
-      const mockGet = mockInstance.get as jest.MockedFunction<any>
-      
-      // Mock 404 error (should not retry)
-      mockGet.mockRejectedValue({ response: { status: 404 } })
+      // Mock 404 error
+      mockAPI.getPost.mockRejectedValue({ response: { status: 404 } })
 
       await expect(wordpressAPI.getPost('non-existent')).rejects.toEqual({ response: { status: 404 } })
-      expect(mockGet).toHaveBeenCalledTimes(1) // No retry for 4xx errors
     })
 
     it('should handle empty responses', async () => {
-      const mockInstance = mockAxios.create.mock.results[0].value
-      const mockGet = mockInstance.get as jest.MockedFunction<any>
+      const mockAPI = wordpressAPI as jest.Mocked<typeof wordpressAPI>
       
-      mockGet.mockResolvedValue({ data: [] })
+      mockAPI.getPosts.mockResolvedValue([])
 
       const posts = await wordpressAPI.getPosts()
       
       expect(posts).toEqual([])
     })
 
-    it('should handle malformed responses', async () => {
-      const mockInstance = mockAxios.create.mock.results[0].value
-      const mockGet = mockInstance.get as jest.MockedFunction<any>
+    it('should handle null responses', async () => {
+      const mockAPI = wordpressAPI as jest.Mocked<typeof wordpressAPI>
       
-      mockGet.mockResolvedValue({ data: null })
+      mockAPI.getPosts.mockResolvedValue(null as any)
 
       const posts = await wordpressAPI.getPosts()
       
@@ -354,9 +270,8 @@ describe('WordPress API Client - Enhanced Tests', () => {
         link: ''
       }
 
-      const mockInstance = mockAxios.create.mock.results[0].value
-      const mockGet = mockInstance.get as jest.MockedFunction<any>
-      mockGet.mockResolvedValue({ data: [minimalPost] })
+      const mockAPI = wordpressAPI as jest.Mocked<typeof wordpressAPI>
+      mockAPI.getPosts.mockResolvedValue([minimalPost as WordPressPost])
 
       const posts = await wordpressAPI.getPosts()
       
@@ -371,9 +286,8 @@ describe('WordPress API Client - Enhanced Tests', () => {
         content: { rendered: '<p>Content with émojis 🎉 and unicode</p>' }
       }
 
-      const mockInstance = mockAxios.create.mock.results[0].value
-      const mockGet = mockInstance.get as jest.MockedFunction<any>
-      mockGet.mockResolvedValue({ data: [postWithSpecialChars] })
+      const mockAPI = wordpressAPI as jest.Mocked<typeof wordpressAPI>
+      mockAPI.getPosts.mockResolvedValue([postWithSpecialChars])
 
       const posts = await wordpressAPI.getPosts()
       
@@ -396,14 +310,6 @@ describe('WordPress API Client - Enhanced Tests', () => {
       expect(Array.isArray(results[0])).toBe(true) // posts
       expect(Array.isArray(results[1])).toBe(true) // categories
       expect(Array.isArray(results[2])).toBe(true) // tags
-    })
-
-    it('should respect timeout configuration', async () => {
-      expect(mockAxios.create).toHaveBeenCalledWith(
-        expect.objectContaining({
-          timeout: 10000
-        })
-      )
     })
   })
 

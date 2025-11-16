@@ -17,13 +17,20 @@ jest.mock('next/link', () => {
 })
 
 jest.mock('next/image', () => {
-  return function MockImage({ alt, ...props }: any) {
-    return <img alt={alt} {...props} />
+  return function MockImage({ alt, fill, ...props }: any) {
+    // Convert boolean fill to string attribute if needed
+    const imageProps = { ...props }
+    if (fill !== undefined) {
+      imageProps.fill = fill ? "true" : "false"
+    }
+    return <img alt={alt} {...imageProps} />
   }
 })
 
 jest.mock('next/navigation', () => ({
-  notFound: jest.fn()
+  notFound: jest.fn(() => {
+    throw new Error('NOT_FOUND')
+  })
 }))
 
 const mockNotFound = notFound as jest.MockedFunction<typeof notFound>
@@ -88,7 +95,8 @@ describe('Berita Pages Integration Tests', () => {
       render(Page)
 
       expect(screen.getByText('Semua Berita')).toBeInTheDocument()
-      expect(screen.queryByText(/Berita/)).not.toBeInTheDocument()
+      expect(screen.queryByText('Berita Pertama')).not.toBeInTheDocument()
+      expect(screen.queryByText('Berita Kedua')).not.toBeInTheDocument()
     })
 
     it('handles API errors gracefully', async () => {
@@ -210,8 +218,7 @@ describe('Berita Pages Integration Tests', () => {
     it('calls notFound when post does not exist', async () => {
       mockWordpressAPI.getPost.mockResolvedValue(null)
 
-      await PostPage({ params: { slug: 'non-existent' } })
-
+      await expect(PostPage({ params: { slug: 'non-existent' } })).rejects.toThrow('NOT_FOUND')
       expect(mockNotFound).toHaveBeenCalled()
     })
 
@@ -219,8 +226,7 @@ describe('Berita Pages Integration Tests', () => {
       const consoleSpy = jest.spyOn(console, 'error').mockImplementation()
       mockWordpressAPI.getPost.mockRejectedValue(new Error('API Error'))
 
-      await PostPage({ params: { slug: 'error-post' } })
-
+      await expect(PostPage({ params: { slug: 'error-post' } })).rejects.toThrow('NOT_FOUND')
       expect(consoleSpy).toHaveBeenCalledWith('Error fetching post with slug error-post:', expect.any(Error))
       expect(mockNotFound).toHaveBeenCalled()
       
@@ -236,8 +242,7 @@ describe('Berita Pages Integration Tests', () => {
       const consoleSpy = jest.spyOn(console, 'error').mockImplementation()
       mockWordpressAPI.getPost.mockResolvedValue(invalidPost)
 
-      await PostPage({ params: { slug: 'invalid-post' } })
-
+      await expect(PostPage({ params: { slug: 'invalid-post' } })).rejects.toThrow('NOT_FOUND')
       expect(consoleSpy).toHaveBeenCalledWith('Post is missing required fields:', invalidPost)
       expect(mockNotFound).toHaveBeenCalled()
       
@@ -404,7 +409,23 @@ describe('Berita Pages Integration Tests', () => {
     })
 
     it('passes correct slug to API', async () => {
-      mockWordpressAPI.getPost.mockResolvedValue(null)
+      const testPost = {
+        id: 999,
+        title: { rendered: 'Test Post for Slug' },
+        content: { rendered: '<p>Test content</p>' },
+        excerpt: { rendered: '<p>Test excerpt</p>' },
+        slug: 'test-slug-123',
+        date: '2024-01-01T00:00:00Z',
+        modified: '2024-01-01T00:00:00Z',
+        author: 1,
+        featured_media: 0,
+        categories: [],
+        tags: [],
+        status: 'publish',
+        type: 'post',
+        link: 'https://example.com/test-slug-123'
+      }
+      mockWordpressAPI.getPost.mockResolvedValue(testPost)
 
       await PostPage({ params: { slug: 'test-slug-123' } })
 

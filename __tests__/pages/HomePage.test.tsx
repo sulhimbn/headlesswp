@@ -15,10 +15,85 @@ jest.mock('next/link', () => {
 })
 
 jest.mock('next/image', () => {
-  return function MockImage({ alt, ...props }: any) {
-    return <img alt={alt} {...props} />
+  return function MockImage({ alt, fill, ...props }: any) {
+    // Convert boolean fill to string attribute if needed
+    const imageProps = { ...props }
+    if (fill !== undefined) {
+      imageProps.fill = fill ? "true" : "false"
+    }
+    return <img alt={alt} {...imageProps} />
   }
 })
+
+const mockLatestPosts = [
+  {
+    id: 1,
+    title: { rendered: 'Latest Post 1' },
+    content: { rendered: '<p>Latest content 1</p>' },
+    excerpt: { rendered: '<p>Latest excerpt 1</p>' },
+    slug: 'latest-post-1',
+    date: '2024-01-01T00:00:00Z',
+    modified: '2024-01-01T00:00:00Z',
+    author: 1,
+    featured_media: 1,
+    categories: [1],
+    tags: [1],
+    status: 'publish',
+    type: 'post',
+    link: 'https://example.com/latest-post-1'
+  },
+  {
+    id: 2,
+    title: { rendered: 'Latest Post 2' },
+    content: { rendered: '<p>Latest content 2</p>' },
+    excerpt: { rendered: '<p>Latest excerpt 2</p>' },
+    slug: 'latest-post-2',
+    date: '2024-01-02T00:00:00Z',
+    modified: '2024-01-02T00:00:00Z',
+    author: 1,
+    featured_media: 0,
+    categories: [2],
+    tags: [2],
+    status: 'publish',
+    type: 'post',
+    link: 'https://example.com/latest-post-2'
+  }
+]
+
+const mockCategoryPosts = [
+  {
+    id: 3,
+    title: { rendered: 'Category Post 1' },
+    content: { rendered: '<p>Category content 1</p>' },
+    excerpt: { rendered: '<p>Category excerpt 1</p>' },
+    slug: 'category-post-1',
+    date: '2024-01-03T00:00:00Z',
+    modified: '2024-01-03T00:00:00Z',
+    author: 1,
+    featured_media: 1,
+    categories: [3],
+    tags: [3],
+    status: 'publish',
+    type: 'post',
+    link: 'https://example.com/category-post-1'
+  },
+  {
+    id: 4,
+    title: { rendered: 'Category Post 2' },
+    content: { rendered: '<p>Category content 2</p>' },
+    excerpt: { rendered: '<p>Category excerpt 2</p>' },
+    slug: 'category-post-2',
+    date: '2024-01-04T00:00:00Z',
+    modified: '2024-01-04T00:00:00Z',
+    author: 1,
+    featured_media: 0,
+    categories: [4],
+    tags: [4],
+    status: 'publish',
+    type: 'post',
+    link: 'https://example.com/category-post-2'
+  }
+]
 
 describe('HomePage Integration Tests', () => {
   beforeEach(() => {
@@ -26,45 +101,11 @@ describe('HomePage Integration Tests', () => {
   })
 
   describe('Successful data fetching', () => {
-    const mockPosts = [
-      {
-        id: 1,
-        title: { rendered: 'Test Post 1' },
-        content: { rendered: '<p>Test content 1</p>' },
-        excerpt: { rendered: '<p>Test excerpt 1</p>' },
-        slug: 'test-post-1',
-        date: '2024-01-01T00:00:00Z',
-        modified: '2024-01-01T00:00:00Z',
-        author: 1,
-        featured_media: 1,
-        categories: [1],
-        tags: [1],
-        status: 'publish',
-        type: 'post',
-        link: 'https://example.com/test-post-1'
-      },
-      {
-        id: 2,
-        title: { rendered: 'Test Post 2' },
-        content: { rendered: '<p>Test content 2</p>' },
-        excerpt: { rendered: '<p>Test excerpt 2</p>' },
-        slug: 'test-post-2',
-        date: '2024-01-02T00:00:00Z',
-        modified: '2024-01-02T00:00:00Z',
-        author: 1,
-        featured_media: 0,
-        categories: [2],
-        tags: [2],
-        status: 'publish',
-        type: 'post',
-        link: 'https://example.com/test-post-2'
-      }
-    ]
 
     it('renders page with successful data fetch', async () => {
       mockWordpressAPI.getPosts
-        .mockResolvedValueOnce(mockPosts.slice(0, 6)) // latest posts
-        .mockResolvedValueOnce(mockPosts.slice(0, 3)) // category posts
+        .mockResolvedValueOnce(mockLatestPosts) // latest posts
+        .mockResolvedValueOnce(mockCategoryPosts) // category posts
 
       const Page = await HomePage()
       render(Page)
@@ -72,25 +113,35 @@ describe('HomePage Integration Tests', () => {
       expect(screen.getByText('Mitra Banten News')).toBeInTheDocument()
       expect(screen.getByText('Berita Utama')).toBeInTheDocument()
       expect(screen.getByText('Berita Terkini')).toBeInTheDocument()
-      expect(screen.getByText('Test Post 1')).toBeInTheDocument()
-      expect(screen.getByText('Test Post 2')).toBeInTheDocument()
+      expect(screen.getByText('Latest Post 1')).toBeInTheDocument()
+      expect(screen.getByText('Latest Post 2')).toBeInTheDocument()
+      expect(screen.getByText('Category Post 1')).toBeInTheDocument()
+      expect(screen.getByText('Category Post 2')).toBeInTheDocument()
     })
 
-    it('renders correct number of posts in each section', async () => {
+it('renders correct number of posts in each section', async () => {
+      const manyLatestPosts = Array.from({ length: 6 }, (_, i) => ({
+        ...mockLatestPosts[0],
+        id: i + 1,
+        title: { rendered: `Latest Post ${i + 1}` },
+        slug: `latest-post-${i + 1}`
+      }))
+      const manyCategoryPosts = Array.from({ length: 3 }, (_, i) => ({
+        ...mockCategoryPosts[0],
+        id: i + 10,
+        title: { rendered: `Category Post ${i + 1}` },
+        slug: `category-post-${i + 1}`
+      }))
+
       mockWordpressAPI.getPosts
-        .mockResolvedValueOnce(mockPosts) // 6 latest posts
-        .mockResolvedValueOnce(mockPosts.slice(0, 3)) // 3 category posts
+        .mockResolvedValueOnce(manyLatestPosts) // 6 latest posts
+        .mockResolvedValueOnce(manyCategoryPosts) // 3 category posts
 
       const Page = await HomePage()
       render(Page)
 
-      // Check Berita Utama section (category posts)
-      const beritaUtamaPosts = screen.getAllByText(/Test Post/)
-      expect(beritaUtamaPosts.length).toBeGreaterThanOrEqual(3)
-
-      // Check Berita Terkini section (latest posts)
-      expect(screen.getByText('Test Post 1')).toBeInTheDocument()
-      expect(screen.getByText('Test Post 2')).toBeInTheDocument()
+      expect(screen.getAllByText(/Latest Post/)).toHaveLength(6)
+      expect(screen.getAllByText(/Category Post/)).toHaveLength(3)
     })
 
     it('renders navigation links correctly', async () => {
@@ -121,8 +172,8 @@ describe('HomePage Integration Tests', () => {
 
     it('formats dates correctly', async () => {
       mockWordpressAPI.getPosts
-        .mockResolvedValueOnce([mockPosts[0]]) // latest posts
-        .mockResolvedValueOnce([mockPosts[0]]) // category posts
+        .mockResolvedValueOnce([mockLatestPosts[0]]) // latest posts
+        .mockResolvedValueOnce([mockCategoryPosts[0]]) // category posts
 
       const Page = await HomePage()
       render(Page)
@@ -130,8 +181,8 @@ describe('HomePage Integration Tests', () => {
       expect(screen.getByText('1 Januari 2024')).toBeInTheDocument()
     })
 
-    it('renders images when featured_media exists', async () => {
-      const postWithImage = { ...mockPosts[0], featured_media: 1 }
+it('renders images when featured_media exists', async () => {
+      const postWithImage = { ...mockLatestPosts[0], featured_media: 1 }
       
       mockWordpressAPI.getPosts
         .mockResolvedValueOnce([postWithImage]) // latest posts
@@ -140,8 +191,22 @@ describe('HomePage Integration Tests', () => {
       const Page = await HomePage()
       render(Page)
 
-      const images = screen.getAllByAltText('Test Post 1')
-      expect(images.length).toBeGreaterThan(0)
+      const images = screen.getAllByAltText('Latest Post 1')
+      expect(images.length).toBe(2)
+    })
+
+it('does not render images when featured_media is 0', async () => {
+      const postWithoutImage = { ...mockLatestPosts[0], featured_media: 0 }
+      
+      mockWordpressAPI.getPosts
+        .mockResolvedValueOnce([postWithoutImage]) // latest posts
+        .mockResolvedValueOnce([postWithoutImage]) // category posts
+
+      const Page = await HomePage()
+      render(Page)
+
+      const images = screen.queryByAltText('Latest Post 1')
+      expect(images).not.toBeInTheDocument()
     })
 
     it('does not render images when featured_media is 0', async () => {
@@ -197,24 +262,26 @@ describe('HomePage Integration Tests', () => {
       const Page = await HomePage()
       render(Page)
 
-      expect(screen.getByText('Maaf, artikel tidak dapat dimuat saat ini. Silakan coba lagi nanti.')).toBeInTheDocument()
+      expect(screen.getAllByText('Maaf, artikel tidak dapat dimuat saat ini. Silakan coba lagi nanti.')).toHaveLength(6)
     })
 
-    it('handles mixed success and failure scenarios', async () => {
+it('handles mixed success and failure scenarios', async () => {
       const consoleSpy = jest.spyOn(console, 'warn').mockImplementation()
       
       mockWordpressAPI.getPosts
-        .mockResolvedValueOnce([mockPosts[0]]) // latest posts succeed
+        .mockResolvedValueOnce([mockLatestPosts[0]]) // latest posts succeed
         .mockRejectedValueOnce(new Error('API Error')) // category posts fail
 
       const Page = await HomePage()
       render(Page)
 
-      // Should show successful latest posts
-      expect(screen.getByText('Test Post 1')).toBeInTheDocument()
-      
-      // Should show fallback category posts
+      expect(screen.getByText('Latest Post 1')).toBeInTheDocument()
       expect(screen.getByText('Berita Kategori 1')).toBeInTheDocument()
+
+      expect(consoleSpy).toHaveBeenCalledWith(
+        'Failed to fetch category posts during build:',
+        expect.any(Error)
+      )
 
       consoleSpy.mockRestore()
     })
@@ -257,17 +324,15 @@ describe('HomePage Integration Tests', () => {
 
     it('renders post links correctly', async () => {
       mockWordpressAPI.getPosts
-        .mockResolvedValueOnce([mockPosts[0]])
-        .mockResolvedValueOnce([mockPosts[0]])
+        .mockResolvedValueOnce([mockLatestPosts[0]])
+        .mockResolvedValueOnce([mockCategoryPosts[0]])
 
       const Page = await HomePage()
       render(Page)
 
-      const links = screen.getAllByRole('link')
-      const postLinks = links.filter(link => 
-        link.getAttribute('href') === '/berita/test-post-1'
-      )
-      expect(postLinks.length).toBe(2) // One in each section
+      const links = screen.getAllByRole('link', { name: /Post/ })
+      expect(links.length).toBe(2)
+      expect(links[0]).toHaveAttribute('href', '/berita/latest-post-1')
     })
 
     it('handles empty post arrays', async () => {
@@ -285,14 +350,15 @@ describe('HomePage Integration Tests', () => {
       expect(screen.queryByText(/Test Post/)).not.toBeInTheDocument()
     })
   })
+  })
 
-  describe('Content rendering', () => {
+describe('Content rendering', () => {
     it('sanitizes HTML content in excerpts', async () => {
       const postWithHTML = {
-        ...mockPosts[0],
+        ...mockLatestPosts[0],
         excerpt: { rendered: '<p>Test excerpt with <strong>bold</strong> text</p>' }
       }
-
+      
       mockWordpressAPI.getPosts
         .mockResolvedValueOnce([postWithHTML])
         .mockResolvedValueOnce([postWithHTML])
@@ -300,15 +366,15 @@ describe('HomePage Integration Tests', () => {
       const Page = await HomePage()
       render(Page)
 
-      expect(screen.getByText(/Test excerpt with/)).toBeInTheDocument()
+      expect(screen.getByText('Test excerpt with bold text')).toBeInTheDocument()
     })
 
     it('handles special characters in titles', async () => {
       const postWithSpecialChars = {
-        ...mockPosts[0],
+        ...mockLatestPosts[0],
         title: { rendered: 'Test & "Special" <Characters>' }
       }
-
+      
       mockWordpressAPI.getPosts
         .mockResolvedValueOnce([postWithSpecialChars])
         .mockResolvedValueOnce([postWithSpecialChars])
@@ -323,21 +389,19 @@ describe('HomePage Integration Tests', () => {
   describe('Performance considerations', () => {
     it('handles large numbers of posts efficiently', async () => {
       const manyPosts = Array.from({ length: 10 }, (_, i) => ({
-        ...mockPosts[0],
+        ...mockLatestPosts[0],
         id: i + 1,
         title: { rendered: `Test Post ${i + 1}` },
         slug: `test-post-${i + 1}`
       }))
 
       mockWordpressAPI.getPosts
-        .mockResolvedValueOnce(manyPosts.slice(0, 6)) // latest posts
-        .mockResolvedValueOnce(manyPosts.slice(0, 3)) // category posts
+        .mockResolvedValueOnce(manyPosts)
+        .mockResolvedValueOnce(manyPosts.slice(0, 5))
 
       const Page = await HomePage()
       render(Page)
 
-      expect(screen.getByText('Test Post 1')).toBeInTheDocument()
-      expect(screen.getByText('Test Post 6')).toBeInTheDocument()
+      expect(screen.getAllByText(/Test Post/)).toHaveLength(15)
     })
   })
-})

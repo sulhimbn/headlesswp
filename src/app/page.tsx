@@ -5,8 +5,10 @@ import Image from 'next/image'
 import React from 'react'
 
 function createFallbackPost(id: string, title: string): WordPressPost {
+  // Generate a unique numeric ID for fallback posts
+  const numericId = id.startsWith('cat-') ? 1000 + parseInt(id.split('-')[1]) : parseInt(id)
   return {
-    id: parseInt(id),
+    id: isNaN(numericId) ? Math.floor(Math.random() * 10000) : numericId,
     title: { rendered: title },
     content: { rendered: '<p>Maaf, artikel tidak dapat dimuat saat ini. Silakan coba lagi nanti.</p>' },
     excerpt: { rendered: 'Maaf, artikel tidak dapat dimuat saat ini. Silakan coba lagi nanti.' },
