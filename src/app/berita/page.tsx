@@ -3,6 +3,7 @@ import { WordPressPost } from '@/types/wordpress'
 import Link from 'next/link'
 import Image from 'next/image'
 import React from 'react'
+import { getTitle, getExcerpt } from '@/lib/data-normalization'
 
 async function getAllPosts(): Promise<WordPressPost[]> {
   try {
@@ -44,33 +45,33 @@ export default async function BeritaPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {posts.map((post: WordPressPost) => (
             <article key={post.id} className="bg-white rounded-lg shadow-md overflow-hidden">
-              {post.featured_media > 0 && (
+              {post.featured_media && typeof post.featured_media === 'number' && post.featured_media > 0 && (
                 <div className="relative h-48">
                   <Image
                     src="/placeholder-image.jpg" // Will be replaced with actual media URL
-                    alt={post.title.rendered}
+                    alt={getTitle(post)}
                     fill
                     className="object-cover"
                   />
                 </div>
               )}
               <div className="p-4">
-                <Link href={`/berita/${post.slug}`}>
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2 hover:text-red-600">
-                    {post.title.rendered}
-                  </h3>
-                </Link>
-                <p 
-                  className="text-gray-600 mb-3"
-                  dangerouslySetInnerHTML={{ __html: post.excerpt.rendered }}
-                />
-                <div className="text-sm text-gray-500">
-                  {new Date(post.date).toLocaleDateString('id-ID', {
-                    day: 'numeric',
-                    month: 'long',
-                    year: 'numeric'
-                  })}
-                </div>
+<Link href={`/berita/${post.slug}`}>
+                    <h3 className="text-xl font-semibold text-gray-900 mb-2 hover:text-red-600">
+                      {getTitle(post)}
+                    </h3>
+                  </Link>
+                  <p 
+                    className="text-gray-600 mb-3"
+                    dangerouslySetInnerHTML={{ __html: getExcerpt(post) }}
+                  />
+                  <div className="text-sm text-gray-500">
+                    {new Date(post.date).toLocaleDateString('id-ID', {
+                      day: 'numeric',
+                      month: 'long',
+                      year: 'numeric'
+                    })}
+                  </div>
               </div>
             </article>
           ))}
