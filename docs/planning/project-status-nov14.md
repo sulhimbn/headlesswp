@@ -48,7 +48,7 @@ HeadlessWP project is in **Foundation Phase** with solid planning infrastructure
 **Issue**: Merge conflict blocking critical security improvements  
 **Impact**: Blocks all development progress  
 **Timeline**: Resolve within 24 hours  
-**Action**: Execute conflict resolution strategy (see PR5_CONFLICT_ANALYSIS.md)
+**Action**: Execute conflict resolution strategy (see ../governance/pr5-conflict-analysis.md)
 
 ### 🟡 Priority 2: Security Vulnerability
 **Issue**: `dangerouslySetInnerHTML` without sanitization  
