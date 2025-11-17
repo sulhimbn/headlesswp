@@ -1,65 +1,65 @@
 export interface WordPressPost {
-  id: number;
-  title: {
-    rendered: string;
-  };
-  content: {
-    rendered: string;
-  };
-  excerpt: {
-    rendered: string;
-  };
+  id: string | number;
+  title: string | { rendered: string };
+  content: string | { rendered: string };
+  excerpt: string | { rendered: string };
   slug: string;
   date: string;
   modified: string;
-  author: number;
-  featured_media: number;
-  categories: number[];
-  tags: number[];
   status: string;
-  type: string;
   link: string;
+  author?: number | { node: WordPressAuthor };
+  featured_media?: number | { node: WordPressMedia };
+  featuredImage?: {
+    node: WordPressMedia;
+  };
+  categories?: number[] | { nodes: WordPressCategory[] };
+  tags?: number[] | { nodes: WordPressTag[] };
+  type?: string;
 }
 
 export interface WordPressCategory {
-  id: number;
+  id: string | number;
   name: string;
   slug: string;
   description: string;
-  parent: number;
   count: number;
-  link: string;
+  parent?: number | { node: WordPressCategory };
+  link?: string;
 }
 
 export interface WordPressTag {
-  id: number;
+  id: string | number;
   name: string;
   slug: string;
   description: string;
   count: number;
-  link: string;
+  link?: string;
 }
 
 export interface WordPressMedia {
-  id: number;
-  source_url: string;
-  title: {
-    rendered: string;
-  };
-  alt_text: string;
-  media_type: string;
-  mime_type: string;
+  id: string | number;
+  source_url?: string;
+  sourceUrl?: string;
+  title: string | { rendered: string };
+  alt_text?: string;
+  altText?: string;
+  media_type?: string;
+  mediaType?: string;
+  mime_type?: string;
+  mimeType?: string;
 }
 
 export interface WordPressAuthor {
-  id: number;
+  id: string | number;
   name: string;
   slug: string;
   description: string;
-  avatar_urls: {
-    [key: string]: string;
+  avatar_urls?: { [key: string]: string };
+  avatar?: {
+    url: string;
   };
-  link: string;
+  link?: string;
 }
 
 // Enhanced types for better developer experience

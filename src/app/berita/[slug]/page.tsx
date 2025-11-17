@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
 import React from 'react'
+import { getTitle, getContent, getExcerpt, getFeaturedImageUrl, getCategories, getTags } from '@/lib/data-normalization'
 
 async function getPost(slug: string): Promise<WordPressPost | null> {
   try {
@@ -23,7 +24,7 @@ export default async function PostPage({ params }: { params: { slug: string } })
   }
 
   // Validate required fields
-  if (!post.title.rendered || !post.content.rendered) {
+  if (!getTitle(post) || !getContent(post)) {
     console.error('Post is missing required fields:', post)
     notFound()
   }
@@ -49,11 +50,11 @@ export default async function PostPage({ params }: { params: { slug: string } })
 
 <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <article className="bg-white rounded-lg shadow-lg overflow-hidden">
-          {post.featured_media > 0 && (
+          {post.featured_media && typeof post.featured_media === 'number' && post.featured_media > 0 && (
             <div className="relative h-96">
               <Image
                 src="/placeholder-image.jpg" // Will be replaced with actual media URL
-                alt={post.title.rendered}
+                alt={getTitle(post)}
                 fill
                 className="object-cover"
               />
@@ -74,14 +75,14 @@ export default async function PostPage({ params }: { params: { slug: string } })
                 </span>
               </div>
               
-              {post.categories.length > 0 && (
+              {getCategories(post) && getCategories(post).length > 0 && (
                 <div className="flex flex-wrap gap-2 mb-4">
-                  {post.categories.map((categoryId: number) => (
+                  {getCategories(post).map((category) => (
                     <span
-                      key={categoryId}
+                      key={category.id}
                       className="bg-red-100 text-red-800 text-xs px-2 py-1 rounded-full"
                     >
-                      Category {categoryId}
+                      {category.name}
                     </span>
                   ))}
                 </div>
@@ -89,24 +90,24 @@ export default async function PostPage({ params }: { params: { slug: string } })
             </div>
 
             <h1 className="text-4xl font-bold text-gray-900 mb-6">
-              {post.title.rendered}
+              {getTitle(post)}
             </h1>
 
 <div 
   className="prose prose-lg max-w-none text-gray-700"
-  dangerouslySetInnerHTML={{ __html: post.content.rendered }}
+  dangerouslySetInnerHTML={{ __html: getContent(post) }}
  />
 
-            {post.tags.length > 0 && (
+            {getTags(post) && getTags(post).length > 0 && (
               <div className="mt-8 pt-6 border-t">
                 <h3 className="text-sm font-semibold text-gray-500 mb-3">Tags</h3>
                 <div className="flex flex-wrap gap-2">
-                  {post.tags.map((tagId: number) => (
+                  {getTags(post).map((tag) => (
                     <span
-                      key={tagId}
+                      key={tag.id}
                       className="bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded-full"
                     >
-                      #{tagId}
+                      #{tag.name}
                     </span>
                   ))}
                 </div>

@@ -3,13 +3,15 @@ import { WordPressPost } from '@/types/wordpress'
 import Link from 'next/link'
 import Image from 'next/image'
 import React from 'react'
+// import GraphQLDemo from '@/components/GraphQLDemo'
+import { getTitle, getExcerpt } from '@/lib/data-normalization'
 
 function createFallbackPost(id: string, title: string): WordPressPost {
   return {
     id: parseInt(id),
-    title: { rendered: title },
-    content: { rendered: '<p>Maaf, artikel tidak dapat dimuat saat ini. Silakan coba lagi nanti.</p>' },
-    excerpt: { rendered: 'Maaf, artikel tidak dapat dimuat saat ini. Silakan coba lagi nanti.' },
+    title: title,
+    content: '<p>Maaf, artikel tidak dapat dimuat saat ini. Silakan coba lagi nanti.</p>',
+    excerpt: 'Maaf, artikel tidak dapat dimuat saat ini. Silakan coba lagi nanti.',
     slug: `fallback-${id}`,
     date: new Date().toISOString(),
     modified: new Date().toISOString(),
@@ -82,11 +84,11 @@ export default async function HomePage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {categoryPosts.map((post: WordPressPost) => (
               <article key={post.id} className="bg-white rounded-lg shadow-md overflow-hidden">
-                {post.featured_media > 0 && (
+                {post.featured_media && typeof post.featured_media === 'number' && post.featured_media > 0 && (
                   <div className="relative h-48">
                     <Image
                       src="/placeholder-image.jpg" // Will be replaced with actual media URL
-                      alt={post.title.rendered}
+                      alt={getTitle(post)}
                       fill
                       className="object-cover"
                     />
@@ -95,12 +97,12 @@ export default async function HomePage() {
                 <div className="p-4">
                   <Link href={`/berita/${post.slug}`}>
                     <h3 className="text-xl font-semibold text-gray-900 mb-2 hover:text-red-600">
-                      {post.title.rendered}
+                      {getTitle(post)}
                     </h3>
                   </Link>
                   <p 
                     className="text-gray-600 mb-3"
-                    dangerouslySetInnerHTML={{ __html: post.excerpt.rendered }}
+                    dangerouslySetInnerHTML={{ __html: getExcerpt(post) }}
                   />
                   <div className="text-sm text-gray-500">
                     {new Date(post.date).toLocaleDateString('id-ID', {
@@ -120,11 +122,11 @@ export default async function HomePage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {latestPosts.map((post: WordPressPost) => (
               <article key={post.id} className="bg-white rounded-lg shadow-md overflow-hidden">
-                {post.featured_media > 0 && (
+                {post.featured_media && typeof post.featured_media === 'number' && post.featured_media > 0 && (
                   <div className="relative h-48">
                     <Image
                       src="/placeholder-image.jpg" // Will be replaced with actual media URL
-                      alt={post.title.rendered}
+                      alt={getTitle(post)}
                       fill
                       className="object-cover"
                     />
@@ -133,12 +135,12 @@ export default async function HomePage() {
                 <div className="p-4">
                   <Link href={`/berita/${post.slug}`}>
                     <h3 className="text-xl font-semibold text-gray-900 mb-2 hover:text-red-600">
-                      {post.title.rendered}
+                      {getTitle(post)}
                     </h3>
                   </Link>
                   <p 
                     className="text-gray-600 mb-3"
-                    dangerouslySetInnerHTML={{ __html: post.excerpt.rendered }}
+                    dangerouslySetInnerHTML={{ __html: getExcerpt(post) }}
                   />
                   <div className="text-sm text-gray-500">
                     {new Date(post.date).toLocaleDateString('id-ID', {
@@ -150,6 +152,21 @@ export default async function HomePage() {
                 </div>
               </article>
             ))}
+          </div>
+        </section>
+
+        {/* GraphQL Demo Section */}
+        <section className="mt-12">
+          <h2 className="text-3xl font-bold text-gray-900 mb-6">GraphQL Demo (New API)</h2>
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+            <p className="text-blue-800">
+              <strong>🚀 New Feature:</strong> This section demonstrates the new GraphQL API integration. 
+              GraphQL provides better performance, reduced over-fetching, and improved developer experience.
+            </p>
+          </div>
+          {/* <GraphQLDemo /> */}
+          <div className="p-4 border rounded-lg">
+            <p className="text-gray-600">GraphQL demo component will be shown here once the integration is complete.</p>
           </div>
         </section>
       </main>
