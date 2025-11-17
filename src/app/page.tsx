@@ -5,8 +5,9 @@ import Image from 'next/image'
 import React from 'react'
 
 function createFallbackPost(id: string, title: string): WordPressPost {
+  const postId = parseInt(id)
   return {
-    id: parseInt(id),
+    id: isNaN(postId) ? Math.random() * 1000 : postId,
     title: { rendered: title },
     content: { rendered: '<p>Maaf, artikel tidak dapat dimuat saat ini. Silakan coba lagi nanti.</p>' },
     excerpt: { rendered: 'Maaf, artikel tidak dapat dimuat saat ini. Silakan coba lagi nanti.' },

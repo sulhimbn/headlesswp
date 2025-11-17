@@ -24,7 +24,7 @@ export function useCspNonce(): string {
  */
 export function addNonceToScript(scriptContent: string, nonce: string): string {
   if (!nonce) return scriptContent
-  return scriptContent.replace(/<script/g, `<script nonce="${nonce}"`)
+  return scriptContent.replace(/<script(?![^>]*\snonce=)/g, `<script nonce="${nonce}"`)
 }
 
 /**
@@ -33,5 +33,5 @@ export function addNonceToScript(scriptContent: string, nonce: string): string {
  */
 export function addNonceToStyle(styleContent: string, nonce: string): string {
   if (!nonce) return styleContent
-  return styleContent.replace(/<style/g, `<style nonce="${nonce}"`)
+  return styleContent.replace(/<style(?![^>]*\snonce=)/g, `<style nonce="${nonce}"`)
 }
