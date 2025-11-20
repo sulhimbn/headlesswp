@@ -23,7 +23,7 @@ export default async function PostPage({ params }: { params: { slug: string } })
   }
 
   // Validate required fields
-  if (!post.title.rendered || !post.content.rendered) {
+  if (!post.title?.rendered || !post.content?.rendered) {
     console.error('Post is missing required fields:', post)
     notFound()
   }
