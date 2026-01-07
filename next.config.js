@@ -1,7 +1,16 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
-    domains: ['mitrabantennews.com', 'www.mitrabantennews.com'],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'mitrabantennews.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'www.mitrabantennews.com',
+      },
+    ],
   },
   env: {
     WORDPRESS_URL: process.env.WORDPRESS_URL,
@@ -61,6 +70,10 @@ const nextConfig = {
               'gyroscope=()',
               'accelerometer=()'
             ].join(', ')
+          },
+          {
+            key: 'Cache-Control',
+            value: 'public, s-maxage=300, stale-while-revalidate=600'
           }
         ]
       }
@@ -68,4 +81,4 @@ const nextConfig = {
   }
 }
 
-module.exports = nextConfig
+export default nextConfig
