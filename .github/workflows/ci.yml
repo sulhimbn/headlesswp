@@ -39,6 +39,9 @@ jobs:
             cp -r /home/runner/.cache/next-swc/* node_modules/next/ 2>/dev/null || true
           fi
 
+      - name: Install SWC binaries
+        run: npx next build --dry-run || true
+
       - name: Run linting
         run: npm run lint
 
