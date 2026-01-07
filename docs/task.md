@@ -1,10 +1,77 @@
 # Task Backlog
 
-**Last Updated**: 2026-01-07 (Senior UI/UX Engineer - UI/UX Improvements)
+**Last Updated**: 2026-01-07 (Lead Reliability Engineer - Code Sanitizer)
 
    ---
 
 ## Active Tasks
+
+## [BUILD-001] Remove Deprecated swcMinify Configuration
+
+**Status**: Complete
+**Priority**: High
+**Assigned**: Lead Reliability Engineer
+**Created**: 2026-01-07
+**Updated**: 2026-01-07
+
+### Description
+
+Removed deprecated `swcMinify` configuration option from `next.config.js`. The option was causing build warnings as it's no longer recognized in newer versions of Next.js (SWC minifier is now the default and cannot be disabled).
+
+### Implementation Summary
+
+**Issue Identified**:
+- Build warning: `⚠ Invalid next.config.js options detected: Unrecognized key(s) in object: 'swcMinify'`
+- The `swcMinify` option was deprecated and removed in newer Next.js versions
+- SWC minifier is now to default and cannot be turned off
+
+**Fix Applied**:
+- Removed `swcMinify: true` from `next.config.js` (line 10)
+- Kept `compress: true` option which is still valid
+- Verified build passes without warnings
+
+### Benefits
+
+1. **Cleaner Build Output**: Eliminates deprecation warnings during build
+2. **Future-Proof Configuration**: Uses only valid Next.js configuration options
+3. **No Functional Changes**: SWC minifier remains to default (no behavioral change)
+
+### Files Modified
+
+- `next.config.js` - Removed deprecated `swcMinify` option (line 10)
+
+### Results
+
+- ✅ Build passes without configuration warnings
+- ✅ All 516 tests passing (34 skipped - integration tests)
+- ✅ TypeScript compilation passes with no errors
+- ✅ ESLint passes with no warnings
+- ✅ Zero breaking changes to application functionality
+- ✅ Build time unchanged
+
+### Success Criteria
+
+- ✅ Deprecated configuration option removed
+- ✅ Build passes without warnings
+- ✅ All tests passing
+- ✅ TypeScript type checking passes
+- ✅ ESLint passes
+- ✅ Zero functional changes
+
+### Anti-Patterns Avoided
+
+- ❌ No deprecated configuration options
+- ❌ No build warnings
+- ❌ No breaking changes to existing functionality
+- ❌ No changes to application behavior
+
+### Follow-up Recommendations
+
+- Review other Next.js configuration options for deprecation warnings
+- Consider migrating to `next.config.mjs` for better module support
+- Monitor Next.js release notes for upcoming breaking changes
+
+---
 
 ## [UI-UX-001] Accessibility and Responsive Design Improvements
 
