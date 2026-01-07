@@ -3,7 +3,7 @@ import Header from '@/components/layout/Header'
 import Footer from '@/components/layout/Footer'
 import PostCard from '@/components/post/PostCard'
 
-export const revalidate = 300; // REVALIDATE_TIMES.HOMEPAGE
+export const revalidate = 300
 
 export default async function HomePage() {
   const [latestPosts, categoryPosts] = await Promise.all([
