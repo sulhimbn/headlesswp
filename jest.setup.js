@@ -1,4 +1,4 @@
-import '@testing-library/jest-dom'
+require('@testing-library/jest-dom')
 
 process.env.WORDPRESS_URL = 'http://localhost:8080'
 process.env.WORDPRESS_API_URL = 'http://localhost:8080/wp-json'

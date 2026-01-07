@@ -119,11 +119,51 @@ export function createApiError(
         endpoint
       )
     }
+
+    const errorObj = error as { response?: { status?: number; headers?: { [key: string]: string } } };
+    const status = errorObj.response?.status;
+
+    if (status === 429) {
+      const retryAfter = errorObj.response?.headers?.['retry-after'];
+      const waitTime = retryAfter ? ` Please wait ${retryAfter} seconds before retrying.` : '';
+
+      return new ApiErrorImpl(
+        ApiErrorType.RATE_LIMIT_ERROR,
+        `Rate limit exceeded. Too many requests.${waitTime}`,
+        429,
+        true,
+        error,
+        endpoint
+      )
+    }
+
+    if (status && status >= 500) {
+      return new ApiErrorImpl(
+        ApiErrorType.SERVER_ERROR,
+        `Server error: ${status} ${error.message}`,
+        status,
+        true,
+        error,
+        endpoint
+      )
+    }
+
+    if (status && status >= 400 && status < 500) {
+      return new ApiErrorImpl(
+        ApiErrorType.CLIENT_ERROR,
+        `Client error: ${status} ${error.message}`,
+        status,
+        false,
+        error,
+        endpoint
+      )
+    }
   }
 
+  const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
   return new ApiErrorImpl(
     ApiErrorType.UNKNOWN_ERROR,
-    'Unknown error occurred',
+    errorMessage,
     undefined,
     false,
     error,

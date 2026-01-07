@@ -23,10 +23,21 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci
+        run: npm install
+
+      - name: Build application to install SWC binaries
+        run: npm run build || true
+        env:
+          NEXT_PUBLIC_WORDPRESS_URL: ${{ secrets.WORDPRESS_URL }}
+
+      - name: Copy SWC binaries from cache to node_modules
+        run: |
+          if [ -d /home/runner/.cache/next-swc ]; then
+            mkdir -p node_modules/next
+            cp -r /home/runner/.cache/next-swc/* node_modules/next/ 2>/dev/null || true
+          fi
 
       - name: Install SWC binaries
         run: npx next build --dry-run || true

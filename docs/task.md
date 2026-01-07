@@ -1,12 +1,186 @@
 # Task Backlog
 
-**Last Updated**: 2026-01-07 (Added UI-UX-002: Component Extraction - Reusable UI Patterns)
+**Last Updated**: 2026-01-07 (Code Reviewer Mode - Identified New Refactoring Tasks)
 
   ---
 
 ## Active Tasks
 
-## [UI-UX-002] Component Extraction - Reusable UI Patterns
+## [LOGGING-001] Extract Centralized Logging Utility
+
+**Status**: Pending
+**Priority**: High
+**Assigned**: Senior Backend Engineer
+**Created**: 2026-01-07
+**Updated**: 2026-01-07
+
+### Issue
+
+The codebase contains 34+ console.log/warn/error statements scattered across multiple files (client.ts, enhancedPostService.ts, wordpress.ts, healthCheck.ts, etc.). Direct console usage makes it difficult to:
+- Control log levels in production (debug vs error logs)
+- Add structured logging for better observability
+- Log to external services (Sentry, CloudWatch, etc.)
+- Maintain consistent log format across the application
+
+### Location
+
+Files with console statements:
+- src/lib/api/client.ts: 6 console statements
+- src/lib/services/enhancedPostService.ts: 13 console statements
+- src/lib/wordpress.ts: 4 console statements
+- src/lib/api/healthCheck.ts: 3 console statements
+- src/app/api/cache/route.ts: 2 console statements
+- src/lib/api/circuitBreaker.ts: 1 console statement
+- src/lib/api/retryStrategy.ts: 1 console statement
+- src/app/api/csp-report/route.ts: 2 console statements
+
+### Suggestion
+
+Create a centralized logging utility (`src/lib/utils/logger.ts`) that provides:
+- Log level methods: `debug()`, `info()`, `warn()`, `error()`
+- Structured logging with context (module, timestamp)
+- Production-ready behavior (disable debug logs in production)
+- Optional integration with external logging services
+- Consistent log format with severity tags
+
+Example interface:
+```typescript
+class Logger {
+  debug(message: string, meta?: Record<string, unknown>): void
+  info(message: string, meta?: Record<string, unknown>): void
+  warn(message: string, meta?: Record<string, unknown>): void
+  error(message: string, error?: Error | unknown, meta?: Record<string, unknown>): void
+}
+```
+
+### Priority
+
+High - Improves observability, debuggability, and production readiness
+
+### Effort
+
+Small - ~4-6 hours to implement and migrate all console statements
+
+---
+
+## [REF-001] Extract Validation Helper in enhancedPostService
+
+**Status**: Pending
+**Priority**: Medium
+**Assigned**: Senior Backend Engineer
+**Created**: 2026-01-07
+**Updated**: 2026-01-07
+
+### Issue
+
+The `enhancedPostService.ts` file contains duplicate validation logic across multiple methods (getLatestPosts, getCategoryPosts, getAllPosts, getPaginatedPosts, getPostBySlug, getPostById). Each method has an identical try-catch block pattern with:
+- API call to wordpressAPI
+- Data validation using dataValidator
+- console.error logging on validation failure
+- Return of fallback data or null on error
+
+This violates the DRY principle and makes the code harder to maintain.
+
+### Location
+
+src/lib/services/enhancedPostService.ts: Lines 102-231 (6 methods with duplicate validation logic)
+
+### Suggestion
+
+Extract the duplicate validation logic into a reusable helper function:
+
+```typescript
+async function fetchAndValidatePosts<T>(
+  fetchFn: () => Promise<T>,
+  fallbackData: () => T,
+  context: string
+): Promise<T> {
+  try {
+    const data = await fetchFn();
+    const validation = dataValidator.validatePosts(data);
+    
+    if (!validation.valid) {
+      logger.error(`Invalid posts data for ${context}`, null, { errors: validation.errors });
+      return fallbackData();
+    }
+    
+    return validation.data as T;
+  } catch (error) {
+    logger.warn(`Failed to fetch posts for ${context}`, error);
+    return fallbackData();
+  }
+}
+```
+
+### Priority
+
+Medium - Reduces code duplication, improves maintainability
+
+### Effort
+
+Medium - ~6-8 hours to extract helper, refactor all methods, update tests
+
+---
+
+## [REF-002] Replace Hardcoded Fallback Post Arrays with Constants
+
+**Status**: Pending
+**Priority**: Medium
+**Assigned**: Senior Backend Engineer
+**Created**: 2026-01-07
+**Updated**: 2026-01-07
+
+### Issue
+
+Fallback post arrays are hardcoded inline in multiple methods in `enhancedPostService.ts`:
+- getLatestPosts: 3 fallback posts with "Berita Utama" titles
+- getCategoryPosts: 3 fallback posts with "Berita Kategori" titles
+
+This makes it difficult to:
+- Update fallback content consistently
+- Maintain consistency across methods
+- Test fallback scenarios effectively
+- Localize content if needed
+
+### Location
+
+src/lib/services/enhancedPostService.ts:
+- Lines 109-113: Fallback posts for getLatestPosts
+- Lines 134-138: Fallback posts for getCategoryPosts
+
+### Suggestion
+
+Create constants file for fallback data:
+
+```typescript
+// src/lib/constants/fallbackPosts.ts
+export const FALLBACK_POSTS = {
+  LATEST: [
+    { id: '1', title: 'Berita Utama 1' },
+    { id: '2', title: 'Berita Utama 2' },
+    { id: '3', title: 'Berita Utama 3' }
+  ],
+  CATEGORY: [
+    { id: 'cat-1', title: 'Berita Kategori 1' },
+    { id: 'cat-2', title: 'Berita Kategori 2' },
+    { id: 'cat-3', title: 'Berita Kategori 3' }
+  ]
+} as const;
+```
+
+### Priority
+
+Medium - Improves maintainability and consistency
+
+### Effort
+
+Small - ~2-3 hours to create constants and update references
+
+---
+
+## Active Tasks
+
+## [CI-DEVOPS-001] Fix CI SWC Binary Loading Failure
 
 **Status**: Complete
 **Priority**: P0

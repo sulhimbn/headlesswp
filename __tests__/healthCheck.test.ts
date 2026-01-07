@@ -216,7 +216,7 @@ describe('HealthChecker', () => {
       const result = await healthChecker.checkRetry(2, 10);
 
       expect(result.healthy).toBe(false);
-      expect(result.error).toBe('Unknown error occurred');
+      expect(result.error).toBe('Unexpected error');
     });
   });
 
