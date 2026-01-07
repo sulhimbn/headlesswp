@@ -2,18 +2,19 @@ import './globals.css'
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import ClientLayout from '@/components/ClientLayout'
+import { SITE_URL, SITE_URL_WWW } from '@/lib/api/config'
 
 const inter = Inter({ subsets: ['latin'], display: 'swap' })
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://mitrabantennews.com'),
+  metadataBase: new URL(SITE_URL),
   title: 'Mitra Banten News - Berita Terkini Banten',
   description: 'Portal berita terkini dan terpercaya dari Banten',
   keywords: 'berita banten, mitra banten news, berita terkini',
   openGraph: {
     title: 'Mitra Banten News',
     description: 'Portal berita terkini dan terpercaya dari Banten',
-    url: 'https://mitrabantennews.com',
+    url: SITE_URL,
     siteName: 'Mitra Banten News',
     images: [
       {
@@ -36,10 +37,10 @@ export default function RootLayout({
     <html lang="id">
       <head>
         <meta name="csp-nonce" content="" />
-        <link rel="preconnect" href="https://mitrabantennews.com" />
-        <link rel="preconnect" href="https://www.mitrabantennews.com" />
-        <link rel="dns-prefetch" href="https://mitrabantennews.com" />
-        <link rel="dns-prefetch" href="https://www.mitrabantennews.com" />
+        <link rel="preconnect" href={SITE_URL} />
+        <link rel="preconnect" href={SITE_URL_WWW} />
+        <link rel="dns-prefetch" href={SITE_URL} />
+        <link rel="dns-prefetch" href={SITE_URL_WWW} />
       </head>
       <body className={inter.className}>
         <a

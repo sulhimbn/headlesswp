@@ -1,5 +1,5 @@
 import axios, { AxiosInstance, InternalAxiosRequestConfig, AxiosError } from 'axios'
-import { WORDPRESS_API_BASE_URL, API_TIMEOUT, MAX_RETRIES, SKIP_RETRIES, RATE_LIMIT_MAX_REQUESTS, RATE_LIMIT_WINDOW_MS } from './config'
+import { WORDPRESS_API_BASE_URL, WORDPRESS_SITE_URL, API_TIMEOUT, MAX_RETRIES, SKIP_RETRIES, RATE_LIMIT_MAX_REQUESTS, RATE_LIMIT_WINDOW_MS } from './config'
 import { CircuitBreaker, CircuitState } from './circuitBreaker'
 import { RetryStrategy } from './retryStrategy'
 import { RateLimiterManager } from './rateLimiter'
@@ -7,8 +7,7 @@ import { createApiError, ApiError, shouldTriggerCircuitBreaker } from './errors'
 import { checkApiHealth, checkApiHealthRetry, getLastHealthCheck } from './healthCheck'
 
 function getApiUrl(path: string): string {
-  const baseUrl = process.env.NEXT_PUBLIC_WORDPRESS_URL || 'http://localhost:8080'
-  return `${baseUrl}/index.php?rest_route=${path}`
+  return `${WORDPRESS_SITE_URL}/index.php?rest_route=${path}`
 }
 
 const circuitBreaker = new CircuitBreaker({
