@@ -1,10 +1,4 @@
-const nextJest = require('next/jest')
-
-const createJestConfig = nextJest({
-  dir: './',
-})
-
-const customJestConfig = {
+module.exports = {
   setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
@@ -17,6 +11,7 @@ const customJestConfig = {
     '/node_modules/',
     '/.next/',
   ],
+  testMatch: [
+    '**/__tests__/**/*test.(ts|tsx|js)',
+  ],
 }
-
-module.exports = createJestConfig(customJestConfig)
