@@ -270,9 +270,13 @@ interface ApiListResult<T> extends ApiResult<T[]> {
 
 ### Data Validation
 - **Runtime Validation**: `src/lib/validation/dataValidator.ts` validates all API responses
-  - Posts, Categories, Tags, Media, Authors validated at boundaries
-  - Type checking, required field verification, array validation
-  - Graceful degradation with error logging
+   - Posts, Categories, Tags, Media, Authors validated at boundaries
+   - Type checking, required field verification, array validation
+   - Graceful degradation with error logging
+   - **Type Guards**: TypeScript type-safe validation helpers
+     - `isValidationResultValid<T>()`: Type guard to narrow ValidationResult<T>
+     - `unwrapValidationResult<T>()`: Extract data with error throwing
+     - `unwrapValidationResultSafe<T>(): Extract data with fallback
 - **Compile-time Safety**: TypeScript provides static type checking
 - **Fallback Data**: Invalid data triggers fallback mechanisms
 

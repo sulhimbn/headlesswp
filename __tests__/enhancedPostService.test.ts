@@ -1,13 +1,25 @@
 import { enhancedPostService } from '@/lib/services/enhancedPostService';
 import { wordpressAPI } from '@/lib/wordpress';
 import { cacheManager } from '@/lib/cache';
-import { dataValidator } from '@/lib/validation/dataValidator';
+import { dataValidator, isValidationResultValid } from '@/lib/validation/dataValidator';
 import { WordPressPost, WordPressCategory, WordPressTag } from '@/types/wordpress';
 import { PAGINATION_LIMITS } from '@/lib/api/config';
 
 jest.mock('@/lib/wordpress');
 jest.mock('@/lib/cache');
-jest.mock('@/lib/validation/dataValidator');
+jest.mock('@/lib/validation/dataValidator', () => ({
+  dataValidator: {
+    validatePost: jest.fn(),
+    validatePosts: jest.fn(),
+    validateCategory: jest.fn(),
+    validateCategories: jest.fn(),
+    validateTag: jest.fn(),
+    validateTags: jest.fn(),
+    validateMedia: jest.fn(),
+    validateAuthor: jest.fn()
+  },
+  isValidationResultValid: jest.requireActual('@/lib/validation/dataValidator').isValidationResultValid
+}));
 
 describe('enhancedPostService', () => {
   beforeEach(() => {
