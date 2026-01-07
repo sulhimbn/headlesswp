@@ -210,15 +210,16 @@ export const enhancedPostService = {
       const post = await wordpressAPI.getPost(slug);
       if (!post) return null;
 
-      return fetchAndValidateSingle(
-        async () => post,
-        dataValidator.validatePost.bind(dataValidator),
-        enrichPostWithDetails,
-        null,
-        `post with slug ${slug}`
-      );
+      const validation = dataValidator.validatePost(post);
+
+      if (!isValidationResultValid(validation)) {
+        logger.error(`Invalid post data for slug ${slug}`, undefined, { module: 'enhancedPostService', errors: validation.errors });
+        return null;
+      }
+
+      return await enrichPostWithDetails(validation.data);
     } catch (error) {
-      logger.error(`Failed to fetch post with slug ${slug}`, error, { module: 'enhancedPostService' });
+      logger.error(`Failed to fetch or enrich post with slug ${slug}`, error, { module: 'enhancedPostService' });
       return null;
     }
   },
