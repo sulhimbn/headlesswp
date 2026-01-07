@@ -1,6 +1,6 @@
  # Task Backlog
 
-**Last Updated**: 2026-01-07 (DOC-001: Roadmap documentation updated to reflect actual completion status)
+**Last Updated**: 2026-01-07 (Added 4 new refactoring tasks from code review: REFACTOR-006, REFACTOR-007, REFACTOR-008, REFACTOR-009)
 
  ---
 
@@ -3683,6 +3683,372 @@ Separated concerns by extracting duplicated UI components and isolating business
 - Extract PostCard component from page.tsx for better reusability
 - Consider creating service layer for categories, tags, media, authors
 - Add error boundary for API service layer
+
+---
+
+## [REFACTOR-006] Extract Duplicated Fallback Post Logic
+
+**Status**: Backlog
+**Priority**: High
+**Assigned**: Principal Software Architect
+**Created**: 2026-01-07
+**Updated**: 2026-01-07
+
+### Description
+
+The `enhancedPostService.ts` contains duplicated fallback post creation logic in 4 methods (lines 105-109, 115-119, 130-134, 140-144). Each method creates identical fallback posts when API fails, violating DRY principle and making maintenance difficult.
+
+### Issue
+
+- **Location**: `src/lib/services/enhancedPostService.ts`
+- Lines 105-109, 115-119, 130-134, 140-144: Identical fallback post creation pattern repeated 4 times
+- Each method calls `createFallbackPost()` with similar parameters and error handling
+- Increases maintenance burden - changes must be made in 4 places
+- Makes it harder to maintain consistent fallback behavior
+
+### Suggestion
+
+Create a centralized `createFallbackPosts()` helper function that:
+- Accepts array of failed post IDs or error parameters
+- Generates multiple fallback posts with proper index-based IDs
+- Handles logging consistently
+- Can be called from all 4 methods
+
+```typescript
+// New helper function in enhancedPostService.ts
+private createFallbackPosts(count: number, errorMessage: string): PostWithMediaUrl[] {
+  return Array.from({ length: count }, (_, index) => 
+    createFallbackPost(index + 1, errorMessage)
+  )
+}
+```
+
+### Implementation Steps
+
+1. Create `createFallbackPosts()` helper method
+2. Update `getLatestPosts()` to use helper (line 105-109)
+3. Update `getCategoryPosts()` to use helper (line 115-119)
+4. Update `getAllPosts()` to use helper (line 130-134)
+5. Update `getPaginatedPosts()` to use helper (line 140-144)
+6. Verify tests still pass (34 tests in enhancedPostService.test.ts)
+
+### Expected Benefits
+
+- Reduce code duplication by ~20 lines
+- Single source of truth for fallback post creation
+- Easier to maintain and modify fallback behavior
+- Consistent error logging across all methods
+
+### Related Files
+
+- `src/lib/services/enhancedPostService.ts` (target file)
+- `src/lib/utils/fallbackPost.ts` (utility to import)
+- `__tests__/enhancedPostService.test.ts` (tests to verify)
+
+---
+
+## [REFACTOR-007] Centralize Magic Numbers
+
+**Status**: Backlog
+**Priority**: High
+**Assigned**: Principal Software Architect
+**Created**: 2026-01-07
+**Updated**: 2026-01-07
+
+### Description
+
+Magic numbers are scattered throughout the codebase, making configuration difficult and reducing maintainability. Hardcoded values exist in multiple files for cache times, retries, delays, and timeouts.
+
+### Issue
+
+**Magic Numbers Found**:
+
+1. **`src/lib/api/config.ts`** (lines 3-16):
+   - 10000 (timeout)
+   - 3 (max retries)
+   - 5 (circuit breaker failure threshold)
+   - 60000 (circuit breaker recovery timeout)
+   - 2 (circuit breaker success threshold)
+   - 1000 (initial retry delay)
+   - 30000 (max retry delay)
+   - 60 (rate limit max requests)
+   - 60000 (rate limit window)
+
+2. **`src/lib/cache.ts`** (lines 135-141):
+   - `5 * 60 * 1000` (5 minutes)
+   - `30 * 60 * 1000` (30 minutes)
+   - `60 * 60 * 1000` (1 hour)
+   - Calculations instead of named constants
+
+3. **`src/app/berita/[slug]/page.tsx`** (line 11):
+   - `revalidate = 3600` (hardcoded instead of using config)
+
+4. **`src/app/page.tsx`** (line 6):
+   - `revalidate = 300` (hardcoded instead of using config)
+
+5. **`src/app/berita/page.tsx`** (line 8):
+   - `revalidate = 300` (hardcoded instead of using config)
+
+### Suggestion
+
+Extract all magic numbers to named constants with descriptive names. Create configuration constants organized by purpose:
+
+```typescript
+// Add to src/lib/api/config.ts
+export const CACHE_TIMES = {
+  SHORT: 5 * 60 * 1000,      // 5 minutes
+  MEDIUM: 30 * 60 * 1000,    // 30 minutes
+  LONG: 60 * 60 * 1000,      // 1 hour
+} as const
+
+export const API_TIMEOUT = {
+  DEFAULT: 10000,             // 10 seconds
+  FAST: 5000,                // 5 seconds
+  SLOW: 30000,               // 30 seconds
+} as const
+```
+
+### Implementation Steps
+
+1. Create CACHE_TIMES constant in `src/lib/api/config.ts`
+2. Create API_TIMEOUT constant in `src/lib/api/config.ts`
+3. Replace hardcoded timeouts in `src/lib/api/config.ts`
+4. Replace time calculations in `src/lib/cache.ts` with CACHE_TIMES constants
+5. Update page files to use existing REVALIDATE_TIMES constant
+6. Add comments explaining each constant's purpose
+7. Run tests to verify no behavior changes
+
+### Expected Benefits
+
+- Single source of truth for all timeout and cache values
+- Easy to adjust configuration globally
+- Self-documenting code through descriptive constant names
+- Easier onboarding for new developers
+
+### Related Files
+
+- `src/lib/api/config.ts` (primary location for constants)
+- `src/lib/cache.ts` (uses time calculations)
+- `src/app/page.tsx` (uses revalidate)
+- `src/app/berita/page.tsx` (uses revalidate)
+- `src/app/berita/[slug]/page.tsx` (uses revalidate)
+
+---
+
+## [REFACTOR-008] Improve Type Safety in Validation
+
+**Status**: Backlog
+**Priority**: Medium
+**Assigned**: Senior TypeScript Engineer
+**Created**: 2026-01-07
+**Updated**: 2026-01-07
+
+### Description
+
+The `dataValidator.ts` module uses double type assertions (`as unknown as`) throughout the code (lines 97, 164, 227, 290, 328), which undermines TypeScript's type safety and indicates weak typing in validation logic.
+
+### Issue
+
+**Location**: `src/lib/validation/dataValidator.ts`
+
+**Double Type Assertions Found**:
+- Line 97: `data as unknown as WordPressPost`
+- Line 164: `data as unknown as WordPressCategory`
+- Line 227: `data as unknown as WordPressTag`
+- Line 290: `data as unknown as WordPressMedia`
+- Line 328: `data as unknown as WordPressAuthor`
+
+**Problems**:
+- Double type assertion bypasses TypeScript type checking
+- Indicates validation logic doesn't properly narrow types
+- Makes refactoring risky - type errors suppressed
+- Violates type safety principles
+
+### Root Cause
+
+Validation logic performs runtime checks but doesn't narrow TypeScript types properly. The `validateXxx()` methods return `ValidationResult<T>` with `valid` flag, but TypeScript doesn't understand that when `valid === true`, the data is of type T.
+
+### Suggestion
+
+**Option 1 - Type Guards**: Convert validation methods to type guards that properly narrow types:
+```typescript
+function isPost(data: unknown): data is WordPressPost {
+  // validation checks
+  return true
+}
+
+// Usage:
+if (isPost(data)) {
+  // TypeScript knows data is WordPressPost here
+}
+```
+
+**Option 2 - Zod Schema**: Replace custom validation with Zod schema:
+```typescript
+import { z } from 'zod'
+
+const PostSchema = z.object({
+  id: z.number(),
+  title: z.object({ rendered: z.string() }),
+  // ... other fields
+})
+
+// Usage:
+const result = PostSchema.safeParse(data)
+if (result.success) {
+  // TypeScript knows result.data is WordPressPost
+}
+```
+
+### Implementation Steps
+
+**If using Type Guards (Option 1)**:
+1. Convert `validatePost()` to `isPost()` type guard
+2. Remove `ValidationResult<T>` pattern, use boolean return
+3. Update all validation methods to type guards
+4. Update service layer to use type guards
+5. Remove all `as unknown as` assertions
+6. Run tests to verify behavior preserved
+
+**If using Zod (Option 2)**:
+1. Install `zod` package
+2. Create schemas for all WordPress types in separate file
+3. Replace validation logic with Zod schemas
+4. Update service layer to use Zod results
+5. Remove all custom validation code (333 lines → ~50 lines)
+6. Run tests and update as needed
+
+### Expected Benefits
+
+**Option 1**:
+- Maintains custom validation logic
+- Proper TypeScript type narrowing
+- Removes unsafe type assertions
+- No new dependencies
+
+**Option 2**:
+- Drastically reduces validation code (333 lines → ~50 lines)
+- Industry-standard validation library
+- Better error messages from Zod
+- Built-in schema inference for types
+- Easier to maintain and extend
+
+### Related Files
+
+- `src/lib/validation/dataValidator.ts` (333 lines to refactor)
+- `src/lib/services/enhancedPostService.ts` (uses validation)
+- `package.json` (if using Zod option)
+
+---
+
+## [REFACTOR-009] Split API Client Responsibilities
+
+**Status**: Backlog
+**Priority**: Medium
+**Assigned**: Principal Software Architect
+**Created**: 2026-01-07
+**Updated**: 2026-01-07
+
+### Description
+
+The `src/lib/api/client.ts` file (136 lines) combines multiple concerns: HTTP client configuration, circuit breaking, retry logic, rate limiting, and health checks. This violates Single Responsibility Principle and makes testing difficult.
+
+### Issue
+
+**Location**: `src/lib/api/client.ts`
+
+**Multiple Responsibilities in One File**:
+- HTTP client configuration (Axios setup, interceptors)
+- Circuit breaker pattern integration (instantiation, state management)
+- Retry strategy integration (exponential backoff)
+- Rate limiting integration (token bucket)
+- Health check integration
+- Request/response error handling
+
+**Problems**:
+- Difficult to test individual components in isolation
+- Tight coupling between concerns
+- Changes to one concern may affect others
+- Hard to swap implementations (e.g., replace circuit breaker)
+- 136 lines makes file difficult to navigate
+
+### Suggestion
+
+Split client.ts into focused modules using dependency injection pattern:
+
+**New Structure**:
+```
+src/lib/api/
+├── client/
+│   ├── index.ts              # Main API client (orchestration)
+│   ├── httpClient.ts         # Axios configuration and base client
+│   ├── middleware/
+│   │   ├── circuitBreakerMiddleware.ts
+│   │   ├── retryMiddleware.ts
+│   │   ├── rateLimiterMiddleware.ts
+│   │   └── errorHandlerMiddleware.ts
+│   └── healthCheck.ts        # Extracted health check logic
+```
+
+**Dependency Injection Pattern**:
+```typescript
+// httpClient.ts - pure HTTP client
+export function createHttpClient(config: HttpClientConfig) {
+  const client = axios.create(config)
+  return client
+}
+
+// circuitBreakerMiddleware.ts - circuit breaker logic
+export function withCircuitBreaker(
+  client: AxiosInstance,
+  config: CircuitBreakerConfig
+): AxiosInstance {
+  const circuitBreaker = new CircuitBreaker(config)
+  // Add interceptor logic
+  return client
+}
+
+// index.ts - compose middleware
+export function createApiClient(config: ApiClientConfig) {
+  let client = createHttpClient(config.httpClient)
+  client = withCircuitBreaker(client, config.circuitBreaker)
+  client = withRetry(client, config.retry)
+  client = withRateLimiter(client, config.rateLimiter)
+  return client
+}
+```
+
+### Implementation Steps
+
+1. Create `src/lib/api/client/` directory structure
+2. Extract HTTP client to `httpClient.ts`
+3. Extract circuit breaker logic to `middleware/circuitBreakerMiddleware.ts`
+4. Extract retry logic to `middleware/retryMiddleware.ts`
+5. Extract rate limiting to `middleware/rateLimiterMiddleware.ts`
+6. Extract error handling to `middleware/errorHandlerMiddleware.ts`
+7. Extract health check to `healthCheck.ts`
+8. Create `index.ts` with composition pattern
+9. Update imports in `src/lib/wordpress.ts` and other consumers
+10. Run all tests to verify behavior preserved
+
+### Expected Benefits
+
+- Each module has single, clear responsibility
+- Easy to test each component in isolation
+- Can swap implementations without affecting others
+- Easier to understand and maintain
+- Better separation of concerns
+- More flexible architecture
+
+### Related Files
+
+- `src/lib/api/client.ts` (136 lines to refactor)
+- `src/lib/wordpress.ts` (imports from client)
+- `src/lib/api/circuitBreaker.ts` (referenced)
+- `src/lib/api/retryStrategy.ts` (referenced)
+- `src/lib/api/rateLimiter.ts` (referenced)
+
+---
 
 ## Backlog
 *No backlog items*
