@@ -583,86 +583,81 @@ Created three comprehensive test suites:
 
 ## [REFACTOR-001] Duplicate Fallback Post Creation Code
 
-**Status**: Backlog
+**Status**: Complete
 **Priority**: Medium
-**Assigned**: -
+**Assigned**: Principal Software Architect
 **Created**: 2026-01-07
 **Updated**: 2026-01-07
 
 ### Issue
 
-The `createFallbackPost` function is duplicated in both `src/lib/services/postService.ts` (lines 5-22) and `src/lib/services/enhancedPostService.ts` (lines 17-34), violating the DRY principle and creating maintenance overhead.
+The `createFallbackPost` function was duplicated in both `src/lib/services/postService.ts` and `src/lib/services/enhancedPostService.ts`, violating the DRY principle and creating maintenance overhead.
 
-### Location
+### Implementation
 
-- `src/lib/services/postService.ts` - createFallbackPost function
-- `src/lib/services/enhancedPostService.ts` - createFallbackPost function
+Extracted `createFallbackPost` to shared utility module `src/lib/utils/fallbackPost.ts`. The function is now imported by `enhancedPostService.ts`.
 
-### Suggestion
+### Results
 
-Extract `createFallbackPost` to a shared utility module and import it in both service files. This will:
-- Eliminate code duplication
-- Make fallback post creation consistent across services
-- Centralize fallback post configuration
-- Make future changes to fallback post structure easier
+- ✅ `createFallbackPost` function centralized in `src/lib/utils/fallbackPost.ts`
+- ✅ `enhancedPostService.ts` imports and uses shared function
+- ✅ `postService.ts` has been deprecated and removed (see REFACTOR-005)
+- ✅ No code duplication
+- ✅ Tests passing (33 tests in fallbackPost.test.ts)
 
-### Implementation Steps
+### Files Created
 
-1. Create `src/lib/utils/fallbackPost.ts` with the `createFallbackPost` function
-2. Export the function from the utility module
-3. Update `postService.ts` to import and use the shared function
-4. Update `enhancedPostService.ts` to import and use the shared function
-5. Ensure all tests still pass after refactoring
+- `src/lib/utils/fallbackPost.ts` - Shared utility for creating fallback posts
 
-### Priority
+### Files Modified
 
-Medium - Code quality improvement, not blocking functionality
+- `src/lib/services/enhancedPostService.ts` - Updated to import from shared utility
+- `src/lib/services/postService.ts` - REMOVED (deprecated, see REFACTOR-005)
 
-### Effort
+### Success Criteria
 
-Small - 30 minutes
+- ✅ createFallbackPost centralized in shared utility
+- ✅ No code duplication
+- ✅ Tests passing
+- ✅ TypeScript type checking passes
 
 ---
 
 ## [REFACTOR-002] Remove Redundant Media URL Mapping in Pages
 
-**Status**: Backlog
+**Status**: Complete
 **Priority**: Low
-**Assigned**: -
+**Assigned**: Principal Software Architect
 **Created**: 2026-01-07
 **Updated**: 2026-01-07
 
 ### Issue
 
-Pages (`src/app/berita/page.tsx` lines 21-25, `src/app/page.tsx` lines 14-18) are manually creating media URL maps from service responses, even though `enhancedPostService` already returns posts with `mediaUrl` property attached. This is redundant and adds unnecessary complexity.
+Pages were manually creating media URL maps from service responses, even though `enhancedPostService` returns posts with `mediaUrl` property attached.
 
-### Location
+### Implementation
 
-- `src/app/berita/page.tsx` - lines 21-25 (mediaUrlMap creation)
-- `src/app/page.tsx` - lines 14-18 (mediaUrlMap creation)
+Removed redundant media URL mapping logic. Pages now use `post.mediaUrl` directly from enriched posts.
 
-### Suggestion
+### Results
 
-Remove the redundant media URL mapping logic and pass the `mediaUrl` property directly from the enriched posts. This will:
-- Eliminate redundant code
-- Simplify page logic
-- Reduce potential for bugs (no manual mapping)
-- Make the code more readable
+- ✅ No mediaUrlMap creation in any page files
+- ✅ Pages use `post.mediaUrl` directly
+- ✅ Simplified page logic
+- ✅ No redundant code
 
-### Implementation Steps
+### Files Verified
 
-1. Update `src/app/page.tsx` to use `post.mediaUrl` directly instead of `mediaUrlMap.get(post.id)`
-2. Update `src/app/berita/page.tsx` to use `post.mediaUrl` directly instead of `mediaUrlMap.get(post.id)`
-3. Remove the `mediaUrlMap` creation code from both files
-4. Run tests to ensure functionality is preserved
+- `src/app/page.tsx` - Uses `post.mediaUrl` directly (line 23, 32)
+- `src/app/berita/page.tsx` - Uses `post.mediaUrl` directly (line 35)
+- `src/app/berita/[slug]/page.tsx` - No media URL mapping needed
 
-### Priority
+### Success Criteria
 
-Low - Code quality improvement, functionality works correctly
-
-### Effort
-
-Small - 20 minutes
+- ✅ No mediaUrlMap in page files
+- ✅ Pages use post.mediaUrl directly
+- ✅ Code simplified
+- ✅ Tests passing
 
 ---
 
@@ -791,9 +786,9 @@ Removed global `setInterval` and relied on existing lazy cleanup in `get()` meth
 
 ## [REFACTOR-004] Centralize Revalidate Configuration
 
-**Status**: Backlog
+**Status**: Not Feasible
 **Priority**: Low
-**Assigned**: -
+**Assigned**: Principal Software Architect
 **Created**: 2026-01-07
 **Updated**: 2026-01-07
 
@@ -802,98 +797,109 @@ Removed global `setInterval` and relied on existing lazy cleanup in `get()` meth
 ISR revalidate times are hardcoded in multiple page files:
 - `src/app/page.tsx` line 6: `export const revalidate = 300`
 - `src/app/berita/page.tsx` line 8: `export const revalidate = 300`
-- `src/app/berita/[slug]/page.tsx` (needs verification)
+- `src/app/berita/[slug]/page.tsx` line 11: `export const revalidate = 3600`
 
 This makes it difficult to adjust cache times globally and violates the single source of truth principle.
 
-### Location
+### Analysis
 
-- `src/app/page.tsx` - line 6
-- `src/app/berita/page.tsx` - line 8
-- `src/app/berita/[slug]/page.tsx` (if exists)
-- `src/lib/api/config.ts` - potential location for central configuration
+The `REVALIDATE_TIMES` constant already exists in `src/lib/api/config.ts` (lines 24-28). However, attempting to use it in page files (`export const revalidate = REVALIDATE_TIMES.HOMEPAGE`) fails because:
 
-### Suggestion
+**Next.js Limitation**: Segment configuration exports (like `export const revalidate`) require literal constants at compile time, not imported constants. Next.js evaluates these exports at build time and does not support dynamic values or references to imported constants, even with `as const` assertion.
 
-Extract revalidate times to a centralized configuration constant in `src/lib/api/config.ts` and import it in all pages. This will:
-- Provide a single source of truth for cache times
-- Make it easy to adjust cache duration globally
-- Enable environment-specific cache times
-- Improve maintainability
+### Attempted Solution
 
-### Implementation Steps
+Tried importing `REVALIDATE_TIMES` and using it in all three page files, but this caused build error:
+```
+Invalid segment configuration export detected. This can cause unexpected behavior from configs not being applied.
+```
 
-1. Add `REVALIDATE_TIMES` constant to `src/lib/api/config.ts` with default values:
-   ```typescript
-   export const REVALIDATE_TIMES = {
-     HOMEPAGE: 300,      // 5 minutes
-     POST_LIST: 300,     // 5 minutes
-     POST_DETAIL: 3600,  // 1 hour
-   } as const
-   ```
-2. Update `src/app/page.tsx` to use `export const revalidate = REVALIDATE_TIMES.HOMEPAGE`
-3. Update `src/app/berita/page.tsx` to use `export const revalidate = REVALIDATE_TIMES.POST_LIST`
-4. Update `src/app/berita/[slug]/page.tsx` if it has revalidate constant
-5. Run build and tests to ensure configuration works correctly
+### Conclusion
 
-### Priority
+**Not Feasible** - This refactoring cannot be completed as described due to Next.js architectural limitations. The current approach with hardcoded values is the only supported method for segment configuration exports.
 
-Low - Code quality improvement, current approach works fine
+### Alternative Approaches
 
-### Effort
+1. **Documentation**: Add comments in pages referencing `REVALIDATE_TIMES` for manual sync
+2. **Pre-commit Hook**: Add check to ensure revalidate values match config
+3. **Build-time Script**: Generate page files from templates (over-engineering)
+4. **Accept Current State**: Hardcoded values are acceptable as they're in sync with config
 
-Small - 30 minutes
+### Recommendation
+
+Accept current implementation. The values are already in sync with `REVALIDATE_TIMES` in config.ts. Any changes require manual updates to both files, but this is documented and maintainable.
+
+### Files Reviewed
+
+- `src/app/page.tsx` - line 6: `export const revalidate = 300` ✓ matches config
+- `src/app/berita/page.tsx` - line 8: `export const revalidate = 300` ✓ matches config
+- `src/app/berita/[slug]/page.tsx` - line 11: `export const revalidate = 3600` ✓ matches config
+- `src/lib/api/config.ts` - lines 24-28: `REVALIDATE_TIMES` constant exists and documented
+
+### Success Criteria
+
+- ✅ REVALIDATE_TIMES constant exists in config.ts
+- ✅ All page revalidate values match config
+- ✅ Documented why centralization is not feasible
+- ✅ Alternative approaches documented
 
 ---
 
 ## [REFACTOR-005] Evaluate and Potentially Deprecate postService
 
-**Status**: Backlog
+**Status**: Complete
 **Priority**: Medium
-**Assigned**: -
+**Assigned**: Principal Software Architect
 **Created**: 2026-01-07
 **Updated**: 2026-01-07
 
 ### Issue
 
-The codebase has two service layers for posts:
+The codebase had two service layers for posts:
 - `postService.ts` - Basic service with fallback logic
 - `enhancedPostService.ts` - Enhanced service with validation, batch operations, and enrichment
 
-All page files now use `enhancedPostService`, but `postService` still exists with tests. This creates:
+All page files were using `enhancedPostService`, but `postService` still existed with tests. This created:
 - Confusion about which service to use
 - Maintenance overhead for two similar services
 - Potential for inconsistency if services diverge
 - Duplicate code (createFallbackPost function)
 
-### Location
+### Implementation
 
-- `src/lib/services/postService.ts` - potentially deprecated service
-- `__tests__/postService.test.ts` - tests for potentially deprecated service
+Audited codebase and confirmed:
+1. All page files use `enhancedPostService` exclusively
+2. No production code imports `postService`
+3. `enhancedPostService` provides all functionality from `postService` plus additional features:
+   - Runtime validation
+   - Batch media fetching (N+1 query elimination)
+   - Category/Tag resolution
+   - Cache management
+   - Type-safe enriched data (PostWithMediaUrl, PostWithDetails)
 
-### Suggestion
+Decided to deprecate and remove `postService`.
 
-Evaluate whether `postService` can be fully deprecated and removed, or if it serves a different purpose. Options:
-1. If deprecated: Remove `postService.ts` and migrate tests to `enhancedPostService`
-2. If still needed: Document why both services exist and their use cases
-3. If for legacy support: Mark as `@deprecated` with migration guide
+### Results
 
-### Implementation Steps
+- ✅ `src/lib/services/postService.ts` removed
+- ✅ `__tests__/postService.test.ts` removed
+- ✅ `enhancedPostService` is the single source of truth for post data
+- ✅ No confusion about which service to use
+- ✅ Reduced maintenance overhead
+- ✅ All tests passing (201 tests)
 
-1. Audit codebase to confirm `postService` is not used in production code
-2. Review `enhancedPostService` to ensure it can replace all `postService` functionality
-3. Decide on deprecation or documentation approach
-4. If deprecating: Remove `postService.ts`, migrate tests, update documentation
-5. If keeping: Add clear documentation and JSDoc comments explaining the difference
-6. Update blueprint.md if service layer architecture changes
+### Files Removed
 
-### Priority
+- `src/lib/services/postService.ts` - Deprecated service
+- `__tests__/postService.test.ts` - Tests for deprecated service
 
-Medium - Code clarity and maintenance improvement
+### Success Criteria
 
-### Effort
-
-Medium - 1-2 hours (if deprecating) or Small - 30 minutes (if documenting)
+- ✅ postService fully removed
+- ✅ No production code uses postService
+- ✅ enhancedPostService is single source of truth
+- ✅ All tests passing
+- ✅ Documentation updated
 
 ---
 
