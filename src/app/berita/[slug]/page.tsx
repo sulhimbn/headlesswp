@@ -6,6 +6,8 @@ import Header from '@/components/layout/Header'
 import Footer from '@/components/layout/Footer'
 import { sanitizeHTML } from '@/lib/utils/sanitizeHTML'
 import Breadcrumb from '@/components/ui/Breadcrumb'
+import Badge from '@/components/ui/Badge'
+import MetaInfo from '@/components/ui/MetaInfo'
 
 export const dynamic = 'force-static'
 export const revalidate = 3600
@@ -50,27 +52,14 @@ export default async function PostPage({ params }: { params: { slug: string } })
           
           <div className="p-8">
             <div className="mb-6">
-              <div className="flex items-center space-x-4 text-sm text-gray-500 mb-4">
-                <span>By Admin</span>
-                <span>•</span>
-                <span>
-                  {new Date(post.date).toLocaleDateString('id-ID', {
-                    day: 'numeric',
-                    month: 'long',
-                    year: 'numeric'
-                  })}
-                </span>
-              </div>
-              
+              <MetaInfo date={post.date} className="mb-4" />
+               
               {categoriesDetails.length > 0 && (
                 <div className="flex flex-wrap gap-2 mb-4">
                   {categoriesDetails.map((category) => (
-                    <span
-                      key={category.id}
-                      className="bg-red-100 text-red-800 text-xs px-2 py-1 rounded-full"
-                    >
+                    <Badge key={category.id} variant="category">
                       {category.name}
-                    </span>
+                    </Badge>
                   ))}
                 </div>
               )}
@@ -90,12 +79,9 @@ export default async function PostPage({ params }: { params: { slug: string } })
                 <h3 className="text-sm font-semibold text-gray-500 mb-3">Tags</h3>
                 <div className="flex flex-wrap gap-2">
                   {tagsDetails.map((tag) => (
-                    <span
-                      key={tag.id}
-                      className="bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded-full"
-                    >
+                    <Badge key={tag.id} variant="tag">
                       #{tag.name}
-                    </span>
+                    </Badge>
                   ))}
                 </div>
               </div>
