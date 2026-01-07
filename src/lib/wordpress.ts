@@ -1,44 +1,5 @@
-import axios from 'axios';
 import { WordPressPost, WordPressCategory, WordPressTag, WordPressMedia, WordPressAuthor } from '@/types/wordpress';
-
-const WORDPRESS_API_URL = process.env.NEXT_PUBLIC_WORDPRESS_API_URL || 'http://localhost:8080/wp-json';
-
-const api = axios.create({
-  baseURL: WORDPRESS_API_URL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-  timeout: 10000, // 10 second timeout
-});
-
-// Add retry logic for failed requests
-api.interceptors.response.use(
-  (response) => response,
-  async (error) => {
-    const config = error.config;
-    
-    // Retry on network errors or 5xx errors
-    if (!config._retry && (!error.response || error.response.status >= 500)) {
-      config._retry = true;
-      config._retryCount = (config._retryCount || 0) + 1;
-      
-      if (config._retryCount <= 3) {
-        // Exponential backoff
-        const delay = Math.pow(2, config._retryCount) * 1000;
-        await new Promise(resolve => setTimeout(resolve, delay));
-        return api(config);
-      }
-    }
-    
-    return Promise.reject(error);
-  }
-);
-
-// Helper function to use index.php fallback for REST API
-const getApiUrl = (path: string) => {
-  const baseUrl = process.env.NEXT_PUBLIC_WORDPRESS_URL || 'http://localhost:8080';
-  return `${baseUrl}/index.php?rest_route=${path}`;
-};
+import { apiClient, getApiUrl } from './api/client';
 
 export const wordpressAPI = {
   // Posts
@@ -49,57 +10,57 @@ export const wordpressAPI = {
     tag?: number;
     search?: string;
   }): Promise<WordPressPost[]> => {
-    const response = await api.get(getApiUrl('/wp/v2/posts'), { params });
+    const response = await apiClient.get(getApiUrl('/wp/v2/posts'), { params });
     return response.data;
   },
 
   getPost: async (slug: string): Promise<WordPressPost> => {
-    const response = await api.get(getApiUrl('/wp/v2/posts'), { params: { slug } });
+    const response = await apiClient.get(getApiUrl('/wp/v2/posts'), { params: { slug } });
     return response.data[0];
   },
 
   getPostById: async (id: number): Promise<WordPressPost> => {
-    const response = await api.get(getApiUrl(`/wp/v2/posts/${id}`));
+    const response = await apiClient.get(getApiUrl(`/wp/v2/posts/${id}`));
     return response.data;
   },
 
   // Categories
   getCategories: async (): Promise<WordPressCategory[]> => {
-    const response = await api.get(getApiUrl('/wp/v2/categories'));
+    const response = await apiClient.get(getApiUrl('/wp/v2/categories'));
     return response.data;
   },
 
   getCategory: async (slug: string): Promise<WordPressCategory> => {
-    const response = await api.get(getApiUrl('/wp/v2/categories'), { params: { slug } });
+    const response = await apiClient.get(getApiUrl('/wp/v2/categories'), { params: { slug } });
     return response.data[0];
   },
 
   // Tags
   getTags: async (): Promise<WordPressTag[]> => {
-    const response = await api.get(getApiUrl('/wp/v2/tags'));
+    const response = await apiClient.get(getApiUrl('/wp/v2/tags'));
     return response.data;
   },
 
   getTag: async (slug: string): Promise<WordPressTag> => {
-    const response = await api.get(getApiUrl('/wp/v2/tags'), { params: { slug } });
+    const response = await apiClient.get(getApiUrl('/wp/v2/tags'), { params: { slug } });
     return response.data[0];
   },
 
   // Media
   getMedia: async (id: number): Promise<WordPressMedia> => {
-    const response = await api.get(getApiUrl(`/wp/v2/media/${id}`));
+    const response = await apiClient.get(getApiUrl(`/wp/v2/media/${id}`));
     return response.data;
   },
 
   // Authors
   getAuthor: async (id: number): Promise<WordPressAuthor> => {
-    const response = await api.get(getApiUrl(`/wp/v2/users/${id}`));
+    const response = await apiClient.get(getApiUrl(`/wp/v2/users/${id}`));
     return response.data;
   },
 
   // Search
   search: async (query: string): Promise<WordPressPost[]> => {
-    const response = await api.get(getApiUrl('/wp/v2/search'), { params: { search: query } });
+    const response = await apiClient.get(getApiUrl('/wp/v2/search'), { params: { search: query } });
     return response.data;
   },
 };
