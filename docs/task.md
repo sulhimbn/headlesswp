@@ -527,6 +527,139 @@ Created `__tests__/postService.test.ts` with 15 tests covering:
 
 ## Completed Tasks
 
+## [TASK-006] Documentation Enhancement - README & API Docs
+
+**Status**: Complete
+**Priority**: P0
+**Assigned**: Technical Writer
+**Created**: 2026-01-07
+**Updated**: 2026-01-07
+
+### Description
+
+Enhanced project documentation by rewriting README.md in English with complete setup instructions and creating comprehensive API documentation with working examples.
+
+### Implementation Summary
+
+1. **Rewritten README.md**:
+   - Translated from Indonesian to English (consistent with other docs)
+   - Added complete setup instructions for both backend and frontend
+   - Added available npm scripts with descriptions
+   - Added environment variables documentation
+   - Added detailed project structure overview
+   - Added WordPress API endpoints list
+   - Added resilience patterns overview
+   - Added performance, security, and testing sections
+   - Added troubleshooting guide
+   - Added deployment instructions
+
+2. **Created docs/api.md** (NEW):
+   - Complete WordPress API reference with all endpoints
+   - Detailed parameter and return type documentation
+   - Working code examples for all API methods
+   - Post service reference with fallback behavior
+   - Request cancellation with AbortController examples
+   - Cache management documentation
+   - Error handling guide with error types
+   - Resilience patterns (circuit breaker, retry strategy) explanation
+   - TypeScript types reference
+   - Best practices with examples
+   - Troubleshooting guide
+   - Performance tips
+   - Testing examples with mocking
+
+### Documentation Improvements
+
+**Before**:
+- ❌ README.md in Indonesian (inconsistent with English docs)
+- ❌ Missing frontend setup instructions
+- ❌ No testing commands documented
+- ❌ No environment variable documentation
+- ❌ No troubleshooting guide
+- ❌ No API documentation
+- ❌ No code examples
+
+**After**:
+- ✅ README.md in English (consistent with docs/blueprint.md)
+- ✅ Complete setup for both WordPress and Next.js
+- ✅ All npm scripts documented
+- ✅ Environment variables explained
+- ✅ Troubleshooting guide included
+- ✅ Comprehensive API documentation (docs/api.md)
+- ✅ Working code examples for all API methods
+- ✅ Best practices and performance tips
+- ✅ Testing examples
+
+### Key Benefits
+
+1. **Improved Onboarding**:
+   - New developers can get started in minutes
+   - Clear step-by-step instructions
+   - Common problems solved in troubleshooting
+
+2. **Better API Usage**:
+   - Complete reference for all API methods
+   - Working examples that can be copied
+   - TypeScript types documented
+   - Error handling explained
+
+3. **Consistent Documentation**:
+   - All docs in English
+   - Consistent formatting and structure
+   - Links between related docs
+
+4. **Developer Experience**:
+   - Best practices guide
+   - Performance tips
+   - Testing examples
+   - Troubleshooting solutions
+
+### Files Created
+
+- `docs/api.md` - NEW: Comprehensive API documentation with examples
+
+### Files Modified
+
+- `README.md` - Rewritten in English with complete setup instructions and all missing sections
+
+### Documentation Coverage
+
+- ✅ README.md - Complete project overview and setup guide
+- ✅ docs/api.md - Complete API reference with examples
+- ✅ docs/blueprint.md - Architecture documentation (already comprehensive)
+- ✅ docs/task.md - Task backlog (updated with this task)
+
+### Success Criteria
+
+- ✅ README.md in English (consistent with other docs)
+- ✅ Complete setup instructions for both backend and frontend
+- ✅ All npm scripts documented
+- ✅ Environment variables explained
+- ✅ Troubleshooting guide included
+- ✅ Comprehensive API documentation created
+- ✅ Working code examples for all API methods
+- ✅ Best practices and performance tips included
+- ✅ Testing examples provided
+- ✅ All documentation links verified
+
+### Anti-Patterns Avoided
+
+- ❌ No outdated information kept
+- ❌ No confusing mixed languages
+- ❌ No walls of text (structured with headings, tables, code blocks)
+- ❌ No untested examples
+- ❌ No implementation details that change frequently
+
+### Follow-up Documentation Opportunities
+
+- Add more troubleshooting scenarios as they arise
+- Create component documentation for UI components
+- Add E2E testing documentation when implemented
+- Create deployment guides for different platforms (Vercel, AWS, etc.)
+- Add internationalization (i18n) documentation when implemented
+
+---
+
 ## [TASK-001] Layer Separation - Presentation vs Business/Data
 
 **Status**: Complete
