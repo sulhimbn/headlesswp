@@ -2,14 +2,24 @@ import { enhancedPostService } from '@/lib/services/enhancedPostService'
 import Header from '@/components/layout/Header'
 import Footer from '@/components/layout/Footer'
 import PostCard from '@/components/post/PostCard'
+import Pagination from '@/components/ui/Pagination'
+import { PAGINATION_LIMITS } from '@/lib/api/config'
 
 export const revalidate = 300;
 
-export default async function BeritaPage() {
-  const posts = await enhancedPostService.getAllPosts()
+export default async function BeritaPage({
+  searchParams,
+}: {
+  searchParams: { page?: string }
+}) {
+  const page = parseInt(searchParams.page || '1', 10)
+  const postsPerPage = PAGINATION_LIMITS.ALL_POSTS
+
+  const { posts, totalPosts } = await enhancedPostService.getPaginatedPosts(page, postsPerPage)
+  const totalPages = Math.ceil(totalPosts / postsPerPage)
 
   const mediaUrlMap = new Map<number, string | null>()
-  
+
   for (const post of posts) {
     mediaUrlMap.set(post.id, post.mediaUrl)
   }
@@ -24,11 +34,23 @@ export default async function BeritaPage() {
           <p className="text-gray-600 mt-2">Kumpulan berita terkini dari Mitra Banten News</p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {posts.map((post) => (
-            <PostCard key={post.id} post={post} mediaUrl={mediaUrlMap.get(post.id)} />
-          ))}
-        </div>
+        {posts.length > 0 ? (
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {posts.map((post) => (
+                <PostCard key={post.id} post={post} mediaUrl={mediaUrlMap.get(post.id)} />
+              ))}
+            </div>
+
+            {totalPages > 1 && (
+              <Pagination currentPage={page} totalPages={totalPages} basePath="/berita" />
+            )}
+          </>
+        ) : (
+          <div className="text-center py-12">
+            <p className="text-gray-600">Tidak ada berita untuk ditampilkan.</p>
+          </div>
+        )}
       </main>
 
       <Footer />

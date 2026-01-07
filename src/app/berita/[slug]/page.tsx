@@ -5,6 +5,7 @@ import Link from 'next/link'
 import Header from '@/components/layout/Header'
 import Footer from '@/components/layout/Footer'
 import DOMPurify from 'isomorphic-dompurify'
+import Breadcrumb from '@/components/ui/Breadcrumb'
 
 export const dynamic = 'force-dynamic'
 
@@ -40,12 +41,18 @@ export default async function PostPage({ params }: { params: { slug: string } })
 
   const { mediaUrl, categoriesDetails, tagsDetails } = post
 
+  const breadcrumbItems = [
+    { label: 'Berita', href: '/berita' },
+    { label: post.title.rendered, href: `/berita/${post.slug}` }
+  ]
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
 
 <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <article className="bg-white rounded-lg shadow-lg overflow-hidden">
+        <Breadcrumb items={breadcrumbItems} />
+        <article className="bg-white rounded-lg shadow-lg overflow-hidden mt-4">
           {post.featured_media > 0 && (
             <div className="relative h-96">
               <Image
