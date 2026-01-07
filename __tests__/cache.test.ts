@@ -38,7 +38,7 @@ describe('Cache Manager', () => {
       expect(result).toBeNull();
     });
 
-    it('should handle expired entries', () => {
+    it('should handle expired entries', (done) => {
       const testData = { id: 1, title: 'Test Post' };
       const key = 'test-key';
       
@@ -48,6 +48,22 @@ describe('Cache Manager', () => {
       setTimeout(() => {
         const result = cacheManager.get(key);
         expect(result).toBeNull();
+        done();
+      }, 10);
+    });
+
+    it('should increment misses and deletes when entry has expired', (done) => {
+      const key = 'test-key';
+      cacheManager.set(key, 'data', 1);
+      
+      const statsBefore = cacheManager.getStats();
+      
+      setTimeout(() => {
+        cacheManager.get(key);
+        const statsAfter = cacheManager.getStats();
+        expect(statsAfter.misses).toBe(statsBefore.misses + 1);
+        expect(statsAfter.deletes).toBe(statsBefore.deletes + 1);
+        done();
       }, 10);
     });
 
@@ -122,15 +138,54 @@ describe('Cache Manager', () => {
   });
 
   describe('Cache Cleanup', () => {
-    it('should clean up expired entries', () => {
-      cacheManager.set('key1', 'data1', 1); // Will expire
-      cacheManager.set('key2', 'data2', 10000); // Won't expire
+    it('should clean up expired entries', (done) => {
+      cacheManager.set('key1', 'data1', 1);
+      cacheManager.set('key2', 'data2', 10000);
       
       setTimeout(() => {
         const cleaned = cacheManager.cleanup();
         expect(cleaned).toBe(1);
         expect(cacheManager.get('key1')).toBeNull();
         expect(cacheManager.get('key2')).toBe('data2');
+        done();
+      }, 10);
+    });
+
+    it('should return 0 when no expired entries', () => {
+      cacheManager.set('key1', 'data1', 10000);
+      cacheManager.set('key2', 'data2', 10000);
+      
+      const cleaned = cacheManager.cleanup();
+      
+      expect(cleaned).toBe(0);
+      expect(cacheManager.get('key1')).toBe('data1');
+      expect(cacheManager.get('key2')).toBe('data2');
+    });
+
+    it('should clean up all expired entries', (done) => {
+      cacheManager.set('key1', 'data1', 1);
+      cacheManager.set('key2', 'data2', 1);
+      cacheManager.set('key3', 'data3', 10000);
+      
+      setTimeout(() => {
+        const cleaned = cacheManager.cleanup();
+        expect(cleaned).toBe(2);
+        expect(cacheManager.get('key1')).toBeNull();
+        expect(cacheManager.get('key2')).toBeNull();
+        expect(cacheManager.get('key3')).toBe('data3');
+        done();
+      }, 10);
+    });
+
+    it('should update delete stats when cleaning up expired entries', (done) => {
+      const initialStats = cacheManager.getStats();
+      cacheManager.set('key1', 'data1', 1);
+      
+      setTimeout(() => {
+        cacheManager.cleanup();
+        const statsAfter = cacheManager.getStats();
+        expect(statsAfter.deletes).toBe(initialStats.deletes + 1);
+        done();
       }, 10);
     });
   });
@@ -155,6 +210,36 @@ describe('Cache Keys', () => {
     expect(CACHE_KEYS.postById(123)).toBe('post:123');
     expect(CACHE_KEYS.categories()).toBe('categories');
     expect(CACHE_KEYS.search('test query')).toBe('search:test query');
+  });
+
+  it('should generate category cache key', () => {
+    const key = CACHE_KEYS.category('technology');
+    expect(key).toBe('category:technology');
+  });
+
+  it('should generate tag cache key', () => {
+    const key = CACHE_KEYS.tag('javascript');
+    expect(key).toBe('tag:javascript');
+  });
+
+  it('should generate media cache key', () => {
+    const key = CACHE_KEYS.media(123);
+    expect(key).toBe('media:123');
+  });
+
+  it('should generate author cache key', () => {
+    const key = CACHE_KEYS.author(456);
+    expect(key).toBe('author:456');
+  });
+
+  it('should generate search cache key', () => {
+    const key = CACHE_KEYS.search('react hooks');
+    expect(key).toBe('search:react hooks');
+  });
+
+  it('should generate tags cache key', () => {
+    const key = CACHE_KEYS.tags();
+    expect(key).toBe('tags');
   });
 });
 
