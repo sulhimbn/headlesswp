@@ -93,16 +93,26 @@ class CacheManager {
   cleanup(): number {
     let cleaned = 0;
     const now = Date.now();
-    
+
     this.cache.forEach((entry, key) => {
       if (now - entry.timestamp > entry.ttl) {
         this.cache.delete(key);
         cleaned++;
       }
     });
-    
+
     this.stats.deletes += cleaned;
     return cleaned;
+  }
+
+  // Reset stats (for testing)
+  resetStats(): void {
+    this.stats = {
+      hits: 0,
+      misses: 0,
+      sets: 0,
+      deletes: 0,
+    };
   }
 
   // Get cache size in bytes (rough estimate)

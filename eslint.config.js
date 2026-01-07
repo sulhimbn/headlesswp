@@ -5,7 +5,7 @@ import typescriptParser from '@typescript-eslint/parser'
 export default [
   js.configs.recommended,
   {
-    ignores: ['.next/', 'node_modules/', 'out/'],
+    ignores: ['.next/', 'node_modules/', 'out/', 'wp-content/'],
   },
   {
     files: ['**/*.{ts,tsx}'],
@@ -14,9 +14,6 @@ export default [
       parserOptions: {
         ecmaVersion: 'latest',
         sourceType: 'module',
-        ecmaFeatures: {
-          jsx: true,
-        },
       },
       globals: {
         process: 'readonly',
@@ -47,6 +44,7 @@ export default [
       '@next/next/no-img-element': 'off',
       'react/no-unescaped-entities': 'off',
       'no-undef': 'off',
+      '@typescript-eslint/no-require-imports': 'off',
     },
   },
   {
@@ -54,9 +52,6 @@ export default [
     languageOptions: {
       ecmaVersion: 'latest',
       sourceType: 'module',
-      ecmaFeatures: {
-        jsx: true,
-      },
       globals: {
         process: 'readonly',
         console: 'readonly',
