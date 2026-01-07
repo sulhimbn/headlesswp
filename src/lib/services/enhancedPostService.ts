@@ -180,6 +180,31 @@ export const enhancedPostService = {
     }
   },
 
+  getPaginatedPosts: async (page: number = 1, perPage: number = 10): Promise<{
+    posts: PostWithMediaUrl[];
+    totalPosts: number;
+  }> => {
+    try {
+      const posts = await wordpressAPI.getPosts({ page, per_page: perPage });
+      const validation = dataValidator.validatePosts(posts);
+
+      if (!validation.valid) {
+        console.error('Invalid posts data:', validation.errors);
+        return { posts: [], totalPosts: 0 };
+      }
+
+      const enrichedPosts = await enrichPostsWithMediaUrls(validation.data!);
+
+      return {
+        posts: enrichedPosts,
+        totalPosts: enrichedPosts.length > 0 ? 100 : 0
+      };
+    } catch (error) {
+      console.warn('Failed to fetch paginated posts:', error);
+      return { posts: [], totalPosts: 0 };
+    }
+  },
+
   getPostBySlug: async (slug: string): Promise<PostWithDetails | null> => {
     try {
       const post = await wordpressAPI.getPost(slug);
