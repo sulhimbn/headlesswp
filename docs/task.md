@@ -1,10 +1,167 @@
  # Task Backlog
 
-**Last Updated**: 2026-01-07 (Added 4 new refactoring tasks from code review: REFACTOR-006, REFACTOR-007, REFACTOR-008, REFACTOR-009)
+**Last Updated**: 2026-01-07 (Added TESTING-003: Critical Path Testing for API Response Wrapper)
 
  ---
 
 ## Active Tasks
+
+## [TESTING-003] Critical Path Testing - API Response Wrapper
+
+**Status**: Complete
+**Priority**: P0
+**Assigned**: Senior QA Engineer
+**Created**: 2026-01-07
+**Updated**: 2026-01-07
+
+### Description
+
+Added comprehensive unit test coverage for `src/lib/api/response.ts`, which is critical infrastructure for API standardization initiative. This module provides standardized response wrapper functions (createSuccessResult, createErrorResult, isApiResultSuccessful, unwrapApiResult, unwrapApiResultSafe) that are intended for use throughout the codebase for consistent API response handling.
+
+### Implementation Summary
+
+Created `__tests__/apiResponse.test.ts` with 38 comprehensive tests covering:
+
+1. **createSuccessResult Tests** (5 tests):
+   - Creates success result with data and default metadata
+   - Creates success result with custom metadata (endpoint, cacheHit, retryCount)
+   - Creates success result with pagination metadata
+   - Generates valid ISO timestamp in metadata
+   - Merges custom metadata with default timestamp
+
+2. **createErrorResult Tests** (4 tests):
+   - Creates error result with ApiError object
+   - Creates error result with custom metadata
+   - Does not include pagination in error result
+   - Generates valid ISO timestamp in metadata
+
+3. **isApiResultSuccessful Tests** (4 tests):
+   - Returns true for successful result
+   - Returns false for error result
+   - Narrows type correctly for successful result
+   - Narrows type correctly for error result (TypeScript type guard)
+
+4. **unwrapApiResult Tests** (7 tests):
+   - Returns data when result is successful
+   - Throws error when result has error
+   - Throws error with message from ApiError
+   - Works with array data types
+   - Works with primitive data types (string)
+   - Works with number data types
+   - Works with boolean data types
+
+5. **unwrapApiResultSafe Tests** (9 tests):
+   - Returns data when result is successful
+   - Returns default value when result has error
+   - Does not throw error when result has error
+   - Works with array data and array default value
+   - Works with array data and returns default on error
+   - Works with null default value
+   - Works with undefined default value
+   - Works with empty string default value
+   - Works with numeric default value
+
+6. **ApiListResult Tests** (3 tests):
+   - Creates a list result with pagination
+   - Unwraps list result safely
+   - Handles empty list result
+
+7. **Integration with ApiError Tests** (3 tests):
+   - Handles rate limit error with unwrapApiResultSafe
+   - Handles circuit breaker open error
+   - Throws correctly for server errors with unwrapApiResult
+
+8. **Type Safety Tests** (3 tests):
+   - Maintains type information through createSuccessResult and unwrapApiResult
+   - Works with complex nested types
+   - Handles optional fields in type
+
+### Test Coverage Achievements
+
+- ✅ 38 new tests added (from 272 to 310 total tests)
+- ✅ 100% coverage of response.ts public functions
+- ✅ All configurations tested (custom metadata, pagination)
+- ✅ All data types tested (objects, arrays, primitives, complex nested types)
+- ✅ TypeScript type guards verified
+- ✅ Error handling behavior tested
+- ✅ Edge cases: null, undefined, empty arrays, empty strings
+- ✅ All tests follow AAA pattern (Arrange-Act-Assert)
+- ✅ All tests use descriptive names (scenario + expectation)
+
+### Before and After
+
+**Before**:
+- ❌ Zero tests for API response wrapper (critical infrastructure for API standardization)
+- ❌ API standardization functions not verified
+- ❌ TypeScript type guards not tested
+- ❌ Error handling behavior not verified
+- ❌ No confidence in core API utilities
+- ❌ 272 total tests
+
+**After**:
+- ✅ 38 comprehensive tests for API response wrapper
+- ✅ API standardization functions verified and reliable
+- ✅ TypeScript type guards tested
+- ✅ Error handling behavior verified
+- ✅ High confidence in core API utilities
+- ✅ 310 total tests (14% increase)
+
+### Test Design Principles Applied
+
+- **AAA Pattern**: Arrange-Act-Assert structure in every test
+- **Type Safety**: All mock data properly typed with TypeScript interfaces
+- **Behavior Over Implementation**: Testing WHAT, not HOW
+- **Edge Cases**: Empty arrays, null, undefined, empty strings, complex nested types
+- **Happy & Sad Paths**: Both success and failure scenarios
+- **Integration Testing**: Tests work with ApiError types from errors.ts
+
+### Files Created
+
+- `__tests__/apiResponse.test.ts` - NEW: 38 comprehensive unit tests for API response wrapper
+
+### Results
+
+- ✅ All 38 tests passing (310 total tests in suite)
+- ✅ No ESLint warnings or errors
+- ✅ TypeScript type checking passes
+- ✅ API standardization functions verified and reliable
+- ✅ TypeScript type guards tested
+- ✅ Error handling behavior verified
+- ✅ Zero test flakiness
+- ✅ All tests execute in < 1 second
+- ✅ Zero regressions in existing tests
+
+### Success Criteria
+
+- ✅ 100% coverage of response.ts functionality
+- ✅ All public functions tested
+- ✅ TypeScript type guards verified
+- ✅ All data types tested (objects, arrays, primitives, complex nested)
+- ✅ Error handling behavior verified
+- ✅ Edge cases covered
+- ✅ All tests passing consistently
+- ✅ Zero regressions in existing tests
+- ✅ TypeScript type checking passes
+- ✅ ESLint passes
+- ✅ No external dependencies (pure unit tests)
+
+### Anti-Patterns Avoided
+
+- ❌ No testing of implementation details (only behavior)
+- ❌ No skipped tests
+- ❌ No brittle assertions (flexible expectations)
+- ❌ No external service dependencies
+- ❌ No test dependencies on execution order
+- ❌ No hardcoded values (using fixtures)
+
+### Follow-up Testing Opportunities
+
+- Integration tests for API client using response wrapper functions
+- Integration tests for enhanced service layer migration to standardized responses
+- Contract tests for API response format changes
+- Visual regression tests for UI components using wrapped API responses
+
+---
 
 ## [DOC-001] Roadmap Documentation Update
 
@@ -4113,3 +4270,149 @@ Any additional context or considerations.
 | 09 | CI/CD | - |
 | 10 | Documentation | - |
 | 11 | Code Review | - |
+
+## [CONFIG-001] Extract Hardcoded URLs to Configuration
+
+**Status**: Complete
+**Priority**: High
+**Assigned**: Lead Reliability Engineer
+**Created**: 2026-01-07
+**Updated**: 2026-01-07
+
+### Description
+
+Eliminated hardcoded production URLs (`mitrabantennews.com`) from source code by centralizing them in configuration. This makes the application more maintainable and allows for easier environment-specific deployments.
+
+### Implementation Summary
+
+1. **Added Site URL Configuration** (`src/lib/api/config.ts`):
+   - Added `SITE_URL` constant for main site URL
+   - Added `SITE_URL_WWW` constant for www subdomain
+   - Both constants use environment variables with production defaults
+   - Configuration is DRY and single source of truth
+
+2. **Updated Layout Component** (`src/app/layout.tsx`):
+   - Imported `SITE_URL` and `SITE_URL_WWW` from config
+   - Replaced hardcoded URLs in metadata metadataBase with `SITE_URL`
+   - Replaced hardcoded URLs in OpenGraph with `SITE_URL`
+   - Replaced hardcoded resource hints with config constants
+
+3. **Updated Middleware** (`src/middleware.ts`):
+   - Imported `SITE_URL` and `SITE_URL_WWW` from config
+   - Replaced all hardcoded URLs in CSP headers with config constants
+   - CSP now uses dynamic values from configuration
+
+4. **Removed Duplicate Code** (`src/lib/api/client.ts`):
+   - Removed duplicate `http://localhost:8080` hardcoded value
+   - Now uses `WORDPRESS_SITE_URL` from config (already imported)
+   - Simplified `getApiUrl()` function
+
+5. **Updated Environment Example** (`.env.example`):
+   - Added `NEXT_PUBLIC_SITE_URL` configuration
+   - Added `NEXT_PUBLIC_SITE_URL_WWW` configuration
+   - Clear documentation of site URL configuration
+
+6. **Removed Dead Code**:
+   - Deleted `src/components/post/PostDetailPageSkeleton.tsx` (unused component)
+   - 22 lines of dead code removed
+
+### Changes Made
+
+**Files Modified**:
+- `src/lib/api/config.ts` - Added SITE_URL and SITE_URL_WWW constants
+- `src/app/layout.tsx` - Replaced hardcoded URLs with config constants
+- `src/middleware.ts` - Replaced hardcoded URLs in CSP with config constants
+- `src/lib/api/client.ts` - Removed duplicate localhost URL
+- `.env.example` - Added site URL configuration documentation
+
+**Files Deleted**:
+- `src/components/post/PostDetailPageSkeleton.tsx` - Removed unused component (dead code)
+
+### Results
+
+- ✅ All hardcoded production URLs extracted to configuration
+- ✅ DRY principle: Single source of truth for URLs
+- ✅ Environment variables properly documented
+- ✅ Dead code removed (22 lines)
+- ✅ All 264 tests passing
+- ✅ TypeScript type checking passes
+- ✅ ESLint passes with no errors
+- ✅ Build successful
+- ✅ Net reduction of 15 lines of code
+
+### Before and After
+
+**Before**:
+- ❌ 11 hardcoded `mitrabantennews.com` URLs across 3 files
+- ❌ Duplicate `localhost:8080` in client.ts
+- ❌ No central configuration for site URLs
+- ❌ Dead code: unused PostDetailPageSkeleton component
+
+**After**:
+- ✅ Zero hardcoded production URLs
+- ✅ Single source of truth in config.ts
+- ✅ Environment variables properly configured
+- ✅ Dead code removed
+- ✅ Easier deployment to different environments
+
+### Impact on Codebase
+
+| File | Changes | Lines |
+|------|---------|-------|
+| `.env.example` | Added config | +4 |
+| `src/lib/api/config.ts` | Added constants | +2 |
+| `src/app/layout.tsx` | Hardcoded → Config | +7/-6 |
+| `src/middleware.ts` | Hardcoded → Config | +6/-5 |
+| `src/lib/api/client.ts` | Remove duplicate | +2/-3 |
+| `PostDetailPageSkeleton.tsx` | Delete dead code | -22 |
+| **Total** | **Net reduction** | **+22/-37 = -15** |
+
+### Success Criteria
+
+- ✅ All hardcoded production URLs extracted to config
+- ✅ Environment variables added to .env.example
+- ✅ All tests passing (264/264)
+- ✅ TypeScript type checking passes
+- ✅ ESLint passes
+- ✅ Build successful
+- ✅ Dead code removed
+- ✅ No regressions in functionality
+
+### Anti-Patterns Avoided
+
+- ❌ No hardcoded production values
+- ❌ No duplicate configuration values
+- ❌ No dead code
+- ❌ No magic numbers/strings
+- ❌ No breaking changes (same defaults used)
+
+### Benefits
+
+1. **Maintainability**:
+   - Single source of truth for URLs
+   - Easy to update URLs across entire application
+   - Clear separation of configuration and code
+
+2. **Deployment Flexibility**:
+   - Easy to deploy to different environments
+   - No code changes needed for staging/production
+   - Environment-specific URLs via .env files
+
+3. **Code Quality**:
+   - Removed dead code (22 lines)
+   - Net reduction of 15 lines of code
+   - Follows DRY principle
+
+4. **Best Practices**:
+   - Configuration externalized
+   - Secrets management ready
+   - Environment-aware defaults
+
+### Follow-up Opportunities
+
+- Consider adding validation for environment variables
+- Add migration guide for existing deployments
+- Document deployment process with environment setup
+- Consider adding environment-specific .env files (.env.staging, .env.production)
+
+---
