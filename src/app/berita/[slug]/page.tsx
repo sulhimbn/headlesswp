@@ -9,6 +9,8 @@ import Footer from '@/components/layout/Footer'
 
 export const dynamic = 'force-dynamic'
 
+export const revalidate = 600; // Revalidate every 10 minutes
+
 export default async function PostPage({ params }: { params: { slug: string } }) {
   const post = await postService.getPostBySlug(params.slug)
 

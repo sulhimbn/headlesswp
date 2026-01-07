@@ -15,6 +15,8 @@ async function getAllPosts(): Promise<WordPressPost[]> {
   }
 }
 
+export const revalidate = 300; // Revalidate every 5 minutes
+
 export default async function BeritaPage() {
   const posts = await getAllPosts()
 
