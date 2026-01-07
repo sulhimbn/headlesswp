@@ -121,17 +121,17 @@ interface ApiListResult<T> extends ApiResult<T[]> {
 }
 ```
 
-**Implementation Status**:
-- ✅ **Phase 1 Complete**: Documentation and `ApiResult<T>` interface defined
-- ✅ **Phase 2 Complete**: Standardized methods implemented in `src/lib/api/standardized.ts`
-  - `getPostById()`, `getPostBySlug()`, `getAllPosts()`, `searchPosts()`
-  - `getCategoryById()`, `getCategoryBySlug()`, `getAllCategories()`
-  - `getTagById()`, `getTagBySlug()`, `getAllTags()`
-  - `getMediaById()`, `getAuthorById()`
-  - All methods return `ApiResult<T>` or `ApiListResult<T>` with consistent error handling
-  - 31 comprehensive tests covering all standardized methods
-- ⏳ **Phase 3**: Migrate new code and critical paths (future)
-- ⏳ **Phase 4**: Deprecate old methods in major version (future)
+**Naming Conventions**:
+- `getById<T>(id)` - Single resource by ID
+- `getBySlug<T>(slug)` - Single resource by slug
+- `getAll<T>(params?)` - Collection of resources
+- `search<T>(query)` - Search resources
+
+**Migration Path**:
+1. **Phase 1** (Current): Document inconsistencies, create guidelines
+2. **Phase 2** (Future): Add standardized methods alongside existing ones
+3. **Phase 3** (Future): Gradually migrate new code to standardized methods
+4. **Phase 4** (Future - Major Version): Deprecate old methods
 
 **See Also**: [API Standardization Guidelines](./API_STANDARDIZATION.md)
 

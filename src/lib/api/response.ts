@@ -72,19 +72,3 @@ export function unwrapApiResultSafe<T>(result: ApiResult<T>, defaultValue: T): T
   }
   return result.data;
 }
-
-export function createSuccessListResult<T>(
-  data: T[],
-  metadata: Partial<ApiMetadata> = {},
-  pagination: ApiPaginationMetadata
-): ApiListResult<T> {
-  return {
-    data,
-    error: null,
-    metadata: {
-      timestamp: new Date().toISOString(),
-      ...metadata
-    },
-    pagination
-  };
-}
