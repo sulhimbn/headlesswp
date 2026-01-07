@@ -42,7 +42,7 @@ describe('Standardized API - getPostById', () => {
   });
 
   test('returns ApiResult with error on failure', async () => {
-    const error = new Error('Network error');
+    const error = new Error('Unknown error');
     mockedWordpressAPI.getPostById.mockRejectedValue(error);
 
     const result = await standardizedAPI.getPostById(123);
@@ -51,7 +51,7 @@ describe('Standardized API - getPostById', () => {
     expect(result.data).toBeNull();
     expect(result.error).not.toBeNull();
     expect(result.error?.type).toBe(ApiErrorType.UNKNOWN_ERROR);
-    expect(result.error?.message).toBe('Network error');
+    expect(result.error?.message).toBe('Unknown error');
     expect(result.metadata.endpoint).toBe('/wp/v2/posts/123');
   });
 
@@ -113,7 +113,7 @@ describe('Standardized API - getPostBySlug', () => {
   });
 
   test('returns ApiResult with error on API failure', async () => {
-    const error = new Error('Network error');
+    const error = new Error('Unknown error');
     mockedWordpressAPI.getPost.mockRejectedValue(error);
 
     const result = await standardizedAPI.getPostBySlug('test-post');
