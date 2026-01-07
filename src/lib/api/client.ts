@@ -1,5 +1,5 @@
 import axios, { AxiosInstance, InternalAxiosRequestConfig, AxiosError } from 'axios'
-import { WORDPRESS_API_BASE_URL, WORDPRESS_SITE_URL, API_TIMEOUT, MAX_RETRIES, SKIP_RETRIES, RATE_LIMIT_MAX_REQUESTS, RATE_LIMIT_WINDOW_MS } from './config'
+import { WORDPRESS_API_BASE_URL, API_TIMEOUT, MAX_RETRIES, SKIP_RETRIES, RATE_LIMIT_MAX_REQUESTS, RATE_LIMIT_WINDOW_MS } from './config'
 import { CircuitBreaker, CircuitState } from './circuitBreaker'
 import { RetryStrategy } from './retryStrategy'
 import { RateLimiterManager } from './rateLimiter'
@@ -7,7 +7,8 @@ import { createApiError, ApiError, shouldTriggerCircuitBreaker } from './errors'
 import { checkApiHealth, checkApiHealthRetry, getLastHealthCheck } from './healthCheck'
 
 function getApiUrl(path: string): string {
-  return `${WORDPRESS_SITE_URL}/index.php?rest_route=${path}`
+  const baseUrl = process.env.NEXT_PUBLIC_WORDPRESS_URL || 'http://localhost:8080'
+  return `${baseUrl}/index.php?rest_route=${path}`
 }
 
 const circuitBreaker = new CircuitBreaker({
@@ -56,7 +57,7 @@ const createApiClient = (): AxiosInstance => {
 
       const circuitBreakerState = circuitBreaker.getState()
       if (circuitBreakerState === CircuitState.HALF_OPEN) {
-        console.warn('[APIClient] Circuit in HALF_OPEN state, performing health check...')
+        console.log('[APIClient] Circuit in HALF_OPEN state, performing health check...')
 
         const healthResult = await checkApiHealth()
         if (!healthResult.healthy) {
@@ -68,7 +69,7 @@ const createApiClient = (): AxiosInstance => {
           return Promise.reject(healthError)
         }
 
-        console.warn(`[APIClient] Health check passed (${healthResult.latency}ms), allowing request`)
+        console.log(`[APIClient] Health check passed (${healthResult.latency}ms), allowing request`)
       }
 
       return config
