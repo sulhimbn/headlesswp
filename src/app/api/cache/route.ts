@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { wordpressAPI } from '@/lib/wordpress';
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const stats = wordpressAPI.getCacheStats();
     
