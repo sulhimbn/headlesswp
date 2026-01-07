@@ -1,7 +1,7 @@
 import { wordpressAPI } from '@/lib/wordpress';
 import { WordPressPost, WordPressCategory, WordPressTag } from '@/types/wordpress';
 import { PAGINATION_LIMITS } from '@/lib/api/config';
-import { cacheManager, CACHE_TTL, CACHE_KEYS } from '@/lib/cache';
+import { cacheManager, CACHE_TTL, CACHE_KEYS, CACHE_DEPENDENCIES } from '@/lib/cache';
 import { dataValidator, isValidationResultValid } from '@/lib/validation/dataValidator';
 import { createFallbackPost } from '@/lib/utils/fallbackPost';
 import { logger } from '@/lib/utils/logger';
@@ -32,7 +32,7 @@ async function getCategoriesMap(): Promise<Map<number, WordPressCategory>> {
     }
 
     const map = new Map<number, WordPressCategory>(validation.data.map((cat: WordPressCategory) => [cat.id, cat]));
-    cacheManager.set(cacheKey, map, CACHE_TTL.CATEGORIES);
+    cacheManager.set(cacheKey, map, CACHE_TTL.CATEGORIES, CACHE_DEPENDENCIES.categories());
     return map;
   } catch (error) {
     logger.error('Failed to fetch categories', error, { module: 'enhancedPostService' });
@@ -55,7 +55,7 @@ async function getTagsMap(): Promise<Map<number, WordPressTag>> {
     }
 
     const map = new Map<number, WordPressTag>(validation.data.map((tag: WordPressTag) => [tag.id, tag]));
-    cacheManager.set(cacheKey, map, CACHE_TTL.TAGS);
+    cacheManager.set(cacheKey, map, CACHE_TTL.TAGS, CACHE_DEPENDENCIES.tags());
     return map;
   } catch (error) {
     logger.error('Failed to fetch tags', error, { module: 'enhancedPostService' });

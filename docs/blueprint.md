@@ -347,20 +347,44 @@ interface ApiListResult<T> extends ApiResult<T[]> {
   - `getMediaUrlsBatch()`: Batch URL resolution with caching
   - Reduces API calls by 80%+ for media assets
 - **Parallel Fetching**: Independent API calls executed concurrently
-- **Caching**: Three-tier caching strategy
-  - In-memory cache (cacheManager) for frequent queries
-  - ISR for page-level caching
-  - HTTP caching headers
+- **Caching**: Three-tier caching strategy with advanced dependency tracking
+   - In-memory cache (cacheManager) for frequent queries
+   - **Dependency Tracking**: Bi-directional graph of cache relationships
+   - **Cascade Invalidation**: Automatic invalidation of dependent caches
+   - ISR for page-level caching
+   - HTTP caching headers
+
+**Cache Architecture Enhancements**:
+- **Dependency-Aware Caching**: `cacheManager.set(key, data, ttl, dependencies)` supports explicit dependency tracking
+- **Automatic Cascade Invalidation**: When a dependency is invalidated, all dependents are automatically cleared
+- **Enhanced Telemetry**: Performance metrics, efficiency scoring, memory usage tracking
+- **Smart Invalidation**: `invalidateByEntityType()` clears all caches for specific entity type
+- **Orphan Cleanup**: Automatic removal of broken dependency references
+- **Debug Tools**: `getDependencies()`, `getKeysByPattern()` for cache inspection
+
+**Cache Dependencies**:
+- Posts depend on: categories, tags, media
+- Posts lists depend on: categories, tags
+- Categories, tags, media, authors are leaf nodes (no dependencies)
+
+**Cache Performance Metrics**:
+- Hit rate tracking with efficiency scoring (high/medium/low)
+- Cascade invalidation count and rate
+- Dependency registration tracking
+- Average TTL calculation
+- Memory usage estimation (bytes/MB)
+
+**See Also**: [Task DATA-ARCH-006: Cache Strategy Enhancement](./task.md#data-arch-006)
 
 ### Service Layer
 Two service layers provide different levels of abstraction:
 1. **postService.ts**: Basic service with fallback logic
 2. **enhancedPostService.ts**: Enhanced service with:
-   - Runtime data validation
-   - Batch media fetching (N+1 query elimination)
-   - Category/Tag resolution
-   - Automatic cache management
-   - Type-safe enriched data (PostWithMediaUrl, PostWithDetails)
+    - Runtime data validation
+    - Batch media fetching (N+1 query elimination)
+    - Category/Tag resolution
+    - **Dependency-aware caching** (automatic cascade invalidation)
+    - Type-safe enriched data (PostWithMediaUrl, PostWithDetails)
 
 ### Data Integrity
 - Validation ensures data structure matches expected schema
