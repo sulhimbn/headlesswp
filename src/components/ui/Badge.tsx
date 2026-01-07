@@ -1,3 +1,5 @@
+import Link from 'next/link'
+
 interface BadgeProps {
   children: React.ReactNode
   variant?: 'category' | 'tag' | 'default'
@@ -18,12 +20,12 @@ export default function Badge({ children, variant = 'default', className = '', h
 
   if (href) {
     return (
-      <a
+      <Link
         href={href}
         className={`${combinedClassName} hover:opacity-80 transition-opacity focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-600`}
       >
         {children}
-      </a>
+      </Link>
     )
   }
 

@@ -10,13 +10,15 @@ interface PostCardProps {
 }
 
 const PostCard = function PostCard({ post, mediaUrl, priority = false }: PostCardProps) {
+  const featuredImageAlt = `Gambar utama untuk artikel: ${post.title.rendered}`
+
   return (
     <article className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-all duration-300 focus-within:ring-2 focus-within:ring-red-600 focus-within:ring-offset-2">
       {post.featured_media > 0 && (
-        <Link href={`/berita/${post.slug}`} className="relative block h-48 focus:outline-none" aria-label={`Baca artikel: ${post.title.rendered}`}>
+        <Link href={`/berita/${post.slug}`} className="relative block h-48 sm:h-56 md:h-48 focus:outline-none" aria-label={`Baca artikel: ${post.title.rendered}`}>
           <Image
             src={mediaUrl || '/placeholder-image.jpg'}
-            alt=""
+            alt={featuredImageAlt}
             fill
             className="object-cover"
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
@@ -26,18 +28,21 @@ const PostCard = function PostCard({ post, mediaUrl, priority = false }: PostCar
           />
         </Link>
       )}
-      <div className="p-4">
-        <Link href={`/berita/${post.slug}`} className="block focus:outline-none focus:ring-2 focus:ring-red-600 focus:ring-offset-2 rounded">
-          <h3 className="text-xl font-semibold text-gray-900 mb-2 hover:text-red-600 transition-colors">
+      <div className="p-4 sm:p-5 md:p-4">
+        <h3 className="text-lg sm:text-xl md:text-lg font-semibold mb-2">
+          <Link 
+            href={`/berita/${post.slug}`} 
+            className="text-gray-900 hover:text-red-600 transition-colors focus:outline-none focus:ring-2 focus:ring-red-600 focus:ring-offset-2 rounded"
+          >
             {post.title.rendered}
-          </h3>
-        </Link>
+          </Link>
+        </h3>
         <div
-          className="text-gray-600 mb-3 line-clamp-3"
+          className="text-sm sm:text-base text-gray-600 mb-3 line-clamp-3"
           dangerouslySetInnerHTML={{ __html: sanitizeHTML(post.excerpt.rendered, 'excerpt') }}
           aria-hidden="true"
         />
-        <div className="text-sm text-gray-500">
+        <div className="text-xs sm:text-sm text-gray-500">
           <time dateTime={post.date}>
             {new Date(post.date).toLocaleDateString('id-ID', {
               day: 'numeric',
