@@ -1,10 +1,249 @@
 # Task Backlog
 
-**Last Updated**: 2026-01-07 (RATE-LIMIT-001)
+**Last Updated**: 2026-01-07 (REFACTOR-001 to REFACTOR-005 added)
 
 ---
 
 ## Active Tasks
+
+## [REFACTOR-001] Duplicate Fallback Post Creation Code
+
+**Status**: Backlog
+**Priority**: Medium
+**Assigned**: -
+**Created**: 2026-01-07
+**Updated**: 2026-01-07
+
+### Issue
+
+The `createFallbackPost` function is duplicated in both `src/lib/services/postService.ts` (lines 5-22) and `src/lib/services/enhancedPostService.ts` (lines 17-34), violating the DRY principle and creating maintenance overhead.
+
+### Location
+
+- `src/lib/services/postService.ts` - createFallbackPost function
+- `src/lib/services/enhancedPostService.ts` - createFallbackPost function
+
+### Suggestion
+
+Extract `createFallbackPost` to a shared utility module and import it in both service files. This will:
+- Eliminate code duplication
+- Make fallback post creation consistent across services
+- Centralize fallback post configuration
+- Make future changes to fallback post structure easier
+
+### Implementation Steps
+
+1. Create `src/lib/utils/fallbackPost.ts` with the `createFallbackPost` function
+2. Export the function from the utility module
+3. Update `postService.ts` to import and use the shared function
+4. Update `enhancedPostService.ts` to import and use the shared function
+5. Ensure all tests still pass after refactoring
+
+### Priority
+
+Medium - Code quality improvement, not blocking functionality
+
+### Effort
+
+Small - 30 minutes
+
+---
+
+## [REFACTOR-002] Remove Redundant Media URL Mapping in Pages
+
+**Status**: Backlog
+**Priority**: Low
+**Assigned**: -
+**Created**: 2026-01-07
+**Updated**: 2026-01-07
+
+### Issue
+
+Pages (`src/app/berita/page.tsx` lines 21-25, `src/app/page.tsx` lines 14-18) are manually creating media URL maps from service responses, even though `enhancedPostService` already returns posts with `mediaUrl` property attached. This is redundant and adds unnecessary complexity.
+
+### Location
+
+- `src/app/berita/page.tsx` - lines 21-25 (mediaUrlMap creation)
+- `src/app/page.tsx` - lines 14-18 (mediaUrlMap creation)
+
+### Suggestion
+
+Remove the redundant media URL mapping logic and pass the `mediaUrl` property directly from the enriched posts. This will:
+- Eliminate redundant code
+- Simplify page logic
+- Reduce potential for bugs (no manual mapping)
+- Make the code more readable
+
+### Implementation Steps
+
+1. Update `src/app/page.tsx` to use `post.mediaUrl` directly instead of `mediaUrlMap.get(post.id)`
+2. Update `src/app/berita/page.tsx` to use `post.mediaUrl` directly instead of `mediaUrlMap.get(post.id)`
+3. Remove the `mediaUrlMap` creation code from both files
+4. Run tests to ensure functionality is preserved
+
+### Priority
+
+Low - Code quality improvement, functionality works correctly
+
+### Effort
+
+Small - 20 minutes
+
+---
+
+## [REFACTOR-003] Global setInterval in Cache Module - Potential Memory Leak
+
+**Status**: Backlog
+**Priority**: High
+**Assigned**: -
+**Created**: 2026-01-07
+**Updated**: 2026-01-07
+
+### Issue
+
+The `cache.ts` module (lines 159-165) uses `setInterval` to automatically clean up expired cache entries. In Next.js, this interval runs globally and could cause issues:
+- Multiple intervals may be created during hot reloads in development
+- The interval continues running even after the app unmounts
+- Potential memory leaks in edge cases
+- No cleanup mechanism for the interval itself
+
+### Location
+
+`src/lib/cache.ts` - lines 159-165 (setInterval for cache cleanup)
+
+### Suggestion
+
+Replace global setInterval with a lazy cleanup approach or use a class-based singleton with proper lifecycle management. Options:
+1. Call cleanup on-demand before cache operations (lazy cleanup)
+2. Create a CacheManager class instance per request with proper cleanup
+3. Use Next.js lifecycle hooks for initialization and cleanup
+
+### Implementation Steps
+
+1. Remove the global setInterval from cache.ts
+2. Implement lazy cleanup in the `get()` method (check if cleanup is needed before returning data)
+3. Add a manual `cleanup()` method to be called explicitly when needed
+4. Consider adding cleanup to build process or scheduled job
+5. Update documentation to reflect new cleanup behavior
+6. Run all tests to ensure cache behavior is preserved
+
+### Priority
+
+High - Potential for memory leaks and runtime issues in production
+
+### Effort
+
+Medium - 1-2 hours
+
+---
+
+## [REFACTOR-004] Centralize Revalidate Configuration
+
+**Status**: Backlog
+**Priority**: Low
+**Assigned**: -
+**Created**: 2026-01-07
+**Updated**: 2026-01-07
+
+### Issue
+
+ISR revalidate times are hardcoded in multiple page files:
+- `src/app/page.tsx` line 6: `export const revalidate = 300`
+- `src/app/berita/page.tsx` line 8: `export const revalidate = 300`
+- `src/app/berita/[slug]/page.tsx` (needs verification)
+
+This makes it difficult to adjust cache times globally and violates the single source of truth principle.
+
+### Location
+
+- `src/app/page.tsx` - line 6
+- `src/app/berita/page.tsx` - line 8
+- `src/app/berita/[slug]/page.tsx` (if exists)
+- `src/lib/api/config.ts` - potential location for central configuration
+
+### Suggestion
+
+Extract revalidate times to a centralized configuration constant in `src/lib/api/config.ts` and import it in all pages. This will:
+- Provide a single source of truth for cache times
+- Make it easy to adjust cache duration globally
+- Enable environment-specific cache times
+- Improve maintainability
+
+### Implementation Steps
+
+1. Add `REVALIDATE_TIMES` constant to `src/lib/api/config.ts` with default values:
+   ```typescript
+   export const REVALIDATE_TIMES = {
+     HOMEPAGE: 300,      // 5 minutes
+     POST_LIST: 300,     // 5 minutes
+     POST_DETAIL: 3600,  // 1 hour
+   } as const
+   ```
+2. Update `src/app/page.tsx` to use `export const revalidate = REVALIDATE_TIMES.HOMEPAGE`
+3. Update `src/app/berita/page.tsx` to use `export const revalidate = REVALIDATE_TIMES.POST_LIST`
+4. Update `src/app/berita/[slug]/page.tsx` if it has revalidate constant
+5. Run build and tests to ensure configuration works correctly
+
+### Priority
+
+Low - Code quality improvement, current approach works fine
+
+### Effort
+
+Small - 30 minutes
+
+---
+
+## [REFACTOR-005] Evaluate and Potentially Deprecate postService
+
+**Status**: Backlog
+**Priority**: Medium
+**Assigned**: -
+**Created**: 2026-01-07
+**Updated**: 2026-01-07
+
+### Issue
+
+The codebase has two service layers for posts:
+- `postService.ts` - Basic service with fallback logic
+- `enhancedPostService.ts` - Enhanced service with validation, batch operations, and enrichment
+
+All page files now use `enhancedPostService`, but `postService` still exists with tests. This creates:
+- Confusion about which service to use
+- Maintenance overhead for two similar services
+- Potential for inconsistency if services diverge
+- Duplicate code (createFallbackPost function)
+
+### Location
+
+- `src/lib/services/postService.ts` - potentially deprecated service
+- `__tests__/postService.test.ts` - tests for potentially deprecated service
+
+### Suggestion
+
+Evaluate whether `postService` can be fully deprecated and removed, or if it serves a different purpose. Options:
+1. If deprecated: Remove `postService.ts` and migrate tests to `enhancedPostService`
+2. If still needed: Document why both services exist and their use cases
+3. If for legacy support: Mark as `@deprecated` with migration guide
+
+### Implementation Steps
+
+1. Audit codebase to confirm `postService` is not used in production code
+2. Review `enhancedPostService` to ensure it can replace all `postService` functionality
+3. Decide on deprecation or documentation approach
+4. If deprecating: Remove `postService.ts`, migrate tests, update documentation
+5. If keeping: Add clear documentation and JSDoc comments explaining the difference
+6. Update blueprint.md if service layer architecture changes
+
+### Priority
+
+Medium - Code clarity and maintenance improvement
+
+### Effort
+
+Medium - 1-2 hours (if deprecating) or Small - 30 minutes (if documenting)
+
+---
 
 ## [RATE-LIMIT-001] API Rate Limiting Implementation
 
