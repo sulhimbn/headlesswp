@@ -1,5 +1,5 @@
 import axios, { AxiosInstance, InternalAxiosRequestConfig, AxiosError } from 'axios'
-import { WORDPRESS_API_BASE_URL, API_TIMEOUT, MAX_RETRIES } from './config'
+import { WORDPRESS_API_BASE_URL, API_TIMEOUT, MAX_RETRIES, SKIP_RETRIES } from './config'
 
 function getApiUrl(path: string): string {
   const baseUrl = process.env.NEXT_PUBLIC_WORDPRESS_URL || 'http://localhost:8080'
@@ -24,6 +24,10 @@ const createApiClient = (): AxiosInstance => {
     (response) => response,
     async (error: AxiosError) => {
       const config = error.config as InternalAxiosRequestConfig & { _retry?: boolean; _retryCount?: number }
+      
+      if (SKIP_RETRIES) {
+        return Promise.reject(error)
+      }
       
       if (!config._retry && (!error.response || error.response.status >= 500)) {
         config._retry = true
