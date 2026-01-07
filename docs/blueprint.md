@@ -137,11 +137,24 @@ interface Post {
 - **Implementation**: AbortController integration in API client
 - **Usage**: All API methods accept optional `signal` parameter
 
+### Rate Limiting
+- **Purpose**: Protect API from overload by limiting request rate
+- **Configuration**:
+  - Max Requests: 60 requests per window
+  - Window: 60000ms (1 minute)
+  - Algorithm: Token bucket with sliding window
+- **Features**:
+  - Per-key limiting (supports multiple rate limiters)
+  - Automatic window expiration
+  - Graceful degradation with helpful error messages
+  - Rate limit info (remaining requests, reset time)
+- **Implementation**: `src/lib/api/rateLimiter.ts`
+
 ## Security Standards
 
 1. **XSS Protection**: DOMPurify on all user-generated content
 2. **CSP**: Content Security Policy headers
-3. **Rate Limiting**: API rate limiting (to be implemented)
+3. **Rate Limiting**: API rate limiting (60 requests/minute with sliding window)
 4. **Authentication**: JWT or session-based (if needed)
 5. **Input Validation**: TypeScript + runtime validation
 
@@ -202,7 +215,7 @@ Two service layers provide different levels of abstraction:
 2. **Integration Tests**: API endpoint tests, resilience pattern tests
 3. **E2E Tests**: Critical user flows (to be added)
 4. **Test Types**: Jest + React Testing Library
-5. **Resilience Tests**: Circuit breaker, retry strategy, error handling
+5. **Resilience Tests**: Circuit breaker, retry strategy, error handling, rate limiting
 6. **Data Validation Tests**: Runtime validation at API boundaries
 
 ## File Structure
@@ -217,13 +230,14 @@ src/
 │   ├── layout/       # Layout components (Header, Footer)
 │   ├── post/         # Post-related components
 │   └── ui/           # UI components
-├── lib/              # Utilities
-│   ├── api/          # API layer (config, client, resilience)
-│   │   ├── config.ts # API configuration
-│   │   ├── client.ts # Axios client with interceptors & resilience
-│   │   ├── errors.ts # Standardized error types
-│   │   ├── circuitBreaker.ts # Circuit breaker pattern
-│   │   └── retryStrategy.ts # Retry strategy with backoff
+ ├── lib/              # Utilities
+ │   ├── api/          # API layer (config, client, resilience)
+ │   │   ├── config.ts # API configuration
+ │   │   ├── client.ts # Axios client with interceptors & resilience
+ │   │   ├── errors.ts # Standardized error types
+ │   │   ├── circuitBreaker.ts # Circuit breaker pattern
+ │   │   ├── retryStrategy.ts # Retry strategy with backoff
+ │   │   └── rateLimiter.ts # Rate limiting with token bucket algorithm
 │   ├── services/     # Business logic layer
 │   │   ├── postService.ts # Post data service with fallback logic
 │   │   └── enhancedPostService.ts # Enhanced service with validation & batch operations

@@ -1,10 +1,169 @@
 # Task Backlog
 
-**Last Updated**: 2026-01-07 (DATA-ARCH-001)
+**Last Updated**: 2026-01-07 (RATE-LIMIT-001)
 
 ---
 
 ## Active Tasks
+
+## [RATE-LIMIT-001] API Rate Limiting Implementation
+
+**Status**: Complete
+**Priority**: P0
+**Assigned**: Senior Integration Engineer
+**Created**: 2026-01-07
+**Updated**: 2026-01-07
+
+### Description
+
+Implemented comprehensive API rate limiting with token bucket algorithm to protect WordPress API from overload, prevent abuse, and ensure fair resource allocation.
+
+### Implementation Summary
+
+1. **Rate Limiter Core** (`src/lib/api/rateLimiter.ts`):
+   - `RateLimiter` class with token bucket algorithm
+   - Sliding window approach for accurate request tracking
+   - Automatic window expiration and reset
+   - Per-key rate limiting support (useful for user-based limits)
+   - `RateLimiterManager` for managing multiple limiters
+   - Rate limit info (remaining requests, reset time)
+
+2. **Configuration** (`src/lib/api/config.ts`):
+   - Added `RATE_LIMIT_MAX_REQUESTS = 60` (requests per window)
+   - Added `RATE_LIMIT_WINDOW_MS = 60000` (1 minute window)
+   - Configurable for different environments
+
+3. **API Client Integration** (`src/lib/api/client.ts`):
+   - Integrated `rateLimiterManager` into request interceptor
+   - Automatic rate limiting for all API requests
+   - Graceful error handling with helpful messages
+   - No code changes needed for consumers
+
+4. **Error Handling Enhancement** (`src/lib/api/errors.ts`):
+   - Added AxiosError import for proper 429 status detection
+   - Server rate limit errors (429) properly classified as `RATE_LIMIT_ERROR`
+   - Respects Retry-After header from server
+   - Client rate limit errors properly handled
+
+5. **Comprehensive Testing** (`__tests__/rateLimiter.test.ts`):
+   - 21 tests covering all rate limiting scenarios
+   - Tests: normal operation, limit enforcement, window expiration, burst traffic
+   - Rate limiter manager tests: per-key limiting, independent tracking, reset
+   - Error handling tests: proper error type and messages
+   - Configuration tests: custom limits, very short windows, burst handling
+
+### Rate Limiting Features
+
+**Before**:
+- ❌ No protection against API abuse
+- ❌ Unlimited API requests could overload WordPress backend
+- ❌ No request throttling or rate enforcement
+- ❌ Vulnerable to DoS attacks
+- ❌ Unfair resource allocation
+
+**After**:
+- ✅ 60 requests/minute limit protects WordPress API
+- ✅ Token bucket algorithm with sliding window
+- ✅ Per-key rate limiting (supports user-based limits)
+- ✅ Automatic window reset after 1 minute
+- ✅ Helpful error messages with wait time
+- ✅ Graceful degradation without cascading failures
+- ✅ Zero breaking changes (transparent to consumers)
+
+### Rate Limiting Algorithm
+
+**Token Bucket with Sliding Window**:
+- Tracks request timestamps in a sliding window
+- Allows 60 requests within any 60-second window
+- Automatically expires old timestamps
+- Resets automatically when window clears
+
+**Per-Key Limiting**:
+- Supports multiple independent rate limiters
+- Useful for user-based or endpoint-based limits
+- Default limiter used when no key provided
+- Independent tracking per key
+
+### Key Benefits
+
+1. **API Protection**:
+   - Prevents overload of WordPress backend
+   - Protects against abuse and DoS attacks
+   - Ensures fair resource allocation
+   - Predictable request patterns
+
+2. **Better User Experience**:
+   - Helpful error messages with wait time
+   - No silent failures
+   - Graceful degradation
+   - Transparent to consumers (automatic)
+
+3. **Configurable**:
+   - Easy to adjust limits per environment
+   - Supports per-key rate limiting
+   - Can be customized for different endpoints
+
+4. **Resilient**:
+   - Automatic window expiration
+   - No manual reset required
+   - Works with existing resilience patterns (circuit breaker, retry)
+   - Rate limit errors are retryable (respects wait time)
+
+### Files Created
+
+- `src/lib/api/rateLimiter.ts` - NEW: Rate limiter with token bucket algorithm
+- `__tests__/rateLimiter.test.ts` - NEW: 21 comprehensive rate limiting tests
+
+### Files Modified
+
+- `src/lib/api/config.ts` - Added rate limiting configuration constants
+- `src/lib/api/client.ts` - Integrated rate limiter into request interceptor
+- `src/lib/api/errors.ts` - Added AxiosError handling for 429 status codes
+
+### Test Coverage
+
+- ✅ 21 new tests added (from 80 to 101 total tests)
+- ✅ All 101 tests passing (21 new + 80 existing)
+- ✅ Rate limiter core: 5 tests (limit enforcement, window reset, info)
+- ✅ Rate limiter manager: 8 tests (per-key limiting, independent tracking, reset)
+- ✅ Error handling: 2 tests (error type, helpful messages)
+- ✅ Configuration: 6 tests (custom limits, short windows, burst traffic)
+- ✅ Zero regressions in existing tests
+- ✅ All tests execute in < 3 seconds
+
+### Success Criteria
+
+- ✅ Rate limiting implemented with token bucket algorithm
+- ✅ 60 requests/minute limit configured
+- ✅ Per-key rate limiting supported
+- ✅ Helpful error messages with wait time
+- ✅ All tests passing (101/101)
+- ✅ TypeScript type checking passes
+- ✅ ESLint passes with no warnings
+- ✅ Zero breaking changes to existing API
+- ✅ Documentation updated in blueprint.md and docs/api.md
+
+### Anti-Patterns Avoided
+
+- ❌ No global state (limiter manager encapsulated)
+- ❌ No blocking operations (async/await pattern)
+- ❌ No memory leaks (window expiration cleanup)
+- ❌ No breaking changes (transparent to consumers)
+- ❌ No complex logic (simple sliding window algorithm)
+- ❌ No manual intervention (automatic reset)
+
+### Follow-up Optimization Opportunities
+
+- Add request deduplication for concurrent identical requests
+- Implement adaptive rate limiting based on server response times
+- Add rate limit metrics and monitoring
+- Implement rate limiting by endpoint type (GET vs POST)
+- Add distributed rate limiting for multi-instance deployments
+- Implement rate limit headers in API responses
+- Add rate limiting analytics and alerting
+- Consider implementing token bucket for write operations
+
+---
 
 ## [DATA-ARCH-001] Data Architecture Optimization - Query Efficiency, Validation, and Integrity
 

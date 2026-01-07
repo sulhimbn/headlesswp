@@ -1,3 +1,5 @@
+import { AxiosError } from 'axios'
+
 export enum ApiErrorType {
   NETWORK_ERROR = 'NETWORK_ERROR',
   TIMEOUT_ERROR = 'TIMEOUT_ERROR',
@@ -53,6 +55,46 @@ export function createApiError(
     return error
   }
 
+  if (error instanceof AxiosError) {
+    const status = error.response?.status
+
+    if (status === 429) {
+      const retryAfter = error.response?.headers['retry-after']
+      const waitTime = retryAfter ? ` Please wait ${retryAfter} seconds before retrying.` : ''
+
+      return new ApiErrorImpl(
+        ApiErrorType.RATE_LIMIT_ERROR,
+        `Rate limit exceeded. Too many requests.${waitTime}`,
+        429,
+        true,
+        error,
+        endpoint
+      )
+    }
+
+    if (status && status >= 500) {
+      return new ApiErrorImpl(
+        ApiErrorType.SERVER_ERROR,
+        `Server error: ${status} ${error.message}`,
+        status,
+        true,
+        error,
+        endpoint
+      )
+    }
+
+    if (status && status >= 400 && status < 500) {
+      return new ApiErrorImpl(
+        ApiErrorType.CLIENT_ERROR,
+        `Client error: ${status} ${error.message}`,
+        status,
+        false,
+        error,
+        endpoint
+      )
+    }
+  }
+
   if (error instanceof Error) {
     const message = error.message.toLowerCase()
 
@@ -99,4 +141,8 @@ export function shouldTriggerCircuitBreaker(error: ApiError): boolean {
     error.type === ApiErrorType.NETWORK_ERROR ||
     error.type === ApiErrorType.SERVER_ERROR
   )
+}
+
+export function shouldRetryRateLimitError(error: ApiError): boolean {
+  return error.type === ApiErrorType.RATE_LIMIT_ERROR
 }

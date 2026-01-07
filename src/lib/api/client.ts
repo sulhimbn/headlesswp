@@ -1,7 +1,8 @@
 import axios, { AxiosInstance, InternalAxiosRequestConfig, AxiosError } from 'axios'
-import { WORDPRESS_API_BASE_URL, API_TIMEOUT, MAX_RETRIES, SKIP_RETRIES } from './config'
+import { WORDPRESS_API_BASE_URL, API_TIMEOUT, MAX_RETRIES, SKIP_RETRIES, RATE_LIMIT_MAX_REQUESTS, RATE_LIMIT_WINDOW_MS } from './config'
 import { CircuitBreaker } from './circuitBreaker'
 import { RetryStrategy } from './retryStrategy'
+import { RateLimiterManager } from './rateLimiter'
 import { createApiError, ApiError, shouldTriggerCircuitBreaker } from './errors'
 
 function getApiUrl(path: string): string {
@@ -26,6 +27,11 @@ const retryStrategy = new RetryStrategy({
   jitter: true
 })
 
+const rateLimiterManager = new RateLimiterManager({
+  maxRequests: RATE_LIMIT_MAX_REQUESTS,
+  windowMs: RATE_LIMIT_WINDOW_MS,
+})
+
 const createApiClient = (): AxiosInstance => {
   const api = axios.create({
     baseURL: WORDPRESS_API_BASE_URL,
@@ -36,11 +42,18 @@ const createApiClient = (): AxiosInstance => {
   })
 
   api.interceptors.request.use(
-    (config: InternalAxiosRequestConfig) => {
+    async (config: InternalAxiosRequestConfig) => {
       if (!config.signal) {
         const controller = new AbortController()
         config.signal = controller.signal
       }
+
+      try {
+        await rateLimiterManager.checkLimit()
+      } catch (error) {
+        return Promise.reject(error)
+      }
+
       return config
     },
     (error: AxiosError) => Promise.reject(error)
@@ -100,5 +113,5 @@ const createApiClient = (): AxiosInstance => {
 
 export const apiClient = createApiClient()
 
-export { getApiUrl, circuitBreaker, retryStrategy }
+export { getApiUrl, circuitBreaker, retryStrategy, rateLimiterManager }
 export type { ApiError }

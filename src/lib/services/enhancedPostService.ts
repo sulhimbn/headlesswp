@@ -1,5 +1,5 @@
 import { wordpressAPI } from '@/lib/wordpress';
-import { WordPressPost, WordPressCategory, WordPressTag, WordPressPostWithDetails } from '@/types/wordpress';
+import { WordPressPost, WordPressCategory, WordPressTag } from '@/types/wordpress';
 import { PAGINATION_LIMITS } from '@/lib/api/config';
 import { cacheManager, CACHE_TTL, CACHE_KEYS } from '@/lib/cache';
 import { dataValidator } from '@/lib/validation/dataValidator';
