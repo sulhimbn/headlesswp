@@ -1,21 +1,12 @@
-import { wordpressAPI } from '@/lib/wordpress'
+import { postService } from '@/lib/services/postService'
 import Header from '@/components/layout/Header'
 import Footer from '@/components/layout/Footer'
 import PostCard from '@/components/post/PostCard'
 
-async function getAllPosts() {
-  try {
-    return await wordpressAPI.getPosts({ per_page: 50 })
-  } catch (error) {
-    console.warn('Failed to fetch posts during build:', error)
-    return []
-  }
-}
-
 export const revalidate = 300;
 
 export default async function BeritaPage() {
-  const posts = await getAllPosts()
+  const posts = await postService.getAllPosts()
 
   return (
     <div className="min-h-screen bg-gray-50">

@@ -526,11 +526,59 @@ Created `__tests__/postService.test.ts` with 15 tests covering:
 
 ## [TASK-008] Service Layer Consistency
 
-**Status**: Backlog
+**Status**: Complete
 **Priority**: P1
-**Assigned**: - 
+**Assigned**: Code Sanitizer
 **Created**: 2026-01-07
 **Updated**: 2026-01-07
+
+### Implementation Summary
+
+Added `getAllPosts()` method to `postService` and updated `berita/page.tsx` to use the service layer, establishing consistent data fetching pattern across all pages.
+
+### Changes Made
+
+1. Added `getAllPosts()` method to `src/lib/services/postService.ts`:
+   - Implements same pattern as other service methods
+   - Uses `PAGINATION_LIMITS.ALL_POSTS` (50) for pagination
+   - Includes proper error handling and fallback logic
+   - Returns empty array on build-time failures
+
+2. Updated `src/app/berita/page.tsx`:
+   - Removed local `getAllPosts()` function
+   - Imported and now uses `postService.getAllPosts()`
+   - Eliminated code duplication
+
+3. Extracted pagination limits to `src/lib/api/config.ts` (TASK-009):
+   - Added `PAGINATION_LIMITS` constant with `LATEST_POSTS`, `CATEGORY_POSTS`, `ALL_POSTS`
+   - Updated all service methods to use these constants
+   - Removed magic numbers from code
+
+### Results
+
+- ✅ Consistent data fetching pattern across all pages
+- ✅ All pages now use `postService` layer
+- ✅ Code duplication eliminated
+- ✅ Pagination limits centralized in configuration
+- ✅ All tests passing (57/57)
+- ✅ Build successful
+- ✅ Type checking passes
+- ✅ Lint passes
+
+### Anti-Patterns Avoided
+
+- ❌ No service layer bypass
+- ❌ No code duplication
+- ❌ No magic numbers (extracted to config)
+- ❌ No inconsistent error handling
+
+### Files Modified
+
+- `src/lib/services/postService.ts` - Added `getAllPosts()` method, imported `PAGINATION_LIMITS`
+- `src/app/berita/page.tsx` - Updated to use `postService.getAllPosts()`
+- `src/lib/api/config.ts` - Added `PAGINATION_LIMITS` constant
+
+---
 
 ### Description
 
@@ -587,11 +635,57 @@ Small - 20 minutes
 
 ## [TASK-009] Magic Numbers Extraction
 
-**Status**: Backlog
+**Status**: Complete
 **Priority**: P2
-**Assigned**: - 
+**Assigned**: Code Sanitizer
 **Created**: 2026-01-07
 **Updated**: 2026-01-07
+
+### Implementation Summary
+
+Extracted all hardcoded pagination limits from service layer to centralized configuration constants in `config.ts`.
+
+### Changes Made
+
+1. Added `PAGINATION_LIMITS` constant to `src/lib/api/config.ts`:
+   ```typescript
+   export const PAGINATION_LIMITS = {
+     LATEST_POSTS: 6,
+     CATEGORY_POSTS: 3,
+     ALL_POSTS: 50,
+   } as const
+   ```
+
+2. Updated `src/lib/services/postService.ts`:
+   - Imported `PAGINATION_LIMITS` from config
+   - Updated `getLatestPosts()` to use `PAGINATION_LIMITS.LATEST_POSTS`
+   - Updated `getCategoryPosts()` to use `PAGINATION_LIMITS.CATEGORY_POSTS`
+   - Updated `getAllPosts()` to use `PAGINATION_LIMITS.ALL_POSTS`
+
+### Results
+
+- ✅ All magic numbers extracted to configuration
+- ✅ Single source of truth for pagination limits
+- ✅ Easy to adjust limits for different pages
+- ✅ Type safety with `as const`
+- ✅ All tests passing (57/57)
+- ✅ Build successful
+- ✅ Type checking passes
+- ✅ Lint passes
+
+### Anti-Patterns Avoided
+
+- ❌ No magic numbers
+- ❌ No hardcoded values
+- ❌ No scattered configuration
+- ❌ No inconsistent pagination across pages
+
+### Files Modified
+
+- `src/lib/api/config.ts` - Added `PAGINATION_LIMITS` constant
+- `src/lib/services/postService.ts` - Updated all methods to use `PAGINATION_LIMITS`
+
+---
 
 ### Description
 
