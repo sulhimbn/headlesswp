@@ -84,6 +84,57 @@ interface Post {
 }
 ```
 
+### API Standardization
+
+**Principles**:
+- **Backward Compatibility**: Never break existing API consumers
+- **Consistent Naming**: `getById<T>()`, `getBySlug<T>()`, `getAll<T>()`, `search<T>()`
+- **Consistent Error Handling**: All methods return `ApiResult<T>` or `ApiListResult<T>`
+- **Consistent Response Format**: Data, error, metadata, pagination
+- **Type Safety**: TypeScript interfaces and type guards
+
+**Standardized Response Wrapper** (`src/lib/api/response.ts`):
+```typescript
+interface ApiMetadata {
+  timestamp: string
+  endpoint?: string
+  cacheHit?: boolean
+  retryCount?: number
+}
+
+interface ApiPaginationMetadata {
+  page?: number
+  perPage?: number
+  total?: number
+  totalPages?: number
+}
+
+interface ApiResult<T> {
+  data: T
+  error: ApiError | null
+  metadata: ApiMetadata
+  pagination?: ApiPaginationMetadata
+}
+
+interface ApiListResult<T> extends ApiResult<T[]> {
+  pagination: ApiPaginationMetadata
+}
+```
+
+**Naming Conventions**:
+- `getById<T>(id)` - Single resource by ID
+- `getBySlug<T>(slug)` - Single resource by slug
+- `getAll<T>(params?)` - Collection of resources
+- `search<T>(query)` - Search resources
+
+**Migration Path**:
+1. **Phase 1** (Current): Document inconsistencies, create guidelines
+2. **Phase 2** (Future): Add standardized methods alongside existing ones
+3. **Phase 3** (Future): Gradually migrate new code to standardized methods
+4. **Phase 4** (Future - Major Version): Deprecate old methods
+
+**See Also**: [API Standardization Guidelines](./API_STANDARDIZATION.md)
+
 ## Integration Resilience Patterns
 
 ### Circuit Breaker
