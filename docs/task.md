@@ -153,8 +153,6 @@ Created `__tests__/sanitizeHTML.test.ts` with 61 comprehensive tests covering:
 
 ---
 
-=======
->>>>>>> 2c19fc35a7f402b8c3654a25dfa756fe780b17ca
 ## [TEST-FIX-001] Health Check Test Syntax Error
 
 **Status**: Complete
