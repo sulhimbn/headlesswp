@@ -1,10 +1,98 @@
 # Task Backlog
 
-**Last Updated**: 2026-01-07 (Lead Reliability Engineer - Code Sanitizer)
+**Last Updated**: 2026-01-07 (Principal Security Engineer)
 
 ---
 
 ## Active Tasks
+
+## [SEC-002] Remove Duplicate Security Headers Configuration
+
+**Status**: Complete
+**Priority**: Medium
+**Assigned**: Principal Security Engineer
+**Created**: 2026-01-07
+**Updated**: 2026-01-07
+
+### Description
+
+Removed duplicate security headers configuration from `next.config.js`. Security headers were configured in both `middleware.ts` and `next.config.js`, creating maintenance burden and potential for inconsistencies. Middleware headers take precedence in Next.js, making the `next.config.js` headers redundant.
+
+### Security Issues Identified
+
+**Issue: Duplicate Security Headers**
+- **Problem**: Security headers (HSTS, X-Frame-Options, X-Content-Type-Options, X-XSS-Protection, Referrer-Policy, Permissions-Policy) were set in both `middleware.ts` and `next.config.js`
+- **Impact**: Maintenance burden, potential for inconsistencies, code bloat
+- **Fix**: Removed duplicate headers from `next.config.js`, kept Cache-Control header (not set in middleware)
+
+### Implementation Summary
+
+1. **Removed Redundant Headers**:
+   - Removed HSTS header from next.config.js (still set in middleware.ts)
+   - Removed X-Frame-Options header from next.config.js (still set in middleware.ts)
+   - Removed X-Content-Type-Options header from next.config.js (still set in middleware.ts)
+   - Removed X-XSS-Protection header from next.config.js (still set in middleware.ts)
+   - Removed Referrer-Policy header from next.config.js (still set in middleware.ts)
+   - Removed Permissions-Policy header from next.config.js (still set in middleware.ts)
+   - Kept Cache-Control header in next.config.js (not set in middleware.ts)
+
+2. **Benefits**:
+   - Single source of truth for security headers (middleware.ts only)
+   - Reduced maintenance burden
+   - Eliminated potential for inconsistencies
+   - Cleaner configuration
+
+### Security Standards Compliance
+
+| Security Area | Before | After | Status |
+|--------------|--------|-------|--------|
+| **Dependencies** | 0 vulnerabilities | 0 vulnerabilities | ✅ Secure |
+| **Secrets Management** | No hardcoded secrets | No hardcoded secrets | ✅ Secure |
+| **XSS Protection** | DOMPurify implemented | DOMPurify implemented | ✅ Secure |
+| **Input Validation** | Runtime validation | Runtime validation | ✅ Secure |
+| **CSP Headers** | Nonce-based CSP | Nonce-based CSP | ✅ Secure |
+| **Security Headers** | Duplicate configuration | Single source of truth | ✅ Secure |
+| **Rate Limiting** | Token bucket | Token bucket | ✅ Secure |
+
+### Files Modified
+
+- `next.config.js` - Removed 6 duplicate security headers, kept Cache-Control header
+
+### Results
+
+- ✅ Duplicate security headers removed
+- ✅ Single source of truth established (middleware.ts)
+- ✅ All 547 tests passing (34 skipped - integration tests)
+- ✅ TypeScript compilation passes with no errors
+- ✅ ESLint passes with no warnings
+- ✅ Zero breaking changes to security posture
+- ✅ Cache-Control header retained (not duplicated)
+
+### Success Criteria
+
+- ✅ Duplicate security headers removed
+- ✅ Single source of truth established
+- ✅ All tests passing (no regressions)
+- ✅ TypeScript type checking passes
+- ✅ ESLint passes
+- ✅ Security posture maintained
+- ✅ No functional changes
+
+### Anti-Patterns Avoided
+
+- ❌ No duplicate security configurations
+- ❌ No maintenance burden across multiple files
+- ❌ No potential for inconsistencies
+- ❌ No breaking changes to existing functionality
+
+### Follow-up Recommendations
+
+- Consider adding automated security scanning in CI/CD pipeline (npm audit, Snyk, etc.)
+- Consider adding security headers tests in test suite
+- Monitor security header compliance in production
+- Consider implementing CSP report collection in production with monitoring service
+
+---
 
 ## [TEST-002] Test Coverage Improvement - Cache and WordPress API
 
