@@ -371,11 +371,38 @@ Two service layers provide different levels of abstraction:
 ## Testing Standards
 
 1. **Unit Tests**: > 80% coverage
-2. **Integration Tests**: API endpoint tests, resilience pattern tests
+2. **Integration Tests**: API resilience pattern integration tests (23 tests)
 3. **E2E Tests**: Critical user flows (to be added)
 4. **Test Types**: Jest + React Testing Library
 5. **Resilience Tests**: Circuit breaker, retry strategy, error handling, rate limiting
 6. **Data Validation Tests**: Runtime validation at API boundaries
+
+### Integration Test Suite
+
+**Location**: `__tests__/apiResilienceIntegration.test.ts` (23 tests)
+
+**Purpose**: Verify that resilience patterns work together correctly
+
+**Test Categories**:
+1. Circuit Breaker + Retry Integration
+2. Rate Limiting + Error Handling Integration
+3. Retry Strategy + Error Classification Integration
+4. Health Check + Circuit Breaker Integration
+5. End-to-End API Request with All Resilience Patterns
+6. Error Handling Across All Layers
+7. Resilience Pattern Configuration Validation
+
+**Running Integration Tests**:
+```bash
+# With WordPress API available
+export WORDPRESS_API_AVAILABLE=true
+npm test -- __tests__/apiResilienceIntegration.test.ts
+
+# Without WordPress API (tests auto-skipped)
+npm test -- __tests__/apiResilienceIntegration.test.ts
+```
+
+**Documentation**: [Integration Testing Guide](./INTEGRATION_TESTING.md)
 
 ## File Structure
 

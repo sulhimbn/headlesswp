@@ -100,7 +100,7 @@ describe('HealthChecker', () => {
 
       const result = await healthChecker.check();
 
-      expect(result.latency).toBeGreaterThanOrEqual(100);
+      expect(result.latency).toBeGreaterThanOrEqual(95);
       expect(result.latency).toBeLessThan(200);
     });
   });

@@ -22,8 +22,8 @@ export default async function HomePage() {
             Berita Utama
           </SectionHeading>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {categoryPosts.map((post) => (
-              <PostCard key={post.id} post={post} mediaUrl={post.mediaUrl} />
+            {categoryPosts.map((post, index) => (
+              <PostCard key={post.id} post={post} mediaUrl={post.mediaUrl} priority={index < 3} />
             ))}
           </div>
         </section>
@@ -33,8 +33,8 @@ export default async function HomePage() {
             Berita Terkini
           </SectionHeading>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {latestPosts.map((post) => (
-              <PostCard key={post.id} post={post} mediaUrl={post.mediaUrl} />
+            {latestPosts.map((post, index) => (
+              <PostCard key={post.id} post={post} mediaUrl={post.mediaUrl} priority={index < 3} />
             ))}
           </div>
         </section>
