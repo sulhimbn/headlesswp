@@ -1,9 +1,7 @@
-import { postService } from '@/lib/services/postService'
-import { wordpressAPI } from '@/lib/wordpress'
+import { enhancedPostService } from '@/lib/services/enhancedPostService'
 import { notFound } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
-import React from 'react'
 import Header from '@/components/layout/Header'
 import Footer from '@/components/layout/Footer'
 import DOMPurify from 'isomorphic-dompurify'
@@ -28,7 +26,7 @@ const sanitizeHTML = (html: string): string => {
 }
 
 export default async function PostPage({ params }: { params: { slug: string } }) {
-  const post = await postService.getPostBySlug(params.slug)
+  const post = await enhancedPostService.getPostBySlug(params.slug)
 
   if (!post) {
     notFound()
@@ -40,7 +38,7 @@ export default async function PostPage({ params }: { params: { slug: string } })
     notFound()
   }
 
-  const mediaUrl = await wordpressAPI.getMediaUrl(post.featured_media)
+  const { mediaUrl, categoriesDetails, tagsDetails } = post
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -73,14 +71,14 @@ export default async function PostPage({ params }: { params: { slug: string } })
                 </span>
               </div>
               
-              {post.categories.length > 0 && (
+              {categoriesDetails.length > 0 && (
                 <div className="flex flex-wrap gap-2 mb-4">
-                  {post.categories.map((categoryId: number) => (
+                  {categoriesDetails.map((category) => (
                     <span
-                      key={categoryId}
+                      key={category.id}
                       className="bg-red-100 text-red-800 text-xs px-2 py-1 rounded-full"
                     >
-                      Category {categoryId}
+                      {category.name}
                     </span>
                   ))}
                 </div>
@@ -96,16 +94,16 @@ export default async function PostPage({ params }: { params: { slug: string } })
   dangerouslySetInnerHTML={{ __html: sanitizeHTML(post.content.rendered) }}
  />
 
-            {post.tags.length > 0 && (
+            {tagsDetails.length > 0 && (
               <div className="mt-8 pt-6 border-t">
                 <h3 className="text-sm font-semibold text-gray-500 mb-3">Tags</h3>
                 <div className="flex flex-wrap gap-2">
-                  {post.tags.map((tagId: number) => (
+                  {tagsDetails.map((tag) => (
                     <span
-                      key={tagId}
+                      key={tag.id}
                       className="bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded-full"
                     >
-                      #{tagId}
+                      #{tag.name}
                     </span>
                   ))}
                 </div>

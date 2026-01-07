@@ -1,5 +1,4 @@
-import { postService } from '@/lib/services/postService'
-import { wordpressAPI } from '@/lib/wordpress'
+import { enhancedPostService } from '@/lib/services/enhancedPostService'
 import Header from '@/components/layout/Header'
 import Footer from '@/components/layout/Footer'
 import PostCard from '@/components/post/PostCard'
@@ -7,18 +6,13 @@ import PostCard from '@/components/post/PostCard'
 export const revalidate = 300;
 
 export default async function BeritaPage() {
-  const posts = await postService.getAllPosts()
-
-  const mediaUrls = await Promise.all(
-    posts.map((post) =>
-      wordpressAPI.getMediaUrl(post.featured_media)
-    )
-  )
+  const posts = await enhancedPostService.getAllPosts()
 
   const mediaUrlMap = new Map<number, string | null>()
-  posts.forEach((post, index) => {
-    mediaUrlMap.set(post.id, mediaUrls[index])
-  })
+  
+  for (const post of posts) {
+    mediaUrlMap.set(post.id, post.mediaUrl)
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">

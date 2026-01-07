@@ -1,5 +1,4 @@
-import { postService } from '@/lib/services/postService'
-import { wordpressAPI } from '@/lib/wordpress'
+import { enhancedPostService } from '@/lib/services/enhancedPostService'
 import Header from '@/components/layout/Header'
 import Footer from '@/components/layout/Footer'
 import PostCard from '@/components/post/PostCard'
@@ -8,21 +7,15 @@ export const revalidate = 300;
 
 export default async function HomePage() {
   const [latestPosts, categoryPosts] = await Promise.all([
-    postService.getLatestPosts(),
-    postService.getCategoryPosts()
+    enhancedPostService.getLatestPosts(),
+    enhancedPostService.getCategoryPosts()
   ])
 
-  const allPosts = [...latestPosts, ...categoryPosts]
-  const mediaUrls = await Promise.all(
-    allPosts.map((post) =>
-      wordpressAPI.getMediaUrl(post.featured_media)
-    )
-  )
-
   const mediaUrlMap = new Map<number, string | null>()
-  allPosts.forEach((post, index) => {
-    mediaUrlMap.set(post.id, mediaUrls[index])
-  })
+  
+  for (const post of [...latestPosts, ...categoryPosts]) {
+    mediaUrlMap.set(post.id, post.mediaUrl)
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">

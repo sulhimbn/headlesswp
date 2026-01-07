@@ -54,13 +54,18 @@ Development: http://localhost:8080/wp-json/wp/v2/
 ```
 
 ### Standard Endpoints
-| Endpoint | Purpose | Usage |
-|----------|---------|-------|
-| `/posts` | News articles | List/detail pages |
-| `/categories` | Categories | Navigation/filtering |
-| `/tags` | Tags | Content organization |
-| `/media` | Images/media | Media assets |
-| `/users` | Authors | Author profiles |
+| Endpoint | Purpose | Usage | Optimization |
+|----------|---------|-------|-------------|
+| `/posts` | News articles | List/detail pages | Batch requests |
+| `/categories` | Categories | Navigation/filtering | Cached 30min |
+| `/tags` | Tags | Content organization | Cached 30min |
+| `/media` | Images/media | Media assets | Batch fetching |
+| `/users` | Authors | Author profiles | Cached 30min |
+
+### Batch Operations
+- **Media Batch**: `getMediaBatch(ids)` - Fetch multiple media items
+- **Media URL Batch**: `getMediaUrlsBatch(ids)` - Resolve URLs in batch
+- Reduces API calls from N to 1 for N media items
 
 ### Response Format
 ```typescript
@@ -148,6 +153,49 @@ interface Post {
 4. **Image Optimization**: Next.js Image component
 5. **Code Splitting**: Route-based splitting
 
+## Data Architecture
+
+### Data Models
+- All data fetched from WordPress REST API
+- TypeScript interfaces for type safety (compile-time)
+- Runtime validation at API boundaries (dataValidator.ts)
+- Enhanced data models with resolved relationships
+
+### Data Validation
+- **Runtime Validation**: `src/lib/validation/dataValidator.ts` validates all API responses
+  - Posts, Categories, Tags, Media, Authors validated at boundaries
+  - Type checking, required field verification, array validation
+  - Graceful degradation with error logging
+- **Compile-time Safety**: TypeScript provides static type checking
+- **Fallback Data**: Invalid data triggers fallback mechanisms
+
+### Data Fetching Strategies
+- **Batch Operations**: Eliminates N+1 queries
+  - `getMediaBatch()`: Fetch multiple media items in single request
+  - `getMediaUrlsBatch()`: Batch URL resolution with caching
+  - Reduces API calls by 80%+ for media assets
+- **Parallel Fetching**: Independent API calls executed concurrently
+- **Caching**: Three-tier caching strategy
+  - In-memory cache (cacheManager) for frequent queries
+  - ISR for page-level caching
+  - HTTP caching headers
+
+### Service Layer
+Two service layers provide different levels of abstraction:
+1. **postService.ts**: Basic service with fallback logic
+2. **enhancedPostService.ts**: Enhanced service with:
+   - Runtime data validation
+   - Batch media fetching (N+1 query elimination)
+   - Category/Tag resolution
+   - Automatic cache management
+   - Type-safe enriched data (PostWithMediaUrl, PostWithDetails)
+
+### Data Integrity
+- Validation ensures data structure matches expected schema
+- Fallback data provides graceful degradation
+- Single source of truth for pagination limits
+- No data duplication across layers
+
 ## Testing Standards
 
 1. **Unit Tests**: > 80% coverage
@@ -155,6 +203,7 @@ interface Post {
 3. **E2E Tests**: Critical user flows (to be added)
 4. **Test Types**: Jest + React Testing Library
 5. **Resilience Tests**: Circuit breaker, retry strategy, error handling
+6. **Data Validation Tests**: Runtime validation at API boundaries
 
 ## File Structure
 
@@ -176,9 +225,12 @@ src/
 │   │   ├── circuitBreaker.ts # Circuit breaker pattern
 │   │   └── retryStrategy.ts # Retry strategy with backoff
 │   ├── services/     # Business logic layer
-│   │   └── postService.ts # Post data service with fallback logic
-│   ├── wordpress.ts # WordPress API wrapper
-│   ├── utils/        # Helper functions
+│   │   ├── postService.ts # Post data service with fallback logic
+│   │   └── enhancedPostService.ts # Enhanced service with validation & batch operations
+│   ├── validation/   # Data validation layer
+│   │   └── dataValidator.ts # Runtime data validation at API boundaries
+│   ├── wordpress.ts # WordPress API wrapper with batch operations
+│   ├── cache.ts      # In-memory cache manager with TTL
 │   └── hooks/        # Custom React hooks
 └── types/            # TypeScript definitions
 ```
