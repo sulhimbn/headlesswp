@@ -23,6 +23,18 @@ class DataValidator {
     return typeof value === 'object' && value !== null && !this.isArray(value);
   }
 
+  private pluralize(word: string): string {
+    const irregularPlurals: Record<string, string> = {
+      'Category': 'Categories',
+    };
+
+    if (irregularPlurals[word]) {
+      return irregularPlurals[word];
+    }
+
+    return `${word}s`;
+  }
+
   private validateArray<T>(
     data: unknown,
     itemName: string,
@@ -31,7 +43,7 @@ class DataValidator {
     const errors: string[] = [];
 
     if (!this.isArray(data)) {
-      return { valid: false, errors: [`${itemName}s must be an array`] };
+      return { valid: false, errors: [`${this.pluralize(itemName)} must be an array`] };
     }
 
     const validItems: T[] = [];
