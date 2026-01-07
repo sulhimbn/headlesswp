@@ -1,6 +1,7 @@
 import { WordPressPost, WordPressCategory, WordPressTag, WordPressMedia, WordPressAuthor } from '@/types/wordpress';
 import { apiClient, getApiUrl } from './api/client';
 import { cacheManager, CACHE_TTL, CACHE_KEYS } from './cache';
+import { logger } from '@/lib/utils/logger';
 
 export const wordpressAPI = {
   // Posts
@@ -97,7 +98,7 @@ export const wordpressAPI = {
         cacheManager.set(CACHE_KEYS.media(media.id), media, CACHE_TTL.MEDIA);
       }
     } catch (error) {
-      console.warn('Failed to fetch media batch:', error);
+      logger.warn('Failed to fetch media batch', error, { module: 'wordpressAPI' });
     }
 
     return result;
@@ -119,7 +120,7 @@ export const wordpressAPI = {
       }
       return null;
     } catch (error) {
-      console.warn(`Failed to fetch media ${mediaId}:`, error);
+      logger.warn(`Failed to fetch media ${mediaId}`, error, { module: 'wordpressAPI' });
       return null;
     }
   },
@@ -184,9 +185,9 @@ export const wordpressAPI = {
         wordpressAPI.getCategories(),
         wordpressAPI.getTags(),
       ]);
-      console.warn('Cache warming completed');
+      logger.warn('Cache warming completed', undefined, { module: 'wordpressAPI' });
     } catch (error) {
-      console.warn('Cache warming failed:', error);
+      logger.warn('Cache warming failed', error, { module: 'wordpressAPI' });
     }
   },
 };

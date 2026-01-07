@@ -1,6 +1,7 @@
 import { apiClient } from './client';
 import { createApiError } from './errors';
 import { API_TIMEOUT } from './config';
+import { logger } from '@/lib/utils/logger';
 
 export interface HealthCheckResult {
   healthy: boolean;
@@ -93,7 +94,7 @@ export class HealthChecker {
 
         if (result.healthy) {
           if (attempt > 1) {
-            console.warn(`[HealthCheck] Health check succeeded on attempt ${attempt}/${maxAttempts}`);
+            logger.warn(`Health check succeeded on attempt ${attempt}/${maxAttempts}`, undefined, { module: 'HealthCheck' });
           }
           return result;
         }
@@ -101,7 +102,7 @@ export class HealthChecker {
         lastError = result;
 
         if (attempt < maxAttempts) {
-          console.warn(`[HealthCheck] Health check failed (attempt ${attempt}/${maxAttempts}), retrying in ${delayMs}ms...`);
+          logger.warn(`Health check failed (attempt ${attempt}/${maxAttempts}), retrying in ${delayMs}ms...`, undefined, { module: 'HealthCheck' });
           await new Promise(resolve => setTimeout(resolve, delayMs));
         }
       } catch (error) {
@@ -114,7 +115,7 @@ export class HealthChecker {
         };
 
         if (attempt < maxAttempts) {
-          console.warn(`[HealthCheck] Health check error (attempt ${attempt}/${maxAttempts}), retrying in ${delayMs}ms...`);
+          logger.warn(`Health check error (attempt ${attempt}/${maxAttempts}), retrying in ${delayMs}ms...`, undefined, { module: 'HealthCheck' });
           await new Promise(resolve => setTimeout(resolve, delayMs));
         }
       }
