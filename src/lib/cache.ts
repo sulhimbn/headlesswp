@@ -5,7 +5,7 @@ interface CacheEntry<T> {
 }
 
 class CacheManager {
-  private cache = new Map<string, CacheEntry<any>>();
+  private cache = new Map<string, CacheEntry<unknown>>();
   private stats = {
     hits: 0,
     misses: 0,
@@ -150,7 +150,7 @@ if (typeof setInterval !== 'undefined') {
   setInterval(() => {
     const cleaned = cacheManager.cleanup();
     if (cleaned > 0) {
-      console.log(`Cache cleanup: removed ${cleaned} expired entries`);
+      console.warn(`Cache cleanup: removed ${cleaned} expired entries`);
     }
   }, 5 * 60 * 1000);
 }
