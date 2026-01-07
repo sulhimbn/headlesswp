@@ -4,7 +4,7 @@ Complete guide to using the HeadlessWP API layer for WordPress REST API integrat
 
 ## Overview
 
-The API layer provides a robust, resilient interface to WordPress REST API endpoints with built-in error handling, retry logic, circuit breaking, and caching.
+The API layer provides a robust, resilient interface to WordPress REST API endpoints with built-in error handling, retry logic, circuit breaking, rate limiting, and caching.
 
 ## Base URL
 
@@ -549,6 +549,8 @@ try {
     console.log('Network error occurred');
   } else if (error.type === 'CIRCUIT_BREAKER_OPEN') {
     console.log('Service is temporarily unavailable');
+  } else if (error.type === 'RATE_LIMIT_ERROR') {
+    console.log('Rate limit exceeded, please try again later');
   }
 }
 ```
@@ -603,6 +605,67 @@ MAX_RETRIES = 3                   // Maximum attempts
 3rd retry: ~4000ms (4 seconds)
 
 **Jitter:** Random variance added to prevent thundering herd.
+
+### Rate Limiting
+
+Protects API from overload by limiting request rate using token bucket algorithm.
+
+**Configuration:**
+```typescript
+// src/lib/api/config.ts
+RATE_LIMIT_MAX_REQUESTS = 60      // 60 requests per window
+RATE_LIMIT_WINDOW_MS = 60000        // 1 minute window
+```
+
+**Features:**
+- **Token Bucket Algorithm**: Tracks requests with sliding window
+- **Per-Key Limiting**: Supports multiple rate limiters (useful for user-based limiting)
+- **Automatic Reset**: Window expires after configured time
+- **Graceful Degradation**: Returns helpful error message with wait time
+- **Rate Limit Info**: Get remaining requests and reset time
+
+**Usage:**
+
+Rate limiting is automatically applied to all API requests. No additional code needed.
+
+```typescript
+// Rate limiting is automatic - these requests will be limited
+await wordpressAPI.getPosts();
+await wordpressAPI.getPost(123);
+await wordpressAPI.getCategories();
+```
+
+**Rate Limit Error:**
+
+When rate limit is exceeded, a `RATE_LIMIT_ERROR` is thrown:
+
+```typescript
+try {
+  await wordpressAPI.getPosts();
+} catch (error) {
+  if (error.type === ApiErrorType.RATE_LIMIT_ERROR) {
+    console.error(`Rate limit exceeded: ${error.message}`);
+    // Example: "Rate limit exceeded. Too many requests. Please try again in 5 seconds."
+  }
+}
+```
+
+**Advanced Usage (Per-Key Rate Limiting):**
+
+```typescript
+import { rateLimiterManager } from '@/lib/api/client'
+
+// Check limit for specific key (e.g., user ID)
+await rateLimiterManager.checkLimit('user-123');
+
+// Get rate limit info
+const info = rateLimiterManager.getInfo('user-123');
+console.log(`${info.remainingRequests} requests remaining`);
+console.log(`Resets at ${new Date(info.resetTime).toISOString()}`);
+
+// Reset limiter
+rateLimiterManager.reset('user-123');
+```
 
 ---
 

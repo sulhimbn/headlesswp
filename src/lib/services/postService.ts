@@ -1,5 +1,6 @@
 import { wordpressAPI } from '@/lib/wordpress'
 import { WordPressPost } from '@/types/wordpress'
+import { PAGINATION_LIMITS } from '@/lib/api/config'
 
 function createFallbackPost(id: string, title: string): WordPressPost {
   return {
@@ -23,7 +24,7 @@ function createFallbackPost(id: string, title: string): WordPressPost {
 export const postService = {
   getLatestPosts: async (): Promise<WordPressPost[]> => {
     try {
-      return await wordpressAPI.getPosts({ per_page: 6 })
+      return await wordpressAPI.getPosts({ per_page: PAGINATION_LIMITS.LATEST_POSTS })
     } catch (error) {
       console.warn('Failed to fetch latest posts during build:', error)
       return [
@@ -36,7 +37,7 @@ export const postService = {
 
   getCategoryPosts: async (): Promise<WordPressPost[]> => {
     try {
-      return await wordpressAPI.getPosts({ per_page: 3 })
+      return await wordpressAPI.getPosts({ per_page: PAGINATION_LIMITS.CATEGORY_POSTS })
     } catch (error) {
       console.warn('Failed to fetch category posts during build:', error)
       return [
@@ -44,6 +45,15 @@ export const postService = {
         createFallbackPost('cat-2', 'Berita Kategori 2'),
         createFallbackPost('cat-3', 'Berita Kategori 3')
       ]
+    }
+  },
+
+  getAllPosts: async (): Promise<WordPressPost[]> => {
+    try {
+      return await wordpressAPI.getPosts({ per_page: PAGINATION_LIMITS.ALL_POSTS })
+    } catch (error) {
+      console.warn('Failed to fetch all posts during build:', error)
+      return []
     }
   },
 

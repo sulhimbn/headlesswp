@@ -53,6 +53,83 @@ export const wordpressAPI = {
     return response.data;
   },
 
+  getMediaBatch: async (ids: number[], signal?: AbortSignal): Promise<Map<number, WordPressMedia>> => {
+    const result = new Map<number, WordPressMedia>();
+    const idsToFetch: number[] = [];
+
+    for (const id of ids) {
+      if (id === 0) continue;
+
+      const cacheKey = CACHE_KEYS.media(id);
+      const cached = cacheManager.get<WordPressMedia>(cacheKey);
+      if (cached) {
+        result.set(id, cached);
+      } else {
+        idsToFetch.push(id);
+      }
+    }
+
+    if (idsToFetch.length === 0) return result;
+
+    try {
+      const response = await apiClient.get(getApiUrl('/wp/v2/media'), { 
+        params: { include: idsToFetch.join(',') },
+        signal 
+      });
+      
+      const mediaList: WordPressMedia[] = response.data;
+      
+      for (const media of mediaList) {
+        result.set(media.id, media);
+        cacheManager.set(CACHE_KEYS.media(media.id), media, CACHE_TTL.MEDIA);
+      }
+    } catch (error) {
+      console.warn('Failed to fetch media batch:', error);
+    }
+
+    return result;
+  },
+
+  getMediaUrl: async (mediaId: number, signal?: AbortSignal): Promise<string | null> => {
+    if (mediaId === 0) return null;
+
+    const cacheKey = CACHE_KEYS.media(mediaId);
+    const cached = cacheManager.get<string>(cacheKey);
+    if (cached) return cached;
+
+    try {
+      const media = await wordpressAPI.getMedia(mediaId, signal);
+      const url = media.source_url;
+      if (url) {
+        cacheManager.set(cacheKey, url, CACHE_TTL.MEDIA);
+        return url;
+      }
+      return null;
+    } catch (error) {
+      console.warn(`Failed to fetch media ${mediaId}:`, error);
+      return null;
+    }
+  },
+
+  getMediaUrlsBatch: async (mediaIds: number[], signal?: AbortSignal): Promise<Map<number, string | null>> => {
+    const urlMap = new Map<number, string | null>();
+    const mediaBatch = await wordpressAPI.getMediaBatch(mediaIds, signal);
+
+    for (const [id, media] of mediaBatch) {
+      urlMap.set(id, media.source_url);
+    }
+
+    for (const id of mediaIds) {
+      if (id === 0) {
+        urlMap.set(id, null);
+      } else if (!urlMap.has(id)) {
+        urlMap.set(id, null);
+      }
+    }
+
+    return urlMap;
+  },
+
   // Authors
   getAuthor: async (id: number, signal?: AbortSignal): Promise<WordPressAuthor> => {
     const response = await apiClient.get(getApiUrl(`/wp/v2/users/${id}`), { signal });

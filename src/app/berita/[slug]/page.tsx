@@ -1,17 +1,32 @@
-import { postService } from '@/lib/services/postService'
+import { enhancedPostService } from '@/lib/services/enhancedPostService'
 import { notFound } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
-import React from 'react'
 import Header from '@/components/layout/Header'
 import Footer from '@/components/layout/Footer'
+import DOMPurify from 'isomorphic-dompurify'
 
 export const dynamic = 'force-dynamic'
 
 export const revalidate = 600; // Revalidate every 10 minutes
 
+const sanitizeHTML = (html: string): string => {
+  const config = {
+    ALLOWED_TAGS: [
+      'p', 'br', 'strong', 'em', 'u', 'ol', 'ul', 'li', 'a', 'img', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+      'blockquote', 'code', 'pre', 'span', 'div', 'table', 'thead', 'tbody', 'tr', 'td', 'th'
+    ],
+    ALLOWED_ATTR: [
+      'href', 'title', 'target', 'rel', 'src', 'alt', 'width', 'height', 'class', 'id'
+    ],
+    FORBID_TAGS: ['script', 'style', 'iframe', 'object', 'embed'],
+    FORBID_ATTR: ['onclick', 'onload', 'onerror', 'onmouseover']
+  }
+  return DOMPurify.sanitize(html, config)
+}
+
 export default async function PostPage({ params }: { params: { slug: string } }) {
-  const post = await postService.getPostBySlug(params.slug)
+  const post = await enhancedPostService.getPostBySlug(params.slug)
 
   if (!post) {
     notFound()
@@ -23,6 +38,8 @@ export default async function PostPage({ params }: { params: { slug: string } })
     notFound()
   }
 
+  const { mediaUrl, categoriesDetails, tagsDetails } = post
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
@@ -32,7 +49,7 @@ export default async function PostPage({ params }: { params: { slug: string } })
           {post.featured_media > 0 && (
             <div className="relative h-96">
               <Image
-                src="/placeholder-image.jpg" // Will be replaced with actual media URL
+                src={mediaUrl || '/placeholder-image.jpg'}
                 alt={post.title.rendered}
                 fill
                 className="object-cover"
@@ -54,14 +71,14 @@ export default async function PostPage({ params }: { params: { slug: string } })
                 </span>
               </div>
               
-              {post.categories.length > 0 && (
+              {categoriesDetails.length > 0 && (
                 <div className="flex flex-wrap gap-2 mb-4">
-                  {post.categories.map((categoryId: number) => (
+                  {categoriesDetails.map((category) => (
                     <span
-                      key={categoryId}
+                      key={category.id}
                       className="bg-red-100 text-red-800 text-xs px-2 py-1 rounded-full"
                     >
-                      Category {categoryId}
+                      {category.name}
                     </span>
                   ))}
                 </div>
@@ -72,21 +89,21 @@ export default async function PostPage({ params }: { params: { slug: string } })
               {post.title.rendered}
             </h1>
 
-<div 
+<div
   className="prose prose-lg max-w-none text-gray-700"
-  dangerouslySetInnerHTML={{ __html: post.content.rendered }}
+  dangerouslySetInnerHTML={{ __html: sanitizeHTML(post.content.rendered) }}
  />
 
-            {post.tags.length > 0 && (
+            {tagsDetails.length > 0 && (
               <div className="mt-8 pt-6 border-t">
                 <h3 className="text-sm font-semibold text-gray-500 mb-3">Tags</h3>
                 <div className="flex flex-wrap gap-2">
-                  {post.tags.map((tagId: number) => (
+                  {tagsDetails.map((tag) => (
                     <span
-                      key={tagId}
+                      key={tag.id}
                       className="bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded-full"
                     >
-                      #{tagId}
+                      #{tag.name}
                     </span>
                   ))}
                 </div>
