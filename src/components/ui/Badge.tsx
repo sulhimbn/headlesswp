@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { memo } from 'react'
 
 interface BadgeProps {
   children: React.ReactNode
@@ -7,7 +8,7 @@ interface BadgeProps {
   href?: string
 }
 
-export default function Badge({ children, variant = 'default', className = '', href }: BadgeProps) {
+const Badge = memo(function Badge({ children, variant = 'default', className = '', href }: BadgeProps) {
   const baseStyles = 'inline-flex items-center text-xs px-2 py-1 rounded-full'
   
   const variantStyles = {
@@ -34,4 +35,6 @@ export default function Badge({ children, variant = 'default', className = '', h
       {children}
     </span>
   )
-}
+})
+
+export default Badge
