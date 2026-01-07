@@ -93,7 +93,9 @@ describe('HealthChecker', () => {
     it('should measure latency correctly', async () => {
       const healthChecker = new HealthChecker();
       (apiClient.get as jest.Mock).mockImplementation(
-        () => new Promise(resolve => setTimeout(() => resolve({}), 100)
+        () => new Promise((resolve) => {
+          setTimeout(() => resolve({}), 100);
+        }),
       );
 
       const result = await healthChecker.check();
