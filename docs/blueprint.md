@@ -1,6 +1,6 @@
 # Architecture Blueprint
 
-**Version**: 1.0.0  
+**Version**: 1.1.0  
 **Last Updated**: 2025-01-07
 
 ## System Architecture
@@ -79,6 +79,59 @@ interface Post {
 }
 ```
 
+## Integration Resilience Patterns
+
+### Circuit Breaker
+- **Purpose**: Prevent cascading failures by stopping calls to failing services
+- **Configuration**:
+  - Failure Threshold: 5 failures before opening circuit
+  - Recovery Timeout: 60 seconds before attempting recovery
+  - Success Threshold: 2 successful requests to close circuit
+- **States**: CLOSED (normal), OPEN (blocking), HALF_OPEN (testing)
+- **Implementation**: `src/lib/api/circuitBreaker.ts`
+
+### Retry Strategy
+- **Purpose**: Automatically retry failed requests with exponential backoff
+- **Configuration**:
+  - Max Retries: 3 attempts
+  - Initial Delay: 1000ms
+  - Max Delay: 30000ms
+  - Backoff Multiplier: 2x per retry
+  - Jitter: Enabled to prevent thundering herd
+- **Retry Conditions**:
+  - Rate limit errors (429) - respects Retry-After header
+  - Server errors (500-599)
+  - Network errors (max 1 retry)
+  - Timeout errors (max 1 retry)
+- **Implementation**: `src/lib/api/retryStrategy.ts`
+
+### Error Handling
+- **Error Types**:
+  - `NETWORK_ERROR` - Connection issues
+  - `TIMEOUT_ERROR` - Request timeouts
+  - `RATE_LIMIT_ERROR` - Rate limiting (429)
+  - `SERVER_ERROR` - Server-side errors (5xx)
+  - `CLIENT_ERROR` - Client-side errors (4xx)
+  - `CIRCUIT_BREAKER_OPEN` - Circuit is blocking requests
+  - `UNKNOWN_ERROR` - Unhandled errors
+- **Standardized Format**:
+  ```typescript
+  {
+    type: ApiErrorType,
+    message: string,
+    statusCode?: number,
+    retryable: boolean,
+    timestamp: string,
+    endpoint?: string
+  }
+  ```
+- **Implementation**: `src/lib/api/errors.ts`
+
+### Request Cancellation
+- **Purpose**: Cancel stale requests to prevent unnecessary processing
+- **Implementation**: AbortController integration in API client
+- **Usage**: All API methods accept optional `signal` parameter
+
 ## Security Standards
 
 1. **XSS Protection**: DOMPurify on all user-generated content
@@ -98,9 +151,10 @@ interface Post {
 ## Testing Standards
 
 1. **Unit Tests**: > 80% coverage
-2. **Integration Tests**: API endpoint tests
+2. **Integration Tests**: API endpoint tests, resilience pattern tests
 3. **E2E Tests**: Critical user flows (to be added)
 4. **Test Types**: Jest + React Testing Library
+5. **Resilience Tests**: Circuit breaker, retry strategy, error handling
 
 ## File Structure
 
@@ -115,9 +169,12 @@ src/
 │   ├── post/         # Post-related components
 │   └── ui/           # UI components
 ├── lib/              # Utilities
-│   ├── api/          # API layer (config, client)
+│   ├── api/          # API layer (config, client, resilience)
 │   │   ├── config.ts # API configuration
-│   │   └── client.ts # Axios client with interceptors
+│   │   ├── client.ts # Axios client with interceptors & resilience
+│   │   ├── errors.ts # Standardized error types
+│   │   ├── circuitBreaker.ts # Circuit breaker pattern
+│   │   └── retryStrategy.ts # Retry strategy with backoff
 │   ├── services/     # Business logic layer
 │   │   └── postService.ts # Post data service with fallback logic
 │   ├── wordpress.ts # WordPress API wrapper
