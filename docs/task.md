@@ -1,10 +1,144 @@
 # Task Backlog
 
-**Last Updated**: 2025-01-07
+**Last Updated**: 2026-01-07
 
 ---
 
 ## Active Tasks
+
+## [TASK-012] Critical Path Testing - postService
+
+**Status**: Complete
+**Priority**: P0
+**Assigned**: Senior QA Engineer
+**Created**: 2026-01-07
+**Updated**: 2026-01-07
+
+### Description
+
+Added comprehensive unit test coverage for the critical business logic in `src/lib/services/postService.ts`, which handles post fetching with fallback logic for build-time failures. This module was previously completely untested despite being critical for application functionality.
+
+### Implementation Summary
+
+Created `__tests__/postService.test.ts` with 23 comprehensive tests covering:
+
+1. **getLatestPosts (4 tests)**:
+   - Happy path: Returns posts from WordPress API
+   - Error path: Returns fallback posts on API failure
+   - Data integrity: Ensures unique IDs for fallback posts
+   - Edge case: Handles empty response from API
+
+2. **getCategoryPosts (4 tests)**:
+   - Happy path: Returns category posts from WordPress API
+   - Error path: Returns fallback posts on API failure
+   - Edge case: Handles empty array response
+   - Slug pattern verification: Validates fallback slug format
+
+3. **getAllPosts (4 tests)**:
+   - Happy path: Returns all posts from WordPress API
+   - Error path: Returns empty array on API failure
+   - Edge case: Handles empty response from API
+   - Configuration: Validates pagination limit parameter (50)
+
+4. **getPostBySlug (6 tests)**:
+   - Happy path: Returns post by slug from WordPress API
+   - Error path: Returns null on API failure
+   - Null handling: Returns null when API returns undefined
+   - Timeout handling: Gracefully handles timeout errors (ETIMEDOUT)
+   - Edge case: Handles empty string slug
+   - Network error: Handles network errors (ECONNREFUSED)
+
+5. **Error Recovery Patterns (5 tests)**:
+   - Data structure: Verifies fallback posts maintain correct structure
+   - Concurrent failures: Tests multiple methods failing simultaneously
+   - Localization: Verifies Indonesian error messages in fallback content
+   - Status verification: Ensures fallback posts have publish status
+   - Edge case: Handles undefined error parameter
+
+### Test Coverage Achievements
+
+- ✅ 23 new tests added (from 57 to 80 total tests)
+- ✅ 100% coverage of public methods in postService
+- ✅ Happy path and sad path testing for all methods
+- ✅ Edge cases: empty responses, null returns, empty strings, undefined errors
+- ✅ Error recovery and fallback logic verified
+- ✅ Integration with mocked WordPress API
+- ✅ Console output verification (warn/error logs)
+- ✅ Concurrent failure scenarios tested
+
+### Before and After
+
+**Before**:
+- ❌ Zero tests for postService
+- ❌ Critical business logic untested
+- ❌ Fallback behavior not verified
+- ❌ Error paths not tested
+- ❌ Build-time failures not covered
+
+**After**:
+- ✅ 23 comprehensive tests for postService
+- ✅ All public methods fully tested
+- ✅ Fallback behavior verified and reliable
+- ✅ All error paths tested
+- ✅ Build-time failures covered
+- ✅ Indonesian localization verified
+- ✅ Concurrent failure scenarios covered
+
+### Test Design Principles Applied
+
+- **AAA Pattern**: Arrange-Act-Assert structure in every test
+- **Isolation**: Each test is independent with proper beforeEach/afterEach cleanup
+- **Descriptive Names**: Clear test names describing scenario + expectation
+- **Behavior Over Implementation**: Testing WHAT, not HOW
+- **Edge Cases**: Empty strings, null, undefined, empty arrays
+- **Happy & Sad Paths**: Both success and failure scenarios
+- **Mock External Dependencies**: All external calls properly mocked
+
+### Files Created
+
+- `__tests__/postService.test.ts` - NEW: 23 comprehensive unit tests for postService
+
+### Results
+
+- ✅ All 80 tests passing (57 existing + 23 new)
+- ✅ No ESLint warnings or errors
+- ✅ TypeScript type checking passes
+- ✅ Critical business logic now fully tested
+- ✅ Fallback behavior verified and reliable
+- ✅ Zero test flakiness
+- ✅ All tests execute in < 3 seconds
+
+### Success Criteria
+
+- ✅ 100% coverage of public methods in postService
+- ✅ All methods tested for happy path and sad path
+- ✅ Fallback logic verified
+- ✅ Error handling tested
+- ✅ Edge cases covered
+- ✅ Console output verified
+- ✅ All tests passing consistently
+- ✅ Zero regressions in existing tests
+- ✅ TypeScript type checking passes
+- ✅ ESLint passes
+
+### Anti-Patterns Avoided
+
+- ❌ No testing of implementation details (only behavior)
+- ❌ No external service dependencies (all mocked)
+- ❌ No test dependencies on execution order
+- ❌ No ignored flaky tests
+- ❌ No test pollution (proper cleanup in afterEach)
+- ❌ No brittle assertions (flexible expectations)
+
+### Follow-up Testing Opportunities
+
+- Component tests for PostCard, Header, Footer (UI components)
+- Integration tests for API client with service layer
+- Edge case tests for error boundary component
+- E2E tests for critical user flows (to be added per blueprint)
+- Performance tests for large post collections
+
+---
 
 ## [TASK-005] UI/UX Enhancement - Accessibility & Responsiveness
 
