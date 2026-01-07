@@ -3,6 +3,14 @@
 import Link from 'next/link'
 import { useState } from 'react'
 
+const NAVIGATION_ITEMS = [
+  { href: '/', label: 'Beranda' },
+  { href: '/berita', label: 'Berita' },
+  { href: '/politik', label: 'Politik' },
+  { href: '/ekonomi', label: 'Ekonomi' },
+  { href: '/olahraga', label: 'Olahraga' },
+] as const
+
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
 
@@ -38,36 +46,15 @@ export default function Header() {
           </button>
 
           <nav className="hidden md:flex space-x-8">
-            <Link 
-              href="/" 
-              className="text-gray-700 hover:text-red-600 focus:outline-none focus:ring-2 focus:ring-red-600 focus:ring-offset-2 rounded px-2 py-1 transition-colors"
-            >
-              Beranda
-            </Link>
-            <Link 
-              href="/berita" 
-              className="text-gray-700 hover:text-red-600 focus:outline-none focus:ring-2 focus:ring-red-600 focus:ring-offset-2 rounded px-2 py-1 transition-colors"
-            >
-              Berita
-            </Link>
-            <Link 
-              href="/politik" 
-              className="text-gray-700 hover:text-red-600 focus:outline-none focus:ring-2 focus:ring-red-600 focus:ring-offset-2 rounded px-2 py-1 transition-colors"
-            >
-              Politik
-            </Link>
-            <Link 
-              href="/ekonomi" 
-              className="text-gray-700 hover:text-red-600 focus:outline-none focus:ring-2 focus:ring-red-600 focus:ring-offset-2 rounded px-2 py-1 transition-colors"
-            >
-              Ekonomi
-            </Link>
-            <Link 
-              href="/olahraga" 
-              className="text-gray-700 hover:text-red-600 focus:outline-none focus:ring-2 focus:ring-red-600 focus:ring-offset-2 rounded px-2 py-1 transition-colors"
-            >
-              Olahraga
-            </Link>
+            {NAVIGATION_ITEMS.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className="text-gray-700 hover:text-red-600 focus:outline-none focus:ring-2 focus:ring-red-600 focus:ring-offset-2 rounded px-2 py-1 transition-colors"
+              >
+                {item.label}
+              </Link>
+            ))}
           </nav>
         </div>
       </div>
@@ -75,41 +62,16 @@ export default function Header() {
       {isMenuOpen && (
         <div className="md:hidden border-t border-gray-200">
           <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-            <Link
-              href="/"
-              className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-red-600 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-red-600 focus:ring-offset-2"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Beranda
-            </Link>
-            <Link
-              href="/berita"
-              className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-red-600 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-red-600 focus:ring-offset-2"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Berita
-            </Link>
-            <Link
-              href="/politik"
-              className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-red-600 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-red-600 focus:ring-offset-2"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Politik
-            </Link>
-            <Link
-              href="/ekonomi"
-              className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-red-600 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-red-600 focus:ring-offset-2"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Ekonomi
-            </Link>
-            <Link
-              href="/olahraga"
-              className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-red-600 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-red-600 focus:ring-offset-2"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Olahraga
-            </Link>
+            {NAVIGATION_ITEMS.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-red-600 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-red-600 focus:ring-offset-2"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                {item.label}
+              </Link>
+            ))}
           </div>
         </div>
       )}
