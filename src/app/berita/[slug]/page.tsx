@@ -7,9 +7,8 @@ import Footer from '@/components/layout/Footer'
 import { sanitizeHTML } from '@/lib/utils/sanitizeHTML'
 import Breadcrumb from '@/components/ui/Breadcrumb'
 
-export const dynamic = 'force-dynamic'
-
-export const revalidate = 3600; // REVALIDATE_TIMES.POST_DETAIL (1 hour)
+export const dynamic = 'force-static'
+export const revalidate = 3600
 
 export default async function PostPage({ params }: { params: { slug: string } }) {
   const post = await enhancedPostService.getPostBySlug(params.slug)

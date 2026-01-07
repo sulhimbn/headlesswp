@@ -137,6 +137,49 @@ interface Post {
 - **Implementation**: AbortController integration in API client
 - **Usage**: All API methods accept optional `signal` parameter
 
+### Health Check
+- **Purpose**: Monitor WordPress API availability and verify service health
+- **Features**:
+  - Simple health check to verify API responsiveness
+  - Timeout support to prevent hanging requests
+  - Automatic retry with configurable attempts and delays
+  - Last check result storage for quick access
+  - Integration with circuit breaker for smart recovery
+- **HealthCheckResult Interface**:
+  ```typescript
+  {
+    healthy: boolean,        // API health status
+    timestamp: string,          // ISO 8601 timestamp
+    latency: number,            // Response time in milliseconds
+    message: string,            // Status message
+    version?: string,           // WordPress API version (if available)
+    error?: string              // Error details (if unhealthy)
+  }
+  ```
+- **Implementation**: `src/lib/api/healthCheck.ts`
+- **Circuit Breaker Integration**:
+  - When circuit breaker is in HALF_OPEN state, health check is performed before each request
+  - If health check passes → Request proceeds, circuit may close
+  - If health check fails → Request blocked with helpful error message
+  - Prevents unnecessary API calls to recovering service
+- **Usage Examples**:
+  ```typescript
+  // Basic health check
+  const result = await checkApiHealth();
+  if (result.healthy) {
+    console.log(`API is healthy (${result.latency}ms)`);
+  }
+
+  // Health check with timeout
+  const result = await checkApiHealthWithTimeout(5000);
+
+  // Health check with retry
+  const result = await checkApiHealthRetry(3, 1000);
+
+  // Get last check result
+  const lastCheck = getLastHealthCheck();
+  ```
+
 ### Rate Limiting
 - **Purpose**: Protect API from overload by limiting request rate
 - **Configuration**:

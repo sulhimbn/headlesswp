@@ -669,6 +669,125 @@ rateLimiterManager.reset('user-123');
 
 ---
 
+## Health Check
+
+Monitor WordPress API availability with health check endpoints.
+
+### Basic Health Check
+
+Check if WordPress API is healthy and available.
+
+```typescript
+import { checkApiHealth } from '@/lib/api/client';
+
+const result = await checkApiHealth();
+
+if (result.healthy) {
+  console.log(`API is healthy (${result.latency}ms)`);
+  if (result.version) {
+    console.log(`WordPress API version: ${result.version}`);
+  }
+} else {
+  console.error(`API is unhealthy: ${result.message}`);
+  if (result.error) {
+    console.error(`Error: ${result.error}`);
+  }
+}
+```
+
+**HealthCheckResult Interface:**
+```typescript
+interface HealthCheckResult {
+  healthy: boolean;         // API status
+  timestamp: string;           // ISO 8601 timestamp
+  latency: number;            // Response time in milliseconds
+  message: string;            // Status message
+  version?: string;           // API version (if available)
+  error?: string;             // Error details (if unhealthy)
+}
+```
+
+---
+
+### Health Check with Timeout
+
+Set a timeout for health check to prevent hanging.
+
+```typescript
+import { checkApiHealthWithTimeout } from '@/lib/api/client';
+
+const result = await checkApiHealthWithTimeout(5000);
+
+if (result.healthy) {
+  console.log('API is healthy');
+} else if (result.message === 'Health check timed out') {
+  console.log('Health check timed out after 5 seconds');
+}
+```
+
+---
+
+### Health Check with Retry
+
+Automatically retry health check with exponential backoff.
+
+```typescript
+import { checkApiHealthRetry } from '@/lib/api/client';
+
+const result = await checkApiHealthRetry(3, 1000);
+
+if (result.healthy) {
+  console.log('API is healthy after retries');
+} else {
+  console.log(`API unhealthy after 3 attempts: ${result.message}`);
+}
+```
+
+**Parameters:**
+- `maxAttempts`: Number of retry attempts (default: 3)
+- `delayMs`: Delay between retries in milliseconds (default: 1000)
+
+---
+
+### Get Last Health Check
+
+Retrieve the most recent health check result without making a new request.
+
+```typescript
+import { getLastHealthCheck } from '@/lib/api/client';
+
+const lastCheck = getLastHealthCheck();
+
+if (lastCheck) {
+  console.log(`Last check: ${lastCheck.healthy ? 'HEALTHY' : 'UNHEALTHY'}`);
+  console.log(`Checked at: ${lastCheck.timestamp}`);
+  console.log(`Latency: ${lastCheck.latency}ms`);
+} else {
+  console.log('No health check has been performed yet');
+}
+```
+
+---
+
+### Health Check Integration with Circuit Breaker
+
+Health checks are automatically performed when the circuit breaker is in HALF_OPEN state. This ensures that the circuit breaker only allows requests after verifying the WordPress API has recovered.
+
+```typescript
+// No manual action needed - health check happens automatically
+// When circuit breaker is HALF_OPEN, a health check is performed
+// before allowing any actual API requests
+```
+
+**Integration Behavior:**
+1. Circuit breaker detects failures and moves to OPEN state
+2. After recovery timeout (60s), circuit moves to HALF_OPEN state
+3. Before each request in HALF_OPEN state, health check is performed
+4. If health check passes → Circuit moves to CLOSED (normal operation)
+5. If health check fails → Request blocked with helpful error message
+
+---
+
 ## TypeScript Types
 
 ### WordPressPost

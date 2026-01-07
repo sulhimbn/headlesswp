@@ -5,7 +5,7 @@ import PostCard from '@/components/post/PostCard'
 import Pagination from '@/components/ui/Pagination'
 import { PAGINATION_LIMITS } from '@/lib/api/config'
 
-export const revalidate = 300; // REVALIDATE_TIMES.POST_LIST
+export const revalidate = 300
 
 export default async function BeritaPage({
   searchParams,
