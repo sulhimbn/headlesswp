@@ -1,5 +1,5 @@
 describe('Security Middleware Configuration', () => {
-  let nextConfig: any
+  let nextConfig: unknown
 
   beforeAll(async () => {
     // Dynamic import for ES module
@@ -8,13 +8,13 @@ describe('Security Middleware Configuration', () => {
   })
 
   it('should have correct CSP configuration in next.config.js', () => {
-    expect(nextConfig.headers).toBeDefined()
-    expect(typeof nextConfig.headers).toBe('function')
+    expect((nextConfig as { headers?: unknown }).headers).toBeDefined()
+    expect(typeof (nextConfig as { headers: () => unknown }).headers).toBe('function')
   })
 
   it('should include WordPress domains in CSP', () => {
     // The domains should be included in the remotePatterns configuration
-    expect(nextConfig.images.remotePatterns).toEqual(
+    expect((nextConfig as { images: { remotePatterns: unknown[] } }).images.remotePatterns).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
           protocol: 'https',
@@ -29,7 +29,7 @@ describe('Security Middleware Configuration', () => {
   })
 
   it('should have environment variables for WordPress', () => {
-    expect(nextConfig.env.WORDPRESS_URL).toBeDefined()
-    expect(nextConfig.env.WORDPRESS_API_URL).toBeDefined()
+    expect((nextConfig as { env: { WORDPRESS_URL?: string; WORDPRESS_API_URL?: string } }).env.WORDPRESS_URL).toBeDefined()
+    expect((nextConfig as { env: { WORDPRESS_URL?: string; WORDPRESS_API_URL?: string } }).env.WORDPRESS_API_URL).toBeDefined()
   })
 })
