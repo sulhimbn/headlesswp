@@ -1,17 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { wordpressAPI } from '@/lib/wordpress';
+import { logger } from '@/lib/utils/logger';
 
 export async function GET(_request: NextRequest) {
   try {
     const stats = wordpressAPI.getCacheStats();
-    
+
     return NextResponse.json({
       success: true,
       data: stats,
       timestamp: new Date().toISOString(),
     });
   } catch (error) {
-    console.error('Error fetching cache stats:', error);
+    logger.error('Error fetching cache stats:', error);
     
     return NextResponse.json(
       {
@@ -37,7 +38,7 @@ export async function DELETE(request: NextRequest) {
       timestamp: new Date().toISOString(),
     });
   } catch (error) {
-    console.error('Error clearing cache:', error);
+    logger.error('Error clearing cache:', error);
     
     return NextResponse.json(
       {
