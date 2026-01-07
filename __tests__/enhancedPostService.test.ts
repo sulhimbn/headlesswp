@@ -12,6 +12,11 @@ jest.mock('@/lib/validation/dataValidator');
 describe('enhancedPostService', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    (wordpressAPI.getPostsWithHeaders as jest.Mock).mockResolvedValue({
+      data: [],
+      total: 0,
+      totalPages: 0
+    });
   });
 
   describe('getLatestPosts', () => {
@@ -208,7 +213,7 @@ describe('enhancedPostService', () => {
   });
 
   describe('getPaginatedPosts', () => {
-    it('should return paginated posts with total count on success', async () => {
+    it('should return paginated posts with accurate total count and pages from headers', async () => {
       const mockPosts: WordPressPost[] = [
         {
           id: 1,
@@ -228,21 +233,30 @@ describe('enhancedPostService', () => {
         }
       ];
 
-      (wordpressAPI.getPosts as jest.Mock).mockResolvedValue(mockPosts);
+      (wordpressAPI.getPostsWithHeaders as jest.Mock).mockResolvedValue({
+        data: mockPosts,
+        total: 150,
+        totalPages: 15
+      });
       (dataValidator.validatePosts as jest.Mock).mockReturnValue({ valid: true, data: mockPosts, errors: [] });
       (wordpressAPI.getMediaUrlsBatch as jest.Mock).mockResolvedValue(new Map([[10, 'https://example.com/media.jpg']]));
 
       const result = await enhancedPostService.getPaginatedPosts(1, 10);
 
-      expect(wordpressAPI.getPosts).toHaveBeenCalledWith({ page: 1, per_page: 10 });
+      expect(wordpressAPI.getPostsWithHeaders).toHaveBeenCalledWith({ page: 1, per_page: 10 });
       expect(result.posts).toHaveLength(1);
-      expect(result.totalPosts).toBe(100);
+      expect(result.totalPosts).toBe(150);
+      expect(result.totalPages).toBe(15);
       expect(result.posts[0].mediaUrl).toBe('https://example.com/media.jpg');
     });
 
     it('should return empty result on validation failure', async () => {
       const mockPosts = [{ id: 1 }] as WordPressPost[];
-      (wordpressAPI.getPosts as jest.Mock).mockResolvedValue(mockPosts);
+      (wordpressAPI.getPostsWithHeaders as jest.Mock).mockResolvedValue({
+        data: mockPosts,
+        total: 1,
+        totalPages: 1
+      });
       (dataValidator.validatePosts as jest.Mock).mockReturnValue({
         valid: false,
         data: undefined,
@@ -253,19 +267,25 @@ describe('enhancedPostService', () => {
 
       expect(result.posts).toEqual([]);
       expect(result.totalPosts).toBe(0);
+      expect(result.totalPages).toBe(0);
     });
 
     it('should return empty result on API error', async () => {
-      (wordpressAPI.getPosts as jest.Mock).mockRejectedValue(new Error('API Error'));
+      (wordpressAPI.getPostsWithHeaders as jest.Mock).mockRejectedValue(new Error('API Error'));
 
       const result = await enhancedPostService.getPaginatedPosts(1, 10);
 
       expect(result.posts).toEqual([]);
       expect(result.totalPosts).toBe(0);
+      expect(result.totalPages).toBe(0);
     });
 
     it('should handle zero total posts', async () => {
-      (wordpressAPI.getPosts as jest.Mock).mockResolvedValue([]);
+      (wordpressAPI.getPostsWithHeaders as jest.Mock).mockResolvedValue({
+        data: [],
+        total: 0,
+        totalPages: 0
+      });
       (dataValidator.validatePosts as jest.Mock).mockReturnValue({ valid: true, data: [], errors: [] });
       (wordpressAPI.getMediaUrlsBatch as jest.Mock).mockResolvedValue(new Map());
 
@@ -273,6 +293,7 @@ describe('enhancedPostService', () => {
 
       expect(result.posts).toEqual([]);
       expect(result.totalPosts).toBe(0);
+      expect(result.totalPages).toBe(0);
     });
   });
 

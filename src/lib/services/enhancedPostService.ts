@@ -169,25 +169,27 @@ export const enhancedPostService = {
   getPaginatedPosts: async (page: number = 1, perPage: number = 10): Promise<{
     posts: PostWithMediaUrl[];
     totalPosts: number;
+    totalPages: number;
   }> => {
     try {
-      const posts = await wordpressAPI.getPosts({ page, per_page: perPage });
-      const validation = dataValidator.validatePosts(posts);
+      const { data, total, totalPages } = await wordpressAPI.getPostsWithHeaders({ page, per_page: perPage });
+      const validation = dataValidator.validatePosts(data);
 
       if (!validation.valid) {
         console.error('Invalid posts data:', validation.errors);
-        return { posts: [], totalPosts: 0 };
+        return { posts: [], totalPosts: 0, totalPages: 0 };
       }
 
       const enrichedPosts = await enrichPostsWithMediaUrls(validation.data!);
 
       return {
         posts: enrichedPosts,
-        totalPosts: enrichedPosts.length > 0 ? 100 : 0
+        totalPosts: total,
+        totalPages
       };
     } catch (error) {
       console.warn('Failed to fetch paginated posts:', error);
-      return { posts: [], totalPosts: 0 };
+      return { posts: [], totalPosts: 0, totalPages: 0 };
     }
   },
 

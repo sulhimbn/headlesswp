@@ -15,8 +15,7 @@ export default async function BeritaPage({
   const page = parseInt(searchParams.page || '1', 10)
   const postsPerPage = PAGINATION_LIMITS.ALL_POSTS
 
-  const { posts, totalPosts } = await enhancedPostService.getPaginatedPosts(page, postsPerPage)
-  const totalPages = Math.ceil(totalPosts / postsPerPage)
+  const { posts, totalPages } = await enhancedPostService.getPaginatedPosts(page, postsPerPage)
 
   return (
     <div className="min-h-screen bg-gray-50">
