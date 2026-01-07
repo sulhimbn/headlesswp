@@ -23,6 +23,48 @@ class DataValidator {
     return typeof value === 'object' && value !== null && !this.isArray(value);
   }
 
+  private pluralize(word: string): string {
+    const irregularPlurals: Record<string, string> = {
+      'Category': 'Categories',
+    };
+
+    if (irregularPlurals[word]) {
+      return irregularPlurals[word];
+    }
+
+    return `${word}s`;
+  }
+
+  private validateArray<T>(
+    data: unknown,
+    itemName: string,
+    validateFn: (item: unknown) => ValidationResult<T>,
+    pluralName?: string
+  ): ValidationResult<T[]> {
+    const errors: string[] = [];
+
+    if (!this.isArray(data)) {
+      return { valid: false, errors: [`${this.pluralize(itemName)} must be an array`] };
+    }
+
+    const validItems: T[] = [];
+
+    for (let i = 0; i < data.length; i++) {
+      const result = validateFn(data[i]);
+      if (!result.valid) {
+        errors.push(`${itemName} at index ${i}: ${result.errors.join(', ')}`);
+      } else {
+        validItems.push(result.data!);
+      }
+    }
+
+    if (errors.length > 0) {
+      return { valid: false, errors };
+    }
+
+    return { valid: true, data: validItems, errors: [] };
+  }
+
   validatePost(data: unknown): ValidationResult<WordPressPost> {
     const errors: string[] = [];
 
@@ -98,28 +140,7 @@ class DataValidator {
   }
 
   validatePosts(data: unknown): ValidationResult<WordPressPost[]> {
-    const errors: string[] = [];
-
-    if (!this.isArray(data)) {
-      return { valid: false, errors: ['Posts must be an array'] };
-    }
-
-    const validPosts: WordPressPost[] = [];
-
-    for (let i = 0; i < data.length; i++) {
-      const result = this.validatePost(data[i]);
-      if (!result.valid) {
-        errors.push(`Post at index ${i}: ${result.errors.join(', ')}`);
-      } else {
-        validPosts.push(result.data!);
-      }
-    }
-
-    if (errors.length > 0) {
-      return { valid: false, errors };
-    }
-
-    return { valid: true, data: validPosts, errors: [] };
+    return this.validateArray(data, 'Post', (item) => this.validatePost(item));
   }
 
   validateCategory(data: unknown): ValidationResult<WordPressCategory> {
@@ -165,28 +186,7 @@ class DataValidator {
   }
 
   validateCategories(data: unknown): ValidationResult<WordPressCategory[]> {
-    const errors: string[] = [];
-
-    if (!this.isArray(data)) {
-      return { valid: false, errors: ['Categories must be an array'] };
-    }
-
-    const validCategories: WordPressCategory[] = [];
-
-    for (let i = 0; i < data.length; i++) {
-      const result = this.validateCategory(data[i]);
-      if (!result.valid) {
-        errors.push(`Category at index ${i}: ${result.errors.join(', ')}`);
-      } else {
-        validCategories.push(result.data!);
-      }
-    }
-
-    if (errors.length > 0) {
-      return { valid: false, errors };
-    }
-
-    return { valid: true, data: validCategories, errors: [] };
+    return this.validateArray(data, 'Category', (item) => this.validateCategory(item));
   }
 
   validateTag(data: unknown): ValidationResult<WordPressTag> {
@@ -228,28 +228,7 @@ class DataValidator {
   }
 
   validateTags(data: unknown): ValidationResult<WordPressTag[]> {
-    const errors: string[] = [];
-
-    if (!this.isArray(data)) {
-      return { valid: false, errors: ['Tags must be an array'] };
-    }
-
-    const validTags: WordPressTag[] = [];
-
-    for (let i = 0; i < data.length; i++) {
-      const result = this.validateTag(data[i]);
-      if (!result.valid) {
-        errors.push(`Tag at index ${i}: ${result.errors.join(', ')}`);
-      } else {
-        validTags.push(result.data!);
-      }
-    }
-
-    if (errors.length > 0) {
-      return { valid: false, errors };
-    }
-
-    return { valid: true, data: validTags, errors: [] };
+    return this.validateArray(data, 'Tag', (item) => this.validateTag(item));
   }
 
   validateMedia(data: unknown): ValidationResult<WordPressMedia> {
