@@ -1,80 +1,18 @@
-import { wordpressAPI } from '@/lib/wordpress'
+import { postService } from '@/lib/services/postService'
 import { WordPressPost } from '@/types/wordpress'
 import Link from 'next/link'
 import Image from 'next/image'
 import React from 'react'
-
-function createFallbackPost(id: string, title: string): WordPressPost {
-  return {
-    id: parseInt(id),
-    title: { rendered: title },
-    content: { rendered: '<p>Maaf, artikel tidak dapat dimuat saat ini. Silakan coba lagi nanti.</p>' },
-    excerpt: { rendered: 'Maaf, artikel tidak dapat dimuat saat ini. Silakan coba lagi nanti.' },
-    slug: `fallback-${id}`,
-    date: new Date().toISOString(),
-    modified: new Date().toISOString(),
-    author: 0,
-    featured_media: 0,
-    categories: [],
-    tags: [],
-    status: 'publish',
-    type: 'post',
-    link: ''
-  }
-}
-
-async function getLatestPosts(): Promise<WordPressPost[]> {
-  try {
-    return await wordpressAPI.getPosts({ per_page: 6 })
-  } catch (error) {
-    console.warn('Failed to fetch latest posts during build:', error)
-    // Return fallback posts for better UX
-    return [
-      createFallbackPost('1', 'Berita Utama 1'),
-      createFallbackPost('2', 'Berita Utama 2'),
-      createFallbackPost('3', 'Berita Utama 3')
-    ]
-  }
-}
-
-async function getCategoryPosts(): Promise<WordPressPost[]> {
-  try {
-    // For now, get the first 3 posts as category posts
-    // In a real implementation, you'd filter by category
-    return await wordpressAPI.getPosts({ per_page: 3 })
-  } catch (error) {
-    console.warn('Failed to fetch category posts during build:', error)
-    // Return fallback posts for better UX
-    return [
-      createFallbackPost('cat-1', 'Berita Kategori 1'),
-      createFallbackPost('cat-2', 'Berita Kategori 2'),
-      createFallbackPost('cat-3', 'Berita Kategori 3')
-    ]
-  }
-}
+import Header from '@/components/layout/Header'
+import Footer from '@/components/layout/Footer'
 
 export default async function HomePage() {
-  const latestPosts = await getLatestPosts()
-  const categoryPosts = await getCategoryPosts()
+  const latestPosts = await postService.getLatestPosts()
+  const categoryPosts = await postService.getCategoryPosts()
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <header className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <Link href="/" className="text-2xl font-bold text-red-600">
-              Mitra Banten News
-            </Link>
-            <nav className="hidden md:flex space-x-8">
-              <Link href="/" className="text-gray-700 hover:text-red-600">Beranda</Link>
-              <Link href="/berita" className="text-gray-700 hover:text-red-600">Berita</Link>
-              <Link href="/politik" className="text-gray-700 hover:text-red-600">Politik</Link>
-              <Link href="/ekonomi" className="text-gray-700 hover:text-red-600">Ekonomi</Link>
-              <Link href="/olahraga" className="text-gray-700 hover:text-red-600">Olahraga</Link>
-            </nav>
-          </div>
-        </div>
-      </header>
+      <Header />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <section className="mb-12">
@@ -154,13 +92,7 @@ export default async function HomePage() {
         </section>
       </main>
 
-      <footer className="bg-gray-800 text-white mt-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="text-center">
-            <p>&copy; 2024 Mitra Banten News. All rights reserved.</p>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   )
 }
