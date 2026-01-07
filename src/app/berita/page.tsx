@@ -4,6 +4,8 @@ import Link from 'next/link'
 import Image from 'next/image'
 import React from 'react'
 
+export const dynamic = 'force-dynamic'
+
 async function getAllPosts(): Promise<WordPressPost[]> {
   try {
     return await wordpressAPI.getPosts({ per_page: 50 })
@@ -12,6 +14,8 @@ async function getAllPosts(): Promise<WordPressPost[]> {
     return []
   }
 }
+
+export const revalidate = 300; // Revalidate every 5 minutes
 
 export default async function BeritaPage() {
   const posts = await getAllPosts()

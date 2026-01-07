@@ -5,14 +5,10 @@ const nextConfig = {
       {
         protocol: 'https',
         hostname: 'mitrabantennews.com',
-        port: '',
-        pathname: '/**',
       },
       {
         protocol: 'https',
         hostname: 'www.mitrabantennews.com',
-        port: '',
-        pathname: '/**',
       },
     ],
   },
@@ -74,6 +70,10 @@ const nextConfig = {
               'gyroscope=()',
               'accelerometer=()'
             ].join(', ')
+          },
+          {
+            key: 'Cache-Control',
+            value: 'public, s-maxage=300, stale-while-revalidate=600'
           }
         ]
       }
@@ -81,4 +81,4 @@ const nextConfig = {
   }
 }
 
-module.exports = nextConfig
+export default nextConfig

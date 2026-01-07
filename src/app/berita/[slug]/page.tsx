@@ -1,22 +1,17 @@
-import { wordpressAPI } from '@/lib/wordpress'
-import { WordPressPost } from '@/types/wordpress'
+import { postService } from '@/lib/services/postService'
 import { notFound } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
 import React from 'react'
+import Header from '@/components/layout/Header'
+import Footer from '@/components/layout/Footer'
 
-async function getPost(slug: string): Promise<WordPressPost | null> {
-  try {
-    const post = await wordpressAPI.getPost(slug)
-    return post || null
-  } catch (error) {
-    console.error(`Error fetching post with slug ${slug}:`, error)
-    return null
-  }
-}
+export const dynamic = 'force-dynamic'
+
+export const revalidate = 600; // Revalidate every 10 minutes
 
 export default async function PostPage({ params }: { params: { slug: string } }) {
-  const post = await getPost(params.slug)
+  const post = await postService.getPostBySlug(params.slug)
 
   if (!post) {
     notFound()
@@ -30,22 +25,7 @@ export default async function PostPage({ params }: { params: { slug: string } })
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <header className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <Link href="/" className="text-2xl font-bold text-red-600">
-              Mitra Banten News
-            </Link>
-            <nav className="hidden md:flex space-x-8">
-              <Link href="/" className="text-gray-700 hover:text-red-600">Beranda</Link>
-              <Link href="/berita" className="text-gray-700 hover:text-red-600">Berita</Link>
-              <Link href="/politik" className="text-gray-700 hover:text-red-600">Politik</Link>
-              <Link href="/ekonomi" className="text-gray-700 hover:text-red-600">Ekonomi</Link>
-              <Link href="/olahraga" className="text-gray-700 hover:text-red-600">Olahraga</Link>
-            </nav>
-          </div>
-        </div>
-      </header>
+      <Header />
 
 <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <article className="bg-white rounded-lg shadow-lg overflow-hidden">
@@ -125,13 +105,7 @@ export default async function PostPage({ params }: { params: { slug: string } })
         </div>
       </main>
 
-      <footer className="bg-gray-800 text-white mt-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="text-center">
-            <p>&copy; 2024 Mitra Banten News. All rights reserved.</p>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   )
 }
