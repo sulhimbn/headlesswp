@@ -31,7 +31,7 @@ class CacheManager {
     }
 
     this.stats.hits++;
-    return entry.data;
+    return entry.data as T;
   }
 
   // Set data in cache
