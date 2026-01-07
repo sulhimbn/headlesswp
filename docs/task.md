@@ -875,6 +875,147 @@ Implemented Phase 2 of API standardization by creating standardized API methods 
 
 ## Active Tasks
 
+## [TESTING-004] Critical Path Testing - Error Handling and WordPress Batch Operations
+
+**Status**: Complete
+**Priority**: P0
+**Assigned**: Senior QA Engineer
+**Created**: 2026-01-07
+**Updated**: 2026-01-07
+
+### Description
+
+Added comprehensive test coverage for critical untested code in error handling and WordPress API batch operations. These are essential infrastructure components for retry logic, circuit breaker patterns, and N+1 query optimization that had no dedicated tests.
+
+### Implementation Summary
+
+Created two new comprehensive test files:
+
+1. **Error Handling Tests** (`__tests__/errorHandling.test.ts`):
+   - Added 47 comprehensive tests for `src/lib/api/errors.ts`
+   - `isRetryableError`: Tests for all error types (retryable and non-retryable)
+   - `shouldRetryRateLimitError`: Tests for rate limit error detection
+   - `createApiError`: Tests for AxiosError scenarios (429, 500+, 400+ status codes)
+   - `createApiError`: Tests for generic Error scenarios (timeout, network, unknown)
+   - `createApiError`: Tests for edge cases (null, undefined, non-error objects)
+   - `shouldTriggerCircuitBreaker`: Tests for circuit breaker error triggers
+
+2. **WordPress Batch Operations Tests** (`__tests__/wordpressBatchOperations.test.ts`):
+   - Added 33 comprehensive tests for `src/lib/wordpress.ts` batch operations
+   - `getPostsWithHeaders`: Tests for pagination metadata extraction from headers
+   - `getMediaBatch`: Tests for batch media fetching with caching (N+1 query optimization)
+   - `getMediaUrl`: Tests for media URL retrieval with caching
+   - `getMediaUrlsBatch`: Tests for batch URL resolution
+   - `clearCache`: Tests for cache clearing with/without patterns
+   - `getCacheStats`: Tests for cache statistics retrieval
+   - `warmCache`: Tests for cache warming functionality
+
+### Coverage Improvements
+
+| File | Before | After | Improvement |
+|-------|---------|--------|-------------|
+| errors.ts | 56.36% statements | 100% statements | +43.64% |
+| errors.ts | 66.66% functions | 100% functions | +33.34% |
+| errors.ts | 56.36% lines | 100% lines | +43.64% |
+| errors.ts | 23.18% branches | 92.75% branches | +69.57% |
+| wordpress.ts | Not tested | 79.54% statements | +79.54% |
+| wordpress.ts | Not tested | 91.66% branches | +91.66% |
+| wordpress.ts | Not tested | 64.7% functions | +64.7% |
+| wordpress.ts | Not tested | 78.57% lines | +78.57% |
+
+### Key Test Scenarios Covered
+
+**Error Handling**:
+- ✅ All retryable error types (NETWORK_ERROR, TIMEOUT_ERROR, RATE_LIMIT_ERROR, SERVER_ERROR)
+- ✅ All non-retryable error types (CLIENT_ERROR, CIRCUIT_BREAKER_OPEN, UNKNOWN_ERROR)
+- ✅ AxiosError with 429 status (rate limit with/without retry-after header)
+- ✅ AxiosError with 500+ status (500, 502, 503)
+- ✅ AxiosError with 400+ status (400, 403, 404)
+- ✅ Generic Error with timeout/ETIMEDOUT messages
+- ✅ Generic Error with network/ENOTFOUND/ECONNREFUSED messages
+- ✅ Generic Error with response property (429, 500+, 400+)
+- ✅ Edge cases: null, undefined, numeric errors, non-error objects
+- ✅ ApiErrorImpl instance preservation
+- ✅ ISO timestamp generation
+- ✅ Original error preservation
+
+**WordPress Batch Operations**:
+- ✅ Pagination metadata extraction from x-wp-total and x-wp-totalpages headers
+- ✅ Batch media fetching with single API call (N+1 elimination)
+- ✅ Cache hit/miss logic for media items
+- ✅ Skipping media ID 0
+- ✅ Mixing cached and fetched media items
+- ✅ Caching newly fetched media items
+- ✅ Graceful error handling for failed batch fetches
+- ✅ AbortSignal support for request cancellation
+- ✅ Media URL retrieval with caching
+- ✅ Null handling for missing source_url
+- ✅ Batch URL resolution with missing media handling
+- ✅ Cache clearing with/without patterns
+- ✅ Cache statistics retrieval
+- ✅ Cache warming with posts, categories, and tags
+- ✅ Cache warming error handling and partial success
+
+### Test Design Principles Applied
+
+- **AAA Pattern**: All tests follow Arrange-Act-Assert structure
+- **Type Safety**: All mock data properly typed with TypeScript interfaces
+- **Behavior Over Implementation**: Testing WHAT, not HOW
+- **Edge Cases**: Empty arrays, null, undefined, boundary values
+- **Happy & Sad Paths**: Both success and failure scenarios
+- **Isolation**: Tests are independent and don't depend on execution order
+- **Determinism**: Same result every time
+- **Descriptive Names**: Test names describe scenario + expectation
+
+### Files Created
+
+- `__tests__/errorHandling.test.ts` - NEW: 47 comprehensive tests for error handling
+- `__tests__/wordpressBatchOperations.test.ts` - NEW: 33 comprehensive tests for WordPress batch operations
+
+### Results
+
+- ✅ 80 new tests added (from 379 to 459 total tests, +21% increase)
+- ✅ errors.ts coverage: 100% statements, 100% functions, 100% lines, 92.75% branches
+- ✅ wordpress.ts coverage: 79.54% statements, 91.66% branches, 64.7% functions, 78.57% lines
+- ✅ All 459 tests passing (11 skipped - integration tests)
+- ✅ TypeScript compilation passes with no errors
+- ✅ ESLint passes with no warnings
+- ✅ Zero test flakiness
+- ✅ Zero regressions in existing tests
+- ✅ Improved confidence in error handling logic
+- ✅ Improved confidence in batch operations and caching
+- ✅ N+1 query optimization verified through tests
+
+### Success Criteria
+
+- ✅ 80 new tests added for critical untested code
+- ✅ error.ts functions fully tested (isRetryableError, shouldRetryRateLimitError)
+- ✅ createApiError tested with all error scenarios and edge cases
+- ✅ WordPress batch operations tested with caching logic
+- ✅ All tests passing consistently
+- ✅ TypeScript type checking passes
+- ✅ ESLint passes
+- ✅ Zero regressions in existing functionality
+- ✅ Coverage significantly improved for critical infrastructure code
+
+### Anti-Patterns Avoided
+
+- ❌ No tests depending on execution order
+- ❌ No tests testing implementation details
+- ❌ No tests requiring external services without mocking
+- ❌ No tests that pass when code is broken
+- ❌ No breaking changes to existing API
+
+### Follow-up Opportunities
+
+- Add tests for simple wrapper functions in wordpress.ts (getPost, getCategory, getTag, getAuthor, getMedia, search) to reach 100% coverage
+- Consider adding integration tests combining error handling with WordPress API calls
+- Add E2E tests for batch operations with real WordPress instance
+- Consider adding performance tests for batch operations
+- Add tests for cache invalidation scenarios
+
+---
+
 ## [DATA-ARCH-003] Fix Inaccurate Pagination Metadata
 
 **Status**: Complete
