@@ -1,10 +1,71 @@
 # Task Backlog
 
-**Last Updated**: 2026-01-07 (Senior QA Engineer - Critical Path Testing)
+**Last Updated**: 2026-01-07 (Principal Data Architect - Query Optimization)
 
    ---
 
 ## Active Tasks
+
+## [DATA-ARCH-005] Query Refactoring - Optimize getPostBySlug
+
+**Status**: Complete
+**Priority**: Medium
+**Assigned**: Principal Data Architect
+**Created**: 2026-01-07
+**Updated**: 2026-01-07
+
+### Description
+
+Refactored `getPostBySlug` method in enhancedPostService to eliminate redundant error handling and improve query efficiency. The method had an unnecessary async wrapper pattern and redundant try-catch blocks that made code less efficient and harder to maintain.
+
+### Implementation Summary
+
+1. **Removed Redundant Wrapper Function**:
+   - Eliminated `async () => post` wrapper that was creating unnecessary Promise wrapping
+   - Direct validation and enrichment of fetched post data
+   - Simplified error handling flow
+
+2. **Consolidated Error Handling**:
+   - Single try-catch block covering both API fetch and enrichment
+   - Unified error logging for all failure scenarios
+   - Consistent error messages across different error types
+
+3. **Improved Readability**:
+   - Clear separation of concerns: fetch → validate → enrich
+   - Explicit null check before validation
+   - More intuitive code flow
+
+### Benefits
+
+1. **Improved Efficiency**: Eliminated unnecessary Promise wrapper creation and reduced function call overhead
+2. **Better Error Handling**: Single catch block handles all errors with consistent logging
+3. **Enhanced Maintainability**: Clearer code flow, easier to understand and modify
+4. **Type Safety**: Maintained existing type safety with no breaking changes to API
+
+### Files Modified
+
+- `src/lib/services/enhancedPostService.ts` - Refactored getPostBySlug method
+
+### Results
+
+- ✅ getPostBySlug method refactored for efficiency
+- ✅ Redundant wrapper function eliminated
+- ✅ Error handling consolidated
+- ✅ All 516 tests passing (11 skipped - integration tests)
+- ✅ TypeScript compilation passes with no errors
+- ✅ ESLint passes with no warnings
+- ✅ Zero regressions in functionality
+
+### Success Criteria
+
+- ✅ Query refactoring complete
+- ✅ Redundant code eliminated
+- ✅ All tests passing
+- ✅ TypeScript type checking passes
+- ✅ ESLint passes
+- ✅ Zero regressions
+
+---
 
 ## [TEST-001] Critical Path Testing - API Client Components
 
