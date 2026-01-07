@@ -48,6 +48,12 @@ export default [
     },
   },
   {
+    files: ['src/lib/utils/logger.ts'],
+    rules: {
+      'no-console': 'off',
+    },
+  },
+  {
     files: ['**/*.{js,jsx}'],
     languageOptions: {
       ecmaVersion: 'latest',

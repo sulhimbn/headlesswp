@@ -1,3 +1,5 @@
+import { logger } from '@/lib/utils/logger'
+
 export enum CircuitState {
   CLOSED = 'CLOSED',
   OPEN = 'OPEN',
@@ -71,8 +73,10 @@ export class CircuitBreaker {
     if (this.failureCount >= this.failureThreshold) {
       this.nextAttemptTime = Date.now() + this.recoveryTimeout
       this.setState(CircuitState.OPEN)
-      console.warn(
-        `[CircuitBreaker] Circuit OPEN after ${this.failureCount} failures. Will retry at ${new Date(this.nextAttemptTime).toISOString()}`
+      logger.warn(
+        `Circuit OPEN after ${this.failureCount} failures. Will retry at ${new Date(this.nextAttemptTime).toISOString()}`,
+        undefined,
+        { module: 'CircuitBreaker' }
       )
     }
   }

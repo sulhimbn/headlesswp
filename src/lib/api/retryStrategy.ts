@@ -1,3 +1,5 @@
+import { logger } from '@/lib/utils/logger'
+
 export interface RetryStrategyOptions {
   maxRetries?: number
   initialDelay?: number
@@ -111,9 +113,10 @@ export class RetryStrategy {
         const delay = this.getRetryDelay(retryCount, error)
 
         if (context) {
-          console.warn(
-            `[RetryStrategy] ${context} failed (attempt ${retryCount + 1}/${this.maxRetries}). Retrying in ${Math.round(delay)}ms...`,
-            error
+          logger.warn(
+            `${context} failed (attempt ${retryCount + 1}/${this.maxRetries}). Retrying in ${Math.round(delay)}ms...`,
+            error,
+            { module: 'RetryStrategy' }
           )
         }
 

@@ -4,6 +4,8 @@ import { PAGINATION_LIMITS } from '@/lib/api/config';
 import { cacheManager, CACHE_TTL, CACHE_KEYS } from '@/lib/cache';
 import { dataValidator, isValidationResultValid } from '@/lib/validation/dataValidator';
 import { createFallbackPost } from '@/lib/utils/fallbackPost';
+import { logger } from '@/lib/utils/logger';
+import { getFallbackPosts } from '@/lib/constants/fallbackPosts';
 
 interface PostWithMediaUrl extends WordPressPost {
   mediaUrl: string | null;
@@ -25,7 +27,7 @@ async function getCategoriesMap(): Promise<Map<number, WordPressCategory>> {
     const validation = dataValidator.validateCategories(categories);
 
     if (!isValidationResultValid(validation)) {
-      console.error('Invalid categories data:', validation.errors);
+      logger.error('Invalid categories data', undefined, { module: 'enhancedPostService', errors: validation.errors });
       return new Map();
     }
 
@@ -33,7 +35,7 @@ async function getCategoriesMap(): Promise<Map<number, WordPressCategory>> {
     cacheManager.set(cacheKey, map, CACHE_TTL.CATEGORIES);
     return map;
   } catch (error) {
-    console.error('Failed to fetch categories:', error);
+    logger.error('Failed to fetch categories', error, { module: 'enhancedPostService' });
     return new Map();
   }
 }
@@ -48,7 +50,7 @@ async function getTagsMap(): Promise<Map<number, WordPressTag>> {
     const validation = dataValidator.validateTags(tags);
 
     if (!isValidationResultValid(validation)) {
-      console.error('Invalid tags data:', validation.errors);
+      logger.error('Invalid tags data', undefined, { module: 'enhancedPostService', errors: validation.errors });
       return new Map();
     }
 
@@ -56,7 +58,7 @@ async function getTagsMap(): Promise<Map<number, WordPressTag>> {
     cacheManager.set(cacheKey, map, CACHE_TTL.TAGS);
     return map;
   } catch (error) {
-    console.error('Failed to fetch tags:', error);
+    logger.error('Failed to fetch tags', error, { module: 'enhancedPostService' });
     return new Map();
   }
 }
@@ -105,22 +107,14 @@ export const enhancedPostService = {
       const validation = dataValidator.validatePosts(posts);
 
       if (!isValidationResultValid(validation)) {
-        console.error('Invalid posts data:', validation.errors);
-        return createFallbackPostsWithMediaUrls([
-          { id: '1', title: 'Berita Utama 1' },
-          { id: '2', title: 'Berita Utama 2' },
-          { id: '3', title: 'Berita Utama 3' }
-        ]);
+        logger.error('Invalid posts data', undefined, { module: 'enhancedPostService', errors: validation.errors });
+        return createFallbackPostsWithMediaUrls(getFallbackPosts('LATEST'));
       }
 
       return enrichPostsWithMediaUrls(validation.data);
     } catch (error) {
-      console.warn('Failed to fetch latest posts during build:', error);
-      return createFallbackPostsWithMediaUrls([
-        { id: '1', title: 'Berita Utama 1' },
-        { id: '2', title: 'Berita Utama 2' },
-        { id: '3', title: 'Berita Utama 3' }
-      ]);
+      logger.warn('Failed to fetch latest posts during build', error, { module: 'enhancedPostService' });
+      return createFallbackPostsWithMediaUrls(getFallbackPosts('LATEST'));
     }
   },
 
@@ -130,22 +124,14 @@ export const enhancedPostService = {
       const validation = dataValidator.validatePosts(posts);
 
       if (!isValidationResultValid(validation)) {
-        console.error('Invalid posts data:', validation.errors);
-        return createFallbackPostsWithMediaUrls([
-          { id: 'cat-1', title: 'Berita Kategori 1' },
-          { id: 'cat-2', title: 'Berita Kategori 2' },
-          { id: 'cat-3', title: 'Berita Kategori 3' }
-        ]);
+        logger.error('Invalid posts data', undefined, { module: 'enhancedPostService', errors: validation.errors });
+        return createFallbackPostsWithMediaUrls(getFallbackPosts('CATEGORY'));
       }
 
       return enrichPostsWithMediaUrls(validation.data);
     } catch (error) {
-      console.warn('Failed to fetch category posts during build:', error);
-      return createFallbackPostsWithMediaUrls([
-        { id: 'cat-1', title: 'Berita Kategori 1' },
-        { id: 'cat-2', title: 'Berita Kategori 2' },
-        { id: 'cat-3', title: 'Berita Kategori 3' }
-      ]);
+      logger.warn('Failed to fetch category posts during build', error, { module: 'enhancedPostService' });
+      return createFallbackPostsWithMediaUrls(getFallbackPosts('CATEGORY'));
     }
   },
 
@@ -155,13 +141,13 @@ export const enhancedPostService = {
       const validation = dataValidator.validatePosts(posts);
 
       if (!isValidationResultValid(validation)) {
-        console.error('Invalid posts data:', validation.errors);
+        logger.error('Invalid posts data', undefined, { module: 'enhancedPostService', errors: validation.errors });
         return [];
       }
 
       return enrichPostsWithMediaUrls(validation.data);
     } catch (error) {
-      console.warn('Failed to fetch all posts during build:', error);
+      logger.warn('Failed to fetch all posts during build', error, { module: 'enhancedPostService' });
       return [];
     }
   },
@@ -176,7 +162,7 @@ export const enhancedPostService = {
       const validation = dataValidator.validatePosts(data);
 
       if (!isValidationResultValid(validation)) {
-        console.error('Invalid posts data:', validation.errors);
+        logger.error('Invalid posts data', undefined, { module: 'enhancedPostService', errors: validation.errors });
         return { posts: [], totalPosts: 0, totalPages: 0 };
       }
 
@@ -188,7 +174,7 @@ export const enhancedPostService = {
         totalPages
       };
     } catch (error) {
-      console.warn('Failed to fetch paginated posts:', error);
+      logger.warn('Failed to fetch paginated posts', error, { module: 'enhancedPostService' });
       return { posts: [], totalPosts: 0, totalPages: 0 };
     }
   },
@@ -202,13 +188,13 @@ export const enhancedPostService = {
       const validation = dataValidator.validatePost(post);
 
       if (!isValidationResultValid(validation)) {
-        console.error(`Invalid post data for slug ${slug}:`, validation.errors);
+        logger.error(`Invalid post data for slug ${slug}`, undefined, { module: 'enhancedPostService', errors: validation.errors });
         return null;
       }
 
       return enrichPostWithDetails(validation.data);
     } catch (error) {
-      console.error(`Error fetching post with slug ${slug}:`, error);
+      logger.error(`Error fetching post with slug ${slug}`, error, { module: 'enhancedPostService' });
       return null;
     }
   },
@@ -219,13 +205,13 @@ export const enhancedPostService = {
       const validation = dataValidator.validatePost(post);
 
       if (!isValidationResultValid(validation)) {
-        console.error(`Invalid post data for id ${id}:`, validation.errors);
+        logger.error(`Invalid post data for id ${id}`, undefined, { module: 'enhancedPostService', errors: validation.errors });
         return null;
       }
 
       return enrichPostWithDetails(validation.data);
     } catch (error) {
-      console.error(`Error fetching post with id ${id}:`, error);
+      logger.error(`Error fetching post with id ${id}`, error, { module: 'enhancedPostService' });
       return null;
     }
   },

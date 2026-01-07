@@ -5,6 +5,7 @@ import { RetryStrategy } from './retryStrategy'
 import { RateLimiterManager } from './rateLimiter'
 import { createApiError, ApiError, shouldTriggerCircuitBreaker } from './errors'
 import { checkApiHealth, checkApiHealthRetry, getLastHealthCheck } from './healthCheck'
+import { logger } from '@/lib/utils/logger'
 
 function getApiUrl(path: string): string {
   return `${WORDPRESS_SITE_URL}/index.php?rest_route=${path}`
@@ -15,7 +16,7 @@ const circuitBreaker = new CircuitBreaker({
   recoveryTimeout: 60000,
   successThreshold: 2,
   onStateChange: (state) => {
-    console.warn(`[CircuitBreaker] State changed to: ${state}`)
+    logger.warn(`CircuitBreaker state changed to: ${state}`, undefined, { module: 'CircuitBreaker' })
   }
 })
 
@@ -56,11 +57,11 @@ const createApiClient = (): AxiosInstance => {
 
       const circuitBreakerState = circuitBreaker.getState()
       if (circuitBreakerState === CircuitState.HALF_OPEN) {
-        console.warn('[APIClient] Circuit in HALF_OPEN state, performing health check...')
+        logger.warn('Circuit in HALF_OPEN state, performing health check...', undefined, { module: 'APIClient' })
 
         const healthResult = await checkApiHealth()
         if (!healthResult.healthy) {
-          console.warn('[APIClient] Health check failed, preventing request')
+          logger.warn('Health check failed, preventing request', undefined, { module: 'APIClient' })
           const healthError = createApiError(
             new Error(`Health check failed: ${healthResult.message}. Service still recovering.`),
             config.url
@@ -68,7 +69,7 @@ const createApiClient = (): AxiosInstance => {
           return Promise.reject(healthError)
         }
 
-        console.warn(`[APIClient] Health check passed (${healthResult.latency}ms), allowing request`)
+        logger.warn(`Health check passed (${healthResult.latency}ms), allowing request`, undefined, { module: 'APIClient' })
       }
 
       return config
@@ -113,8 +114,10 @@ const createApiClient = (): AxiosInstance => {
         config._retryCount++
         const delay = retryStrategy.getRetryDelay(config._retryCount - 1, error)
 
-        console.warn(
-          `[APIClient] Retrying request to ${endpoint} (attempt ${config._retryCount}/${MAX_RETRIES}) after ${Math.round(delay)}ms...`
+        logger.warn(
+          `Retrying request to ${endpoint} (attempt ${config._retryCount}/${MAX_RETRIES}) after ${Math.round(delay)}ms...`,
+          undefined,
+          { module: 'APIClient' }
         )
 
         await new Promise(resolve => setTimeout(resolve, delay))
