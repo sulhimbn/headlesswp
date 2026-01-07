@@ -1,4 +1,5 @@
 import React from 'react'
+import Button from './ui/Button'
 
 interface ErrorBoundaryProps {
   children: React.ReactNode
@@ -26,7 +27,6 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
 
   render() {
     if (this.state.hasError) {
-      // Render fallback UI if provided, otherwise render default error message
       if (this.props.fallback) {
         return this.props.fallback
       }
@@ -38,12 +38,9 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
             <p className="text-gray-700 mb-6">
               Maaf, terjadi kesalahan saat memuat konten. Silakan coba beberapa saat lagi.
             </p>
-            <button
-              className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition-colors"
-              onClick={() => window.location.reload()}
-            >
+            <Button onClick={() => window.location.reload()}>
               Muat Ulang Halaman
-            </button>
+            </Button>
           </div>
         </div>
       )
