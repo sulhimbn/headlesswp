@@ -14,7 +14,7 @@ const circuitBreaker = new CircuitBreaker({
   recoveryTimeout: 60000,
   successThreshold: 2,
   onStateChange: (state) => {
-    console.log(`[CircuitBreaker] State changed to: ${state}`)
+    console.warn(`[CircuitBreaker] State changed to: ${state}`)
   }
 })
 
