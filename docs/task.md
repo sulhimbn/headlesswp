@@ -1,10 +1,152 @@
 # Task Backlog
 
-**Last Updated**: 2026-01-07
+**Last Updated**: 2026-01-07 (SECURITY-001)
 
 ---
 
 ## Active Tasks
+
+## [SECURITY-001] Security Hardening - XSS Protection & Vulnerability Remediation
+
+**Status**: Complete
+**Priority**: P0
+**Assigned**: Principal Security Engineer
+**Created**: 2026-01-07
+**Updated**: 2026-01-07
+
+### Description
+
+Implemented comprehensive security hardening including XSS protection with DOMPurify, fixed critical vulnerability in glob package, and updated all outdated dependencies.
+
+### Implementation Summary
+
+1. **XSS Protection with DOMPurify** (`src/app/berita/[slug]/page.tsx`, `src/components/post/PostCard.tsx`):
+   - Replaced `dompurify` with `isomorphic-dompurify` for Node.js/browser compatibility
+   - Implemented `sanitizeHTML()` function with strict allowed tags and attributes
+   - Applied sanitization to all user-generated content (post content and excerpts)
+   - Configured security policies:
+     - Allowed tags: p, br, strong, em, u, ol, ul, li, a, img, h1-h6, blockquote, code, pre, span, div, table elements
+     - Forbidden tags: script, style, iframe, object, embed
+     - Forbidden attributes: onclick, onload, onerror, onmouseover
+
+2. **Vulnerability Remediation**:
+   - Updated `glob` package to fix command injection vulnerability (GHSA-5j98-mcp5-4vw2)
+   - High severity CVSS: 7.5 (CVSS:3.1/AV:N/AC:H/PR:L/UI:N/S:U/C:H/I:H/A:H)
+   - Vulnerability range: 10.2.0 - 10.4.5 → Fixed to latest version
+
+3. **Dependency Updates**:
+   - `@eslint/eslintrc`: 3.3.1 → 3.3.3
+   - `@typescript-eslint/eslint-plugin`: 8.46.4 → 8.52.0
+   - `@typescript-eslint/parser`: 8.46.4 → 8.52.0
+
+4. **Security Audit**:
+   - Verified 0 vulnerabilities after all updates
+   - All security headers already properly configured (HSTS, CSP, X-Frame-Options, etc.)
+   - No hardcoded secrets found in source code
+   - Proper .gitignore configuration for sensitive files
+
+### Security Improvements
+
+**Before**:
+- ❌ No XSS protection on user-generated content
+- ❌ dangerouslySetInnerHTML without sanitization (2 locations)
+- ❌ High severity vulnerability in glob package
+- ❌ Outdated ESLint packages
+
+**After**:
+- ✅ Comprehensive XSS protection with DOMPurify
+- ✅ All user-generated content sanitized before rendering
+- ✅ 0 vulnerabilities (glob updated)
+- ✅ All dependencies up to date
+- ✅ Build successful with SSR compatibility
+
+### Key Benefits
+
+1. **XSS Protection**:
+   - User-generated content is now safe from XSS attacks
+   - Strict whitelist of allowed HTML tags and attributes
+   - Protection against malicious script injection
+   - Works in both server-side and client-side rendering
+
+2. **Vulnerability Remediation**:
+   - Critical command injection vulnerability fixed
+   - Attack surface reduced
+   - Latest security patches applied
+
+3. **Up-to-Date Dependencies**:
+   - Latest ESLint plugins and parsers
+   - Benefit from latest security fixes
+   - Better linting and type checking
+
+### Files Modified
+
+- `package.json` - Updated dependencies (isomorphic-dompurify, glob, eslint packages)
+- `src/app/berita/[slug]/page.tsx` - Added DOMPurify sanitization for post content
+- `src/components/post/PostCard.tsx` - Added DOMPurify sanitization for post excerpts
+
+### Test Coverage
+
+- ✅ All 80 tests passing
+- ✅ Build successful with ISR
+- ✅ TypeScript type checking passes
+- ✅ ESLint passes with updated packages
+- ✅ Security audit: 0 vulnerabilities
+
+### Security Configuration
+
+**DOMPurify Configuration (Post Content)**:
+```typescript
+ALLOWED_TAGS: [
+  'p', 'br', 'strong', 'em', 'u', 'ol', 'ul', 'li', 'a', 'img', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+  'blockquote', 'code', 'pre', 'span', 'div', 'table', 'thead', 'tbody', 'tr', 'td', 'th'
+]
+ALLOWED_ATTR: [
+  'href', 'title', 'target', 'rel', 'src', 'alt', 'width', 'height', 'class', 'id'
+]
+FORBID_TAGS: ['script', 'style', 'iframe', 'object', 'embed']
+FORBID_ATTR: ['onclick', 'onload', 'onerror', 'onmouseover']
+```
+
+**DOMPurify Configuration (Excerpts)**:
+```typescript
+ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'u', 'a', 'span']
+ALLOWED_ATTR: ['href', 'title', 'class']
+FORBID_TAGS: ['script', 'style', 'iframe', 'object', 'embed']
+FORBID_ATTR: ['onclick', 'onload', 'onerror', 'onmouseover']
+```
+
+### Success Criteria
+
+- ✅ XSS protection implemented with DOMPurify
+- ✅ All user-generated content sanitized
+- ✅ glob vulnerability fixed (0 vulnerabilities)
+- ✅ All dependencies updated to latest versions
+- ✅ Build successful with SSR compatibility
+- ✅ All tests passing (80/80)
+- ✅ TypeScript type checking passes
+- ✅ Security audit: 0 vulnerabilities
+- ✅ Zero regressions in functionality
+
+### Anti-Patterns Avoided
+
+- ❌ No trust in user input (all content sanitized)
+- ❌ No bypass of security for convenience
+- ❌ No leaving known vulnerabilities unpatched
+- ❌ No outdated security dependencies
+- ❌ No hardcoded secrets in source code
+
+### Follow-up Security Opportunities
+
+- Add rate limiting for API endpoints (per blueprint)
+- Implement JWT or session-based authentication if needed
+- Add CSP violation reporting endpoint
+- Implement content security policy monitoring
+- Add subresource integrity (SRI) for external scripts
+- Consider implementing a Web Application Firewall (WAF)
+- Add security scanning to CI/CD pipeline
+- Implement automated dependency updates (Dependabot)
+
+---
 
 ## [TASK-012] Critical Path Testing - postService
 
