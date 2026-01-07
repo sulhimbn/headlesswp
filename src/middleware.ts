@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { SITE_URL, SITE_URL_WWW } from './lib/api/config'
 
 export function middleware(_request: NextRequest) {
   const response = NextResponse.next()
@@ -13,12 +14,12 @@ export function middleware(_request: NextRequest) {
   // Enhanced CSP with nonce for dynamic content
   const csp = [
     "default-src 'self'",
-    `script-src 'self' 'nonce-${nonce}' 'unsafe-inline' 'unsafe-eval' https://mitrabantennews.com https://www.mitrabantennews.com`,
-    `style-src 'self' 'nonce-${nonce}' 'unsafe-inline' https://mitrabantennews.com https://www.mitrabantennews.com`,
-    "img-src 'self' data: blob: https://mitrabantennews.com https://www.mitrabantennews.com",
+    `script-src 'self' 'nonce-${nonce}' 'unsafe-inline' 'unsafe-eval' ${SITE_URL} ${SITE_URL_WWW}`,
+    `style-src 'self' 'nonce-${nonce}' 'unsafe-inline' ${SITE_URL} ${SITE_URL_WWW}`,
+    `img-src 'self' data: blob: ${SITE_URL} ${SITE_URL_WWW}`,
     "font-src 'self' data:",
-    "connect-src 'self' https://mitrabantennews.com https://www.mitrabantennews.com",
-    "media-src 'self' https://mitrabantennews.com https://www.mitrabantennews.com",
+    `connect-src 'self' ${SITE_URL} ${SITE_URL_WWW}`,
+    `media-src 'self' ${SITE_URL} ${SITE_URL_WWW}`,
     "object-src 'none'",
     "base-uri 'self'",
     "form-action 'self'",
