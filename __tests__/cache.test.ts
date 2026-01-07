@@ -19,13 +19,7 @@ jest.mock('axios', () => ({
 describe('Cache Manager', () => {
   beforeEach(() => {
     cacheManager.clear();
-    // Reset stats by creating a new instance for testing
-    (cacheManager as any).stats = {
-      hits: 0,
-      misses: 0,
-      sets: 0,
-      deletes: 0,
-    };
+    cacheManager.resetStats();
   });
 
   describe('Basic Cache Operations', () => {
@@ -167,27 +161,15 @@ describe('Cache Keys', () => {
 describe('WordPress API Caching', () => {
   beforeEach(() => {
     cacheManager.clear();
-    // Reset stats
-    (cacheManager as any).stats = {
-      hits: 0,
-      misses: 0,
-      sets: 0,
-      deletes: 0,
-    };
+    cacheManager.resetStats();
   });
 
   describe('Cache Integration', () => {
     it('should cache getPosts calls', async () => {
-      // Mock the API call
-      const mockPosts = [
-        { id: 1, title: { rendered: 'Post 1' } },
-        { id: 2, title: { rendered: 'Post 2' } },
-      ];
-      
       // This would normally make an API call, but we'll test the caching logic
       const stats1 = wordpressAPI.getCacheStats();
       expect(stats1.hits).toBe(0);
-      
+
       // The actual API call would be made here and cached
       // For testing, we'll verify the cache structure
       const cacheKey = CACHE_KEYS.posts();
