@@ -53,6 +53,27 @@ export const wordpressAPI = {
     return response.data;
   },
 
+  getMediaUrl: async (mediaId: number, signal?: AbortSignal): Promise<string | null> => {
+    if (mediaId === 0) return null;
+
+    const cacheKey = CACHE_KEYS.media(mediaId);
+    const cached = cacheManager.get<string>(cacheKey);
+    if (cached) return cached;
+
+    try {
+      const media = await wordpressAPI.getMedia(mediaId, signal);
+      const url = media.source_url;
+      if (url) {
+        cacheManager.set(cacheKey, url, CACHE_TTL.MEDIA);
+        return url;
+      }
+      return null;
+    } catch (error) {
+      console.warn(`Failed to fetch media ${mediaId}:`, error);
+      return null;
+    }
+  },
+
   // Authors
   getAuthor: async (id: number, signal?: AbortSignal): Promise<WordPressAuthor> => {
     const response = await apiClient.get(getApiUrl(`/wp/v2/users/${id}`), { signal });

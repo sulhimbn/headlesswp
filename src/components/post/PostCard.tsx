@@ -6,6 +6,7 @@ import DOMPurify from 'isomorphic-dompurify'
 
 interface PostCardProps {
   post: WordPressPost
+  mediaUrl?: string | null
 }
 
 const sanitizeHTML = (html: string): string => {
@@ -18,13 +19,13 @@ const sanitizeHTML = (html: string): string => {
   return DOMPurify.sanitize(html, config)
 }
 
-const PostCard = React.memo(function PostCard({ post }: PostCardProps) {
+const PostCard = React.memo(function PostCard({ post, mediaUrl }: PostCardProps) {
   return (
     <article className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300">
       {post.featured_media > 0 && (
         <div className="relative h-48">
           <Image
-            src="/placeholder-image.jpg"
+            src={mediaUrl || '/placeholder-image.jpg'}
             alt={post.title.rendered}
             fill
             className="object-cover"

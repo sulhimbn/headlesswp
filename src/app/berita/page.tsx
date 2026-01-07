@@ -1,4 +1,5 @@
 import { postService } from '@/lib/services/postService'
+import { wordpressAPI } from '@/lib/wordpress'
 import Header from '@/components/layout/Header'
 import Footer from '@/components/layout/Footer'
 import PostCard from '@/components/post/PostCard'
@@ -7,6 +8,17 @@ export const revalidate = 300;
 
 export default async function BeritaPage() {
   const posts = await postService.getAllPosts()
+
+  const mediaUrls = await Promise.all(
+    posts.map((post) =>
+      wordpressAPI.getMediaUrl(post.featured_media)
+    )
+  )
+
+  const mediaUrlMap = new Map<number, string | null>()
+  posts.forEach((post, index) => {
+    mediaUrlMap.set(post.id, mediaUrls[index])
+  })
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -20,7 +32,7 @@ export default async function BeritaPage() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {posts.map((post) => (
-            <PostCard key={post.id} post={post} />
+            <PostCard key={post.id} post={post} mediaUrl={mediaUrlMap.get(post.id)} />
           ))}
         </div>
       </main>

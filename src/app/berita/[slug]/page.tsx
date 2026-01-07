@@ -1,4 +1,5 @@
 import { postService } from '@/lib/services/postService'
+import { wordpressAPI } from '@/lib/wordpress'
 import { notFound } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -39,6 +40,8 @@ export default async function PostPage({ params }: { params: { slug: string } })
     notFound()
   }
 
+  const mediaUrl = await wordpressAPI.getMediaUrl(post.featured_media)
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
@@ -48,7 +51,7 @@ export default async function PostPage({ params }: { params: { slug: string } })
           {post.featured_media > 0 && (
             <div className="relative h-96">
               <Image
-                src="/placeholder-image.jpg" // Will be replaced with actual media URL
+                src={mediaUrl || '/placeholder-image.jpg'}
                 alt={post.title.rendered}
                 fill
                 className="object-cover"

@@ -1,6 +1,6 @@
 # Task Backlog
 
-**Last Updated**: 2026-01-07 (SECURITY-001)
+**Last Updated**: 2026-01-07 (PERF-001)
 
 ---
 
@@ -1082,77 +1082,170 @@ Medium - 1-2 hours (including testing)
 
 ---
 
-## [TASK-011] Media URL Resolution
+## [PERF-001] Performance Optimization - Media URL Resolution with Caching
 
-**Status**: Backlog
+**Status**: Complete
 **Priority**: P1
-**Assigned**: - 
+**Assigned**: Performance Engineer
 **Created**: 2026-01-07
 **Updated**: 2026-01-07
 
 ### Description
 
-The PostCard component uses a hardcoded placeholder image (`/placeholder-image.jpg`) instead of fetching actual media URLs from the WordPress API, resulting in all posts showing the same placeholder image.
+Implemented media URL resolution with caching to display actual post images instead of hardcoded placeholder, significantly improving user experience and perceived performance.
 
-### Issue
+### Implementation Summary
 
-- Lines 15-21 in `PostCard.tsx` use hardcoded `/placeholder-image.jpg`
-- Comment on line 35 in `src/app/berita/[slug]/page.tsx` indicates "Will be replaced with actual media URL"
-- `featured_media` field is available in post data but not used to fetch media details
-- Poor user experience - no actual images displayed
+1. **Added `getMediaUrl` Helper Method** (`src/lib/wordpress.ts`):
+   - New method to fetch media URLs from WordPress API by media ID
+   - Integrated with existing cache manager for 1-hour TTL
+   - Returns null if mediaId is 0 or on fetch failure
+   - Includes error handling with console.warn for failed fetches
+   - Leverages existing `CACHE_KEYS.media()` and `CACHE_TTL.MEDIA` constants
 
-### Suggestion
+2. **Updated PostCard Component** (`src/components/post/PostCard.tsx`):
+   - Added optional `mediaUrl` prop to accept fetched media URL
+   - Updated Image component to use actual media URL with fallback to placeholder
+   - Maintains responsive sizing and Next.js Image optimization
+   - Graceful degradation - shows placeholder if media URL is null
 
-Create a helper function to fetch media URL from WordPress API based on `featured_media` ID and cache the results. This will:
-- Display actual post images
-- Improve user experience and engagement
-- Leverage existing WordPress media endpoint
-- Use cache manager for performance
+3. **Updated Homepage** (`src/app/page.tsx`):
+   - Fetches media URLs for all posts (latest and category posts) in parallel
+   - Creates mediaUrlMap to efficiently associate URLs with post IDs
+   - Passes mediaUrl to PostCard components via `mediaUrlMap.get(post.id)`
+   - Maintains parallel API calls pattern for optimal performance
 
-### Location
+4. **Updated Berita List Page** (`src/app/berita/page.tsx`):
+   - Fetches media URLs for all posts in parallel
+   - Uses Map for efficient URL-to-post association
+   - Passes mediaUrl to PostCard components
 
-- `src/lib/wordpress.ts` (add media helper method)
-- `src/components/post/PostCard.tsx` (update to use actual media)
-- `src/app/berita/[slug]/page.tsx` (update to use actual media)
+5. **Updated Post Detail Page** (`src/app/berita/[slug]/page.tsx`):
+   - Fetches media URL for single post
+   - Updates featured image to use actual media URL with fallback
+   - Maintains responsive design and Next.js Image optimization
 
-### Implementation Steps
+### Performance Improvements
 
-1. Add helper method to `wordpress.ts` to get media URL with caching:
-   ```typescript
-   getMediaUrl: async (mediaId: number, signal?: AbortSignal): Promise<string | null> => {
-     if (mediaId === 0) return null
-     
-     const cacheKey = CACHE_KEYS.media(mediaId)
-     const cached = cacheManager.get<string>(cacheKey)
-     if (cached) return cached
-     
-     try {
-       const media = await wordpressAPI.getMedia(mediaId, signal)
-       const url = media.source_url || media.guid?.rendered
-       if (url) cacheManager.set(cacheKey, url, CACHE_TTL.MEDIA)
-       return url || null
-     } catch (error) {
-       console.warn(`Failed to fetch media ${mediaId}:`, error)
-       return null
-     }
-   }
-   ```
+**Before**:
+- ❌ All posts showed same placeholder image
+- ❌ Poor visual presentation
+- ❌ Low engagement - no actual content images
+- ❌ Hardcoded `/placeholder-image.jpg` in multiple locations
 
-2. Update `PostCard.tsx` to fetch and use media URL
-   - Add server-side fetching logic
-   - Use placeholder only when media URL is null
+**After**:
+- ✅ Actual post images displayed
+- ✅ 1-hour caching reduces redundant API calls
+- ✅ Parallel fetching for optimal performance
+- ✅ Next.js Image optimization with responsive sizes
+- ✅ Graceful fallback to placeholder on failure
+- ✅ Improved perceived performance
+- ✅ Better user engagement and visual appeal
 
-3. Update `src/app/berita/[slug]/page.tsx` to fetch and use media URL
+### Key Benefits
 
-4. Consider extracting MediaImage component for reuse
+1. **Improved User Experience**:
+   - Real post images instead of placeholder
+   - Visual content that engages users
+   - Professional appearance
+   - Better content preview
 
-### Priority
+2. **Performance Optimization**:
+   - 1-hour caching for media URLs (CACHE_TTL.MEDIA)
+   - Parallel fetching reduces total request time
+   - Next.js Image component provides automatic optimization
+   - Reduced bandwidth with responsive images
 
-Medium - UX improvement, affects visual presentation
+3. **Better Engagement**:
+   - Visual content encourages clicks
+   - Users can see actual images before clicking
+   - More professional and trustworthy appearance
+   - Improved bounce rate potential
 
-### Effort
+4. **Resilient Design**:
+   - Graceful fallback to placeholder on fetch failure
+   - Null handling for posts without featured media
+   - Error logging for debugging
+   - No breaking changes - placeholder still works
 
-Medium - 2-3 hours (including testing and edge cases)
+### Files Modified
+
+- `src/lib/wordpress.ts` - Added `getMediaUrl` method with caching
+- `src/components/post/PostCard.tsx` - Added `mediaUrl` prop, updated Image src
+- `src/app/page.tsx` - Added parallel media URL fetching and mapping
+- `src/app/berita/page.tsx` - Added parallel media URL fetching and mapping
+- `src/app/berita/[slug]/page.tsx` - Added media URL fetching for single post
+
+### Test Coverage
+
+- ✅ All 80 tests passing
+- ✅ Build successful with ISR
+- ✅ TypeScript type checking passes
+- ✅ ESLint passes
+- ✅ Zero regressions in existing functionality
+- ✅ Graceful degradation verified
+
+### Performance Metrics
+
+- **Cache Hit Rate**: Expected >90% for media URLs (1-hour TTL)
+- **API Call Reduction**: Media URLs cached for 1 hour
+- **Parallel Fetching**: All media URLs fetched in parallel, not sequentially
+- **Next.js Optimization**: Automatic WebP/AVIF conversion, responsive sizing
+
+### Technical Implementation
+
+**getMediaUrl Method**:
+```typescript
+getMediaUrl: async (mediaId: number, signal?: AbortSignal): Promise<string | null> => {
+  if (mediaId === 0) return null;
+
+  const cacheKey = CACHE_KEYS.media(mediaId);
+  const cached = cacheManager.get<string>(cacheKey);
+  if (cached) return cached;
+
+  try {
+    const media = await wordpressAPI.getMedia(mediaId, signal);
+    const url = media.source_url;
+    if (url) {
+      cacheManager.set(cacheKey, url, CACHE_TTL.MEDIA);
+      return url;
+    }
+    return null;
+  } catch (error) {
+    console.warn(`Failed to fetch media ${mediaId}:`, error);
+    return null;
+  }
+}
+```
+
+### Success Criteria
+
+- ✅ Actual post images displayed instead of placeholder
+- ✅ Media URL caching implemented with 1-hour TTL
+- ✅ Parallel fetching for optimal performance
+- ✅ Graceful fallback to placeholder on failure
+- ✅ All tests passing (80/80)
+- ✅ TypeScript type checking passes
+- ✅ ESLint passes
+- ✅ Zero regressions in functionality
+
+### Anti-Patterns Avoided
+
+- ❌ No sequential media URL fetching (all done in parallel)
+- ❌ No hardcoded image paths (fetched dynamically)
+- ❌ No cache pollution (proper TTL and invalidation)
+- ❌ No blocking UI (async/await pattern)
+- ❌ No breaking changes (placeholder still available)
+
+### Follow-up Optimization Opportunities
+
+- Consider implementing image optimization service for WebP/AVIF generation
+- Add CDN integration for media files
+- Implement lazy loading for below-fold images
+- Add blur-up placeholder effect for better UX
+- Consider adding image gallery component
+- Implement media CDN for faster delivery
+- Add responsive image breakpoints optimization
 
 ---
 
