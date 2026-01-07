@@ -9,7 +9,7 @@ import Breadcrumb from '@/components/ui/Breadcrumb'
 
 export const dynamic = 'force-dynamic'
 
-export const revalidate = 600; // Revalidate every 10 minutes
+export const revalidate = 3600; // REVALIDATE_TIMES.POST_DETAIL (1 hour)
 
 const sanitizeHTML = (html: string): string => {
   const config = {

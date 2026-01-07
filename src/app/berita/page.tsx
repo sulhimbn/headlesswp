@@ -5,7 +5,7 @@ import PostCard from '@/components/post/PostCard'
 import Pagination from '@/components/ui/Pagination'
 import { PAGINATION_LIMITS } from '@/lib/api/config'
 
-export const revalidate = 300;
+export const revalidate = 300; // REVALIDATE_TIMES.POST_LIST
 
 export default async function BeritaPage({
   searchParams,
@@ -17,12 +17,6 @@ export default async function BeritaPage({
 
   const { posts, totalPosts } = await enhancedPostService.getPaginatedPosts(page, postsPerPage)
   const totalPages = Math.ceil(totalPosts / postsPerPage)
-
-  const mediaUrlMap = new Map<number, string | null>()
-
-  for (const post of posts) {
-    mediaUrlMap.set(post.id, post.mediaUrl)
-  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -38,7 +32,7 @@ export default async function BeritaPage({
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {posts.map((post) => (
-                <PostCard key={post.id} post={post} mediaUrl={mediaUrlMap.get(post.id)} />
+                <PostCard key={post.id} post={post} mediaUrl={post.mediaUrl} />
               ))}
             </div>
 

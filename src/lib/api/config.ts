@@ -20,3 +20,9 @@ export const PAGINATION_LIMITS = {
   CATEGORY_POSTS: 3,
   ALL_POSTS: 50,
 } as const
+
+export const REVALIDATE_TIMES = {
+  HOMEPAGE: 300, // 5 minutes
+  POST_LIST: 300, // 5 minutes
+  POST_DETAIL: 3600, // 1 hour
+} as const
