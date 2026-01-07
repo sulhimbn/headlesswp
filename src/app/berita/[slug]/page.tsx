@@ -7,6 +7,8 @@ import React from 'react'
 import Header from '@/components/layout/Header'
 import Footer from '@/components/layout/Footer'
 
+export const dynamic = 'force-dynamic'
+
 export default async function PostPage({ params }: { params: { slug: string } }) {
   const post = await postService.getPostBySlug(params.slug)
 
