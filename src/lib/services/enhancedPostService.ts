@@ -2,7 +2,7 @@ import { wordpressAPI } from '@/lib/wordpress';
 import { WordPressPost, WordPressCategory, WordPressTag } from '@/types/wordpress';
 import { PAGINATION_LIMITS } from '@/lib/api/config';
 import { cacheManager, CACHE_TTL, CACHE_KEYS } from '@/lib/cache';
-import { dataValidator } from '@/lib/validation/dataValidator';
+import { dataValidator, isValidationResultValid } from '@/lib/validation/dataValidator';
 import { createFallbackPost } from '@/lib/utils/fallbackPost';
 
 interface PostWithMediaUrl extends WordPressPost {
@@ -24,12 +24,12 @@ async function getCategoriesMap(): Promise<Map<number, WordPressCategory>> {
     const categories = await wordpressAPI.getCategories();
     const validation = dataValidator.validateCategories(categories);
 
-    if (!validation.valid) {
+    if (!isValidationResultValid(validation)) {
       console.error('Invalid categories data:', validation.errors);
       return new Map();
     }
 
-    const map = new Map<number, WordPressCategory>(validation.data!.map((cat: WordPressCategory) => [cat.id, cat]));
+    const map = new Map<number, WordPressCategory>(validation.data.map((cat: WordPressCategory) => [cat.id, cat]));
     cacheManager.set(cacheKey, map, CACHE_TTL.CATEGORIES);
     return map;
   } catch (error) {
@@ -47,12 +47,12 @@ async function getTagsMap(): Promise<Map<number, WordPressTag>> {
     const tags = await wordpressAPI.getTags();
     const validation = dataValidator.validateTags(tags);
 
-    if (!validation.valid) {
+    if (!isValidationResultValid(validation)) {
       console.error('Invalid tags data:', validation.errors);
       return new Map();
     }
 
-    const map = new Map<number, WordPressTag>(validation.data!.map((tag: WordPressTag) => [tag.id, tag]));
+    const map = new Map<number, WordPressTag>(validation.data.map((tag: WordPressTag) => [tag.id, tag]));
     cacheManager.set(cacheKey, map, CACHE_TTL.TAGS);
     return map;
   } catch (error) {
@@ -104,7 +104,7 @@ export const enhancedPostService = {
       const posts = await wordpressAPI.getPosts({ per_page: PAGINATION_LIMITS.LATEST_POSTS });
       const validation = dataValidator.validatePosts(posts);
 
-      if (!validation.valid) {
+      if (!isValidationResultValid(validation)) {
         console.error('Invalid posts data:', validation.errors);
         return createFallbackPostsWithMediaUrls([
           { id: '1', title: 'Berita Utama 1' },
@@ -113,7 +113,7 @@ export const enhancedPostService = {
         ]);
       }
 
-      return enrichPostsWithMediaUrls(validation.data!);
+      return enrichPostsWithMediaUrls(validation.data);
     } catch (error) {
       console.warn('Failed to fetch latest posts during build:', error);
       return createFallbackPostsWithMediaUrls([
@@ -129,7 +129,7 @@ export const enhancedPostService = {
       const posts = await wordpressAPI.getPosts({ per_page: PAGINATION_LIMITS.CATEGORY_POSTS });
       const validation = dataValidator.validatePosts(posts);
 
-      if (!validation.valid) {
+      if (!isValidationResultValid(validation)) {
         console.error('Invalid posts data:', validation.errors);
         return createFallbackPostsWithMediaUrls([
           { id: 'cat-1', title: 'Berita Kategori 1' },
@@ -138,7 +138,7 @@ export const enhancedPostService = {
         ]);
       }
 
-      return enrichPostsWithMediaUrls(validation.data!);
+      return enrichPostsWithMediaUrls(validation.data);
     } catch (error) {
       console.warn('Failed to fetch category posts during build:', error);
       return createFallbackPostsWithMediaUrls([
@@ -154,12 +154,12 @@ export const enhancedPostService = {
       const posts = await wordpressAPI.getPosts({ per_page: PAGINATION_LIMITS.ALL_POSTS });
       const validation = dataValidator.validatePosts(posts);
 
-      if (!validation.valid) {
+      if (!isValidationResultValid(validation)) {
         console.error('Invalid posts data:', validation.errors);
         return [];
       }
 
-      return enrichPostsWithMediaUrls(validation.data!);
+      return enrichPostsWithMediaUrls(validation.data);
     } catch (error) {
       console.warn('Failed to fetch all posts during build:', error);
       return [];
@@ -175,12 +175,12 @@ export const enhancedPostService = {
       const { data, total, totalPages } = await wordpressAPI.getPostsWithHeaders({ page, per_page: perPage });
       const validation = dataValidator.validatePosts(data);
 
-      if (!validation.valid) {
+      if (!isValidationResultValid(validation)) {
         console.error('Invalid posts data:', validation.errors);
         return { posts: [], totalPosts: 0, totalPages: 0 };
       }
 
-      const enrichedPosts = await enrichPostsWithMediaUrls(validation.data!);
+      const enrichedPosts = await enrichPostsWithMediaUrls(validation.data);
 
       return {
         posts: enrichedPosts,
@@ -201,12 +201,12 @@ export const enhancedPostService = {
 
       const validation = dataValidator.validatePost(post);
 
-      if (!validation.valid) {
+      if (!isValidationResultValid(validation)) {
         console.error(`Invalid post data for slug ${slug}:`, validation.errors);
         return null;
       }
 
-      return enrichPostWithDetails(validation.data!);
+      return enrichPostWithDetails(validation.data);
     } catch (error) {
       console.error(`Error fetching post with slug ${slug}:`, error);
       return null;
@@ -218,12 +218,12 @@ export const enhancedPostService = {
       const post = await wordpressAPI.getPostById(id);
       const validation = dataValidator.validatePost(post);
 
-      if (!validation.valid) {
+      if (!isValidationResultValid(validation)) {
         console.error(`Invalid post data for id ${id}:`, validation.errors);
         return null;
       }
 
-      return enrichPostWithDetails(validation.data!);
+      return enrichPostWithDetails(validation.data);
     } catch (error) {
       console.error(`Error fetching post with id ${id}:`, error);
       return null;

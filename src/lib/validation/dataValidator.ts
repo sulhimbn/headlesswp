@@ -330,4 +330,23 @@ class DataValidator {
 }
 
 export const dataValidator = new DataValidator();
+
 export default dataValidator;
+
+export function isValidationResultValid<T>(result: ValidationResult<T>): result is { valid: true; data: T; errors: [] } {
+  return result.valid;
+}
+
+export function unwrapValidationResult<T>(result: ValidationResult<T>): T {
+  if (!result.valid) {
+    throw new Error(`Validation failed: ${result.errors.join(', ')}`);
+  }
+  return result.data!;
+}
+
+export function unwrapValidationResultSafe<T>(result: ValidationResult<T>, fallback: T): T {
+  if (!result.valid) {
+    return fallback;
+  }
+  return result.data!;
+}
