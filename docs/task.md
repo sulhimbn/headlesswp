@@ -1,10 +1,160 @@
 # Task Backlog
 
-**Last Updated**: 2026-01-07 (Added INTEGRATION-002: API Standardization Phase 2)
+**Last Updated**: 2026-01-07 (Added UI-UX-002: Component Extraction - Reusable UI Patterns)
 
   ---
 
 ## Active Tasks
+
+## [UI-UX-002] Component Extraction - Reusable UI Patterns
+
+**Status**: Complete
+**Priority**: P0
+**Assigned**: Senior UI/UX Engineer
+**Created**: 2026-01-07
+**Updated**: 2026-01-07
+
+### Description
+
+Implemented component extraction to create reusable UI patterns, improving maintainability, consistency, and user experience across the application. Created four new UI components to replace hardcoded and duplicate patterns throughout the codebase.
+
+### Implementation Summary
+
+1. **EmptyState Component** (`src/components/ui/EmptyState.tsx`):
+    - Created reusable EmptyState component for better UX when no content is available
+    - Supports optional icon, description, and action button
+    - Provides semantic HTML with proper ARIA role="status"
+    - Replaces simple text-only empty states
+    - Accessible with proper focus management on action buttons
+
+2. **Badge Component** (`src/components/ui/Badge.tsx`):
+    - Created reusable Badge component for category and tag badges
+    - Supports three variants: category (red), tag (gray), default (gray)
+    - Optional href prop for clickable badges with hover effects
+    - Consistent styling across all badges
+    - Proper focus states and ARIA attributes
+    - Replaces hardcoded badge styles in post detail page
+
+3. **SectionHeading Component** (`src/components/ui/SectionHeading.tsx`):
+    - Created reusable SectionHeading component for consistent section headings
+    - Supports three heading levels: h1, h2, h3
+    - Supports three sizes: lg (text-3xl), md (text-2xl), sm (text-xl)
+    - Consistent typography and spacing
+    - Semantic HTML elements based on level prop
+    - Replaces repeated heading patterns in home page and berita page
+
+4. **MetaInfo Component** (`src/components/ui/MetaInfo.tsx`):
+    - Created reusable MetaInfo component for author and date metadata
+    - Supports optional author name (defaults to "By Admin")
+    - Uses semantic `<time>` element for dates
+    - Proper Indonesian date formatting (id-ID locale)
+    - Accessible with separator marked as aria-hidden
+    - Replaces hardcoded meta info patterns in post detail page
+
+### Component Extraction Improvements
+
+**Before**:
+- ❌ Empty states: Simple text-only messages with poor UX
+- ❌ Badges: Hardcoded styles repeated in multiple places
+- ❌ Section headings: Duplicate typography classes across pages
+- ❌ Meta info: Repeated date formatting and author display logic
+- ❌ No consistent design patterns
+- ❌ Hard to maintain and update styles
+
+**After**:
+- ✅ EmptyState: Rich component with icon, description, and action button
+- ✅ Badges: Single Badge component with variants for all badge types
+- ✅ Section headings: Consistent SectionHeading component for all headings
+- ✅ Meta info: Reusable MetaInfo component with semantic HTML
+- ✅ Consistent design patterns across application
+- ✅ Easy to maintain and update styles
+
+### Key Benefits
+
+1. **Improved Maintainability**:
+    - Single source of truth for UI patterns
+    - Easier to update styles across application
+    - Reduced code duplication
+    - Consistent behavior everywhere
+
+2. **Better User Experience**:
+    - Richer empty states with icons and actions
+    - Consistent visual language
+    - Better accessibility with proper ARIA attributes
+    - Professional appearance
+
+3. **Type Safety**:
+    - All components properly typed with TypeScript
+    - Compile-time error checking
+    - Better IDE autocomplete
+    - Safer refactoring
+
+4. **Accessibility**:
+    - Proper semantic HTML elements
+    - ARIA attributes where needed
+    - Focus management on interactive elements
+    - Screen reader friendly
+
+### Files Created
+
+- `src/components/ui/EmptyState.tsx` - NEW: Reusable empty state component with icon and action support
+- `src/components/ui/Badge.tsx` - NEW: Reusable badge component with variants
+- `src/components/ui/SectionHeading.tsx` - NEW: Reusable section heading component
+- `src/components/ui/MetaInfo.tsx` - NEW: Reusable meta info component with semantic HTML
+
+### Files Modified
+
+- `src/app/berita/page.tsx` - Updated to use EmptyState and SectionHeading
+- `src/app/berita/[slug]/page.tsx` - Updated to use Badge and MetaInfo
+- `src/app/page.tsx` - Updated to use SectionHeading
+
+### Results
+
+- ✅ 4 new reusable UI components created
+- ✅ 3 pages updated to use new components
+- ✅ Code duplication eliminated
+- ✅ Consistent design patterns established
+- ✅ All linting passes (ESLint)
+- ✅ All type checking passes (TypeScript)
+- ✅ Zero regressions in functionality
+- ✅ Improved user experience
+- ✅ Better maintainability
+- ✅ Accessibility improved
+
+### Success Criteria
+
+- ✅ EmptyState component created with icon, description, and action support
+- ✅ Badge component created with variants for category/tag
+- ✅ SectionHeading component created with level and size props
+- ✅ MetaInfo component created with semantic HTML
+- ✅ All pages updated to use new components
+- ✅ Code duplication eliminated
+- ✅ Consistent design patterns across application
+- ✅ All linting passes
+- ✅ All type checking passes
+- ✅ Zero regressions in functionality
+
+### Anti-Patterns Avoided
+
+- ❌ No code duplication (DRY principle)
+- ❌ No hardcoded styles repeated across components
+- ❌ No inconsistent design patterns
+- ❌ No inaccessible components (all proper ARIA)
+- ❌ No type-unsafe components (all properly typed)
+- ❌ No breaking changes to existing functionality
+
+### Follow-up Opportunities
+
+- Consider creating more reusable components (Card, Alert, etc.)
+- Add more badge variants for different use cases
+- Implement component library documentation
+- Consider adding Storybook for component development
+- Add more SectionHeading sizes if needed
+- Consider adding animations and transitions to components
+- Extract more patterns as reusable components
+- Consider implementing design tokens for colors and spacing
+
+---
 
 ## [INTEGRATION-002] API Standardization - Phase 2 Implementation
 

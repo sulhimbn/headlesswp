@@ -2,6 +2,7 @@ import { enhancedPostService } from '@/lib/services/enhancedPostService'
 import Header from '@/components/layout/Header'
 import Footer from '@/components/layout/Footer'
 import PostCard from '@/components/post/PostCard'
+import SectionHeading from '@/components/ui/SectionHeading'
 
 export const revalidate = 300
 
@@ -17,7 +18,9 @@ export default async function HomePage() {
 
       <main id="main-content" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <section className="mb-12">
-          <h2 className="text-3xl font-bold text-gray-900 mb-6">Berita Utama</h2>
+          <SectionHeading className="mb-6">
+            Berita Utama
+          </SectionHeading>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {categoryPosts.map((post) => (
               <PostCard key={post.id} post={post} mediaUrl={post.mediaUrl} />
@@ -26,7 +29,9 @@ export default async function HomePage() {
         </section>
 
         <section>
-          <h2 className="text-3xl font-bold text-gray-900 mb-6">Berita Terkini</h2>
+          <SectionHeading className="mb-6">
+            Berita Terkini
+          </SectionHeading>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {latestPosts.map((post) => (
               <PostCard key={post.id} post={post} mediaUrl={post.mediaUrl} />

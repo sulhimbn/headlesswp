@@ -3,6 +3,8 @@ import Header from '@/components/layout/Header'
 import Footer from '@/components/layout/Footer'
 import PostCard from '@/components/post/PostCard'
 import Pagination from '@/components/ui/Pagination'
+import EmptyState from '@/components/ui/EmptyState'
+import SectionHeading from '@/components/ui/SectionHeading'
 import { PAGINATION_LIMITS } from '@/lib/api/config'
 
 export const revalidate = 300
@@ -22,10 +24,10 @@ export default async function BeritaPage({
       <Header />
 
       <main id="main-content" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900">Semua Berita</h1>
-          <p className="text-gray-600 mt-2">Kumpulan berita terkini dari Mitra Banten News</p>
-        </div>
+        <SectionHeading level="h1" className="mb-2">
+          Semua Berita
+        </SectionHeading>
+        <p className="text-gray-600 mb-8">Kumpulan berita terkini dari Mitra Banten News</p>
 
         {posts.length > 0 ? (
           <>
@@ -40,9 +42,10 @@ export default async function BeritaPage({
             )}
           </>
         ) : (
-          <div className="text-center py-12">
-            <p className="text-gray-600">Tidak ada berita untuk ditampilkan.</p>
-          </div>
+          <EmptyState
+            title="Tidak ada berita"
+            description="Belum ada berita untuk ditampilkan saat ini."
+          />
         )}
       </main>
 
