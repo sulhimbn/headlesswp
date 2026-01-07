@@ -8,6 +8,7 @@ import { sanitizeHTML } from '@/lib/utils/sanitizeHTML'
 import Breadcrumb from '@/components/ui/Breadcrumb'
 import Badge from '@/components/ui/Badge'
 import MetaInfo from '@/components/ui/MetaInfo'
+import { logger } from '@/lib/utils/logger'
 
 export const dynamic = 'force-static'
 export const revalidate = 3600
@@ -21,7 +22,7 @@ export default async function PostPage({ params }: { params: { slug: string } })
 
   // Validate required fields
   if (!post.title.rendered || !post.content.rendered) {
-    console.error('Post is missing required fields:', post)
+    logger.error('Post is missing required fields:', post)
     notFound()
   }
 

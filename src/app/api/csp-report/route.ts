@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { logger } from '@/lib/utils/logger'
 
 export async function POST(request: NextRequest) {
   try {
     const report = await request.json()
-    
-    // Log CSP violations for monitoring
-    console.error('CSP Violation:', JSON.stringify(report, null, 2))
+
+    logger.error('CSP Violation:', JSON.stringify(report, null, 2))
     
     // In production, you might want to:
     // - Send to a logging service (Sentry, LogRocket, etc.)
@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
     
     return NextResponse.json({ success: true })
   } catch (error) {
-    console.error('Error processing CSP report:', error)
+    logger.error('Error processing CSP report:', error)
     return NextResponse.json({ error: 'Failed to process report' }, { status: 400 })
   }
 }
