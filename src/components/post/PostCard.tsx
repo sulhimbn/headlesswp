@@ -1,6 +1,7 @@
 import { WordPressPost } from '@/types/wordpress'
 import Link from 'next/link'
 import Image from 'next/image'
+import { memo } from 'react'
 import { sanitizeHTML } from '@/lib/utils/sanitizeHTML'
 
 interface PostCardProps {
@@ -9,7 +10,7 @@ interface PostCardProps {
   priority?: boolean
 }
 
-const PostCard = function PostCard({ post, mediaUrl, priority = false }: PostCardProps) {
+const PostCard = memo(function PostCard({ post, mediaUrl, priority = false }: PostCardProps) {
   const featuredImageAlt = `Gambar utama untuk artikel: ${post.title.rendered}`
 
   return (
@@ -54,6 +55,6 @@ const PostCard = function PostCard({ post, mediaUrl, priority = false }: PostCar
       </div>
     </article>
   )
-}
+})
 
 export default PostCard
