@@ -40,12 +40,14 @@ export default async function PostPage({ params }: { params: { slug: string } })
         <Breadcrumb items={breadcrumbItems} />
         <article className="bg-white rounded-lg shadow-lg overflow-hidden mt-4">
           {post.featured_media > 0 && (
-            <div className="relative h-96">
+            <div className="relative h-64 sm:h-80 md:h-96 lg:h-[450px]">
               <Image
                 src={mediaUrl || '/placeholder-image.jpg'}
                 alt={post.title.rendered}
                 fill
                 className="object-cover"
+                priority
+                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 90vw, 100vw"
               />
             </div>
           )}
