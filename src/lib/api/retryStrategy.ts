@@ -54,7 +54,7 @@ export class RetryStrategy {
 
   getRetryDelay(retryCount: number, error?: unknown): number {
     if (error && typeof error === 'object' && 'response' in error) {
-      const axiosError = error as { response?: { headers?: any } }
+      const axiosError = error as { response?: { headers?: Record<string, string | null> | { get: (key: string) => string | null } } }
       const errorHeaders = axiosError.response?.headers
 
       if (errorHeaders) {
@@ -63,7 +63,8 @@ export class RetryStrategy {
         if (typeof errorHeaders.get === 'function') {
           retryAfterHeader = errorHeaders.get('retry-after') || errorHeaders.get('Retry-After')
         } else {
-          retryAfterHeader = errorHeaders['retry-after'] || errorHeaders['Retry-After']
+          const headerRecord = errorHeaders as Record<string, string | null>
+          retryAfterHeader = headerRecord['retry-after'] || headerRecord['Retry-After']
         }
 
         if (retryAfterHeader) {
