@@ -246,11 +246,72 @@ interface ApiListResult<T> extends ApiResult<T[]> {
 
 ## Security Standards
 
-1. **XSS Protection**: DOMPurify on all user-generated content
-2. **CSP**: Content Security Policy headers
-3. **Rate Limiting**: API rate limiting (60 requests/minute with sliding window)
+1. **XSS Protection**: DOMPurify on all user-generated content with centralized `sanitizeHTML()` utility
+2. **CSP**: Nonce-based Content Security Policy headers configured in middleware.ts
+   - Development: Allows `'unsafe-inline'` and `'unsafe-eval'` for hot reload
+   - Production: Removes `'unsafe-inline'` and `'unsafe-eval'` for maximum security
+   - Report-uri endpoint for violation monitoring in development
+3. **Rate Limiting**: API rate limiting (60 requests/minute with sliding window token bucket algorithm)
 4. **Authentication**: JWT or session-based (if needed)
-5. **Input Validation**: TypeScript + runtime validation
+5. **Input Validation**: TypeScript + runtime validation with dataValidator.ts at API boundaries
+6. **Security Headers**:
+   - Strict-Transport-Security (HSTS): max-age=31536000; includeSubDomains; preload
+   - X-Frame-Options: DENY
+   - X-Content-Type-Options: nosniff
+   - X-XSS-Protection: 1; mode=block
+   - Referrer-Policy: strict-origin-when-cross-origin
+   - Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=(), etc.
+7. **Dependency Security**: Regular npm audits, keep all dependencies up to date
+8. **Secrets Management**: Never commit secrets, use .env.example for placeholder values
+
+### Security Configuration Details
+
+**Content Security Policy (CSP)**:
+- Configuration location: `src/middleware.ts`
+- Implementation: Nonce-based CSP generated per request
+- Script sources: Self, nonce, WordPress domains (mitrabantennews.com, www.mitrabantennews.com)
+- Style sources: Self, nonce, WordPress domains
+- Object sources: none
+- Frame ancestors: none
+- Report endpoint: `/api/csp-report` (development only)
+
+**XSS Protection**:
+- Configuration location: `src/lib/utils/sanitizeHTML.ts`
+- Implementation: DOMPurify with strict security policies
+- Config modes: 'excerpt' (minimal tags) and 'full' (rich content)
+- Forbidden tags: script, style, iframe, object, embed
+- Forbidden attributes: onclick, onload, onerror, onmouseover
+
+**Input Validation**:
+- Configuration location: `src/lib/validation/dataValidator.ts`
+- Implementation: Runtime validation at API boundaries
+- Validated resources: Posts, Categories, Tags, Media, Authors
+- Type guards: `isValidationResultValid<T>()`, `unwrapValidationResult<T>()`, `unwrapValidationResultSafe<T>()`
+- Graceful degradation with fallback data on validation failures
+
+**Rate Limiting**:
+- Configuration location: `src/lib/api/rateLimiter.ts`
+- Implementation: Token bucket algorithm with sliding window
+- Max requests: 60 per minute
+- Window size: 60000ms (1 minute)
+- Per-key limiting supported
+- Automatic window expiration
+
+### Security Audit Checklist
+
+- [ ] No hardcoded secrets in source code
+- [ ] .env.example contains only placeholder values
+- [ ] npm audit shows 0 vulnerabilities
+- [ ] All dependencies up to date
+- [ ] CSP headers configured with nonce support
+- [ ] No 'unsafe-inline' or 'unsafe-eval' in production CSP
+- [ ] All security headers present and correct
+- [ ] XSS protection (DOMPurify) applied to all user content
+- [ ] Input validation at API boundaries
+- [ ] Rate limiting implemented for API endpoints
+- [ ] .gitignore properly configured to exclude .env files
+- [ ] Error messages don't expose sensitive data
+- [ ] Logs don't contain secrets or passwords
 
 ## Performance Standards
 

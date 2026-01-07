@@ -12,10 +12,12 @@ export function middleware(_request: NextRequest) {
   response.headers.set('x-nonce', nonce)
   
   // Enhanced CSP with nonce for dynamic content
+  // In production, unsafe-inline and unsafe-eval are removed for better security
+  const isDevelopment = process.env.NODE_ENV === 'development'
   const csp = [
     "default-src 'self'",
-    `script-src 'self' 'nonce-${nonce}' 'unsafe-inline' 'unsafe-eval' ${SITE_URL} ${SITE_URL_WWW}`,
-    `style-src 'self' 'nonce-${nonce}' 'unsafe-inline' ${SITE_URL} ${SITE_URL_WWW}`,
+    `script-src 'self' 'nonce-${nonce}'${isDevelopment ? " 'unsafe-inline' 'unsafe-eval'" : ''} ${SITE_URL} ${SITE_URL_WWW}`,
+    `style-src 'self' 'nonce-${nonce}'${isDevelopment ? " 'unsafe-inline'" : ''} ${SITE_URL} ${SITE_URL_WWW}`,
     `img-src 'self' data: blob: ${SITE_URL} ${SITE_URL_WWW}`,
     "font-src 'self' data:",
     `connect-src 'self' ${SITE_URL} ${SITE_URL_WWW}`,
@@ -26,7 +28,7 @@ export function middleware(_request: NextRequest) {
     "frame-ancestors 'none'",
     "upgrade-insecure-requests",
     // Report violations in development
-    ...(process.env.NODE_ENV === 'development' ? [
+    ...(isDevelopment ? [
       `report-uri /api/csp-report`
     ] : [])
   ].join('; ')
