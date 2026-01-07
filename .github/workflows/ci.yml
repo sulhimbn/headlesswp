@@ -27,7 +27,7 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Build application
+      - name: Build application to install SWC binaries
         run: npm run build
         env:
           NEXT_PUBLIC_WORDPRESS_URL: ${{ secrets.WORDPRESS_URL }}
