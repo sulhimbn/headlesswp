@@ -154,13 +154,3 @@ export const CACHE_KEYS = {
   author: (id: number) => `author:${id}`,
   search: (query: string) => `search:${query}`,
 } as const;
-
-// Clean up expired entries every 5 minutes
-if (typeof setInterval !== 'undefined') {
-  setInterval(() => {
-    const cleaned = cacheManager.cleanup();
-    if (cleaned > 0) {
-      console.warn(`Cache cleanup: removed ${cleaned} expired entries`);
-    }
-  }, 5 * 60 * 1000);
-}
