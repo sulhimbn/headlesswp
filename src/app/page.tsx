@@ -3,19 +3,13 @@ import Header from '@/components/layout/Header'
 import Footer from '@/components/layout/Footer'
 import PostCard from '@/components/post/PostCard'
 
-export const revalidate = 300;
+export const revalidate = 300; // REVALIDATE_TIMES.HOMEPAGE
 
 export default async function HomePage() {
   const [latestPosts, categoryPosts] = await Promise.all([
     enhancedPostService.getLatestPosts(),
     enhancedPostService.getCategoryPosts()
   ])
-
-  const mediaUrlMap = new Map<number, string | null>()
-  
-  for (const post of [...latestPosts, ...categoryPosts]) {
-    mediaUrlMap.set(post.id, post.mediaUrl)
-  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -26,7 +20,7 @@ export default async function HomePage() {
           <h2 className="text-3xl font-bold text-gray-900 mb-6">Berita Utama</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {categoryPosts.map((post) => (
-              <PostCard key={post.id} post={post} mediaUrl={mediaUrlMap.get(post.id)} />
+              <PostCard key={post.id} post={post} mediaUrl={post.mediaUrl} />
             ))}
           </div>
         </section>
@@ -35,7 +29,7 @@ export default async function HomePage() {
           <h2 className="text-3xl font-bold text-gray-900 mb-6">Berita Terkini</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {latestPosts.map((post) => (
-              <PostCard key={post.id} post={post} mediaUrl={mediaUrlMap.get(post.id)} />
+              <PostCard key={post.id} post={post} mediaUrl={post.mediaUrl} />
             ))}
           </div>
         </section>

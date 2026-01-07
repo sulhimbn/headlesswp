@@ -3,6 +3,7 @@ import { WordPressPost, WordPressCategory, WordPressTag } from '@/types/wordpres
 import { PAGINATION_LIMITS } from '@/lib/api/config';
 import { cacheManager, CACHE_TTL, CACHE_KEYS } from '@/lib/cache';
 import { dataValidator } from '@/lib/validation/dataValidator';
+import { createFallbackPost } from '@/lib/utils/fallbackPost';
 
 interface PostWithMediaUrl extends WordPressPost {
   mediaUrl: string | null;
@@ -12,25 +13,6 @@ interface PostWithDetails extends WordPressPost {
   mediaUrl: string | null;
   categoriesDetails: WordPressCategory[];
   tagsDetails: WordPressTag[];
-}
-
-function createFallbackPost(id: string, title: string): WordPressPost {
-  return {
-    id: parseInt(id),
-    title: { rendered: title },
-    content: { rendered: '<p>Maaf, artikel tidak dapat dimuat saat ini. Silakan coba lagi nanti.</p>' },
-    excerpt: { rendered: 'Maaf, artikel tidak dapat dimuat saat ini. Silakan coba lagi nanti.' },
-    slug: `fallback-${id}`,
-    date: new Date().toISOString(),
-    modified: new Date().toISOString(),
-    author: 0,
-    featured_media: 0,
-    categories: [],
-    tags: [],
-    status: 'publish',
-    type: 'post',
-    link: ''
-  };
 }
 
 async function getCategoriesMap(): Promise<Map<number, WordPressCategory>> {
