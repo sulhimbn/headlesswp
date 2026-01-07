@@ -27,8 +27,10 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Install SWC binaries
-        run: npx next install
+      - name: Build application
+        run: npm run build
+        env:
+          NEXT_PUBLIC_WORDPRESS_URL: ${{ secrets.WORDPRESS_URL }}
 
       - name: Run linting
         run: npm run lint
