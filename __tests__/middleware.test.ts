@@ -23,7 +23,7 @@ describe('Security Middleware Configuration', () => {
         expect.objectContaining({
           protocol: 'https',
           hostname: 'www.mitrabantennews.com',
-        }),
+        })
       ])
     )
   })

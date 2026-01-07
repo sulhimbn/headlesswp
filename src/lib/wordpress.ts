@@ -195,7 +195,7 @@ export const wordpressAPI = {
         wordpressAPI.getCategories(),
         wordpressAPI.getTags(),
       ]);
-      console.log('Cache warming completed');
+      console.warn('Cache warming completed');
     } catch (error) {
       console.warn('Cache warming failed:', error);
     }
