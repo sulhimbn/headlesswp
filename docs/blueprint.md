@@ -258,6 +258,21 @@ src/
 5. **Testing**: Pass `npm run test` before commit
 6. **Security**: Run `npm run audit:security` regularly
 
+## Code Quality Standards
+
+1. **DRY Principle**: No code duplication - extract shared logic to utilities
+2. **Utility Functions**: Centralized utilities in `src/lib/utils/`
+3. **Type Safety**: All utility functions properly typed
+4. **Configuration Management**: Centralize configuration constants
+5. **Component Optimization**: Remove unnecessary React.memo from server components
+
+### Sanitization Standards
+
+- All user-generated content must be sanitized before rendering
+- Use centralized `sanitizeHTML()` utility from `src/lib/utils/sanitizeHTML`
+- Two configuration modes: 'excerpt' (minimal) and 'full' (rich content)
+- DOMPurify with strict security policies (no script/style/iframe tags)
+
 ## Future Considerations
 
 - [ ] GraphQL integration (if REST proves insufficient)

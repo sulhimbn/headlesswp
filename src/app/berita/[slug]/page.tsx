@@ -4,27 +4,12 @@ import Image from 'next/image'
 import Link from 'next/link'
 import Header from '@/components/layout/Header'
 import Footer from '@/components/layout/Footer'
-import DOMPurify from 'isomorphic-dompurify'
+import { sanitizeHTML } from '@/lib/utils/sanitizeHTML'
 import Breadcrumb from '@/components/ui/Breadcrumb'
 
 export const dynamic = 'force-dynamic'
 
 export const revalidate = 3600; // REVALIDATE_TIMES.POST_DETAIL (1 hour)
-
-const sanitizeHTML = (html: string): string => {
-  const config = {
-    ALLOWED_TAGS: [
-      'p', 'br', 'strong', 'em', 'u', 'ol', 'ul', 'li', 'a', 'img', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
-      'blockquote', 'code', 'pre', 'span', 'div', 'table', 'thead', 'tbody', 'tr', 'td', 'th'
-    ],
-    ALLOWED_ATTR: [
-      'href', 'title', 'target', 'rel', 'src', 'alt', 'width', 'height', 'class', 'id'
-    ],
-    FORBID_TAGS: ['script', 'style', 'iframe', 'object', 'embed'],
-    FORBID_ATTR: ['onclick', 'onload', 'onerror', 'onmouseover']
-  }
-  return DOMPurify.sanitize(html, config)
-}
 
 export default async function PostPage({ params }: { params: { slug: string } }) {
   const post = await enhancedPostService.getPostBySlug(params.slug)
@@ -98,7 +83,7 @@ export default async function PostPage({ params }: { params: { slug: string } })
 
 <div
   className="prose prose-lg max-w-none text-gray-700"
-  dangerouslySetInnerHTML={{ __html: sanitizeHTML(post.content.rendered) }}
+  dangerouslySetInnerHTML={{ __html: sanitizeHTML(post.content.rendered, 'full') }}
  />
 
             {tagsDetails.length > 0 && (
