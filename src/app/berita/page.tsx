@@ -32,8 +32,8 @@ export default async function BeritaPage({
         {posts.length > 0 ? (
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {posts.map((post) => (
-                <PostCard key={post.id} post={post} mediaUrl={post.mediaUrl} />
+              {posts.map((post, index) => (
+                <PostCard key={post.id} post={post} mediaUrl={post.mediaUrl} priority={index < 6} />
               ))}
             </div>
 
