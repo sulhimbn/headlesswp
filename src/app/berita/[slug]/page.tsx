@@ -1,5 +1,4 @@
 import { postService } from '@/lib/services/postService'
-import { WordPressPost } from '@/types/wordpress'
 import { notFound } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
