@@ -38,7 +38,8 @@ class DataValidator {
   private validateArray<T>(
     data: unknown,
     itemName: string,
-    validateFn: (item: unknown) => ValidationResult<T>
+    validateFn: (item: unknown) => ValidationResult<T>,
+    pluralName?: string
   ): ValidationResult<T[]> {
     const errors: string[] = [];
 
