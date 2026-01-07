@@ -94,6 +94,10 @@ async function enrichPostWithDetails(post: WordPressPost): Promise<PostWithDetai
   };
 }
 
+function createFallbackPostsWithMediaUrls(fallbacks: Array<{ id: string; title: string }>): PostWithMediaUrl[] {
+  return fallbacks.map(({ id, title }) => ({ ...createFallbackPost(id, title), mediaUrl: null }));
+}
+
 export const enhancedPostService = {
   getLatestPosts: async (): Promise<PostWithMediaUrl[]> => {
     try {
@@ -102,21 +106,21 @@ export const enhancedPostService = {
 
       if (!validation.valid) {
         console.error('Invalid posts data:', validation.errors);
-        return [
-          createFallbackPost('1', 'Berita Utama 1'),
-          createFallbackPost('2', 'Berita Utama 2'),
-          createFallbackPost('3', 'Berita Utama 3')
-        ].map(post => ({ ...post, mediaUrl: null }));
+        return createFallbackPostsWithMediaUrls([
+          { id: '1', title: 'Berita Utama 1' },
+          { id: '2', title: 'Berita Utama 2' },
+          { id: '3', title: 'Berita Utama 3' }
+        ]);
       }
 
       return enrichPostsWithMediaUrls(validation.data!);
     } catch (error) {
       console.warn('Failed to fetch latest posts during build:', error);
-      return [
-        createFallbackPost('1', 'Berita Utama 1'),
-        createFallbackPost('2', 'Berita Utama 2'),
-        createFallbackPost('3', 'Berita Utama 3')
-      ].map(post => ({ ...post, mediaUrl: null }));
+      return createFallbackPostsWithMediaUrls([
+        { id: '1', title: 'Berita Utama 1' },
+        { id: '2', title: 'Berita Utama 2' },
+        { id: '3', title: 'Berita Utama 3' }
+      ]);
     }
   },
 
@@ -127,21 +131,21 @@ export const enhancedPostService = {
 
       if (!validation.valid) {
         console.error('Invalid posts data:', validation.errors);
-        return [
-          createFallbackPost('cat-1', 'Berita Kategori 1'),
-          createFallbackPost('cat-2', 'Berita Kategori 2'),
-          createFallbackPost('cat-3', 'Berita Kategori 3')
-        ].map(post => ({ ...post, mediaUrl: null }));
+        return createFallbackPostsWithMediaUrls([
+          { id: 'cat-1', title: 'Berita Kategori 1' },
+          { id: 'cat-2', title: 'Berita Kategori 2' },
+          { id: 'cat-3', title: 'Berita Kategori 3' }
+        ]);
       }
 
       return enrichPostsWithMediaUrls(validation.data!);
     } catch (error) {
       console.warn('Failed to fetch category posts during build:', error);
-      return [
-        createFallbackPost('cat-1', 'Berita Kategori 1'),
-        createFallbackPost('cat-2', 'Berita Kategori 2'),
-        createFallbackPost('cat-3', 'Berita Kategori 3')
-      ].map(post => ({ ...post, mediaUrl: null }));
+      return createFallbackPostsWithMediaUrls([
+        { id: 'cat-1', title: 'Berita Kategori 1' },
+        { id: 'cat-2', title: 'Berita Kategori 2' },
+        { id: 'cat-3', title: 'Berita Kategori 3' }
+      ]);
     }
   },
 
@@ -165,25 +169,27 @@ export const enhancedPostService = {
   getPaginatedPosts: async (page: number = 1, perPage: number = 10): Promise<{
     posts: PostWithMediaUrl[];
     totalPosts: number;
+    totalPages: number;
   }> => {
     try {
-      const posts = await wordpressAPI.getPosts({ page, per_page: perPage });
-      const validation = dataValidator.validatePosts(posts);
+      const { data, total, totalPages } = await wordpressAPI.getPostsWithHeaders({ page, per_page: perPage });
+      const validation = dataValidator.validatePosts(data);
 
       if (!validation.valid) {
         console.error('Invalid posts data:', validation.errors);
-        return { posts: [], totalPosts: 0 };
+        return { posts: [], totalPosts: 0, totalPages: 0 };
       }
 
       const enrichedPosts = await enrichPostsWithMediaUrls(validation.data!);
 
       return {
         posts: enrichedPosts,
-        totalPosts: enrichedPosts.length > 0 ? 100 : 0
+        totalPosts: total,
+        totalPages
       };
     } catch (error) {
       console.warn('Failed to fetch paginated posts:', error);
-      return { posts: [], totalPosts: 0 };
+      return { posts: [], totalPosts: 0, totalPages: 0 };
     }
   },
 

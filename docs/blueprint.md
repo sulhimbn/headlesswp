@@ -84,6 +84,57 @@ interface Post {
 }
 ```
 
+### API Standardization
+
+**Principles**:
+- **Backward Compatibility**: Never break existing API consumers
+- **Consistent Naming**: `getById<T>()`, `getBySlug<T>()`, `getAll<T>()`, `search<T>()`
+- **Consistent Error Handling**: All methods return `ApiResult<T>` or `ApiListResult<T>`
+- **Consistent Response Format**: Data, error, metadata, pagination
+- **Type Safety**: TypeScript interfaces and type guards
+
+**Standardized Response Wrapper** (`src/lib/api/response.ts`):
+```typescript
+interface ApiMetadata {
+  timestamp: string
+  endpoint?: string
+  cacheHit?: boolean
+  retryCount?: number
+}
+
+interface ApiPaginationMetadata {
+  page?: number
+  perPage?: number
+  total?: number
+  totalPages?: number
+}
+
+interface ApiResult<T> {
+  data: T
+  error: ApiError | null
+  metadata: ApiMetadata
+  pagination?: ApiPaginationMetadata
+}
+
+interface ApiListResult<T> extends ApiResult<T[]> {
+  pagination: ApiPaginationMetadata
+}
+```
+
+**Implementation Status**:
+- ✅ **Phase 1 Complete**: Documentation and `ApiResult<T>` interface defined
+- ✅ **Phase 2 Complete**: Standardized methods implemented in `src/lib/api/standardized.ts`
+  - `getPostById()`, `getPostBySlug()`, `getAllPosts()`, `searchPosts()`
+  - `getCategoryById()`, `getCategoryBySlug()`, `getAllCategories()`
+  - `getTagById()`, `getTagBySlug()`, `getAllTags()`
+  - `getMediaById()`, `getAuthorById()`
+  - All methods return `ApiResult<T>` or `ApiListResult<T>` with consistent error handling
+  - 31 comprehensive tests covering all standardized methods
+- ⏳ **Phase 3**: Migrate new code and critical paths (future)
+- ⏳ **Phase 4**: Deprecate old methods in major version (future)
+
+**See Also**: [API Standardization Guidelines](./API_STANDARDIZATION.md)
+
 ## Integration Resilience Patterns
 
 ### Circuit Breaker

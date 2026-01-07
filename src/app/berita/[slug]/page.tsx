@@ -34,7 +34,7 @@ export default async function PostPage({ params }: { params: { slug: string } })
     <div className="min-h-screen bg-gray-50">
       <Header />
 
-<main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+<main id="main-content" className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Breadcrumb items={breadcrumbItems} />
         <article className="bg-white rounded-lg shadow-lg overflow-hidden mt-4">
           {post.featured_media > 0 && (
@@ -106,7 +106,7 @@ export default async function PostPage({ params }: { params: { slug: string } })
         <div className="mt-8">
           <Link 
             href="/" 
-            className="inline-flex items-center text-red-600 hover:text-red-700 focus:outline-none focus:ring-2 focus:ring-red-600 focus:ring-offset-2 rounded px-2 py-1 transition-colors"
+            className="inline-flex items-center text-red-600 hover:text-red-700 focus:outline-none focus:ring-2 focus:ring-red-600 focus:ring-offset-2 rounded px-3 py-2 transition-colors font-medium"
           >
             ← Kembali ke Beranda
           </Link>

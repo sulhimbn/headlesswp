@@ -4,6 +4,19 @@ import { cacheManager, CACHE_TTL, CACHE_KEYS } from './cache';
 
 export const wordpressAPI = {
   // Posts
+  getPostsWithHeaders: async (params?: {
+    page?: number;
+    per_page?: number;
+    category?: number;
+    tag?: number;
+    search?: string;
+  }, signal?: AbortSignal): Promise<{ data: WordPressPost[]; total: number; totalPages: number }> => {
+    const response = await apiClient.get(getApiUrl('/wp/v2/posts'), { params, signal });
+    const total = parseInt(response.headers['x-wp-total'] || '0', 10);
+    const totalPages = parseInt(response.headers['x-wp-totalpages'] || '1', 10);
+    return { data: response.data, total, totalPages };
+  },
+
   getPosts: async (params?: {
     page?: number;
     per_page?: number;
