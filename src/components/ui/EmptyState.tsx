@@ -1,3 +1,6 @@
+import Link from 'next/link'
+import Button from './Button'
+
 interface EmptyStateProps {
   title: string
   description?: string
@@ -26,12 +29,11 @@ export default function EmptyState({ title, description, icon, action, className
         </p>
       )}
       {action && (
-        <a
-          href={action.href}
-          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-600 transition-colors"
-        >
-          {action.label}
-        </a>
+        <Link href={action.href} className="inline-block">
+          <Button variant="primary" size="md">
+            {action.label}
+          </Button>
+        </Link>
       )}
     </div>
   )
