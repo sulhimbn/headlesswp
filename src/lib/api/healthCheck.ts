@@ -1,5 +1,5 @@
 import { apiClient } from './client';
-import { createApiError } from './errors';
+import { createApiError, ApiError } from './errors';
 import { API_TIMEOUT } from './config';
 
 export interface HealthCheckResult {
