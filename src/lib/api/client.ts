@@ -57,7 +57,7 @@ const createApiClient = (): AxiosInstance => {
 
       const circuitBreakerState = circuitBreaker.getState()
       if (circuitBreakerState === CircuitState.HALF_OPEN) {
-        console.log('[APIClient] Circuit in HALF_OPEN state, performing health check...')
+        console.warn('[APIClient] Circuit in HALF_OPEN state, performing health check...')
 
         const healthResult = await checkApiHealth()
         if (!healthResult.healthy) {
@@ -69,7 +69,7 @@ const createApiClient = (): AxiosInstance => {
           return Promise.reject(healthError)
         }
 
-        console.log(`[APIClient] Health check passed (${healthResult.latency}ms), allowing request`)
+        console.warn(`[APIClient] Health check passed (${healthResult.latency}ms), allowing request`)
       }
 
       return config

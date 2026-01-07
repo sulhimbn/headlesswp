@@ -1,5 +1,5 @@
 import { apiClient } from './client';
-import { createApiError, ApiError } from './errors';
+import { createApiError } from './errors';
 import { API_TIMEOUT } from './config';
 
 export interface HealthCheckResult {
@@ -93,7 +93,7 @@ export class HealthChecker {
 
         if (result.healthy) {
           if (attempt > 1) {
-            console.log(`[HealthCheck] Health check succeeded on attempt ${attempt}/${maxAttempts}`);
+            console.warn(`[HealthCheck] Health check succeeded on attempt ${attempt}/${maxAttempts}`);
           }
           return result;
         }
