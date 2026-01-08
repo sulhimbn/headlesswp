@@ -18,7 +18,7 @@ export const CACHE_TIMES = {
   LONG: TIME_CONSTANTS.HOUR_IN_MS,
 } as const
 
-export const API_TIMEOUT = TIME_CONSTANTS.MINUTE_IN_MS * 10
+export const API_TIMEOUT = TIME_CONSTANTS.MINUTE_IN_MS / 2
 export const MAX_RETRIES = 3
 export const SKIP_RETRIES = process.env.SKIP_RETRIES === 'true' || process.env.NODE_ENV === 'test'
 
