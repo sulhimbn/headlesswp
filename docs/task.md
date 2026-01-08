@@ -1,6 +1,6 @@
 # Task Backlog
 
-**Last Updated**: 2026-01-08 (Senior Integration Engineer)
+**Last Updated**: 2026-01-08 (Senior Technical Writer)
 
 ---
 
@@ -6575,126 +6575,89 @@ Refactored `enhancedPostService.ts` to eliminate code duplication by creating a 
 
 ## [REFACTOR-007] Centralize Magic Numbers
 
-**Status**: Complete
+**Status**: Backlog
 **Priority**: High
 **Assigned**: Principal Software Architect
 **Created**: 2026-01-07
-**Updated**: 2026-01-08
+**Updated**: 2026-01-07
 
 ### Description
 
-Magic numbers are scattered throughout codebase, making configuration difficult and reducing maintainability. Hardcoded values exist in multiple files for cache times, retries, delays, and timeouts.
+Magic numbers are scattered throughout the codebase, making configuration difficult and reducing maintainability. Hardcoded values exist in multiple files for cache times, retries, delays, and timeouts.
 
-### Implementation Summary
+### Issue
 
-1. **Created TIME_CONSTANTS** (`src/lib/api/config.ts`):
-   - `SECOND_IN_MS`: 1000 (1 second in milliseconds)
-   - `MINUTE_IN_MS`: 60 * 1000 (1 minute in milliseconds)
-   - `HOUR_IN_MS`: 60 * 60 * 1000 (1 hour in milliseconds)
-   - `DAY_IN_MS`: 24 * 60 * 60 * 1000 (1 day in milliseconds)
+**Magic Numbers Found**:
 
-2. **Created CACHE_TIMES** (`src/lib/api/config.ts`):
-   - `SHORT`: 2 minutes (for search queries)
-   - `MEDIUM_SHORT`: 5 minutes (for posts)
-   - `MEDIUM`: 10 minutes (for individual posts)
-   - `MEDIUM_LONG`: 30 minutes (for categories, tags, authors)
-   - `LONG`: 1 hour (for media)
+1. **`src/lib/api/config.ts`** (lines 3-16):
+   - 10000 (timeout)
+   - 3 (max retries)
+   - 5 (circuit breaker failure threshold)
+   - 60000 (circuit breaker recovery timeout)
+   - 2 (circuit breaker success threshold)
+   - 1000 (initial retry delay)
+   - 30000 (max retry delay)
+   - 60 (rate limit max requests)
+   - 60000 (rate limit window)
 
-3. **Replaced Magic Numbers in config.ts**:
-   - `API_TIMEOUT`: `TIME_CONSTANTS.MINUTE_IN_MS * 10` (was 10000)
-   - `CIRCUIT_BREAKER_RECOVERY_TIMEOUT`: `TIME_CONSTANTS.MINUTE_IN_MS` (was 60000)
-   - `RETRY_INITIAL_DELAY`: `TIME_CONSTANTS.SECOND_IN_MS` (was 1000)
-   - `RETRY_MAX_DELAY`: `30 * TIME_CONSTANTS.SECOND_IN_MS` (was 30000)
-   - `RATE_LIMIT_WINDOW_MS`: `TIME_CONSTANTS.MINUTE_IN_MS` (was 60000)
+2. **`src/lib/cache.ts`** (lines 135-141):
+   - `5 * 60 * 1000` (5 minutes)
+   - `30 * 60 * 1000` (30 minutes)
+   - `60 * 60 * 1000` (1 hour)
+   - Calculations instead of named constants
 
-4. **Updated cache.ts**:
-   - Added import: `import { CACHE_TIMES } from '@/lib/api/config'`
-   - Replaced all time calculations with named constants:
-     - `POSTS`: `CACHE_TIMES.MEDIUM_SHORT` (was `5 * 60 * 1000`)
-     - `POST`: `CACHE_TIMES.MEDIUM` (was `10 * 60 * 1000`)
-     - `CATEGORIES`: `CACHE_TIMES.MEDIUM_LONG` (was `30 * 60 * 1000`)
-     - `TAGS`: `CACHE_TIMES.MEDIUM_LONG` (was `30 * 60 * 1000`)
-     - `MEDIA`: `CACHE_TIMES.LONG` (was `60 * 60 * 1000`)
-     - `SEARCH`: `CACHE_TIMES.SHORT` (was `2 * 60 * 1000`)
-     - `AUTHOR`: `CACHE_TIMES.MEDIUM_LONG` (was `30 * 60 * 1000`)
+3. **`src/app/berita/[slug]/page.tsx`** (line 11):
+   - `revalidate = 3600` (hardcoded instead of using config)
 
-### Code Quality Improvements
+4. **`src/app/page.tsx`** (line 6):
+   - `revalidate = 300` (hardcoded instead of using config)
 
-**Before**:
-- ❌ Magic numbers scattered across files (10000, 60000, etc.)
-- ❌ Time calculations inline (5 * 60 * 1000, 30 * 60 * 1000)
-- ❌ Difficult to understand what values represent
-- ❌ Configuration changes required editing multiple files
-- ❌ No single source of truth for time values
+5. **`src/app/berita/page.tsx`** (line 8):
+   - `revalidate = 300` (hardcoded instead of using config)
 
-**After**:
-- ✅ All magic numbers replaced with descriptive constants
-- ✅ Time calculations centralized in TIME_CONSTANTS
-- ✅ Cache durations centralized in CACHE_TIMES
-- ✅ Self-documenting code through constant names
-- ✅ Single source of truth for all configuration values
-- ✅ Easy to adjust times globally
+### Suggestion
 
-### Architectural Benefits
+Extract all magic numbers to named constants with descriptive names. Create configuration constants organized by purpose:
 
-1. **Single Source of Truth**: All time-related constants defined once in config.ts
-2. **Self-Documenting**: Descriptive names (SHORT, MEDIUM, LONG) make intent clear
-3. **Maintainability**: Change time values in one place, update everywhere
-4. **Type Safety**: `as const` assertion ensures immutability and type inference
-5. **Reusability**: Constants can be imported and used throughout codebase
-6. **DRY Principle**: Time calculations defined once, referenced everywhere
+```typescript
+// Add to src/lib/api/config.ts
+export const CACHE_TIMES = {
+  SHORT: 5 * 60 * 1000,      // 5 minutes
+  MEDIUM: 30 * 60 * 1000,    // 30 minutes
+  LONG: 60 * 60 * 1000,      // 1 hour
+} as const
 
-### Note on Page Files
+export const API_TIMEOUT = {
+  DEFAULT: 10000,             // 10 seconds
+  FAST: 5000,                // 5 seconds
+  SLOW: 30000,               // 30 seconds
+} as const
+```
 
-Page files (`src/app/page.tsx`, `src/app/berita/page.tsx`, `src/app/berita/[slug]/page.tsx`) still have hardcoded `revalidate` values (300, 3600). This is intentional per REFACTOR-004: Next.js segment configuration exports require literal constants at compile time and cannot import from other files. The current implementation is the supported method.
+### Implementation Steps
 
-### Files Modified
+1. Create CACHE_TIMES constant in `src/lib/api/config.ts`
+2. Create API_TIMEOUT constant in `src/lib/api/config.ts`
+3. Replace hardcoded timeouts in `src/lib/api/config.ts`
+4. Replace time calculations in `src/lib/cache.ts` with CACHE_TIMES constants
+5. Update page files to use existing REVALIDATE_TIMES constant
+6. Add comments explaining each constant's purpose
+7. Run tests to verify no behavior changes
 
-- `src/lib/api/config.ts` - Added TIME_CONSTANTS and CACHE_TIMES, replaced magic numbers with constants
-- `src/lib/cache.ts` - Added CACHE_TIMES import, replaced time calculations with named constants
+### Expected Benefits
 
-### Files Created
+- Single source of truth for all timeout and cache values
+- Easy to adjust configuration globally
+- Self-documenting code through descriptive constant names
+- Easier onboarding for new developers
 
-None (refactoring only, no new files)
+### Related Files
 
-### Results
-
-- ✅ Magic numbers eliminated from config.ts
-- ✅ Time calculations eliminated from cache.ts
-- ✅ TIME_CONSTANTS created for time unit conversions
-- ✅ CACHE_TIMES created for cache duration constants
-- ✅ All 574 tests passing (34 skipped - integration tests)
-- ✅ TypeScript compilation passes with no errors
-- ✅ ESLint passes with no warnings
-- ✅ Zero regressions in existing functionality
-- ✅ No behavioral changes (constants have same values)
-
-### Success Criteria
-
-- ✅ Magic numbers replaced with descriptive constants
-- ✅ Time calculations centralized
-- ✅ Single source of truth for configuration
-- ✅ All tests passing (no regressions)
-- ✅ TypeScript type checking passes
-- ✅ ESLint passes
-- ✅ No behavioral changes
-
-### Anti-Patterns Avoided
-
-- ❌ No magic numbers in source code
-- ❌ No inline time calculations
-- ❌ No duplicate constant definitions
-- ❌ No breaking changes to existing functionality
-- ❌ No unnecessary refactoring of page files (Next.js limitation documented)
-
-### Best Practices Applied
-
-1. **Single Source of Truth**: All time constants defined in one location
-2. **Descriptive Naming**: Constants use clear, self-documenting names
-3. **Type Safety**: `as const` assertion for immutability
-4. **Documentation**: Comments explain purpose of each constant
-5. **Incremental Changes**: Refactored config.ts first, then cache.ts
-6. **Behavior Preservation**: Tests verified no changes to application behavior
+- `src/lib/api/config.ts` (primary location for constants)
+- `src/lib/cache.ts` (uses time calculations)
+- `src/app/page.tsx` (uses revalidate)
+- `src/app/berita/page.tsx` (uses revalidate)
+- `src/app/berita/[slug]/page.tsx` (uses revalidate)
 
 ---
 
@@ -7541,7 +7504,6 @@ None (all documentation enhancements to existing files)
 - Add API error monitoring and alerting documentation
 
 ---
-<<<<<<< HEAD
 
 ---
 
@@ -7706,5 +7668,3 @@ All new components follow the existing design system:
 - Implement focus trap for mobile menu in Header component
 - Consider adding breadcrumb navigation to footer for improved SEO
 
-=======
->>>>>>> ada2e34a401a11154538a9bb520e1e1c053efaba

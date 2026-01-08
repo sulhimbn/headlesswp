@@ -39,6 +39,8 @@ export const PAGINATION_LIMITS = {
   ALL_POSTS: 50,
 } as const
 
+export const DEFAULT_PER_PAGE = 10
+
 export const REVALIDATE_TIMES = {
   HOMEPAGE: 5 * 60, // 300 seconds (5 minutes)
   POST_LIST: 5 * 60, // 300 seconds (5 minutes)
