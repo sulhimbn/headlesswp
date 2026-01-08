@@ -1,10 +1,167 @@
 # Task Backlog
 
-**Last Updated**: 2026-01-08 (Senior Integration Engineer)
+**Last Updated**: 2026-01-08 (Senior Technical Writer)
 
 ---
 
 ## Active Tasks
+
+## [DOC-001] Add Root README.md
+
+**Status**: Complete
+**Priority**: Critical
+**Assigned**: Senior Technical Writer
+**Created**: 2026-01-08
+**Updated**: 2026-01-08
+
+### Description
+
+Created root-level README.md file that was missing after documentation reorganization (commit c38eeb9). The README.md at root is essential for GitHub repository discoverability and provides first impression for new users visiting the project.
+
+### Documentation Issues Identified
+
+**Issue: Missing Root README.md**
+- **Problem**: Repository had no README.md at root level after documentation reorganization
+- **Impact**: GitHub shows file structure instead of helpful introduction
+- **User Impact**: New users can't quickly understand project purpose, get started, or find documentation
+- **Root Cause**: README.md was deleted and moved to docs/guides/development.md, but root README not restored
+
+### Implementation Summary
+
+Created comprehensive root README.md with:
+
+1. **Quick Start Section**:
+   - 5-command setup process (clone, configure, start WordPress, install, start dev)
+   - Immediate access to application URL
+   - Links to detailed documentation
+
+2. **Clear Project Overview**:
+   - Concise description of headless WordPress architecture
+   - Visual architecture diagram
+   - Technology stack summary
+
+3. **Documentation Hub**:
+   - Links to all major documentation files with icons
+   - Development Guide, Architecture Blueprint, API Documentation, Security Guide
+   - Contributing Guide and Task Backlog
+   - Progressive disclosure: Quick start first, depth when needed
+
+4. **Comprehensive Sections**:
+   - Technology Stack (Frontend, Backend, Resilience Patterns)
+   - Available Scripts (with descriptions)
+   - Project Structure (visual tree)
+   - Key Features (highlighting SSG, security, performance, resilience, accessibility, responsive design)
+   - Development (prerequisites, environment variables)
+   - Testing (commands, coverage summary)
+   - Contributing (quick steps with link to detailed guide)
+   - Support (documentation, issues, discussions)
+
+### Design Principles Applied
+
+1. **Audience Awareness**: README for everyone (users, developers, contributors)
+2. **Clarity Over Completeness**: Concise introduction with links to depth
+3. **Actionable Content**: Quick start gets users running in 5 commands
+4. **Progressive Disclosure**: Quick start first, overview second, details via links
+5. **Show, Don't Tell**: Code examples, command snippets, visual diagrams
+6. **Link Strategically**: Links to detailed docs without duplication
+
+### Benefits
+
+**Before**:
+- ❌ No README at root level
+- ❌ GitHub shows file tree as first impression
+- ❌ New users must navigate to docs folder to understand project
+- ❌ No quick start visible on repository page
+- ❌ Poor first impression for repository visitors
+
+**After**:
+- ✅ Professional README at root level
+- ✅ Clear project overview with architecture diagram
+- ✅ Quick start gets users running in 5 commands
+- ✅ Documentation hub with links to all major docs
+- ✅ Progressive disclosure: Simple first, depth when needed
+- ✅ Better first impression for repository visitors
+- ✅ Improved GitHub repository discoverability
+
+### Documentation Structure Improvements
+
+**Documentation Hierarchy**:
+```
+README.md (root) - Entry point for all users
+├── Quick Start (5 commands to run app)
+├── Overview (architecture + tech stack)
+├── Documentation Hub (links to detailed docs)
+├── Key Features (highlights)
+└── Links to detailed docs for depth:
+    ├── docs/guides/development.md (complete setup guide)
+    ├── docs/blueprint.md (architecture details)
+    ├── docs/api.md (API reference)
+    └── docs/guides/ (security, contributing, etc.)
+```
+
+**Audience Segmentation**:
+- **New Users**: Quick Start → Running in 5 minutes
+- **Developers**: Development section → Detailed setup in dev guide
+- **Contributors**: Contributing section → Contributing guide
+- **Researchers**: Documentation Hub → In-depth docs
+
+### Files Created
+
+- `README.md` - NEW: Root-level README with quick start, overview, documentation hub
+
+### Files Modified
+
+None (new file only)
+
+### Results
+
+- ✅ Root README.md created (151 lines)
+- ✅ Quick start gets users running in 5 commands
+- ✅ Documentation hub with links to all major documentation
+- ✅ Professional first impression for GitHub repository
+- ✅ Progressive disclosure: Simple first, depth when needed
+- ✅ All 574 tests passing (34 skipped - integration tests)
+- ✅ TypeScript compilation passes with no errors
+- ✅ ESLint passes with no warnings
+- ✅ Zero breaking changes to existing documentation
+
+### Success Criteria
+
+- ✅ Root README.md created
+- ✅ Quick start section gets users running quickly
+- ✅ Documentation hub links to all major docs
+- ✅ Progressive disclosure: Simple first, depth when needed
+- ✅ Professional first impression for repository
+- ✅ All tests passing
+- ✅ No breaking changes to existing docs
+
+### Anti-Patterns Avoided
+
+- ❌ No wall of text (sections with clear headings)
+- ❌ No duplication (links instead of copying content)
+- ❌ No insider knowledge required (clear explanations)
+- ❌ No missing links (all referenced files exist)
+- ❌ No breaking changes to existing documentation
+- ❌ No outdated information (verified all links work)
+
+### Best Practices Applied
+
+1. **Start with Why**: Quick start shows value immediately
+2. **Show, Don't Tell**: Code examples, command snippets, diagrams
+3. **Structure for Scanning**: Headings, lists, emphasis
+4. **Test Everything**: Verified all commands work
+5. **Link Strategically**: Links to detailed docs without duplication
+6. **Audience Awareness**: README serves all user types
+
+### Follow-up Recommendations
+
+- Monitor user feedback on README clarity
+- Consider adding GIF/screenshots for quick start visual guide
+- Add FAQ section for common questions
+- Consider adding "Why HeadlessWP?" section for project motivation
+- Add badges for build status, test coverage, npm version
+
+---
 
 ## [PERF-001] Rendering Optimization - Component Memoization
 
@@ -7347,3 +7504,167 @@ None (all documentation enhancements to existing files)
 - Add API error monitoring and alerting documentation
 
 ---
+
+---
+
+## [UI-UX-002] Error Pages and Footer Accessibility Enhancement
+
+**Status**: Complete
+**Priority**: High
+**Assigned**: Senior UI/UX Engineer
+**Created**: 2026-01-08
+**Updated**: 2026-01-08
+
+### Description
+
+Created critical missing UI components (Not Found 404 page and Error page) and enhanced Footer component with comprehensive accessibility improvements. These improvements ensure proper error handling, better user experience on error states, and improved accessibility throughout the site.
+
+### UI/UX Issues Identified
+
+**Issue 1: Missing Not Found (404) Page**
+- **Problem**: No dedicated 404 page, users would see generic Next.js 404
+- **Impact**: Poor user experience when navigating to non-existent pages
+- **Fix**: Created custom Not Found page with clear messaging and navigation options
+
+**Issue 2: Missing Error Page**
+- **Problem**: No dedicated error page for application errors
+- **Impact**: Users see generic error messages without clear next steps
+- **Fix**: Created custom Error page with error recovery options
+
+**Issue 3: Minimal Footer with Poor Accessibility**
+- **Problem**: Footer was very basic with limited structure and accessibility features
+- **Impact**: Poor keyboard navigation, missing semantic structure, incomplete landmark attributes
+- **Fix**: Enhanced Footer with navigation, contact info, social links, and comprehensive accessibility
+
+### Implementation Summary
+
+1. **Created Not Found (404) Page** (`src/app/not-found.tsx`):
+    - Large, clear "404" heading with appropriate styling
+    - User-friendly error message in Indonesian
+    - Two action buttons: "Kembali ke Beranda" and "Lihat Berita Terkini"
+    - Design system aligned with proper color usage (red-600 for primary actions)
+    - Responsive layout with centered content
+    - Helpful contact information section at bottom
+
+2. **Created Error Page** (`src/app/error.tsx`):
+    - Client-side error boundary with reset functionality
+    - Warning icon with appropriate ARIA attributes
+    - Clear error messaging in Indonesian
+    - Error ID display for debugging (digest from Next.js)
+    - Two action buttons: "Coba Lagi" (reset) and "Kembali ke Beranda"
+    - Helpful contact information section
+    - useEffect hook to log errors for debugging
+
+3. **Enhanced Footer Component** (`src/components/layout/Footer.tsx`):
+    - **Skip Link**: Added "Kembali ke konten utama" skip link for keyboard users (sr-only, visible on focus)
+    - **Three-Column Layout**: 
+      - Column 1: About section with description
+      - Column 2: Navigation links with semantic nav element
+      - Column 3: Contact information with address element
+    - **Semantic Structure**:
+      - Proper footer element with role="contentinfo"
+      - Section elements with descriptive headings (hidden with sr-only)
+      - Nav element for footer navigation with aria-label
+      - Address element for contact information
+    - **Social Media Links**: Added Facebook, Twitter, and Instagram icons with proper aria-labels
+    - **Accessibility Features**:
+      - Skip link for keyboard navigation
+      - All interactive elements have proper focus states
+      - Semantic HTML structure
+      - ARIA labels and landmarks throughout
+      - Proper heading hierarchy
+    - **Responsive Design**: Grid layout adapts from single column (mobile) to three columns (desktop)
+
+### Accessibility Improvements
+
+**Before**:
+- ❌ No 404 page (generic Next.js 404)
+- ❌ No error page (generic Next.js error)
+- ❌ Minimal footer with no navigation
+- ❌ No skip link for keyboard users
+- ❌ Poor semantic structure
+- ❌ Missing landmark attributes
+- ❌ No social media presence
+- ❌ No contact information
+
+**After**:
+- ✅ Custom Not Found page with clear messaging
+- ✅ Custom Error page with recovery options
+- ✅ Enhanced Footer with navigation and contact info
+- ✅ Skip link for keyboard navigation
+- ✅ Proper semantic HTML (footer, section, nav, address)
+- ✅ Comprehensive landmark attributes (role="contentinfo", aria-labels)
+- ✅ Social media links with proper aria-labels
+- ✅ Contact information with address element
+- ✅ Design system aligned styling
+
+### Design System Alignment
+
+All new components follow the existing design system:
+- Colors: Uses red-600 for primary actions, gray-800 for footer background
+- Typography: Consistent font sizes and weights
+- Spacing: Follows design token spacing
+- Buttons: Reuses Button component with proper variants
+- Focus states: Consistent focus rings across all interactive elements
+
+### Files Created
+
+- `src/app/not-found.tsx` - NEW: Custom 404 page (54 lines)
+- `src/app/error.tsx` - NEW: Custom error page (70 lines)
+
+### Files Modified
+
+- `src/components/layout/Footer.tsx` - Enhanced from 16 to 127 lines (+111 lines)
+
+### Results
+
+- ✅ Custom Not Found (404) page created
+- ✅ Custom Error page created
+- ✅ Footer component comprehensively enhanced
+- ✅ All 574 tests passing (34 skipped - integration tests)
+- ✅ TypeScript compilation passes with no errors
+- ✅ ESLint passes with no warnings
+- ✅ Zero breaking changes to existing functionality
+- ✅ Improved error handling UX
+- ✅ Enhanced accessibility throughout
+
+### Success Criteria
+
+- ✅ Not Found page created with proper UX and accessibility
+- ✅ Error page created with recovery options
+- ✅ Footer enhanced with navigation, contact, and social links
+- ✅ Accessibility improved (skip link, semantic structure, ARIA)
+- ✅ Responsive design across all breakpoints
+- ✅ Design system alignment maintained
+- ✅ All tests passing (no regressions)
+- ✅ TypeScript type checking passes
+- ✅ ESLint passes
+
+### Anti-Patterns Avoided
+
+- ❌ No generic 404 or error pages
+- ❌ No missing accessibility features
+- ❌ No hardcoded styles outside design system
+- ❌ No inconsistent focus states
+- ❌ No breaking changes to existing API
+- ❌ No poor semantic HTML structure
+
+### Best Practices Applied
+
+1. **User-Centric Design**: Clear, helpful error messages with next steps
+2. **Accessibility First**: Skip links, semantic HTML, ARIA attributes, keyboard navigation
+3. **Responsive Design**: Mobile-first approach with breakpoint support
+4. **Design System Alignment**: Reuses existing components and design tokens
+5. **Error Recovery**: Multiple recovery options (retry, navigate home, contact support)
+6. **Progressive Enhancement**: Works without JavaScript for Not Found page
+
+### Follow-up Recommendations
+
+- Consider adding toast notifications for non-critical errors
+- Implement dark mode support for error pages and footer
+- Add error tracking/analytics integration (Sentry, etc.)
+- Consider implementing a search component for the berita page
+- Add form validation and error states for future form components
+- Implement focus trap for mobile menu in Header component
+- Consider adding breadcrumb navigation to footer for improved SEO
+
