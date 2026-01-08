@@ -268,6 +268,54 @@ describe('Standardized API - getCategoryById', () => {
   });
 });
 
+describe('Standardized API - getCategoryBySlug', () => {
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
+  test('returns ApiResult with category data on success', async () => {
+    const mockCategory = {
+      id: 5,
+      name: 'Politics',
+      slug: 'politics',
+      description: 'Political news',
+      parent: 0,
+      count: 150,
+      link: 'https://example.com/category/politics'
+    };
+
+    mockedWordpressAPI.getCategory.mockResolvedValue(mockCategory);
+
+    const result = await standardizedAPI.getCategoryBySlug('politics');
+
+    expect(isApiResultSuccessful(result)).toBe(true);
+    expect(result.data).toEqual(mockCategory);
+    expect(result.error).toBeNull();
+    expect(result.metadata.endpoint).toBe('/wp/v2/categories?slug=politics');
+  });
+
+  test('returns ApiResult with error when category not found', async () => {
+    mockedWordpressAPI.getCategory.mockResolvedValue(null as any);
+
+    const result = await standardizedAPI.getCategoryBySlug('non-existent');
+
+    expect(isApiResultSuccessful(result)).toBe(false);
+    expect(result.data).toBeNull();
+    expect(result.error?.message).toBe('Category not found: non-existent');
+    expect(result.error?.type).toBeDefined();
+  });
+
+  test('returns ApiResult with error on API failure', async () => {
+    const error = new Error('Unknown error');
+    mockedWordpressAPI.getCategory.mockRejectedValue(error);
+
+    const result = await standardizedAPI.getCategoryBySlug('politics');
+
+    expect(isApiResultSuccessful(result)).toBe(false);
+    expect(result.error?.type).toBe(ApiErrorType.UNKNOWN_ERROR);
+  });
+});
+
 describe('Standardized API - getAllCategories', () => {
   afterEach(() => {
     jest.clearAllMocks();
@@ -339,6 +387,53 @@ describe('Standardized API - getTagById', () => {
     expect(isApiResultSuccessful(result)).toBe(false);
     expect(result.error?.message).toBe('Tag not found: 999');
     expect(result.error?.type).toBeDefined();
+  });
+});
+
+describe('Standardized API - getTagBySlug', () => {
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
+  test('returns ApiResult with tag data on success', async () => {
+    const mockTag = {
+      id: 12,
+      name: 'Elections',
+      slug: 'elections',
+      description: 'Election news',
+      count: 45,
+      link: 'https://example.com/tag/elections'
+    };
+
+    mockedWordpressAPI.getTag.mockResolvedValue(mockTag);
+
+    const result = await standardizedAPI.getTagBySlug('elections');
+
+    expect(isApiResultSuccessful(result)).toBe(true);
+    expect(result.data).toEqual(mockTag);
+    expect(result.error).toBeNull();
+    expect(result.metadata.endpoint).toBe('/wp/v2/tags?slug=elections');
+  });
+
+  test('returns ApiResult with error when tag not found', async () => {
+    mockedWordpressAPI.getTag.mockResolvedValue(null as any);
+
+    const result = await standardizedAPI.getTagBySlug('non-existent');
+
+    expect(isApiResultSuccessful(result)).toBe(false);
+    expect(result.data).toBeNull();
+    expect(result.error?.message).toBe('Tag not found: non-existent');
+    expect(result.error?.type).toBeDefined();
+  });
+
+  test('returns ApiResult with error on API failure', async () => {
+    const error = new Error('Unknown error');
+    mockedWordpressAPI.getTag.mockRejectedValue(error);
+
+    const result = await standardizedAPI.getTagBySlug('elections');
+
+    expect(isApiResultSuccessful(result)).toBe(false);
+    expect(result.error?.type).toBe(ApiErrorType.UNKNOWN_ERROR);
   });
 });
 
