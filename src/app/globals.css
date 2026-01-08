@@ -4,9 +4,9 @@
 
 @layer base {
   :root {
-    --color-primary: 220 38% 38%;
-    --color-primary-dark: 220 39% 33%;
-    --color-primary-light: 220 40% 96%;
+    --color-primary: 0 84% 40%;
+    --color-primary-dark: 0 86% 38%;
+    --color-primary-light: 0 96% 95%;
     --color-secondary: 220 10% 96%;
     --color-secondary-dark: 220 12% 90%;
     --color-accent: 0 84% 60%;
@@ -59,7 +59,7 @@
   }
 
   *:focus-visible {
-    @apply outline-none ring-2 focus-within:ring-[hsl(var(--color-accent))] ring-offset-2;
+    @apply outline-none ring-2 ring-[hsl(var(--color-primary))] ring-offset-2;
   }
 }
 
