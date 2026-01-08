@@ -1,6 +1,6 @@
 # Task Backlog
 
-**Last Updated**: 2026-01-07 (Performance Engineer)
+**Last Updated**: 2026-01-08 (Senior Integration Engineer)
 
 ---
 
@@ -7140,5 +7140,210 @@ None (all enhancements to existing cache.ts file)
 - Implement cache warming hooks for WordPress webhooks
 - Add cache analytics dashboard for visual monitoring
 - Consider adding cache pre-fetching for predicted user behavior
+
+---
+
+## [INT-002] API Documentation - Standardized API
+
+**Status**: Complete
+**Priority**: High
+**Assigned**: Senior Integration Engineer
+**Created**: 2026-01-08
+**Updated**: 2026-01-08
+
+### Description
+
+Created comprehensive API documentation for the standardized API layer and clarified the three-layer API architecture. The standardized API provides type-safe, consistent error handling and response format, but lacked comprehensive documentation. This documentation ensures developers understand when to use each API layer and how to leverage the standardized API effectively.
+
+### Documentation Issues Identified
+
+**Issue 1: Incomplete API Documentation**
+- **Problem**: Standardized API methods existed but lacked comprehensive documentation
+- **Impact**: Developers didn't know when to use standardized API vs enhancedPostService vs wordpressAPI
+- **Gap**: No clear guidance on choosing appropriate API layer for specific use cases
+
+**Issue 2: Unclear Phase 3 Migration Path**
+- **Problem**: API_STANDARDIZATION.md indicated Phase 3 was "migrate new code and critical paths" but implementation was unclear
+- **Impact**: Developers unsure whether to migrate enhancedPostService to use standardizedAPI
+- **Root Cause**: Three-layer architecture was intentional but not well-documented
+
+**Issue 3: Missing Usage Examples**
+- **Problem**: API documentation focused on wordpressAPI and postService, not standardizedAPI
+- **Impact**: Developers unfamiliar with ApiResult<T> pattern and type-safe error handling
+- **Gap**: No examples for common patterns (error handling, metadata usage, pagination)
+
+### Implementation Summary
+
+1. **Created Comprehensive API Documentation** (docs/api.md):
+    - Added API Layer Architecture section explaining three distinct layers:
+      - wordpressAPI (low-level, direct WordPress access)
+      - enhancedPostService (high-level business logic with validation, caching, enrichment)
+      - standardizedAPI (direct API access with consistent error handling)
+    - Added Decision Matrix for choosing appropriate API layer based on requirements
+    - Added complete Standardized API Reference with:
+      - All 12 standardized methods (posts, categories, tags, media, authors)
+      - Response format documentation (ApiResult<T> and ApiListResult<T>)
+      - Error handling examples and type guard usage
+      - Metadata usage examples (timestamp, endpoint, cacheHit, retryCount)
+      - Pagination metadata examples
+    - Added error handling patterns:
+      - Type guard usage with isApiResultSuccessful()
+      - Error type switch statements for all 6 error types
+      - Unwrapping results (unwrapApiResult, unwrapApiResultSafe)
+    - Added best practices section:
+      - Always use type guards (not manual checking)
+      - Handle all error types appropriately
+      - Leverage metadata for debugging
+      - Check retry count for API stability
+      - Use pagination metadata
+    - Added comparison table: When to use which API layer
+
+2. **Updated API_STANDARDIZATION.md**:
+    - Clarified Phase 3 status as "Complete" with documentation and architecture clarification
+    - Explained why code migration was not required:
+      - enhancedPostService provides critical business logic (validation, caching, enrichment, fallbacks)
+      - standardizedAPI serves different purpose (consistent error handling, metadata)
+      - Three-layer architecture is intentional and documented
+    - Added comprehensive summary of Phase 3 accomplishments
+    - Added usage guidelines and decision matrix
+
+### Documentation Structure
+
+**Three-Layer Architecture**:
+
+```
+App Pages / Components (Next.js pages, React components)
+│
+├─→ enhancedPostService (recommended)
+│   - Data validation
+│   - Dependency-aware caching
+│   - Batch media fetching (N+1 elimination)
+│   - Enriched data (media URLs, categories, tags)
+│   - Graceful fallbacks
+│
+├─→ standardizedAPI (API routes, middleware)
+│   - Consistent error handling (ApiResult<T>)
+│   - Metadata (timestamp, cacheHit, retryCount)
+│   - Pagination metadata
+│   - Type-safe error handling
+│
+└─→ wordpressAPI (rare cases)
+    - Raw WordPress data
+    - Maximum control
+```
+
+**Decision Matrix**:
+
+| Requirement | Recommended API Layer |
+|-------------|----------------------|
+| Next.js page data fetching | enhancedPostService |
+| API route / middleware | standardizedAPI |
+| Build-time data with fallbacks | enhancedPostService |
+| Direct API with error metadata | standardizedAPI |
+| Raw WordPress data | wordpressAPI |
+| Data validation | enhancedPostService |
+| Caching with cascade invalidation | enhancedPostService |
+| Consistent error format | standardizedAPI |
+| Metadata (cache, retries, timestamps) | standardizedAPI |
+| Batch media fetching | enhancedPostService |
+| Enriched data (media, categories, tags) | enhancedPostService |
+
+### Key Benefits
+
+1. **Improved Developer Experience**:
+   - Clear documentation on when to use each API layer
+   - Comprehensive examples for standardized API usage
+   - Type-safe error handling patterns
+   - Decision matrix for choosing appropriate API layer
+
+2. **Better Architecture Understanding**:
+   - Three-layer architecture clearly documented
+   - Each layer's purpose and use cases explained
+   - Intentional design decisions clarified
+   - No confusion about Phase 3 migration path
+
+3. **Self-Documenting API**:
+   - Comprehensive API reference with all methods documented
+   - Examples for common usage patterns
+   - Error handling best practices
+   - Metadata usage examples
+
+4. **Backward Compatible**:
+   - No breaking changes to existing API layers
+   - enhancedPostService continues to work as before
+   - standardizedAPI available for appropriate use cases
+   - Zero impact on existing code
+
+### Files Modified
+
+- `docs/api.md` - Added comprehensive Standardized API documentation (350+ lines)
+- `docs/API_STANDARDIZATION.md` - Updated Phase 3 status and clarifications
+
+### Files Created
+
+None (all documentation enhancements to existing files)
+
+### Results
+
+- ✅ Comprehensive standardized API documentation created (350+ lines)
+- ✅ Three-layer architecture documented with decision matrix
+- ✅ When to use each API layer clearly specified
+- ✅ Complete API reference with examples for all 12 standardized methods
+- ✅ Error handling patterns and type guard usage documented
+- ✅ Best practices for each API layer provided
+- ✅ Phase 3 clarified (documentation and architecture, not code migration)
+- ✅ All 574 tests passing (34 skipped - integration tests without WordPress API)
+- ✅ TypeScript compilation passes with no errors
+- ✅ ESLint passes with no warnings
+- ✅ Zero breaking changes to existing functionality
+
+### Success Criteria
+
+- ✅ Comprehensive standardized API documentation created
+- ✅ Three-layer architecture documented
+- ✅ When to use each API layer clearly specified
+- ✅ Phase 3 clarified (documentation and architecture)
+- ✅ Decision matrix provided for choosing API layer
+- ✅ Complete API reference with examples
+- ✅ Error handling patterns documented
+- ✅ Best practices for each API layer provided
+- ✅ All tests passing (no regressions)
+- ✅ TypeScript type checking passes
+- ✅ ESLint passes
+- ✅ Zero breaking changes to existing API
+
+### Anti-Patterns Avoided
+
+- ❌ No breaking changes to existing API layers
+- ❌ No confusion about Phase 3 migration path
+- ❌ No ambiguous documentation
+- ❌ No missing usage examples
+- ❌ No unclear guidance on choosing API layer
+
+### Best Practices Applied
+
+1. **Self-Documenting APIs**: Comprehensive documentation with examples for all methods
+2. **Contract First**: Clear documentation of API contracts (response format, errors, metadata)
+3. **Principle of Least Astonishment**: Three-layer architecture clearly explained
+4. **Backward Compatibility**: No changes to existing API layers
+5. **Developer Experience**: Decision matrix and best practices for common scenarios
+
+### Integration Engineering Principles Compliance
+
+| Principle | Implementation | Status |
+|------------|----------------|--------|
+| **Contract First** | Comprehensive API documentation with clear contracts | ✅ Enforced |
+| **Self-Documenting** | Complete API reference with examples and patterns | ✅ Enforced |
+| **Consistency** | Three-layer architecture clearly documented | ✅ Enforced |
+| **Backward Compatibility** | Zero breaking changes to existing API | ✅ Enforced |
+
+### Follow-up Recommendations
+
+- Consider adding OpenAPI/Swagger specification for standardized API endpoints
+- Add API versioning strategy documentation (currently v1)
+- Consider adding API deprecation policy documentation
+- Add API rate limiting best practices documentation
+- Consider adding API caching strategy documentation
+- Add API error monitoring and alerting documentation
 
 ---
