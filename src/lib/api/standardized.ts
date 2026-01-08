@@ -9,6 +9,7 @@ import {
   createSuccessListResult
 } from './response';
 import { createApiError } from './errors';
+import { DEFAULT_PER_PAGE } from './config';
 
 export interface PostQueryParams {
   page?: number;
@@ -52,9 +53,9 @@ export async function getAllPosts(
     const posts = await wordpressAPI.getPosts(params);
     const pagination: ApiPaginationMetadata = {
       page: params?.page || 1,
-      perPage: params?.per_page || 10,
+      perPage: params?.per_page || DEFAULT_PER_PAGE,
       total: posts.length,
-      totalPages: Math.ceil(posts.length / (params?.per_page || 10))
+      totalPages: Math.ceil(posts.length / (params?.per_page || DEFAULT_PER_PAGE))
     };
     return createSuccessListResult(
       posts,
@@ -72,7 +73,7 @@ export async function getAllPosts(
       },
       pagination: {
         page: 1,
-        perPage: 10,
+        perPage: DEFAULT_PER_PAGE,
         total: 0,
         totalPages: 0
       }

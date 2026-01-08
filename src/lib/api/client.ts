@@ -1,5 +1,19 @@
 import axios, { AxiosInstance, InternalAxiosRequestConfig, AxiosError } from 'axios'
-import { WORDPRESS_API_BASE_URL, WORDPRESS_SITE_URL, API_TIMEOUT, MAX_RETRIES, SKIP_RETRIES, RATE_LIMIT_MAX_REQUESTS, RATE_LIMIT_WINDOW_MS } from './config'
+import {
+  WORDPRESS_API_BASE_URL,
+  WORDPRESS_SITE_URL,
+  API_TIMEOUT,
+  MAX_RETRIES,
+  SKIP_RETRIES,
+  RATE_LIMIT_MAX_REQUESTS,
+  RATE_LIMIT_WINDOW_MS,
+  CIRCUIT_BREAKER_FAILURE_THRESHOLD,
+  CIRCUIT_BREAKER_RECOVERY_TIMEOUT,
+  CIRCUIT_BREAKER_SUCCESS_THRESHOLD,
+  RETRY_INITIAL_DELAY,
+  RETRY_MAX_DELAY,
+  RETRY_BACKOFF_MULTIPLIER
+} from './config'
 import { CircuitBreaker, CircuitState } from './circuitBreaker'
 import { RetryStrategy } from './retryStrategy'
 import { RateLimiterManager } from './rateLimiter'
@@ -12,9 +26,9 @@ function getApiUrl(path: string): string {
 }
 
 const circuitBreaker = new CircuitBreaker({
-  failureThreshold: 5,
-  recoveryTimeout: 60000,
-  successThreshold: 2,
+  failureThreshold: CIRCUIT_BREAKER_FAILURE_THRESHOLD,
+  recoveryTimeout: CIRCUIT_BREAKER_RECOVERY_TIMEOUT,
+  successThreshold: CIRCUIT_BREAKER_SUCCESS_THRESHOLD,
   onStateChange: (state) => {
     logger.warn(`CircuitBreaker state changed to: ${state}`, undefined, { module: 'CircuitBreaker' })
   }
@@ -22,9 +36,9 @@ const circuitBreaker = new CircuitBreaker({
 
 const retryStrategy = new RetryStrategy({
   maxRetries: MAX_RETRIES,
-  initialDelay: 1000,
-  maxDelay: 30000,
-  backoffMultiplier: 2,
+  initialDelay: RETRY_INITIAL_DELAY,
+  maxDelay: RETRY_MAX_DELAY,
+  backoffMultiplier: RETRY_BACKOFF_MULTIPLIER,
   jitter: true
 })
 

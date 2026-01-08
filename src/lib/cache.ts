@@ -1,3 +1,5 @@
+import { CACHE_TIMES } from '@/lib/api/config';
+
 interface CacheEntry<T> {
   data: T;
   timestamp: number;
@@ -277,13 +279,13 @@ export const cacheManager = new CacheManager();
 
 // Cache TTL constants (in milliseconds)
 export const CACHE_TTL = {
-  POSTS: 5 * 60 * 1000,        // 5 minutes
-  POST: 10 * 60 * 1000,        // 10 minutes
-  CATEGORIES: 30 * 60 * 1000,   // 30 minutes
-  TAGS: 30 * 60 * 1000,         // 30 minutes
-  MEDIA: 60 * 60 * 1000,        // 1 hour
-  SEARCH: 2 * 60 * 1000,        // 2 minutes
-  AUTHOR: 30 * 60 * 1000,       // 30 minutes
+  POSTS: CACHE_TIMES.MEDIUM_SHORT,  // 5 minutes
+  POST: CACHE_TIMES.MEDIUM,           // 10 minutes
+  CATEGORIES: CACHE_TIMES.MEDIUM_LONG, // 30 minutes
+  TAGS: CACHE_TIMES.MEDIUM_LONG,      // 30 minutes
+  MEDIA: CACHE_TIMES.LONG,            // 1 hour
+  SEARCH: CACHE_TIMES.SHORT,          // 2 minutes
+  AUTHOR: CACHE_TIMES.MEDIUM_LONG,    // 30 minutes
 } as const;
 
 // Cache key generators
