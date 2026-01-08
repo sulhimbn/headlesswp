@@ -13,13 +13,6 @@ export default function Footer() {
 
   return (
     <footer className="bg-gray-800 text-white mt-12" role="contentinfo">
-      <a
-        href="#main-content"
-        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:bg-red-600 focus:text-white focus:px-4 focus:py-2 focus:rounded-md focus:outline-none focus:ring-2 focus:ring-red-600 focus:ring-offset-2"
-      >
-        Kembali ke konten utama
-      </a>
-
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
           <section aria-labelledby="footer-about-heading">

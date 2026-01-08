@@ -1,15 +1,16 @@
 import PostCardSkeleton from '@/components/post/PostCardSkeleton'
 import Header from '@/components/layout/Header'
 import Footer from '@/components/layout/Footer'
+import Skeleton from '@/components/ui/Skeleton'
 
 export default function Loading() {
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <section className="mb-12">
-          <div className="h-10 bg-gray-200 rounded animate-pulse mb-6 w-48" />
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8" role="status" aria-live="polite" aria-label="Memuat berita">
+        <section className="mb-12" aria-busy="true">
+          <Skeleton variant="text" className="h-10 mb-6 w-48" />
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {[1, 2, 3].map((i) => (
               <PostCardSkeleton key={i} />
@@ -17,8 +18,8 @@ export default function Loading() {
           </div>
         </section>
 
-        <section>
-          <div className="h-10 bg-gray-200 rounded animate-pulse mb-6 w-56" />
+        <section aria-busy="true">
+          <Skeleton variant="text" className="h-10 mb-6 w-56" />
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[1, 2, 3, 4, 5, 6].map((i) => (
               <PostCardSkeleton key={i} />
