@@ -21,7 +21,7 @@
 ## Technology Stack
 
 ### Frontend
-- **Framework**: Next.js 14.2 (App Router)
+- **Framework**: Next.js 16.1 (App Router)
 - **Language**: TypeScript 5.9
 - **Styling**: CSS Modules (to be confirmed)
 - **HTTP Client**: Axios 1.7
@@ -437,30 +437,51 @@ npm test -- __tests__/apiResilienceIntegration.test.ts
 ```
 src/
 ├── app/              # Next.js App Router
-│   ├── layout.tsx
-│   ├── page.tsx
-│   └── posts/        # Posts pages
+│   ├── layout.tsx     # Root layout
+│   ├── page.tsx       # Homepage
+│   ├── error.tsx      # Error page
+│   ├── not-found.tsx  # 404 page
+│   ├── loading.tsx    # Loading page
+│   ├── api/           # API routes
+│   │   ├── cache/     # Cache management endpoint
+│   │   └── csp-report/ # CSP violation report endpoint
+│   └── berita/        # News post pages
+│       ├── [slug]/    # Dynamic post slug
+│       ├── page.tsx    # Post detail page
+│       └── loading.tsx # Post loading skeleton
 ├── components/       # React components
+│   ├── ClientLayout.tsx  # Client-side layout wrapper
+│   ├── ErrorBoundary.tsx # Error boundary component
 │   ├── layout/       # Layout components (Header, Footer)
 │   ├── post/         # Post-related components
 │   └── ui/           # UI components
- ├── lib/              # Utilities
- │   ├── api/          # API layer (config, client, resilience)
- │   │   ├── config.ts # API configuration
- │   │   ├── client.ts # Axios client with interceptors & resilience
- │   │   ├── errors.ts # Standardized error types
- │   │   ├── circuitBreaker.ts # Circuit breaker pattern
- │   │   ├── retryStrategy.ts # Retry strategy with backoff
- │   │   └── rateLimiter.ts # Rate limiting with token bucket algorithm
+├── lib/              # Utilities
+│   ├── api/          # API layer (config, client, resilience)
+│   │   ├── config.ts       # API configuration
+│   │   ├── client.ts       # Axios client with interceptors & resilience
+│   │   ├── errors.ts       # Standardized error types
+│   │   ├── circuitBreaker.ts # Circuit breaker pattern
+│   │   ├── retryStrategy.ts  # Retry strategy with backoff
+│   │   ├── rateLimiter.ts    # Rate limiting with token bucket algorithm
+│   │   ├── healthCheck.ts    # API health monitoring
+│   │   ├── response.ts       # Standardized response wrappers
+│   │   └── standardized.ts   # Standardized API methods
 │   ├── services/     # Business logic layer
-│   │   ├── postService.ts # Post data service with fallback logic
 │   │   └── enhancedPostService.ts # Enhanced service with validation & batch operations
 │   ├── validation/   # Data validation layer
 │   │   └── dataValidator.ts # Runtime data validation at API boundaries
-│   ├── wordpress.ts # WordPress API wrapper with batch operations
-│   ├── cache.ts      # In-memory cache manager with TTL
-│   └── hooks/        # Custom React hooks
+│   ├── utils/        # Utility functions
+│   │   ├── logger.ts         # Centralized logging
+│   │   ├── sanitizeHTML.ts   # XSS protection with DOMPurify
+│   │   └── fallbackPost.ts  # Fallback post utilities
+│   ├── constants/    # Constants
+│   │   └── fallbackPosts.ts  # Fallback post data
+│   ├── wordpress.ts  # WordPress API wrapper with batch operations
+│   ├── cache.ts      # In-memory cache manager with TTL & dependency tracking
+│   └── csp-utils.ts  # CSP utility functions
+├── middleware.ts     # Next.js middleware for CSP & security
 └── types/            # TypeScript definitions
+    └── wordpress.ts  # WordPress type definitions
 ```
 
 ## Development Standards

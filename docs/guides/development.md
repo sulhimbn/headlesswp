@@ -4,7 +4,7 @@ Headless WordPress implementation for https://mitrabantennews.com
 
 ## Overview
 
-This project implements WordPress as a headless CMS with a modern Next.js 14 frontend. WordPress serves as the backend content management system, providing REST API endpoints that the Next.js application consumes.
+This project implements WordPress as a headless CMS with a modern Next.js 16 frontend. WordPress serves as the backend content management system, providing REST API endpoints that the Next.js application consumes.
 
 ## Architecture
 
@@ -18,7 +18,7 @@ This project implements WordPress as a headless CMS with a modern Next.js 14 fro
 ## Technology Stack
 
 ### Frontend
-- **Framework**: Next.js 14.2 (App Router)
+- **Framework**: Next.js 16.1 (App Router)
 - **Language**: TypeScript 5.9
 - **HTTP Client**: Axios 1.7
 - **Security**: DOMPurify 3.3
@@ -111,27 +111,72 @@ headlesswp/
 │   ├── app/              # App Router pages
 │   │   ├── layout.tsx    # Root layout
 │   │   ├── page.tsx      # Homepage
+│   │   ├── error.tsx     # Error page
+│   │   ├── not-found.tsx # 404 page
+│   │   ├── loading.tsx   # Loading page
+│   │   ├── api/          # API routes
+│   │   │   ├── cache/    # Cache API endpoint
+│   │   │   └── csp-report/ # CSP violation report endpoint
 │   │   └── berita/       # News post pages
+│   │       ├── [slug]/   # Dynamic post slug
+│   │       ├── page.tsx   # Post detail page
+│   │       └── loading.tsx # Post loading skeleton
 │   ├── components/       # React components
-│   │   ├── layout/       # Header, Footer
-│   │   ├── post/         # PostCard component
+│   │   ├── ClientLayout.tsx # Client-side layout wrapper
+│   │   ├── ErrorBoundary.tsx # Error boundary component
+│   │   ├── layout/       # Layout components
+│   │   │   ├── Header.tsx
+│   │   │   └── Footer.tsx
+│   │   ├── post/         # Post-related components
+│   │   │   ├── PostCard.tsx
+│   │   │   ├── PostCardSkeleton.tsx
+│   │   │   └── PostDetailSkeleton.tsx
 │   │   └── ui/           # UI components
+│   │       ├── Badge.tsx
+│   │       ├── Breadcrumb.tsx
+│   │       ├── Button.tsx
+│   │       ├── EmptyState.tsx
+│   │       ├── LoadingSpinner.tsx
+│   │       ├── MetaInfo.tsx
+│   │       ├── Pagination.tsx
+│   │       ├── SectionHeading.tsx
+│   │       └── Skeleton.tsx
 │   ├── lib/              # Utilities and API layer
 │   │   ├── api/          # API client and resilience patterns
 │   │   │   ├── config.ts        # API configuration
-│   │   │   ├── client.ts        # Axios client
-│   │   │   ├── errors.ts        # Error types
-│   │   │   ├── circuitBreaker.ts # Circuit breaker
-│   │   │   └── retryStrategy.ts  # Retry strategy
+│   │   │   ├── client.ts        # Axios client with interceptors
+│   │   │   ├── errors.ts        # Standardized error types
+│   │   │   ├── circuitBreaker.ts # Circuit breaker pattern
+│   │   │   ├── retryStrategy.ts  # Retry strategy with backoff
+│   │   │   ├── rateLimiter.ts    # Rate limiting (token bucket)
+│   │   │   ├── healthCheck.ts    # API health monitoring
+│   │   │   ├── response.ts       # Standardized response wrappers
+│   │   │   └── standardized.ts   # Standardized API methods
 │   │   ├── services/     # Business logic
-│   │   │   └── postService.ts   # Post data service
-│   │   ├── wordpress.ts  # WordPress API wrapper
-│   │   └── cache.ts      # Cache utilities
+│   │   │   └── enhancedPostService.ts # Enhanced post service with validation & caching
+│   │   ├── validation/   # Data validation layer
+│   │   │   └── dataValidator.ts   # Runtime data validation
+│   │   ├── utils/        # Utility functions
+│   │   │   ├── logger.ts         # Centralized logging
+│   │   │   ├── sanitizeHTML.ts   # XSS protection with DOMPurify
+│   │   │   └── fallbackPost.ts   # Fallback post utilities
+│   │   ├── constants/    # Constants
+│   │   │   └── fallbackPosts.ts  # Fallback post data
+│   │   ├── cache.ts      # In-memory cache with TTL
+│   │   ├── csp-utils.ts  # CSP utility functions
+│   │   └── wordpress.ts  # WordPress API wrapper
+│   ├── middleware.ts     # Next.js middleware for CSP & security
 │   └── types/            # TypeScript definitions
+│       └── wordpress.ts  # WordPress type definitions
 ├── docs/                  # Documentation
 │   ├── blueprint.md      # Architecture blueprint
 │   ├── task.md           # Task backlog
-│   └── api/              # API documentation (to be added)
+│   ├── api.md            # API documentation
+│   ├── guides/           # Developer guides
+│   │   ├── development.md # Development guide
+│   │   ├── SECURITY.md   # Security guide
+│   │   └── CONTRIBUTING.md # Contributing guide
+│   └── governance/       # Project governance
 ├── __tests__/            # Test files
 ├── docker-compose.yml    # Docker configuration
 ├── wp-config.php        # WordPress configuration

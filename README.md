@@ -17,7 +17,7 @@ Access the application at [http://localhost:3000](http://localhost:3000)
 
 ## Overview
 
-WordPress as a headless CMS with a Next.js 14 frontend. WordPress manages content, provides REST API endpoints, and Next.js consumes those APIs to deliver a modern, performant web application.
+WordPress as a headless CMS with a Next.js 16 frontend. WordPress manages content, provides REST API endpoints, and Next.js consumes those APIs to deliver a modern, performant web application.
 
 ```
 ┌─────────────┐     REST API      ┌──────────────┐
@@ -38,7 +38,7 @@ WordPress as a headless CMS with a Next.js 14 frontend. WordPress manages conten
 ## Technology Stack
 
 **Frontend**
-- Next.js 14.2 (App Router)
+- Next.js 16.1 (App Router)
 - TypeScript 5.9
 - Axios 1.7
 - DOMPurify 3.3
@@ -75,12 +75,14 @@ npm audit:full       # Full security audit
 ```
 headlesswp/
 ├── src/                   # Next.js application
-│   ├── app/              # App Router pages
-│   ├── components/       # React components
+│   ├── app/              # App Router pages & API routes
+│   ├── components/       # React components (layout, post, ui)
 │   ├── lib/              # Utilities and API layer
-│   │   ├── api/          # API client and resilience patterns
-│   │   ├── services/     # Business logic
-│   │   └── validation/   # Data validation
+│   │   ├── api/          # API client, resilience patterns, standardization
+│   │   ├── services/     # Business logic (enhancedPostService)
+│   │   ├── validation/   # Runtime data validation
+│   │   ├── utils/        # Utilities (logger, sanitization)
+│   │   └── constants/    # Constants and fallback data
 │   └── types/            # TypeScript definitions
 ├── docs/                  # Documentation
 ├── __tests__/            # Test files
