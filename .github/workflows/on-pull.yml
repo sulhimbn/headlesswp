@@ -68,11 +68,19 @@ jobs:
         run: npm ci
 
       - name: Install OpenCode CLI
+        id: install-opencode
+        continue-on-error: true
         run: |
-          curl -fsSL https://opencode.ai/install | bash
+          curl -fsSL https://opencode.ai/install | bash || {
+            echo "opencode_cli_installed=false" >> $GITHUB_OUTPUT
+            echo "Failed to install OpenCode CLI - skipping auto-fix step"
+            exit 1
+          }
           echo "$HOME/.opencode/bin" >> $GITHUB_PATH
+          echo "opencode_cli_installed=true" >> $GITHUB_OUTPUT
 
       - name: Auto-fix CI Failures
+        if: steps.install-opencode.outputs.opencode_cli_installed == 'true'
         run: |
           opencode run "$(cat <<'PROMPT'
           YOU ARE AN AUTONOMOUS SOFTWARE ENGINEERING AGENT.
