@@ -1,4 +1,5 @@
 import { ApiErrorImpl, ApiErrorType } from './errors'
+import { TIME_CONSTANTS } from './config'
 
 export interface RateLimiterOptions {
   maxRequests: number
@@ -50,7 +51,7 @@ export class RateLimiter {
 
       throw new ApiErrorImpl(
         ApiErrorType.RATE_LIMIT_ERROR,
-        `Rate limit exceeded. Too many requests. Please try again in ${Math.ceil(waitTime / 1000)} seconds.`,
+        `Rate limit exceeded. Too many requests. Please try again in ${Math.ceil(waitTime / TIME_CONSTANTS.SECOND_IN_MS)} seconds.`,
         429,
         true
       )

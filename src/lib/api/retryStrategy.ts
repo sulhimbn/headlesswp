@@ -1,4 +1,11 @@
 import { logger } from '@/lib/utils/logger'
+import {
+  MAX_RETRIES,
+  RETRY_INITIAL_DELAY,
+  RETRY_MAX_DELAY,
+  RETRY_BACKOFF_MULTIPLIER,
+  TIME_CONSTANTS
+} from './config'
 
 export interface RetryStrategyOptions {
   maxRetries?: number
@@ -16,10 +23,10 @@ export class RetryStrategy {
   private jitter: boolean
 
   constructor(options: RetryStrategyOptions = {}) {
-    this.maxRetries = options.maxRetries ?? 3
-    this.initialDelay = options.initialDelay ?? 1000
-    this.maxDelay = options.maxDelay ?? 30000
-    this.backoffMultiplier = options.backoffMultiplier ?? 2
+    this.maxRetries = options.maxRetries ?? MAX_RETRIES
+    this.initialDelay = options.initialDelay ?? RETRY_INITIAL_DELAY
+    this.maxDelay = options.maxDelay ?? RETRY_MAX_DELAY
+    this.backoffMultiplier = options.backoffMultiplier ?? RETRY_BACKOFF_MULTIPLIER
     this.jitter = options.jitter ?? true
   }
 
@@ -72,7 +79,7 @@ export class RetryStrategy {
         if (retryAfterHeader) {
           const retryAfter = parseInt(retryAfterHeader, 10)
           if (!isNaN(retryAfter)) {
-            return Math.min(retryAfter * 1000, this.maxDelay)
+            return Math.min(retryAfter * TIME_CONSTANTS.SECOND_IN_MS, this.maxDelay)
           }
 
           const retryAfterDate = Date.parse(retryAfterHeader)

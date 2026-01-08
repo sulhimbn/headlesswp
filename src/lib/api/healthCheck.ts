@@ -1,6 +1,10 @@
 import { apiClient } from './client';
 import { createApiError } from './errors';
-import { API_TIMEOUT } from './config';
+import {
+  API_TIMEOUT,
+  MAX_RETRIES,
+  RETRY_INITIAL_DELAY
+} from './config';
 import { logger } from '@/lib/utils/logger';
 
 export interface HealthCheckResult {
@@ -85,7 +89,7 @@ export class HealthChecker {
     return Promise.race([this.check(), timeoutPromise]);
   }
 
-  async checkRetry(maxAttempts: number = 3, delayMs: number = 1000): Promise<HealthCheckResult> {
+  async checkRetry(maxAttempts: number = MAX_RETRIES, delayMs: number = RETRY_INITIAL_DELAY): Promise<HealthCheckResult> {
     let lastError: HealthCheckResult | null = null;
 
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
@@ -135,7 +139,7 @@ export async function checkApiHealthWithTimeout(timeout: number = API_TIMEOUT): 
   return healthChecker.checkWithTimeout(timeout);
 }
 
-export async function checkApiHealthRetry(maxAttempts: number = 3, delayMs: number = 1000): Promise<HealthCheckResult> {
+export async function checkApiHealthRetry(maxAttempts: number = MAX_RETRIES, delayMs: number = RETRY_INITIAL_DELAY): Promise<HealthCheckResult> {
   return healthChecker.checkRetry(maxAttempts, delayMs);
 }
 

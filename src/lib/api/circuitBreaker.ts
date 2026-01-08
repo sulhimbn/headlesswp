@@ -1,4 +1,9 @@
 import { logger } from '@/lib/utils/logger'
+import {
+  CIRCUIT_BREAKER_FAILURE_THRESHOLD,
+  CIRCUIT_BREAKER_RECOVERY_TIMEOUT,
+  CIRCUIT_BREAKER_SUCCESS_THRESHOLD
+} from './config'
 
 export enum CircuitState {
   CLOSED = 'CLOSED',
@@ -25,9 +30,9 @@ export class CircuitBreaker {
   private onStateChange?: (state: CircuitState) => void
 
   constructor(options: CircuitBreakerOptions = {}) {
-    this.failureThreshold = options.failureThreshold ?? 5
-    this.recoveryTimeout = options.recoveryTimeout ?? 60000
-    this.successThreshold = options.successThreshold ?? 2
+    this.failureThreshold = options.failureThreshold ?? CIRCUIT_BREAKER_FAILURE_THRESHOLD
+    this.recoveryTimeout = options.recoveryTimeout ?? CIRCUIT_BREAKER_RECOVERY_TIMEOUT
+    this.successThreshold = options.successThreshold ?? CIRCUIT_BREAKER_SUCCESS_THRESHOLD
     this.onStateChange = options.onStateChange
   }
 
