@@ -2,10 +2,12 @@ import { wordpressAPI } from '@/lib/wordpress'
 import { apiClient, getApiUrl } from '@/lib/api/client'
 import { cacheManager, CACHE_KEYS } from '@/lib/cache'
 import { logger } from '@/lib/utils/logger'
+import { enhancedPostService } from '@/lib/services/enhancedPostService'
 
 jest.mock('@/lib/api/client')
 jest.mock('@/lib/cache')
 jest.mock('@/lib/utils/logger')
+jest.mock('@/lib/services/enhancedPostService')
 
 // Unmock getApiUrl to use actual implementation
 ;(getApiUrl as jest.MockedFunction<typeof getApiUrl>).mockImplementation((path) => path)
@@ -481,11 +483,12 @@ describe('WordPress API - Batch Operations and Caching', () => {
       expect(apiClient.get).toHaveBeenCalledWith(getApiUrl('/wp/v2/posts'), { params: { per_page: 6 }, signal: undefined })
       expect(apiClient.get).toHaveBeenCalledWith(getApiUrl('/wp/v2/categories'), { signal: undefined })
       expect(apiClient.get).toHaveBeenCalledWith(getApiUrl('/wp/v2/tags'), { signal: undefined })
-      expect(logger.warn).toHaveBeenCalledWith('Cache warming completed', undefined, { module: 'wordpressAPI' })
+      expect(logger.info).toHaveBeenCalledWith('Cache warming completed', { module: 'wordpressAPI' })
     })
 
     it('handles errors during cache warming', async () => {
       ;(apiClient.get as jest.Mock).mockRejectedValue(new Error('API error'))
+      ;(enhancedPostService.warmCache as jest.Mock).mockRejectedValue(new Error('Enhanced post service error'))
 
       await wordpressAPI.warmCache()
 
@@ -505,9 +508,12 @@ describe('WordPress API - Batch Operations and Caching', () => {
         .mockRejectedValueOnce(new Error('Categories error'))
         .mockResolvedValueOnce({ data: mockTags })
 
+      ;(enhancedPostService.warmCache as jest.Mock).mockResolvedValue(undefined)
+
       await wordpressAPI.warmCache()
 
       expect(apiClient.get).toHaveBeenCalledTimes(3)
+      expect(enhancedPostService.warmCache).toHaveBeenCalled()
       expect(logger.warn).toHaveBeenCalledWith('Cache warming failed', expect.any(Error), { module: 'wordpressAPI' })
     })
   })
