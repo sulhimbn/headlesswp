@@ -20,7 +20,663 @@ Production: https://mitrabantennews.com/wp-json/wp/v2/
 ```typescript
 import { wordpressAPI } from '@/lib/wordpress';
 import { postService } from '@/lib/services/postService';
+import { standardizedAPI } from '@/lib/api/standardized';
 ```
+
+## API Layer Architecture
+
+The HeadlessWP codebase provides three API layers for different use cases:
+
+### 1. WordPress API (`wordpressAPI`)
+
+**Purpose**: Low-level, direct access to WordPress REST API
+
+**When to Use**:
+- When you need raw WordPress data without additional processing
+- When you want to handle all error cases yourself
+- When you need maximum control over API calls
+
+**Characteristics**:
+- Returns raw WordPress data or throws errors
+- No automatic fallbacks
+- No data validation
+- No enrichment (media URLs, category/tag details)
+
+**Example**:
+```typescript
+import { wordpressAPI } from '@/lib/wordpress';
+
+const posts = await wordpressAPI.getPosts({ per_page: 10 });
+const post = await wordpressAPI.getPost('my-post-slug');
+```
+
+---
+
+### 2. Enhanced Post Service (`enhancedPostService`)
+
+**Purpose**: High-level business logic with validation, caching, enrichment, and fallbacks
+
+**When to Use**:
+- In Next.js pages and components (recommended for app layer)
+- When you need data validation
+- When you need cached data with cascade invalidation
+- When you need enriched data (media URLs, category/tag details)
+- When you want automatic fallbacks on API failures
+
+**Characteristics**:
+- Runtime data validation
+- Dependency-aware caching with cascade invalidation
+- Batch media fetching (eliminates N+1 queries)
+- Type-safe enriched data (PostWithMediaUrl, PostWithDetails)
+- Graceful fallbacks on API failures
+- Optimized for static site generation (SSG) and ISR
+
+**Example**:
+```typescript
+import { enhancedPostService } from '@/lib/services/enhancedPostService';
+
+const latestPosts = await enhancedPostService.getLatestPosts();
+const post = await enhancedPostService.getPostBySlug('my-post-slug');
+```
+
+---
+
+### 3. Standardized API (`standardizedAPI`)
+
+**Purpose**: Direct API access with consistent error handling and response format
+
+**When to Use**:
+- When you want consistent error handling and response format
+- When building API endpoints or services
+- When you need metadata (timestamp, cache hit, retry count)
+- When you want type-safe error handling with `ApiResult<T>`
+- In middleware, server actions, or API routes
+
+**Characteristics**:
+- All methods return `ApiResult<T>` or `ApiListResult<T>`
+- Consistent error format with error types
+- Metadata (timestamp, endpoint, cache hit, retry count)
+- Pagination metadata for list results
+- Type-safe error handling with type guards
+
+**Example**:
+```typescript
+import { standardizedAPI } from '@/lib/api/standardized';
+import { isApiResultSuccessful } from '@/lib/api/response';
+
+const result = await standardizedAPI.getPostById(123);
+if (isApiResultSuccessful(result)) {
+  console.log('Post loaded:', result.data.title.rendered);
+  console.log('Cache hit:', result.metadata.cacheHit);
+} else {
+  console.error('Error type:', result.error.type);
+  console.error('Message:', result.error.message);
+}
+```
+
+---
+
+### Decision Matrix
+
+| Requirement | Recommended Layer |
+|-------------|-------------------|
+| Next.js page data fetching | enhancedPostService |
+| Build-time data with fallbacks | enhancedPostService |
+| API route/middleware | standardizedAPI |
+| Direct API with error metadata | standardizedAPI |
+| Raw WordPress data | wordpressAPI |
+| Maximum control over errors | wordpressAPI or standardizedAPI |
+| Data validation | enhancedPostService |
+| Caching with cascade invalidation | enhancedPostService |
+| Batch media fetching | enhancedPostService |
+| Enriched data (media URLs, categories, tags) | enhancedPostService |
+| Consistent error format | standardizedAPI |
+| Metadata (cache, retries, timestamps) | standardizedAPI |
+
+## Standardized API Reference
+
+The standardized API provides type-safe, consistent error handling and response format for all WordPress REST API operations.
+
+### Import and Setup
+
+```typescript
+import { standardizedAPI } from '@/lib/api/standardized';
+import { isApiResultSuccessful } from '@/lib/api/response';
+import { ApiErrorType } from '@/lib/api/errors';
+```
+
+### Response Format
+
+#### Single Resource (`ApiResult<T>`)
+
+```typescript
+{
+  data: T | null,                    // The requested data
+  error: ApiError | null,            // Error if request failed
+  metadata: {
+    timestamp: string,                 // ISO 8601 timestamp
+    endpoint?: string,                // API endpoint called
+    cacheHit?: boolean,               // Was result cached?
+    retryCount?: number               // Number of retries performed
+  }
+}
+```
+
+#### Collection (`ApiListResult<T>`)
+
+```typescript
+{
+  data: T[] | null,                  // Array of items
+  error: ApiError | null,            // Error if request failed
+  metadata: {
+    timestamp: string,
+    endpoint?: string,
+    cacheHit?: boolean,
+    retryCount?: number
+  },
+  pagination: {
+    page?: number,                    // Current page
+    perPage?: number,                // Items per page
+    total?: number,                  // Total items
+    totalPages?: number               // Total pages
+  }
+}
+```
+
+### Posts API
+
+#### Get Post by ID
+
+Fetch a single post by its ID.
+
+```typescript
+const result = await standardizedAPI.getPostById(123);
+
+if (isApiResultSuccessful(result)) {
+  const post = result.data;
+  console.log('Post:', post.title.rendered);
+} else {
+  console.error('Error:', result.error.message);
+  console.error('Type:', result.error.type);
+}
+```
+
+**Parameters**:
+- `id: number` - Post ID
+
+**Returns**: `Promise<ApiResult<WordPressPost>>`
+
+**Error Types**:
+- `CLIENT_ERROR` (404) - Post not found
+- `SERVER_ERROR` - WordPress API error
+- `NETWORK_ERROR` - Connection failed
+- `TIMEOUT_ERROR` - Request timed out
+- `CIRCUIT_BREAKER_OPEN` - Circuit breaker blocking requests
+
+---
+
+#### Get Post by Slug
+
+Fetch a single post by its slug.
+
+```typescript
+const result = await standardizedAPI.getPostBySlug('my-post-slug');
+
+if (isApiResultSuccessful(result)) {
+  const post = result.data;
+  console.log('Post:', post.title.rendered);
+} else {
+  console.error('Error:', result.error.message);
+}
+```
+
+**Parameters**:
+- `slug: string` - Post slug
+
+**Returns**: `Promise<ApiResult<WordPressPost>>`
+
+**Error Types**:
+- `CLIENT_ERROR` (404) - Post not found
+- `SERVER_ERROR` - WordPress API error
+- `NETWORK_ERROR` - Connection failed
+- `TIMEOUT_ERROR` - Request timed out
+- `CIRCUIT_BREAKER_OPEN` - Circuit breaker blocking requests
+
+---
+
+#### Get All Posts
+
+Fetch a collection of posts with optional filtering.
+
+```typescript
+// Get all posts (default: 10 per page)
+const result = await standardizedAPI.getAllPosts();
+
+// Get paginated posts
+const result = await standardizedAPI.getAllPosts({
+  page: 2,
+  per_page: 10
+});
+
+// Get posts by category
+const result = await standardizedAPI.getAllPosts({
+  category: 5
+});
+
+if (isApiResultSuccessful(result)) {
+  const posts = result.data;
+  console.log('Total posts:', result.pagination?.total);
+  console.log('Page:', result.pagination?.page);
+  console.log('Cache hit:', result.metadata.cacheHit);
+} else {
+  console.error('Error:', result.error.message);
+}
+```
+
+**Parameters**:
+- `params?: PostQueryParams`
+  - `page?: number` - Page number
+  - `per_page?: number` - Posts per page (max 100)
+  - `category?: number` - Filter by category ID
+  - `tag?: number` - Filter by tag ID
+  - `search?: string` - Search query
+
+**Returns**: `Promise<ApiListResult<WordPressPost>>`
+
+**Error Types**:
+- `SERVER_ERROR` - WordPress API error
+- `NETWORK_ERROR` - Connection failed
+- `TIMEOUT_ERROR` - Request timed out
+- `CIRCUIT_BREAKER_OPEN` - Circuit breaker blocking requests
+
+---
+
+#### Search Posts
+
+Search for posts matching a query.
+
+```typescript
+const result = await standardizedAPI.searchPosts('pemilihan gubernur');
+
+if (isApiResultSuccessful(result)) {
+  const posts = result.data;
+  console.log('Found', posts.length, 'posts');
+  console.log('Cache hit:', result.metadata.cacheHit);
+} else {
+  console.error('Error:', result.error.message);
+}
+```
+
+**Parameters**:
+- `query: string` - Search query
+
+**Returns**: `Promise<ApiListResult<WordPressPost>>`
+
+**Error Types**:
+- `SERVER_ERROR` - WordPress API error
+- `NETWORK_ERROR` - Connection failed
+- `TIMEOUT_ERROR` - Request timed out
+- `CIRCUIT_BREAKER_OPEN` - Circuit breaker blocking requests
+
+### Categories API
+
+#### Get Category by ID
+
+Fetch a single category by its ID.
+
+```typescript
+const result = await standardizedAPI.getCategoryById(5);
+
+if (isApiResultSuccessful(result)) {
+  const category = result.data;
+  console.log('Category:', category.name);
+} else {
+  console.error('Error:', result.error.message);
+}
+```
+
+**Parameters**:
+- `id: number` - Category ID
+
+**Returns**: `Promise<ApiResult<WordPressCategory>>`
+
+---
+
+#### Get Category by Slug
+
+Fetch a single category by its slug.
+
+```typescript
+const result = await standardizedAPI.getCategoryBySlug('politik');
+
+if (isApiResultSuccessful(result)) {
+  const category = result.data;
+  console.log('Category:', category.name);
+} else {
+  console.error('Error:', result.error.message);
+}
+```
+
+**Parameters**:
+- `slug: string` - Category slug
+
+**Returns**: `Promise<ApiResult<WordPressCategory>>`
+
+---
+
+#### Get All Categories
+
+Fetch all categories.
+
+```typescript
+const result = await standardizedAPI.getAllCategories();
+
+if (isApiResultSuccessful(result)) {
+  const categories = result.data;
+  console.log('Total categories:', categories.length);
+} else {
+  console.error('Error:', result.error.message);
+}
+```
+
+**Returns**: `Promise<ApiListResult<WordPressCategory>>`
+
+### Tags API
+
+#### Get Tag by ID
+
+Fetch a single tag by its ID.
+
+```typescript
+const result = await standardizedAPI.getTagById(12);
+
+if (isApiResultSuccessful(result)) {
+  const tag = result.data;
+  console.log('Tag:', tag.name);
+} else {
+  console.error('Error:', result.error.message);
+}
+```
+
+**Parameters**:
+- `id: number` - Tag ID
+
+**Returns**: `Promise<ApiResult<WordPressTag>>`
+
+---
+
+#### Get Tag by Slug
+
+Fetch a single tag by its slug.
+
+```typescript
+const result = await standardizedAPI.getTagBySlug('pemilu');
+
+if (isApiResultSuccessful(result)) {
+  const tag = result.data;
+  console.log('Tag:', tag.name);
+} else {
+  console.error('Error:', result.error.message);
+}
+```
+
+**Parameters**:
+- `slug: string` - Tag slug
+
+**Returns**: `Promise<ApiResult<WordPressTag>>`
+
+---
+
+#### Get All Tags
+
+Fetch all tags.
+
+```typescript
+const result = await standardizedAPI.getAllTags();
+
+if (isApiResultSuccessful(result)) {
+  const tags = result.data;
+  console.log('Total tags:', tags.length);
+} else {
+  console.error('Error:', result.error.message);
+}
+```
+
+**Returns**: `Promise<ApiListResult<WordPressTag>>`
+
+### Media API
+
+#### Get Media by ID
+
+Fetch media details (images, videos, etc.) by ID.
+
+```typescript
+const result = await standardizedAPI.getMediaById(456);
+
+if (isApiResultSuccessful(result)) {
+  const media = result.data;
+  console.log('Media URL:', media.source_url);
+  console.log('Alt text:', media.alt_text);
+} else {
+  console.error('Error:', result.error.message);
+}
+```
+
+**Parameters**:
+- `id: number` - Media ID
+
+**Returns**: `Promise<ApiResult<WordPressMedia>>`
+
+### Authors API
+
+#### Get Author by ID
+
+Fetch author details by ID.
+
+```typescript
+const result = await standardizedAPI.getAuthorById(1);
+
+if (isApiResultSuccessful(result)) {
+  const author = result.data;
+  console.log('Author:', author.name);
+  console.log('Description:', author.description);
+} else {
+  console.error('Error:', result.error.message);
+}
+```
+
+**Parameters**:
+- `id: number` - Author ID
+
+**Returns**: `Promise<ApiResult<WordPressAuthor>>`
+
+### Error Handling with Standardized API
+
+The standardized API provides type-safe error handling using type guards.
+
+#### Type Guard Usage
+
+```typescript
+import { isApiResultSuccessful } from '@/lib/api/response';
+
+const result = await standardizedAPI.getPostById(123);
+
+if (isApiResultSuccessful(result)) {
+  // TypeScript knows result.error is null and result.data is not null
+  const post = result.data;
+  console.log('Post:', post.title.rendered);
+} else {
+  // TypeScript knows result.data is null and result.error is not null
+  const error = result.error;
+  console.error('Error:', error.message);
+  console.error('Type:', error.type);
+}
+```
+
+#### Error Type Switch
+
+```typescript
+import { ApiErrorType } from '@/lib/api/errors';
+
+const result = await standardizedAPI.getPostById(123);
+
+if (!isApiResultSuccessful(result)) {
+  switch (result.error.type) {
+    case ApiErrorType.NETWORK_ERROR:
+      console.log('Network error occurred');
+      break;
+
+    case ApiErrorType.TIMEOUT_ERROR:
+      console.log('Request timed out');
+      break;
+
+    case ApiErrorType.RATE_LIMIT_ERROR:
+      console.log('Rate limit exceeded');
+      break;
+
+    case ApiErrorType.SERVER_ERROR:
+      console.log('Server error (5xx)');
+      break;
+
+    case ApiErrorType.CLIENT_ERROR:
+      console.log('Client error (4xx)');
+      break;
+
+    case ApiErrorType.CIRCUIT_BREAKER_OPEN:
+      console.log('Service temporarily unavailable');
+      break;
+
+    default:
+      console.log('Unknown error');
+  }
+}
+```
+
+#### Unwrapping Results
+
+For cases where you want to throw errors or provide defaults:
+
+```typescript
+import { unwrapApiResult, unwrapApiResultSafe } from '@/lib/api/response';
+
+// Unwrap with error throw (throws if error exists)
+try {
+  const post = unwrapApiResult(await standardizedAPI.getPostById(123));
+  console.log('Post:', post.title.rendered);
+} catch (error) {
+  console.error('Failed to fetch post:', error);
+}
+
+// Unwrap with safe default (never throws)
+const posts = unwrapApiResultSafe(
+  await standardizedAPI.getAllPosts(),
+  [] // Default empty array
+);
+console.log('Posts:', posts.length);
+```
+
+### Metadata Usage
+
+All standardized API responses include metadata for debugging and monitoring.
+
+```typescript
+const result = await standardizedAPI.getPostById(123);
+
+console.log('Timestamp:', result.metadata.timestamp);
+console.log('Endpoint:', result.metadata.endpoint);
+console.log('Cache hit:', result.metadata.cacheHit);
+console.log('Retries:', result.metadata.retryCount);
+
+if (result.pagination) {
+  console.log('Page:', result.pagination.page);
+  console.log('Total:', result.pagination.total);
+  console.log('Pages:', result.pagination.totalPages);
+}
+```
+
+### Best Practices
+
+#### 1. Always Use Type Guards
+
+```typescript
+// Good - Type-safe
+if (isApiResultSuccessful(result)) {
+  const post = result.data;
+}
+
+// Bad - Manual checking (not type-safe)
+if (!result.error) {
+  const post = result.data;
+}
+```
+
+#### 2. Handle All Error Types
+
+```typescript
+// Good - Handle each error type appropriately
+switch (result.error.type) {
+  case ApiErrorType.NETWORK_ERROR:
+    return <NetworkError />;
+  case ApiErrorType.TIMEOUT_ERROR:
+    return <TimeoutError />;
+  case ApiErrorType.CIRCUIT_BREAKER_OPEN:
+    return <ServiceUnavailable />;
+  default:
+    return <GenericError message={result.error.message} />;
+}
+
+// Bad - Generic error handling
+if (result.error) {
+  return <Error />;
+}
+```
+
+#### 3. Leverage Metadata
+
+```typescript
+// Good - Use metadata for debugging
+console.log('Cache hit:', result.metadata.cacheHit);
+console.log('Endpoint:', result.metadata.endpoint);
+console.log('Retries:', result.metadata.retryCount);
+
+// Bad - Ignore metadata
+const post = result.data;
+```
+
+#### 4. Check Retry Count
+
+```typescript
+const result = await standardizedAPI.getPostById(123);
+
+if (result.metadata.retryCount && result.metadata.retryCount > 0) {
+  console.log(`Request was retried ${result.metadata.retryCount} times`);
+  // This might indicate API instability
+}
+```
+
+#### 5. Use Pagination Metadata
+
+```typescript
+const result = await standardizedAPI.getAllPosts({ page: 1, per_page: 10 });
+
+if (isApiResultSuccessful(result)) {
+  const { page, total, totalPages } = result.pagination;
+  console.log(`Showing page ${page} of ${totalPages} (${total} total posts)`);
+}
+```
+
+### Comparison: When to Use Which API
+
+| Use Case | Recommended API | Why |
+|----------|----------------|-----|
+| Next.js page data fetching | `enhancedPostService` | Validation, caching, enrichment, fallbacks |
+| API route / middleware | `standardizedAPI` | Consistent error format, metadata |
+| Build-time data with fallbacks | `enhancedPostService` | Graceful degradation |
+| Raw WordPress data | `wordpressAPI` | Maximum control, no processing |
+| Direct API with error metadata | `standardizedAPI` | Type-safe error handling |
+| Caching with cascade invalidation | `enhancedPostService` | Automatic dependency tracking |
+| Batch media fetching | `enhancedPostService` | N+1 query elimination |
+| Enriched data (media, categories, tags) | `enhancedPostService` | Automatic resolution |
 
 ## WordPress API Reference
 
