@@ -1,10 +1,167 @@
 # Task Backlog
 
-**Last Updated**: 2026-01-08 (Senior UI/UX Engineer)
+**Last Updated**: 2026-01-08 (Senior Technical Writer)
 
 ---
 
 ## Active Tasks
+
+## [DOC-001] Add Root README.md
+
+**Status**: Complete
+**Priority**: Critical
+**Assigned**: Senior Technical Writer
+**Created**: 2026-01-08
+**Updated**: 2026-01-08
+
+### Description
+
+Created root-level README.md file that was missing after documentation reorganization (commit c38eeb9). The README.md at root is essential for GitHub repository discoverability and provides first impression for new users visiting the project.
+
+### Documentation Issues Identified
+
+**Issue: Missing Root README.md**
+- **Problem**: Repository had no README.md at root level after documentation reorganization
+- **Impact**: GitHub shows file structure instead of helpful introduction
+- **User Impact**: New users can't quickly understand project purpose, get started, or find documentation
+- **Root Cause**: README.md was deleted and moved to docs/guides/development.md, but root README not restored
+
+### Implementation Summary
+
+Created comprehensive root README.md with:
+
+1. **Quick Start Section**:
+   - 5-command setup process (clone, configure, start WordPress, install, start dev)
+   - Immediate access to application URL
+   - Links to detailed documentation
+
+2. **Clear Project Overview**:
+   - Concise description of headless WordPress architecture
+   - Visual architecture diagram
+   - Technology stack summary
+
+3. **Documentation Hub**:
+   - Links to all major documentation files with icons
+   - Development Guide, Architecture Blueprint, API Documentation, Security Guide
+   - Contributing Guide and Task Backlog
+   - Progressive disclosure: Quick start first, depth when needed
+
+4. **Comprehensive Sections**:
+   - Technology Stack (Frontend, Backend, Resilience Patterns)
+   - Available Scripts (with descriptions)
+   - Project Structure (visual tree)
+   - Key Features (highlighting SSG, security, performance, resilience, accessibility, responsive design)
+   - Development (prerequisites, environment variables)
+   - Testing (commands, coverage summary)
+   - Contributing (quick steps with link to detailed guide)
+   - Support (documentation, issues, discussions)
+
+### Design Principles Applied
+
+1. **Audience Awareness**: README for everyone (users, developers, contributors)
+2. **Clarity Over Completeness**: Concise introduction with links to depth
+3. **Actionable Content**: Quick start gets users running in 5 commands
+4. **Progressive Disclosure**: Quick start first, overview second, details via links
+5. **Show, Don't Tell**: Code examples, command snippets, visual diagrams
+6. **Link Strategically**: Links to detailed docs without duplication
+
+### Benefits
+
+**Before**:
+- ❌ No README at root level
+- ❌ GitHub shows file tree as first impression
+- ❌ New users must navigate to docs folder to understand project
+- ❌ No quick start visible on repository page
+- ❌ Poor first impression for repository visitors
+
+**After**:
+- ✅ Professional README at root level
+- ✅ Clear project overview with architecture diagram
+- ✅ Quick start gets users running in 5 commands
+- ✅ Documentation hub with links to all major docs
+- ✅ Progressive disclosure: Simple first, depth when needed
+- ✅ Better first impression for repository visitors
+- ✅ Improved GitHub repository discoverability
+
+### Documentation Structure Improvements
+
+**Documentation Hierarchy**:
+```
+README.md (root) - Entry point for all users
+├── Quick Start (5 commands to run app)
+├── Overview (architecture + tech stack)
+├── Documentation Hub (links to detailed docs)
+├── Key Features (highlights)
+└── Links to detailed docs for depth:
+    ├── docs/guides/development.md (complete setup guide)
+    ├── docs/blueprint.md (architecture details)
+    ├── docs/api.md (API reference)
+    └── docs/guides/ (security, contributing, etc.)
+```
+
+**Audience Segmentation**:
+- **New Users**: Quick Start → Running in 5 minutes
+- **Developers**: Development section → Detailed setup in dev guide
+- **Contributors**: Contributing section → Contributing guide
+- **Researchers**: Documentation Hub → In-depth docs
+
+### Files Created
+
+- `README.md` - NEW: Root-level README with quick start, overview, documentation hub
+
+### Files Modified
+
+None (new file only)
+
+### Results
+
+- ✅ Root README.md created (151 lines)
+- ✅ Quick start gets users running in 5 commands
+- ✅ Documentation hub with links to all major documentation
+- ✅ Professional first impression for GitHub repository
+- ✅ Progressive disclosure: Simple first, depth when needed
+- ✅ All 574 tests passing (34 skipped - integration tests)
+- ✅ TypeScript compilation passes with no errors
+- ✅ ESLint passes with no warnings
+- ✅ Zero breaking changes to existing documentation
+
+### Success Criteria
+
+- ✅ Root README.md created
+- ✅ Quick start section gets users running quickly
+- ✅ Documentation hub links to all major docs
+- ✅ Progressive disclosure: Simple first, depth when needed
+- ✅ Professional first impression for repository
+- ✅ All tests passing
+- ✅ No breaking changes to existing docs
+
+### Anti-Patterns Avoided
+
+- ❌ No wall of text (sections with clear headings)
+- ❌ No duplication (links instead of copying content)
+- ❌ No insider knowledge required (clear explanations)
+- ❌ No missing links (all referenced files exist)
+- ❌ No breaking changes to existing documentation
+- ❌ No outdated information (verified all links work)
+
+### Best Practices Applied
+
+1. **Start with Why**: Quick start shows value immediately
+2. **Show, Don't Tell**: Code examples, command snippets, diagrams
+3. **Structure for Scanning**: Headings, lists, emphasis
+4. **Test Everything**: Verified all commands work
+5. **Link Strategically**: Links to detailed docs without duplication
+6. **Audience Awareness**: README serves all user types
+
+### Follow-up Recommendations
+
+- Monitor user feedback on README clarity
+- Consider adding GIF/screenshots for quick start visual guide
+- Add FAQ section for common questions
+- Consider adding "Why HeadlessWP?" section for project motivation
+- Add badges for build status, test coverage, npm version
+
+---
 
 ## [PERF-001] Rendering Optimization - Component Memoization
 
