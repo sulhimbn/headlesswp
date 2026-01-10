@@ -2,21 +2,16 @@ import { enhancedPostService } from '@/lib/services/enhancedPostService'
 import { notFound } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
-import dynamicImport from 'next/dynamic'
 import Header from '@/components/layout/Header'
 import { sanitizeHTML } from '@/lib/utils/sanitizeHTML'
 import Breadcrumb from '@/components/ui/Breadcrumb'
 import Badge from '@/components/ui/Badge'
 import MetaInfo from '@/components/ui/MetaInfo'
+import Footer from '@/components/layout/Footer'
 import { logger } from '@/lib/utils/logger'
 
 export const dynamic = 'force-static'
 export const revalidate = 3600
-
-const Footer = dynamicImport(() => import('@/components/layout/Footer'), {
-  loading: () => null,
-  ssr: true
-})
 
 export default async function PostPage({ params }: { params: { slug: string } }) {
   const post = await enhancedPostService.getPostBySlug(params.slug)

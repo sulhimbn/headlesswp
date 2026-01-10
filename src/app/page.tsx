@@ -1,13 +1,8 @@
 import { enhancedPostService } from '@/lib/services/enhancedPostService'
-import dynamic from 'next/dynamic'
 import Header from '@/components/layout/Header'
 import PostCard from '@/components/post/PostCard'
 import SectionHeading from '@/components/ui/SectionHeading'
-
-const Footer = dynamic(() => import('@/components/layout/Footer'), {
-  loading: () => null,
-  ssr: true
-})
+import Footer from '@/components/layout/Footer'
 
 export const revalidate = 300
 

@@ -6,6 +6,112 @@
 
 ## Active Tasks
 
+## [PERF-002] Bundle Optimization - Remove Unnecessary Dynamic Imports
+
+**Status**: Complete
+**Priority**: P1
+**Assigned**: Performance Engineer
+**Created**: 2026-01-10
+**Updated**: 2026-01-10
+
+### Description
+
+Identified and removed unnecessary dynamic imports with `ssr: true` that provided no code-splitting benefit but added performance overhead (extra chunk, additional HTTP request).
+
+### Performance Issue Found
+
+**Issue**: Footer component was dynamically imported with `ssr: true` in multiple pages:
+- `src/app/page.tsx`: `const Footer = dynamic(() => import('@/components/layout/Footer'), { ssr: true })`
+- `src/app/berita/page.tsx`: `const Footer = dynamic(() => import('@/components/layout/Footer'), { ssr: true })`
+- `src/app/berita/[slug]/page.tsx`: `const Footer = dynamicImport(() => import('@/components/layout/Footer'), { ssr: true })`
+
+**Impact**:
+- Dynamic import with `ssr: true` provides no code-splitting benefit (component is still server-rendered)
+- Creates an unnecessary separate chunk file
+- Adds an extra HTTP request for the chunk
+- Increases initial load overhead
+- Footer is used on every page (not a candidate for code splitting)
+
+### Implementation Summary
+
+1. **Removed Unnecessary Dynamic Imports** (3 files):
+   - `src/app/page.tsx`: Changed to regular import `import Footer from '@/components/layout/Footer'`
+   - `src/app/berita/page.tsx`: Changed to regular import `import Footer from '@/components/layout/Footer'`
+   - `src/app/berita/[slug]/page.tsx`: Changed to regular import `import Footer from '@/components/layout/Footer'`
+   - Removed `import dynamic from 'next/dynamic'` and `import dynamicImport from 'next/dynamic'`
+
+2. **Simplified Code**:
+   - Eliminated unnecessary dynamic import configuration
+   - Cleaner import statements
+   - Consistent Footer import pattern across all pages
+   - Loading states (loading.tsx files) already use regular imports
+
+### Performance Improvements
+
+**Before**:
+- ❌ Footer split into separate chunk (no benefit with ssr: true)
+- ❌ Extra HTTP request to load chunk
+- ❌ Unnecessary chunk in `.next/static/chunks/`
+- ❌ Slightly slower initial page load
+
+**After**:
+- ✅ Footer bundled with main chunks (no separate chunk)
+- ✅ One less HTTP request
+- ✅ Eliminated unnecessary chunk file
+- ✅ Faster initial page load
+- ✅ Cleaner, simpler code
+
+### Benefits
+
+1. **Reduced HTTP Requests**: Eliminates one HTTP request per page load
+2. **Faster Initial Load**: No additional chunk loading delay
+3. **Simplified Code**: Cleaner import statements, less configuration
+4. **Reduced Chunk Files**: One less chunk file in `.next/static/chunks/`
+5. **Maintainability**: Consistent Footer import pattern across all pages
+
+### Files Modified
+
+- `src/app/page.tsx` - Removed dynamic Footer import, changed to regular import
+- `src/app/berita/page.tsx` - Removed dynamic Footer import, changed to regular import
+- `src/app/berita/[slug]/page.tsx` - Removed dynamic Footer import, changed to regular import
+
+### Results
+
+- ✅ Unnecessary dynamic imports removed (3 files)
+- ✅ Footer chunk eliminated (verified in build output)
+- ✅ Build successful with no errors
+- ✅ All TypeScript types pass (tsc --noEmit)
+- ✅ ESLint passes with no warnings
+- ✅ No breaking changes to functionality
+- ✅ Performance improvement: faster initial load, fewer requests
+
+### Success Criteria
+
+- ✅ Unnecessary dynamic imports removed
+- ✅ Footer chunk eliminated from build
+- ✅ Build successful
+- ✅ TypeScript type checking passes
+- ✅ ESLint passes
+- ✅ Zero regressions in functionality
+
+### Anti-Patterns Avoided
+
+- ❌ No unnecessary dynamic imports with ssr: true
+- ❌ No code splitting without actual benefit
+- ❌ No extra HTTP requests for small components
+- ❌ No breaking changes to existing API
+- ❌ No complex code where simple solution exists
+
+### Follow-up Optimization Opportunities
+
+- Review other components for unnecessary dynamic imports
+- Consider code splitting only for heavy components or routes with minimal usage
+- Implement lazy loading for below-fold components
+- Consider route-based code splitting for large routes
+- Monitor bundle analyzer for chunk sizes and optimize further
+
+---
+
 ## [TEST-001] Critical Path Testing - Security and API Layers
 
 **Status**: Complete
