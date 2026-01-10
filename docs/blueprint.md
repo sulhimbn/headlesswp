@@ -1,7 +1,7 @@
 # Architecture Blueprint
 
-**Version**: 1.4.2
-**Last Updated**: 2026-01-10
+**Version**: 1.4.3
+**Last Updated**: 2026-01-10 (Code Architect)
 
 ## System Architecture
 
@@ -626,6 +626,58 @@ export async function checkApiHealth() {
 - **Orchestration**: Cache warming moved to `cacheWarmer.ts` as separate service
 
 **See Also**: [Task ARCH-DEP-001: Dependency Cleanup](./task.md#arch-dep-001)
+ 
+### Cache Fetch Utility (ARCH-CACHE-FETCH-001)
+
+**Principle**: DRY (Don't Repeat Yourself) - eliminate duplicate cache management patterns across API layer.
+
+**Problem**: Cache management logic was duplicated in API layer methods (`getMediaBatch`, `getMediaUrl`, `search`), violating DRY principle and mixing concerns.
+
+**Solution**: Created generic `cacheFetch<T>()` utility function that provides consistent caching behavior:
+- Check cache first
+- Call fetch function on cache miss
+- Set cache with result
+- Handle errors gracefully
+- Support optional TTL and dependencies
+- Support optional data transformation
+
+**Implementation** (`src/lib/utils/cacheFetch.ts`):
+```typescript
+interface CacheFetchOptions<T> {
+  key: string;
+  ttl: number;
+  dependencies?: string[];
+  transform?: (data: unknown) => T;
+}
+
+async function cacheFetch<T>(
+  fetchFn: () => Promise<unknown>,
+  options: CacheFetchOptions<T>
+): Promise<T | null>
+```
+
+**Refactored Methods**:
+- **search** method: Now uses `cacheFetch()` (15 lines → 12 lines)
+- **getMediaUrl**: Kept original implementation (has special conditional caching logic)
+- **getMediaBatch**: Kept original implementation (has partial cache fill logic)
+
+**Benefits**:
+1. **DRY Principle**: Caching pattern defined once, used in multiple places
+2. **Single Responsibility**: API layer focuses on API calls, cacheFetch handles caching
+3. **Consistency**: All cache operations use same pattern
+4. **Maintainability**: Changes to caching logic only require updating cacheFetch
+5. **Type Safety**: Generic types ensure compile-time type checking
+6. **Testability**: cacheFetch has comprehensive test coverage (14 tests)
+7. **Extensibility**: Easy to add new caching scenarios
+
+**Tests Created** (`__tests__/cacheFetch.test.ts`):
+- Cache hit scenario (2 tests)
+- Cache miss scenario (4 tests)
+- Error handling (3 tests)
+- Edge cases (4 tests)
+- Concurrent requests (1 test)
+
+**See Also**: [Task ARCH-CACHE-FETCH-001: Cache Fetch Utility](./task.md#arch-cache-fetch-001)
 
 ### Data Integrity
 - Validation ensures data structure matches expected schema
