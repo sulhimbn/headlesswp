@@ -2264,3 +2264,73 @@ Fixed code quality issues identified during code sanitization process, including
 ### Follow-up Recommendations
 
 None - code sanitizer task complete.
+
+---
+
+## [DOC-FIX-001] Documentation Fixes - Version and Middleware
+
+**Status**: Complete
+**Priority**: High
+**Assigned**: Senior Technical Writer
+**Created**: 2026-01-10
+**Updated**: 2026-01-10
+
+### Description
+
+Fixed critical documentation issues including version mismatch and documented Next.js middleware deprecation warning.
+
+### Issues Fixed
+
+1. **Version Mismatch in Blueprint**:
+   - Fixed blueprint.md version from 1.4.9 to 1.0.0 to match package.json
+   - Ensures users see correct version information
+
+2. **Documented Middleware Deprecation Warning**:
+   - Added new troubleshooting section for Next.js middleware deprecation warning
+   - Explained that warning does not affect current functionality
+   - Noted migration to `proxy` file is planned for future update
+
+### Code Changes
+
+**Files Modified**:
+- `docs/blueprint.md` - Line 3: Updated version from 1.4.9 to 1.0.0
+- `docs/TROUBLESHOOTING.md` - Lines 207-232: Added middleware deprecation warning documentation
+
+### Documentation Improvements
+
+| Issue | Before | After | Benefit |
+|-------|--------|-------|---------|
+| **Version mismatch** | 1.4.9 in blueprint | 1.0.0 matches package.json | Accurate version info |
+| **Middleware warning** | Not documented | New troubleshooting section | Users understand warning |
+
+### Results
+
+- ✅ Version mismatch corrected
+- ✅ Middleware deprecation documented
+- ✅ Users informed warning is informational only
+- ✅ Documentation accurate and up-to-date
+
+### Success Criteria
+
+- ✅ Version information accurate across all docs
+- ✅ Build warnings documented with solutions
+- ✅ No misleading documentation
+
+### Anti-Patterns Avoided
+
+- ❌ No outdated version numbers
+- ❌ No undocumented warnings
+- ❌ No confusing build output
+
+### Documentation Principles Applied
+
+1. **Accuracy**: Version numbers match package.json
+2. **Clarity**: Explained middleware deprecation in simple terms
+3. **User-Centric**: Helped users understand warnings are not errors
+4. **Single Source of Truth**: Package.json is now the version authority
+
+### See Also
+
+- [Blueprint.md](./blueprint.md)
+- [Troubleshooting Guide](./TROUBLESHOOTING.md)
+- [Development Guide](./guides/development.md)
