@@ -6,6 +6,166 @@
 
 ## Active Tasks
 
+## [PERF-006] Rendering Optimization - Remove Useless Client-Side Features from Server Components
+
+**Status**: Complete
+**Priority**: High
+**Assigned**: Performance Engineer
+**Created**: 2026-01-10
+**Updated**: 2026-01-10
+
+### Description
+
+Removed useless client-side React features (`memo()`, `useMemo()`) from server components. These optimization patterns have no effect in server components because server components are rendered on the server and don't participate in the React component lifecycle.
+
+### Performance Issues Identified
+
+**Problem**: Two components were using client-side React optimization features incorrectly:
+
+1. **PostCard** (`src/components/post/PostCard.tsx`):
+   - Server component (no `'use client'` directive)
+   - Used `memo()` wrapper which has no effect in server components
+   - Imported `memo` from React unnecessarily
+   - Used only in server components (page.tsx, berita/page.tsx)
+
+2. **Pagination** (`src/components/ui/Pagination.tsx`):
+   - Server component (no `'use client'` directive)
+   - Used `memo()` wrapper which has no effect in server components
+   - Used `useMemo()` hook which has no effect in server components
+   - Imported `memo` and `useMemo` from React unnecessarily
+   - Used only in server component (berita/page.tsx)
+
+**Why These Optimizations Don't Work**:
+- Server components are rendered on the server and sent as HTML to the client
+- `memo()` prevents re-renders by comparing props - server components don't re-render in the browser
+- `useMemo()` memoizes values across renders - server components don't re-render in the browser
+- These hooks are designed for client-side React components that have stateful lifecycles
+
+### Implementation Summary
+
+1. **PostCard Component** (`src/components/post/PostCard.tsx`):
+   - Removed `memo` import from React
+   - Changed from `memo(function PostCard(...))` to `export default function PostCard(...)`
+   - Result: 54 lines (down from 56 lines)
+
+2. **Pagination Component** (`src/components/ui/Pagination.tsx`):
+   - Removed `memo` import from React
+   - Removed `useMemo` import from React
+   - Changed from `memo(function Pagination(...))` to `export default function Pagination(...)`
+   - Inlined pagination logic instead of using `useMemo()`
+   - Result: 86 lines (down from 93 lines)
+
+### Code Quality Improvements
+
+**Before**:
+```tsx
+// PostCard.tsx
+import { memo } from 'react'
+const PostCard = memo(function PostCard({ post, mediaUrl, priority = false }: PostCardProps) {
+  // ... component code
+})
+
+// Pagination.tsx
+import { memo, useMemo } from 'react'
+const Pagination = memo(function Pagination({ currentPage, totalPages, basePath }: PaginationProps) {
+  const pageNumbers = useMemo(() => {
+    // ... pagination logic
+  }, [currentPage, totalPages])
+  // ... component code
+})
+```
+
+**After**:
+```tsx
+// PostCard.tsx
+export default function PostCard({ post, mediaUrl, priority = false }: PostCardProps) {
+  // ... component code
+}
+
+// Pagination.tsx
+export default function Pagination({ currentPage, totalPages, basePath }: PaginationProps) {
+  const pages: (number | string)[] = []
+  // ... inline pagination logic
+  // ... component code
+}
+```
+
+### Performance Improvements
+
+**Code Size Impact**:
+- PostCard: Removed 2 lines (memo import + wrapper)
+- Pagination: Removed 7 lines (memo/useMemo imports + wrapper + useMemo closure)
+- **Total**: 9 lines of unnecessary code removed
+- **Code Clarity**: Components now simpler and easier to understand
+
+**Runtime Impact**:
+- No measurable runtime performance change (optimizations had no effect)
+- Cleaner codebase without misleading client-side patterns in server components
+- Better developer experience - code does what it appears to do
+
+### Files Modified
+
+- `src/components/post/PostCard.tsx` - Removed `memo()` wrapper and import
+- `src/components/ui/Pagination.tsx` - Removed `memo()`, `useMemo()` wrapper and imports
+
+### Test Results
+
+**Before**:
+- 833 tests passing (from task.md)
+- 31 skipped (integration tests)
+
+**After**:
+- 833 tests passing
+- 31 skipped (integration tests)
+- 0 failures
+- 0 test regressions
+
+### Results
+
+- ✅ Removed useless `memo()` from PostCard
+- ✅ Removed useless `memo()` and `useMemo()` from Pagination
+- ✅ 9 lines of unnecessary code removed
+- ✅ All 833 tests passing (no regressions)
+- ✅ TypeScript compilation passes with no errors
+- ✅ ESLint passes with no warnings
+- ✅ Code simplified and more maintainable
+- ✅ Server components no longer use misleading client-side patterns
+
+### Success Criteria
+
+- ✅ Useless client-side features removed from server components
+- ✅ Code simplified and more maintainable
+- ✅ All tests passing (no regressions)
+- ✅ TypeScript type checking passes
+- ✅ ESLint passes
+- ✅ Zero functional regressions
+- ✅ Zero visual regressions
+
+### Anti-Patterns Avoided
+
+- ❌ No client-side optimization patterns in server components
+- ❌ No misleading code that appears to optimize but doesn't
+- ❌ No unnecessary React imports
+- ❌ No breaking changes to existing functionality
+
+### Performance Principles Applied
+
+1. **Measure First**: Profiled codebase to identify actual bottlenecks
+2. **Server-Side Rendering**: Use server components for static content
+3. **Code Quality**: Remove misleading patterns that confuse developers
+4. **Maintainability**: Simpler code is easier to understand and maintain
+5. **No Premature Optimization**: Removed optimizations that had no effect
+
+### Follow-up Recommendations
+
+1. **Audit All Components**: Review remaining components for client-side patterns in server components
+2. **Component Documentation**: Add comments to explain when to use `memo()` vs server components
+3. **Developer Guidelines**: Add to blueprint.md explaining server vs client component patterns
+4. **Lint Rule**: Consider adding ESLint rule to detect `memo()` in server components
+5. **Code Review**: Ensure future PRs don't add client-side patterns to server components
+
+---
+
 ## [SECURITY-AUDIT-005] Security Audit - Periodic Review
 
 **Status**: Complete
