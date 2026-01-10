@@ -47,6 +47,50 @@ export class ApiErrorImpl extends Error implements ApiError {
   }
 }
 
+function handleStatusCodeError(
+  status: number | undefined,
+  errorMessage: string,
+  originalError: unknown,
+  endpoint: string | undefined,
+  retryAfter?: string | undefined
+): ApiErrorImpl | null {
+  if (status === 429) {
+    const waitTime = retryAfter ? ` Please wait ${retryAfter} seconds before retrying.` : ''
+    return new ApiErrorImpl(
+      ApiErrorType.RATE_LIMIT_ERROR,
+      `Rate limit exceeded. Too many requests.${waitTime}`,
+      429,
+      true,
+      originalError,
+      endpoint
+    )
+  }
+
+  if (status && status >= 500) {
+    return new ApiErrorImpl(
+      ApiErrorType.SERVER_ERROR,
+      `Server error: ${status} ${errorMessage}`,
+      status,
+      true,
+      originalError,
+      endpoint
+    )
+  }
+
+  if (status && status >= 400 && status < 500) {
+    return new ApiErrorImpl(
+      ApiErrorType.CLIENT_ERROR,
+      `Client error: ${status} ${errorMessage}`,
+      status,
+      false,
+      originalError,
+      endpoint
+    )
+  }
+
+  return null
+}
+
 export function createApiError(
   error: unknown,
   endpoint?: string
@@ -57,41 +101,18 @@ export function createApiError(
 
   if (error instanceof AxiosError) {
     const status = error.response?.status
+    const retryAfter = error.response?.headers['retry-after']
 
-    if (status === 429) {
-      const retryAfter = error.response?.headers['retry-after']
-      const waitTime = retryAfter ? ` Please wait ${retryAfter} seconds before retrying.` : ''
+    const statusCodeError = handleStatusCodeError(
+      status,
+      error.message,
+      error,
+      endpoint,
+      retryAfter
+    )
 
-      return new ApiErrorImpl(
-        ApiErrorType.RATE_LIMIT_ERROR,
-        `Rate limit exceeded. Too many requests.${waitTime}`,
-        429,
-        true,
-        error,
-        endpoint
-      )
-    }
-
-    if (status && status >= 500) {
-      return new ApiErrorImpl(
-        ApiErrorType.SERVER_ERROR,
-        `Server error: ${status} ${error.message}`,
-        status,
-        true,
-        error,
-        endpoint
-      )
-    }
-
-    if (status && status >= 400 && status < 500) {
-      return new ApiErrorImpl(
-        ApiErrorType.CLIENT_ERROR,
-        `Client error: ${status} ${error.message}`,
-        status,
-        false,
-        error,
-        endpoint
-      )
+    if (statusCodeError) {
+      return statusCodeError
     }
   }
 
@@ -120,43 +141,20 @@ export function createApiError(
       )
     }
 
-    const errorObj = error as { response?: { status?: number; headers?: { [key: string]: string } } };
-    const status = errorObj.response?.status;
+    const errorObj = error as { response?: { status?: number; headers?: { [key: string]: string } } }
+    const status = errorObj.response?.status
+    const retryAfter = errorObj.response?.headers?.['retry-after']
 
-    if (status === 429) {
-      const retryAfter = errorObj.response?.headers?.['retry-after'];
-      const waitTime = retryAfter ? ` Please wait ${retryAfter} seconds before retrying.` : '';
+    const statusCodeError = handleStatusCodeError(
+      status,
+      error.message,
+      error,
+      endpoint,
+      retryAfter
+    )
 
-      return new ApiErrorImpl(
-        ApiErrorType.RATE_LIMIT_ERROR,
-        `Rate limit exceeded. Too many requests.${waitTime}`,
-        429,
-        true,
-        error,
-        endpoint
-      )
-    }
-
-    if (status && status >= 500) {
-      return new ApiErrorImpl(
-        ApiErrorType.SERVER_ERROR,
-        `Server error: ${status} ${error.message}`,
-        status,
-        true,
-        error,
-        endpoint
-      )
-    }
-
-    if (status && status >= 400 && status < 500) {
-      return new ApiErrorImpl(
-        ApiErrorType.CLIENT_ERROR,
-        `Client error: ${status} ${error.message}`,
-        status,
-        false,
-        error,
-        endpoint
-      )
+    if (statusCodeError) {
+      return statusCodeError
     }
   }
 
