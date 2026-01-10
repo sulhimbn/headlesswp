@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getCacheStats, clearCache } from '@/lib/cache';
+import { cacheWarmer } from '@/lib/services/cacheWarmer';
 import { logger } from '@/lib/utils/logger';
 
 export async function GET(_request: NextRequest) {
@@ -18,6 +19,30 @@ export async function GET(_request: NextRequest) {
       {
         success: false,
         error: 'Failed to fetch cache statistics',
+        timestamp: new Date().toISOString(),
+      },
+      { status: 500 }
+    );
+  }
+}
+
+export async function POST(_request: NextRequest) {
+  try {
+    const result = await cacheWarmer.warmAll();
+    
+    return NextResponse.json({
+      success: true,
+      message: 'Cache warming completed',
+      data: result,
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error) {
+    logger.error('Error warming cache:', error);
+    
+    return NextResponse.json(
+      {
+        success: false,
+        error: 'Failed to warm cache',
         timestamp: new Date().toISOString(),
       },
       { status: 500 }
