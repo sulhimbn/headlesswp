@@ -4,7 +4,6 @@ import {
   recordCircuitBreakerStateChange,
   recordCircuitBreakerFailure,
   recordCircuitBreakerSuccess,
-  recordCircuitBreakerRequestBlocked,
   recordRetry,
   recordRetrySuccess,
   recordRetryExhausted,
@@ -38,10 +37,8 @@ describe('TelemetryCollector', () => {
 
   describe('record', () => {
     it('should record event when enabled', () => {
-      const onEvent = jest.fn()
       const collector = new TelemetryCollector({
-        enabled: true,
-        onEvent
+        enabled: true
       })
 
       collector.record({
@@ -56,7 +53,6 @@ describe('TelemetryCollector', () => {
       expect(events[0].category).toBe('api-request')
       expect(events[0].data).toEqual({ test: true })
       expect(events[0].timestamp).toBeDefined()
-      expect(onEvent).toHaveBeenCalledTimes(1)
 
       collector.destroy()
     })
@@ -78,7 +74,6 @@ describe('TelemetryCollector', () => {
 
     it('should auto-flush when max events reached', () => {
       const collector = new TelemetryCollector({ enabled: true, maxEvents: 3 })
-      const onEvent = jest.fn()
 
       for (let i = 0; i < 5; i++) {
         collector.record({

@@ -4,6 +4,7 @@ import Image from 'next/image'
 import { sanitizeHTML } from '@/lib/utils/sanitizeHTML'
 import { UI_TEXT } from '@/lib/constants/uiText'
 import { formatDate } from '@/lib/utils/dateFormat'
+import { memo } from 'react'
 
 interface PostCardProps {
   post: WordPressPost
@@ -11,7 +12,7 @@ interface PostCardProps {
   priority?: boolean
 }
 
-export default function PostCard({ post, mediaUrl, priority = false }: PostCardProps) {
+function PostCardComponent({ post, mediaUrl, priority = false }: PostCardProps) {
   return (
     <article className="bg-[hsl(var(--color-surface))] rounded-[var(--radius-lg)] shadow-[var(--shadow-md)] overflow-hidden hover:shadow-[var(--shadow-lg)] transition-all duration-[var(--transition-normal)] focus-within:ring-2 focus-within:ring-[hsl(var(--color-primary))] focus-within:ring-offset-2">
       {post.featured_media > 0 && (
@@ -51,3 +52,18 @@ export default function PostCard({ post, mediaUrl, priority = false }: PostCardP
     </article>
   )
 }
+
+function arePropsEqual(prevProps: PostCardProps, nextProps: PostCardProps): boolean {
+  return (
+    prevProps.post.id === nextProps.post.id &&
+    prevProps.post.title.rendered === nextProps.post.title.rendered &&
+    prevProps.post.excerpt.rendered === nextProps.post.excerpt.rendered &&
+    prevProps.post.slug === nextProps.post.slug &&
+    prevProps.post.featured_media === nextProps.post.featured_media &&
+    prevProps.mediaUrl === nextProps.mediaUrl &&
+    prevProps.priority === nextProps.priority &&
+    prevProps.post.date === nextProps.post.date
+  )
+}
+
+export default memo(PostCardComponent, arePropsEqual)

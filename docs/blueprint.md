@@ -1255,11 +1255,37 @@ curl http://localhost:3000/health
 4. **Configuration Management**: Centralize configuration constants
    - `src/lib/constants/fallbackPosts.ts`: Fallback data constants
    - `src/lib/constants/uiText.ts`: UI text constants for localization layer
-5. **Layer Separation**: Text and formatting separated from presentation
-   - UI text in `src/lib/constants/uiText.ts`
-   - Date formatting in `src/lib/utils/dateFormat.ts`
-   - Components import and use these utilities
-6. **Component Optimization**: Remove unnecessary React.memo from server components
+ 5. **Layer Separation**: Text and formatting separated from presentation
+    - UI text in `src/lib/constants/uiText.ts`
+    - Date formatting in `src/lib/utils/dateFormat.ts`
+    - Components import and use these utilities
+ 6. **Component Optimization**: 
+    - **Server Components**: Do not use React.memo (server always re-renders)
+    - **Client Components**: Use React.memo for frequently-rendered components with stable props
+    - **Custom Comparison**: Provide custom comparison function when memoizing complex props
+    - **Example**: PostCard component uses React.memo with arePropsEqual to prevent unnecessary re-renders
+
+### Rendering Optimization Guidelines
+
+**When to Use React.memo**:
+- Component renders frequently (list items, cards, grid items)
+- Parent components update frequently (Header, Footer, mobile menus)
+- Props change infrequently relative to re-renders
+- Expensive rendering operations (complex calculations, heavy DOM)
+
+**When NOT to Use React.memo**:
+- Server components (memoization has no effect)
+- Components that always re-render due to changing props
+- Simple components with minimal re-render cost
+- Components with frequent prop changes (memoization overhead > benefit)
+
+**Custom Comparison Function**:
+- Compare only props that affect rendering output
+- Use shallow comparison for primitive values
+- Compare nested properties explicitly for complex objects
+- Example: PostCard compares post.id, post.title.rendered, etc.
+
+**See Also**: [Task PERF-001: PostCard Component Rendering Optimization](./task.md#perf-001)
 
 ### Sanitization Standards
 
