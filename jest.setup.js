@@ -22,11 +22,14 @@ jest.mock('next/server', () => ({
   }
 }))
 
-// Mock crypto for Node.js environment
+// Use Node.js webcrypto for getRandomValues API (same as browser)
+const nodeCrypto = require('crypto')
+
 Object.defineProperty(global, 'crypto', {
   value: {
-    randomBytes: jest.fn(() => ({
-      toString: jest.fn(() => 'mock-nonce-123')
-    }))
-  }
+    getRandomValues: nodeCrypto.webcrypto.getRandomValues.bind(nodeCrypto.webcrypto),
+    randomBytes: nodeCrypto.randomBytes.bind(nodeCrypto)
+  },
+  configurable: true,
+  writable: true
 })
