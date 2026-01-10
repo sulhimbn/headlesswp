@@ -576,6 +576,133 @@ describe('API Client Components', () => {
     })
   })
 
+  describe('Retry Strategy - Retry-After Header Parsing', () => {
+    let retryStrategy: RetryStrategy
+
+    beforeEach(() => {
+      retryStrategy = new RetryStrategy({
+        maxRetries: 3,
+        initialDelay: 1000,
+        maxDelay: 30000,
+        backoffMultiplier: 2,
+        jitter: false,
+      })
+    })
+
+    it('should respect numeric Retry-After header from get method', () => {
+      const error = {
+        response: {
+          headers: {
+            get: jest.fn((key: string) => {
+              if (key === 'retry-after') return '30'
+              if (key === 'Retry-After') return null
+              return null
+            }),
+          },
+        },
+      }
+
+      const delay = retryStrategy.getRetryDelay(0, error)
+
+      expect(error.response.headers.get).toHaveBeenCalledWith('retry-after')
+      expect(delay).toBe(30000)
+    })
+
+    it('should respect numeric Retry-After header from Record', () => {
+      const error = {
+        response: {
+          headers: {
+            'retry-after': '30',
+          },
+        },
+      }
+
+      const delay = retryStrategy.getRetryDelay(0, error)
+
+      expect(delay).toBe(30000)
+    })
+
+    it('should respect date-based Retry-After header', () => {
+      const futureTime = new Date(Date.now() + 30000)
+      const error = {
+        response: {
+          headers: {
+            get: jest.fn().mockReturnValue(futureTime.toISOString()),
+          },
+        },
+      }
+
+      const delay = retryStrategy.getRetryDelay(0, error)
+
+      expect(delay).toBeLessThanOrEqual(30000)
+      expect(delay).toBeGreaterThan(29000)
+    })
+
+    it('should fall back to default delay when Retry-After header is invalid', () => {
+      const error = {
+        response: {
+          headers: {
+            get: jest.fn().mockReturnValue('invalid'),
+          },
+        },
+      }
+
+      const delay = retryStrategy.getRetryDelay(0, error)
+
+      expect(delay).toBe(1000)
+    })
+
+    it('should cap Retry-After delay at maxDelay', () => {
+      const error = {
+        response: {
+          headers: {
+            'retry-after': '600',
+          },
+        },
+      }
+
+      const delay = retryStrategy.getRetryDelay(0, error)
+
+      expect(delay).toBe(30000)
+    })
+
+    it('should handle both lowercase and uppercase header names', () => {
+      const errorWithLowercase = {
+        response: {
+          headers: {
+            'retry-after': '30',
+          },
+        },
+      }
+
+      const errorWithUppercase = {
+        response: {
+          headers: {
+            'Retry-After': '30',
+          },
+        },
+      }
+
+      const delay1 = retryStrategy.getRetryDelay(0, errorWithLowercase)
+      const delay2 = retryStrategy.getRetryDelay(0, errorWithUppercase)
+
+      expect(delay1).toBe(30000)
+      expect(delay2).toBe(30000)
+    })
+
+    it('should handle missing Retry-After header gracefully', () => {
+      const error = {
+        response: {
+          headers: {},
+        },
+      }
+
+      const delay = retryStrategy.getRetryDelay(0, error)
+
+      expect(delay).toBe(1000)
+    })
+  })
+
   describe('Edge Cases', () => {
     it('should handle zero initial delay in retry strategy', () => {
       const retryStrategy = new RetryStrategy({

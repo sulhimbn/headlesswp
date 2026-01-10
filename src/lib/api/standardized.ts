@@ -11,6 +11,29 @@ import {
 import { createApiError } from './errors';
 import { DEFAULT_PER_PAGE } from './config';
 
+function createErrorListResult(
+  endpoint: string,
+  metadataOptions?: { cacheHit?: boolean },
+  paginationOverride?: Partial<ApiPaginationMetadata>,
+  caughtError?: unknown
+): ApiListResult<never> {
+  return {
+    data: [],
+    error: createApiError(caughtError || new Error('API error'), endpoint),
+    metadata: {
+      timestamp: new Date().toISOString(),
+      endpoint,
+      ...metadataOptions
+    },
+    pagination: {
+      page: 1,
+      perPage: paginationOverride?.perPage ?? DEFAULT_PER_PAGE,
+      total: 0,
+      totalPages: 0
+    }
+  };
+}
+
 export interface PostQueryParams {
   page?: number;
   per_page?: number;
@@ -63,21 +86,7 @@ export async function getAllPosts(
       pagination
     );
   } catch (error) {
-    const apiError = createApiError(error, '/wp/v2/posts');
-    return {
-      data: [],
-      error: apiError,
-      metadata: {
-        timestamp: new Date().toISOString(),
-        endpoint: '/wp/v2/posts'
-      },
-      pagination: {
-        page: 1,
-        perPage: DEFAULT_PER_PAGE,
-        total: 0,
-        totalPages: 0
-      }
-    };
+    return createErrorListResult('/wp/v2/posts', undefined, undefined, error);
   }
 }
 
@@ -96,21 +105,7 @@ export async function searchPosts(query: string): Promise<ApiListResult<WordPres
       pagination
     );
   } catch (error) {
-    const apiError = createApiError(error, '/wp/v2/search');
-    return {
-      data: [],
-      error: apiError,
-      metadata: {
-        timestamp: new Date().toISOString(),
-        endpoint: '/wp/v2/search'
-      },
-      pagination: {
-        page: 1,
-        perPage: 0,
-        total: 0,
-        totalPages: 0
-      }
-    };
+    return createErrorListResult('/wp/v2/search', { cacheHit: false }, { perPage: 0 }, error);
   }
 }
 
@@ -163,21 +158,7 @@ export async function getAllCategories(): Promise<ApiListResult<WordPressCategor
       pagination
     );
   } catch (error) {
-    const apiError = createApiError(error, '/wp/v2/categories');
-    return {
-      data: [],
-      error: apiError,
-      metadata: {
-        timestamp: new Date().toISOString(),
-        endpoint: '/wp/v2/categories'
-      },
-      pagination: {
-        page: 1,
-        perPage: 0,
-        total: 0,
-        totalPages: 0
-      }
-    };
+    return createErrorListResult('/wp/v2/categories', undefined, undefined, error);
   }
 }
 
@@ -230,21 +211,7 @@ export async function getAllTags(): Promise<ApiListResult<WordPressTag>> {
       pagination
     );
   } catch (error) {
-    const apiError = createApiError(error, '/wp/v2/tags');
-    return {
-      data: [],
-      error: apiError,
-      metadata: {
-        timestamp: new Date().toISOString(),
-        endpoint: '/wp/v2/tags'
-      },
-      pagination: {
-        page: 1,
-        perPage: 0,
-        total: 0,
-        totalPages: 0
-      }
-    };
+    return createErrorListResult('/wp/v2/tags', undefined, undefined, error);
   }
 }
 

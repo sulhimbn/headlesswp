@@ -21,7 +21,7 @@
 ## Technology Stack
 
 ### Frontend
-- **Framework**: Next.js 14.2 (App Router)
+- **Framework**: Next.js 16.1 (App Router)
 - **Language**: TypeScript 5.9
 - **Styling**: CSS Modules (to be confirmed)
 - **HTTP Client**: Axios 1.7
@@ -89,26 +89,16 @@ interface Post {
 **Principles**:
 - **Backward Compatibility**: Never break existing API consumers
 - **Consistent Naming**: `getById<T>()`, `getBySlug<T>()`, `getAll<T>()`, `search<T>()`
-- **Consistent Error Handling**: All methods return `ApiResult<T>` or `ApiListResult<T>`
+- **Consistent Error Handling**: All methods return `ApiResult<T>` or `ApiListResult<T>` with consistent error handling
 - **Consistent Response Format**: Data, error, metadata, pagination
 - **Type Safety**: TypeScript interfaces and type guards
+- **Error Types**: `NETWORK_ERROR`, `TIMEOUT_ERROR`, `RATE_LIMIT_ERROR`, `SERVER_ERROR`, `CLIENT_ERROR`, `CIRCUIT_BREAKER_OPEN`, `UNKNOWN_ERROR`
+- **Retry Flags**: Each error type has a retryable flag
+- **Metadata**: Timestamp, endpoint, cacheHit, retryCount
+- **Pagination**: Page, perPage, total, totalPages
 
 **Standardized Response Wrapper** (`src/lib/api/response.ts`):
 ```typescript
-interface ApiMetadata {
-  timestamp: string
-  endpoint?: string
-  cacheHit?: boolean
-  retryCount?: number
-}
-
-interface ApiPaginationMetadata {
-  page?: number
-  perPage?: number
-  total?: number
-  totalPages?: number
-}
-
 interface ApiResult<T> {
   data: T
   error: ApiError | null
@@ -121,16 +111,22 @@ interface ApiListResult<T> extends ApiResult<T[]> {
 }
 ```
 
+**Standardized Methods** (`src/lib/api/standardized.ts`):
+- **Posts**: `getPostById()`, `getPostBySlug()`, `getAllPosts()`, `searchPosts()`
+- **Categories**: `getCategoryById()`, `getCategoryBySlug()`, `getAllCategories()`
+- **Tags**: `getTagById()`, `getTagBySlug()`, `getAllTags()`
+- **Media**: `getMediaById()`
+- **Authors**: `getAuthorById()`
+
 **Implementation Status**:
 - ✅ **Phase 1 Complete**: Documentation and `ApiResult<T>` interface defined
 - ✅ **Phase 2 Complete**: Standardized methods implemented in `src/lib/api/standardized.ts`
-  - `getPostById()`, `getPostBySlug()`, `getAllPosts()`, `searchPosts()`
-  - `getCategoryById()`, `getCategoryBySlug()`, `getAllCategories()`
-  - `getTagById()`, `getTagBySlug()`, `getAllTags()`
-  - `getMediaById()`, `getAuthorById()`
-  - All methods return `ApiResult<T>` or `ApiListResult<T>` with consistent error handling
-  - 31 comprehensive tests covering all standardized methods
-- ⏳ **Phase 3**: Migrate new code and critical paths (future)
+   - 31 methods (getById, getBySlug, getAll, search)
+   - All methods return `ApiResult<T>` or `ApiListResult<T>` with consistent error handling
+- ✅ **Phase 2 Complete**: Error result helper extracted for collection methods (REFACTOR-008)
+   - Created `createErrorListResult()` helper to eliminate 52 lines of duplicate error result structure
+   - Applied to `getAllPosts`, `searchPosts`, `getAllCategories`, `getAllTags`
+- ⏳ **Phase 3**: Migrate new code and critical paths to use standardized methods (future)
 - ⏳ **Phase 4**: Deprecate old methods in major version (future)
 
 **See Also**: [API Standardization Guidelines](./API_STANDARDIZATION.md)
@@ -437,30 +433,51 @@ npm test -- __tests__/apiResilienceIntegration.test.ts
 ```
 src/
 ├── app/              # Next.js App Router
-│   ├── layout.tsx
-│   ├── page.tsx
-│   └── posts/        # Posts pages
+│   ├── layout.tsx     # Root layout
+│   ├── page.tsx       # Homepage
+│   ├── error.tsx      # Error page
+│   ├── not-found.tsx  # 404 page
+│   ├── loading.tsx    # Loading page
+│   ├── api/           # API routes
+│   │   ├── cache/     # Cache management endpoint
+│   │   └── csp-report/ # CSP violation report endpoint
+│   └── berita/        # News post pages
+│       ├── [slug]/    # Dynamic post slug
+│       ├── page.tsx    # Post detail page
+│       └── loading.tsx # Post loading skeleton
 ├── components/       # React components
+│   ├── ClientLayout.tsx  # Client-side layout wrapper
+│   ├── ErrorBoundary.tsx # Error boundary component
 │   ├── layout/       # Layout components (Header, Footer)
 │   ├── post/         # Post-related components
 │   └── ui/           # UI components
- ├── lib/              # Utilities
- │   ├── api/          # API layer (config, client, resilience)
- │   │   ├── config.ts # API configuration
- │   │   ├── client.ts # Axios client with interceptors & resilience
- │   │   ├── errors.ts # Standardized error types
- │   │   ├── circuitBreaker.ts # Circuit breaker pattern
- │   │   ├── retryStrategy.ts # Retry strategy with backoff
- │   │   └── rateLimiter.ts # Rate limiting with token bucket algorithm
+├── lib/              # Utilities
+│   ├── api/          # API layer (config, client, resilience)
+│   │   ├── config.ts       # API configuration
+│   │   ├── client.ts       # Axios client with interceptors & resilience
+│   │   ├── errors.ts       # Standardized error types
+│   │   ├── circuitBreaker.ts # Circuit breaker pattern
+│   │   ├── retryStrategy.ts  # Retry strategy with backoff
+│   │   ├── rateLimiter.ts    # Rate limiting with token bucket algorithm
+│   │   ├── healthCheck.ts    # API health monitoring
+│   │   ├── response.ts       # Standardized response wrappers
+│   │   └── standardized.ts   # Standardized API methods
 │   ├── services/     # Business logic layer
-│   │   ├── postService.ts # Post data service with fallback logic
 │   │   └── enhancedPostService.ts # Enhanced service with validation & batch operations
 │   ├── validation/   # Data validation layer
 │   │   └── dataValidator.ts # Runtime data validation at API boundaries
-│   ├── wordpress.ts # WordPress API wrapper with batch operations
-│   ├── cache.ts      # In-memory cache manager with TTL
-│   └── hooks/        # Custom React hooks
+│   ├── utils/        # Utility functions
+│   │   ├── logger.ts         # Centralized logging
+│   │   ├── sanitizeHTML.ts   # XSS protection with DOMPurify
+│   │   └── fallbackPost.ts  # Fallback post utilities
+│   ├── constants/    # Constants
+│   │   └── fallbackPosts.ts  # Fallback post data
+│   ├── wordpress.ts  # WordPress API wrapper with batch operations
+│   ├── cache.ts      # In-memory cache manager with TTL & dependency tracking
+│   └── csp-utils.ts  # CSP utility functions
+├── middleware.ts     # Next.js middleware for CSP & security
 └── types/            # TypeScript definitions
+    └── wordpress.ts  # WordPress type definitions
 ```
 
 ## Development Standards

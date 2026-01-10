@@ -1,11 +1,16 @@
 import { enhancedPostService } from '@/lib/services/enhancedPostService'
+import dynamic from 'next/dynamic'
 import Header from '@/components/layout/Header'
-import Footer from '@/components/layout/Footer'
 import PostCard from '@/components/post/PostCard'
 import Pagination from '@/components/ui/Pagination'
 import EmptyState from '@/components/ui/EmptyState'
 import SectionHeading from '@/components/ui/SectionHeading'
 import { PAGINATION_LIMITS } from '@/lib/api/config'
+
+const Footer = dynamic(() => import('@/components/layout/Footer'), {
+  loading: () => null,
+  ssr: true
+})
 
 export const revalidate = 300
 
