@@ -29,55 +29,93 @@ const DATE_FORMAT_OPTIONS: Record<DateFormat, DateFormatOptions> = {
   }
 }
 
+const formatCache = new Map<string, string>()
+
 export function formatDate(
   date: string | Date,
   format: DateFormat = 'full',
   locale: string = DEFAULT_LOCALE
 ): string {
   const dateObj = typeof date === 'string' ? new Date(date) : date
-
+  
   if (isNaN(dateObj.getTime())) {
     throw new Error(`Invalid date: ${date}`)
   }
 
-  const options = DATE_FORMAT_OPTIONS[format]
+  const dateStr = typeof date === 'string' ? date : date.toISOString()
+  const cacheKey = `${dateStr}:${format}:${locale}`
+  
+  const cached = formatCache.get(cacheKey)
+  if (cached !== undefined) {
+    return cached
+  }
 
-  return dateObj.toLocaleDateString(locale, options)
+  const options = DATE_FORMAT_OPTIONS[format]
+  const result = dateObj.toLocaleDateString(locale, options)
+  
+  formatCache.set(cacheKey, result)
+  return result
 }
+
+const dateTimeCache = new Map<string, string>()
 
 export function formatDateTime(
   date: string | Date,
   locale: string = DEFAULT_LOCALE
 ): string {
   const dateObj = typeof date === 'string' ? new Date(date) : date
-
+  
   if (isNaN(dateObj.getTime())) {
     throw new Error(`Invalid date: ${date}`)
   }
 
-  return dateObj.toLocaleString(locale, {
+  const dateStr = typeof date === 'string' ? date : date.toISOString()
+  const cacheKey = `dt:${dateStr}:${locale}`
+  
+  const cached = dateTimeCache.get(cacheKey)
+  if (cached !== undefined) {
+    return cached
+  }
+
+  const result = dateObj.toLocaleString(locale, {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
     hour: '2-digit',
     minute: '2-digit'
   })
+  
+  dateTimeCache.set(cacheKey, result)
+  return result
 }
+
+const timeCache = new Map<string, string>()
 
 export function formatTime(
   date: string | Date,
   locale: string = DEFAULT_LOCALE
 ): string {
   const dateObj = typeof date === 'string' ? new Date(date) : date
-
+  
   if (isNaN(dateObj.getTime())) {
     throw new Error(`Invalid date: ${date}`)
   }
 
-  return dateObj.toLocaleTimeString(locale, {
+  const dateStr = typeof date === 'string' ? date : date.toISOString()
+  const cacheKey = `t:${dateStr}:${locale}`
+  
+  const cached = timeCache.get(cacheKey)
+  if (cached) {
+    return cached
+  }
+
+  const result = dateObj.toLocaleTimeString(locale, {
     hour: '2-digit',
     minute: '2-digit'
   })
+  
+  timeCache.set(cacheKey, result)
+  return result
 }
 
 export function formatDateRelative(
