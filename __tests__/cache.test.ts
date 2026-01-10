@@ -1,5 +1,4 @@
 import { cacheManager, CACHE_TTL, CACHE_KEYS, CACHE_DEPENDENCIES } from '@/lib/cache';
-import { wordpressAPI } from '@/lib/wordpress';
 
 // Mock axios for testing
 jest.mock('axios', () => ({
@@ -252,7 +251,7 @@ describe('WordPress API Caching', () => {
   describe('Cache Integration', () => {
     it('should cache getPosts calls', async () => {
       // This would normally make an API call, but we'll test the caching logic
-      const stats1 = wordpressAPI.getCacheStats();
+      const stats1 = cacheManager.getStats();
       expect(stats1.hits).toBe(0);
 
       // The actual API call would be made here and cached
@@ -264,7 +263,7 @@ describe('WordPress API Caching', () => {
     it('should use different cache keys for different parameters', () => {
       const key1 = CACHE_KEYS.posts('{"page":1}');
       const key2 = CACHE_KEYS.posts('{"page":2}');
-      
+
       expect(key1).not.toBe(key2);
       expect(key1).toBe('posts:{"page":1}');
       expect(key2).toBe('posts:{"page":2}');
@@ -273,8 +272,8 @@ describe('WordPress API Caching', () => {
 
   describe('Cache Management Functions', () => {
     it('should provide cache statistics', () => {
-      const stats = wordpressAPI.getCacheStats();
-      
+      const stats = cacheManager.getStats();
+
       expect(stats).toHaveProperty('hits');
       expect(stats).toHaveProperty('misses');
       expect(stats).toHaveProperty('sets');
@@ -288,18 +287,18 @@ describe('WordPress API Caching', () => {
       // Set some test data
       cacheManager.set('test-key', 'test-data', 1000);
       expect(cacheManager.get('test-key')).toBe('test-data');
-      
+
       // Clear cache
-      wordpressAPI.clearCache();
+      cacheManager.clear();
       expect(cacheManager.get('test-key')).toBeNull();
     });
 
     it('should clear cache with pattern', () => {
       cacheManager.set('posts:1', 'post1', 1000);
       cacheManager.set('categories:1', 'cat1', 1000);
-      
-      wordpressAPI.clearCache('posts:*');
-      
+
+      cacheManager.clearPattern('posts:*');
+
       expect(cacheManager.get('posts:1')).toBeNull();
       expect(cacheManager.get('categories:1')).toBe('cat1');
     });

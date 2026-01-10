@@ -104,7 +104,7 @@ class CacheManager {
   }
 
   // Clear all cache
-  clear(): void {
+  clearAll(): void {
     const size = this.cache.size;
     this.cache.clear();
     this.stats.deletes += size;
@@ -277,7 +277,7 @@ class CacheManager {
     if (pattern) {
       this.clearPattern(pattern);
     } else {
-      this.clear();
+      this.clearAll();
     }
   }
 

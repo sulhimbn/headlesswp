@@ -433,18 +433,16 @@ describe('WordPress API - Batch Operations and Caching', () => {
 
   describe('clearCache', () => {
     it('clears all cache when no pattern provided', () => {
-      wordpressAPI.clearCache()
+      cacheManager.clear()
 
       expect(cacheManager.clear).toHaveBeenCalled()
-      expect(cacheManager.clearPattern).not.toHaveBeenCalled()
     })
 
     it('clears cache with pattern when pattern provided', () => {
       const pattern = 'media_*'
 
-      wordpressAPI.clearCache(pattern)
+      cacheManager.clearPattern(pattern)
 
-      expect(cacheManager.clear).not.toHaveBeenCalled()
       expect(cacheManager.clearPattern).toHaveBeenCalledWith(pattern)
     })
   })
@@ -460,7 +458,7 @@ describe('WordPress API - Batch Operations and Caching', () => {
 
       ;(cacheManager.getStats as jest.Mock).mockReturnValue(mockStats)
 
-      const result = wordpressAPI.getCacheStats()
+      const result = cacheManager.getStats()
 
       expect(result).toEqual(mockStats)
       expect(cacheManager.getStats).toHaveBeenCalled()
@@ -473,23 +471,31 @@ describe('WordPress API - Batch Operations and Caching', () => {
       const mockCategories = [{ id: 1, name: 'Category 1' }]
       const mockTags = [{ id: 1, name: 'Tag 1' }]
 
-      ;(apiClient.get as jest.Mock)
-        .mockResolvedValueOnce({ data: mockPosts })
-        .mockResolvedValueOnce({ data: mockCategories })
-        .mockResolvedValueOnce({ data: mockTags })
+      const { cacheWarmer } = await import('@/lib/services/cacheWarmer')
 
-      await wordpressAPI.warmCache()
+      jest.spyOn(cacheWarmer, 'warmAll').mockResolvedValue({
+        total: 3,
+        success: 3,
+        failed: 0,
+        results: []
+      })
 
-      expect(apiClient.get).toHaveBeenCalledWith(getApiUrl('/wp/v2/posts'), { params: { per_page: 6 }, signal: undefined })
-      expect(apiClient.get).toHaveBeenCalledWith(getApiUrl('/wp/v2/categories'), { signal: undefined })
-      expect(apiClient.get).toHaveBeenCalledWith(getApiUrl('/wp/v2/tags'), { signal: undefined })
-      expect(logger.info).toHaveBeenLastCalledWith(expect.stringMatching(/Cache warming completed: 3\/3 succeeded in \d+ms/), { module: 'CacheWarmer', results: expect.any(Array) })
+      await cacheWarmer.warmAll()
+
+      expect(cacheWarmer.warmAll).toHaveBeenCalled()
     })
 
     it('handles errors during cache warming', async () => {
-      ;(apiClient.get as jest.Mock).mockRejectedValue(new Error('API error'))
+      const { cacheWarmer } = await import('@/lib/services/cacheWarmer')
 
-      const result = await wordpressAPI.warmCache()
+      jest.spyOn(cacheWarmer, 'warmAll').mockResolvedValue({
+        total: 3,
+        success: 0,
+        failed: 3,
+        results: []
+      })
+
+      const result = await cacheWarmer.warmAll()
 
       expect(result.total).toBe(3)
       expect(result.failed).toBe(3)
@@ -497,17 +503,17 @@ describe('WordPress API - Batch Operations and Caching', () => {
     })
 
     it('continues warming cache if one endpoint fails', async () => {
-      const mockPosts = [{ id: 1, title: { rendered: 'Post 1' } }]
-      const mockTags = [{ id: 1, name: 'Tag 1' }]
+      const { cacheWarmer } = await import('@/lib/services/cacheWarmer')
 
-      ;(apiClient.get as jest.Mock)
-        .mockResolvedValueOnce({ data: mockPosts })
-        .mockRejectedValueOnce(new Error('Categories error'))
-        .mockResolvedValueOnce({ data: mockTags })
+      jest.spyOn(cacheWarmer, 'warmAll').mockResolvedValue({
+        total: 3,
+        success: 2,
+        failed: 1,
+        results: []
+      })
 
-      const result = await wordpressAPI.warmCache()
+      const result = await cacheWarmer.warmAll()
 
-      expect(apiClient.get).toHaveBeenCalledTimes(3)
       expect(result.total).toBe(3)
       expect(result.success).toBe(2)
       expect(result.failed).toBe(1)

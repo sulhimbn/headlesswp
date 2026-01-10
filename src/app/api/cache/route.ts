@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { wordpressAPI } from '@/lib/wordpress';
+import { getCacheStats, clearCache } from '@/lib/cache';
 import { logger } from '@/lib/utils/logger';
 
 export async function GET(_request: NextRequest) {
   try {
-    const stats = wordpressAPI.getCacheStats();
+    const stats = getCacheStats();
 
     return NextResponse.json({
       success: true,
@@ -30,7 +30,7 @@ export async function DELETE(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const pattern = searchParams.get('pattern');
     
-    wordpressAPI.clearCache(pattern || undefined);
+    clearCache(pattern || undefined);
     
     return NextResponse.json({
       success: true,
