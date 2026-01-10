@@ -1,6 +1,122 @@
 # Task Backlog
 
-**Last Updated**: 2026-01-10 (Performance Engineer)
+**Last Updated**: 2026-01-10 (Code Architect)
+
+---
+
+## Active Tasks
+
+## [ARCH-INTERFACE-001] Interface Definition - Service Layer Contracts
+
+**Status**: Complete
+**Priority**: Medium
+**Assigned**: Code Architect
+**Created**: 2026-01-10
+**Updated**: 2026-01-10
+
+### Description
+
+Defined interface contracts for service layer to apply Dependency Inversion Principle and improve testability. Created explicit TypeScript interfaces for `IWordPressAPI` and `IPostService` to define clear contracts between modules.
+
+### Implementation Summary
+
+1. **Created IWordPressAPI Interface** (`src/lib/api/IWordPressAPI.ts`):
+   - Defines contract for all WordPress API operations
+   - Includes posts, categories, tags, media, authors operations
+   - All methods support optional `signal` parameter for AbortController cancellation
+   - Proper null handling for methods that may return missing resources (getPost, getCategory, getTag, getMediaUrl)
+
+2. **Created IPostService Interface** (`src/lib/services/IPostService.ts`):
+   - Defines contract for post service operations
+   - Includes enriched types: PostWithMediaUrl, PostWithDetails, PaginatedPostsResult
+   - All service methods: getLatestPosts, getCategoryPosts, getAllPosts, getPaginatedPosts, getPostBySlug, getPostById, getCategories, getTags
+
+3. **Updated Implementation Files**:
+   - `wordpress.ts`: Added `: IWordPressAPI` type annotation to implement interface
+   - `enhancedPostService.ts`: Added `: IPostService` type annotation to implement interface
+   - Updated return types in wordpress.ts to handle null cases (getPost, getCategory, getTag)
+   - Added `signal` parameter to `search` method for consistency
+
+4. **Updated Tests** (`__tests__/wordpress-api.test.ts`):
+   - Fixed test to check for null result before accessing properties
+   - Added null check with optional chaining (`result?.id`, `result?.title.rendered`)
+
+5. **Updated Documentation** (`docs/blueprint.md`):
+   - Added Interface Definitions section with IWordPressAPI and IPostService
+   - Updated version to 1.3.0
+   - Documented benefits: Dependency Inversion, Testability, Type Safety, Maintainability, Extensibility
+
+### Architectural Benefits
+
+**Before**:
+- ❌ No explicit contracts between modules
+- ❌ Concrete implementations coupled to specific APIs
+- ❌ Harder to mock for testing
+- ❌ Less maintainable (no clear interface boundaries)
+
+**After**:
+- ✅ Explicit contracts defined in TypeScript interfaces
+- ✅ Dependency Inversion Principle applied (depend on abstractions, not concretions)
+- ✅ Easy to mock interfaces for unit testing
+- ✅ Clear boundaries between API and service layers
+- ✅ Better type safety with documented contracts
+- ✅ Easier to extend with new implementations
+
+### SOLID Principles Applied
+
+1. **Dependency Inversion Principle**: High-level modules (service layer) depend on abstractions (interfaces), not low-level modules (API layer)
+2. **Interface Segregation Principle**: Focused interfaces (IWordPressAPI, IPostService) with single responsibilities
+3. **Open/Closed Principle**: Can extend interfaces without modifying existing implementations
+
+### Files Created
+
+- `src/lib/api/IWordPressAPI.ts` - NEW: Interface contract for WordPress API
+- `src/lib/services/IPostService.ts` - NEW: Interface contract for post service
+
+### Files Modified
+
+- `src/lib/wordpress.ts` - Added IWordPressAPI implementation, updated return types and signal parameters
+- `src/lib/services/enhancedPostService.ts` - Added IPostService implementation, imported types from interface
+- `__tests__/wordpress-api.test.ts` - Added null checks for getPost tests
+- `docs/blueprint.md` - Added Interface Definitions section, updated version
+
+### Results
+
+- ✅ Interface definitions created for service layer
+- ✅ IWordPressAPI interface with all API operations documented
+- ✅ IPostService interface with enriched types defined
+- ✅ All implementations updated to match interfaces
+- ✅ TypeScript type checking passes with no errors
+- ✅ ESLint passes with no warnings
+- ✅ 701 tests passing (1 flaky timing test unrelated to changes)
+- ✅ Dependency Inversion Principle applied
+- ✅ Zero regressions in functionality
+
+### Success Criteria
+
+- ✅ Interface definitions created for IWordPressAPI and IPostService
+- ✅ All implementations updated to match interfaces
+- ✅ TypeScript type checking passes
+- ✅ ESLint passes
+- ✅ Tests passing (no regressions)
+- ✅ Dependency Inversion Principle applied
+- ✅ Documentation updated in blueprint.md
+
+### Anti-Patterns Avoided
+
+- ❌ No concrete implementation coupling
+- ❌ No unclear boundaries between modules
+- ❌ No breaking changes to existing API
+- ❌ No missing null handling in return types
+- ❌ No incomplete interface definitions
+
+### Follow-up Opportunities
+
+- Consider creating interfaces for other services (e.g., ICacheManager, IDataProvider)
+- Add more comprehensive interface documentation with JSDoc comments
+- Consider using interfaces throughout the codebase for all major module boundaries
+- Implement dependency injection for better testability
+- Add interface implementation tests (verify implementation matches contract)
 
 ---
 
