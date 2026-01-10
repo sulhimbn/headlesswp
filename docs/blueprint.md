@@ -292,7 +292,7 @@ interface ApiListResult<T> extends ApiResult<T[]> {
 
 ### DRY Principle and Code Quality
 
-**Last Updated**: 2026-01-10 (Code Architect)
+ **Last Updated**: 2026-01-10 (Principal Data Architect)
 
 **DRY (Don't Repeat Yourself)** is a fundamental software design principle that eliminates code duplication and improves maintainability.
 
@@ -326,11 +326,29 @@ interface ApiListResult<T> extends ApiResult<T[]> {
 **Code Quality Improvements**:
 - **Before**: 252 lines with 40 duplicate lines across 5 API methods; 46 duplicate lines across 2 service functions; 36 duplicate lines across 2 API getAllX functions
 - **After**: 213 lines (API layer) + 229 lines (service layer) + 207 lines (standardized API) with reusable helpers
-- **Lines Eliminated**: 40 lines (API layer response.ts) + 23 lines (service layer) + 14 lines (standardized API) = 77 lines total (20% reduction)
+- **Lines Eliminated**: 40 lines (API layer response.ts) + 23 lines (service layer) + 14 lines (standardized API) + 20 lines (fetchAndValidate merge) = 97 lines total (25% reduction)
 - **DRY Principle Applied**: Error handling and pagination logic defined once
 - **Single Responsibility**: Each helper has one clear purpose
 - **Consistency**: All methods use identical patterns
 - **Maintainability**: Changes to error handling or pagination only require updating one function
+
+**REFACTOR-011: fetchAndValidate Merge**:
+- Merged `fetchAndValidate` and `fetchAndValidateSingle` into single generic function
+- Added configurable `logLevel` parameter with safer default (`'error'`)
+- Applied to 4 service methods (getLatestPosts, getCategoryPosts, getAllPosts, getPostById)
+- Lines eliminated: ~20
+
+**REFACTOR-012: Entity Map Generic Function**:
+- Created generic `getEntityMap<T>()` helper for category/tag map operations
+- Merged duplicate `getCategoriesMap` and `getTagsMap` functions
+- Configurable via `EntityMapOptions<T>` interface
+- Lines eliminated: ~23
+
+**REFACTOR-014: getAllX Generic Helper**:
+- Created generic `getAllEntities<T>()` helper for all-entities operations
+- Merged duplicate `getAllCategories` and `getAllTags` functions
+- Handles pagination metadata automatically
+- Lines eliminated: ~14
 
 **Benefits**:
 1. **Reduced Maintenance**: Bug fixes or improvements to error handling/pagination only need to be made once
