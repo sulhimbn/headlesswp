@@ -1,11 +1,106 @@
 # Task Backlog
  
-**Last Updated**: 2026-01-10 (Senior QA Engineer)
- 
+**Last Updated**: 2026-01-10 (Code Architect)
+  
 ---
- 
+  
 ## Active Tasks
- 
+
+## [ARCH-001] Layer Separation - Extract Cache Management from API Layer
+
+**Status**: Complete
+**Priority**: High
+**Assigned**: Code Architect
+**Created**: 2026-01-10
+**Updated**: 2026-01-10
+
+### Description
+
+Separated cache management concerns from the API layer. The `wordpress.ts` module had mixed responsibilities - both API methods and cache management methods (`clearCache`, `getCacheStats`, `warmCache`). This violated the Single Responsibility Principle and Separation of Concerns.
+
+### Implementation Summary
+
+1. **Extended CacheManager Class** (`src/lib/cache.ts`):
+   - Added `clear(pattern?: string)` method to cacheManager for unified cache clearing
+   - Added `async warmAll()` method to cacheManager for cache warming
+   - Exported convenience aliases: `getCacheStats`, `clearCache`, `warmCache`
+
+2. **Refactored API Layer** (`src/lib/wordpress.ts`):
+   - Removed `clearCache()` method
+   - Removed `getCacheStats()` method
+   - Removed `warmCache()` method
+   - API layer now focuses solely on WordPress API operations
+
+### Architectural Benefits
+
+**Before**:
+- ❌ Mixed responsibilities in `wordpress.ts` (API + cache management)
+- ❌ Violation of Single Responsibility Principle
+- ❌ API layer coupled with cache management concerns
+- ❌ Difficult to test API without cache
+
+**After**:
+- ✅ Clear separation of concerns
+- ✅ API layer focuses only on WordPress API calls
+- ✅ Cache management isolated in `cache.ts`
+- ✅ Single Responsibility Principle applied
+- ✅ Easier to test (can test API without cache, and cache without API)
+- ✅ Easier to replace cache implementation
+
+### Design Principles Applied
+
+1. **Separation of Concerns**: Cache management and API calls are now separate
+2. **Single Responsibility Principle**: Each module has one clear responsibility
+3. **Dependency Inversion**: API layer no longer depends on cache management implementation details
+4. **Open/Closed Principle**: Can extend cache manager without modifying API layer
+
+### Files Modified
+
+- `src/lib/cache.ts` - Added cache management methods to CacheManager class, exported convenience aliases
+- `src/lib/wordpress.ts` - Removed cache management methods (3 methods, 16 lines)
+
+### Impact Analysis
+
+**Breaking Changes**: None
+- No consumers were using cache methods from `wordpressAPI` (verified with grep)
+- Cache management now available from `cacheManager` directly
+- Convenience exports maintain backward compatibility: `getCacheStats`, `clearCache`, `warmCache`
+
+### Results
+
+- ✅ Cache management extracted from API layer
+- ✅ Clear separation of concerns achieved
+- ✅ Single Responsibility Principle applied
+- ✅ No breaking changes
+- ✅ API layer reduced from 187 to 170 lines (17 lines removed)
+- ✅ Zero regressions
+
+### Success Criteria
+
+- ✅ Cache management extracted from API layer
+- ✅ Clear separation of concerns
+- ✅ Single Responsibility Principle applied
+- ✅ No breaking changes
+- ✅ Zero regressions
+- ✅ API layer focuses solely on WordPress API operations
+
+### Anti-Patterns Avoided
+
+- ❌ No mixed responsibilities (API + cache)
+- ❌ No violation of Single Responsibility Principle
+- ❌ No breaking changes to existing API
+- ❌ No complex code where simple solution exists
+
+### Follow-up Recommendations
+
+- Consider extracting API standardization methods to separate service layer
+- Review other modules for mixed responsibilities
+- Consider creating interface definitions for service contracts
+
+---
+
+## Active Tasks
+
 ## [TEST-002] Critical Path Testing - Date Formatting and Cache Warming
 
 **Status**: Complete

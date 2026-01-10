@@ -1,7 +1,7 @@
 # Architecture Blueprint
 
-**Version**: 1.1.0  
-**Last Updated**: 2025-01-07
+**Version**: 1.2.0
+**Last Updated**: 2026-01-10
 
 ## System Architecture
 
@@ -375,22 +375,44 @@ interface ApiListResult<T> extends ApiResult<T[]> {
 - Memory usage estimation (bytes/MB)
 
 **See Also**: [Task DATA-ARCH-006: Cache Strategy Enhancement](./task.md#data-arch-006)
+**See Also**: [Task ARCH-001: Layer Separation](./task.md#arch-001)
 
-### Service Layer
-Service layers provide different levels of abstraction with clear separation of concerns:
-1. **postService.ts**: Basic service with fallback logic
-2. **enhancedPostService.ts**: Enhanced service with:
-    - Runtime data validation
-    - Batch media fetching (N+1 query elimination)
-    - Category/Tag resolution
-    - **Dependency-aware caching** (automatic cascade invalidation)
-    - Type-safe enriched data (PostWithMediaUrl, PostWithDetails)
-3. **cacheWarmer.ts**: Orchestration service for cache warming:
-    - Decouples cache warming from API services
-    - Removes circular dependency between wordpressAPI and enhancedPostService
-    - Provides cache statistics (hits, misses, hit rate)
-    - Parallel cache warming for optimal performance
-    - Detailed results tracking (success/failure, latency per endpoint)
+### Service Layer Architecture
+
+**Principle**: Clear separation of concerns with single responsibility per module.
+
+**Layers**:
+1. **API Layer** (`wordpress.ts`): WordPress API wrapper
+   - Focuses solely on WordPress API operations
+   - Handles GET requests to WordPress REST API endpoints
+   - Provides batch operations (media batch, search)
+   - **No cache management concerns** (extracted to cache.ts)
+
+2. **Service Layer** (`src/lib/services/`): Business logic abstraction
+   - **postService.ts**: Basic service with fallback logic
+   - **enhancedPostService.ts**: Enhanced service with:
+     - Runtime data validation
+     - Batch media fetching (N+1 query elimination)
+     - Category/Tag resolution
+     - **Dependency-aware caching** (automatic cascade invalidation)
+     - Type-safe enriched data (PostWithMediaUrl, PostWithDetails)
+   - **cacheWarmer.ts**: Orchestration service for cache warming:
+     - Decouples cache warming from API services
+     - Removes circular dependency between wordpressAPI and enhancedPostService
+     - Provides cache statistics (hits, misses, hit rate)
+     - Parallel cache warming for optimal performance
+     - Detailed results tracking (success/failure, latency per endpoint)
+
+3. **Cache Layer** (`cache.ts`): Cache management with dependency tracking
+   - In-memory cache with TTL and dependency-aware invalidation
+   - Cache management operations (clear, stats, warm)
+   - Single source of truth for cache operations
+   - **Not coupled to API layer** (clean separation)
+
+**Separation of Concerns** (ARCH-001):
+- API layer: WordPress REST API calls only
+- Service layer: Business logic, validation, enrichment
+- Cache layer: Cache storage, invalidation, telemetry
 
 ### Data Integrity
 - Validation ensures data structure matches expected schema

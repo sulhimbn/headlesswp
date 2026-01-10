@@ -104,7 +104,7 @@ class CacheManager {
   }
 
   // Clear all cache
-  clear(): void {
+  clearAll(): void {
     const size = this.cache.size;
     this.cache.clear();
     this.stats.deletes += size;
@@ -262,7 +262,7 @@ class CacheManager {
   // Get dependency information for a key
   getDependencies(key: string): { dependencies: string[]; dependents: string[] } {
     const entry = this.cache.get(key);
-    
+
     if (!entry) {
       return { dependencies: [], dependents: [] };
     }
@@ -272,10 +272,26 @@ class CacheManager {
       dependents: Array.from(entry.dependents || []),
     };
   }
+
+  clear(pattern?: string): void {
+    if (pattern) {
+      this.clearPattern(pattern);
+    } else {
+      this.clearAll();
+    }
+  }
+
+  async warmAll() {
+    const { cacheWarmer } = await import('./services/cacheWarmer');
+    return cacheWarmer.warmAll();
+  }
 }
 
 // Global cache instance
 export const cacheManager = new CacheManager();
+
+// Convenience exports for cache management
+export const { getStats: getCacheStats, clear: clearCache, warmAll: warmCache } = cacheManager;
 
 // Cache TTL constants (in milliseconds)
 export const CACHE_TTL = {

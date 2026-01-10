@@ -164,24 +164,7 @@ export const wordpressAPI = {
     cacheManager.set(cacheKey, data, CACHE_TTL.SEARCH);
 
     return data;
-  },
-
-  clearCache: (pattern?: string) => {
-    if (pattern) {
-      cacheManager.clearPattern(pattern);
-    } else {
-      cacheManager.clear();
-    }
-  },
-
-  getCacheStats: () => {
-    return cacheManager.getStats();
-  },
-
-  warmCache: async () => {
-    const { cacheWarmer } = await import('./services/cacheWarmer');
-    return cacheWarmer.warmAll();
-  },
+  }
 };
 
 export default wordpressAPI;
