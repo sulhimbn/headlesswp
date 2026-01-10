@@ -17,7 +17,7 @@ jest.mock('axios', () => ({
 
 describe('Cache Manager', () => {
   beforeEach(() => {
-    cacheManager.clear();
+    cacheManager.clearAll();
     cacheManager.resetStats();
   });
 
