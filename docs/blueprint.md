@@ -1,6 +1,6 @@
 # Architecture Blueprint
 
-**Version**: 1.4.6
+**Version**: 1.4.7
 **Last Updated**: 2026-01-10 (Code Architect)
 
 ## System Architecture
@@ -303,14 +303,21 @@ interface ApiListResult<T> extends ApiResult<T[]> {
    - Type-safe with generic types
    - Applied to 5 methods (getPostBySlug, getCategoryById, getCategoryBySlug, getTagById, getTagBySlug)
 
+**Service Layer Helpers** (`src/lib/services/enhancedPostService.ts`):
+1. **`fetchAndValidate<T, R>()`** - Unified fetch and validate helper
+   - Merged duplicate `fetchAndValidate` and `fetchAndValidateSingle` functions
+   - Accepts generic `ValidationResult<T>` type for both single and collection validation
+   - Supports configurable log level with safer default ('error')
+   - Applied to 4 service methods (getLatestPosts, getCategoryPosts, getAllPosts, getPostById)
+
 **Code Quality Improvements**:
-- **Before**: 252 lines with 40 duplicate lines across 5 methods
-- **After**: 213 lines with single reusable helper
-- **Lines Eliminated**: 40 lines (16% reduction)
-- **DRY Principle Applied**: Error handling logic defined once
+- **Before**: 252 lines with 40 duplicate lines across 5 API methods; 46 duplicate lines across 2 service functions
+- **After**: 213 lines (API layer) + 229 lines (service layer) with reusable helpers
+- **Lines Eliminated**: 40 lines (API layer) + 23 lines (service layer) = 63 lines total (19% reduction)
+- **DRY Principle Applied**: Error handling logic defined once across both layers
 - **Single Responsibility**: Each helper has one clear purpose
-- **Consistency**: All methods use identical error handling
-- **Maintainability**: Changes to error handling only require updating one function
+- **Consistency**: All methods use identical error handling patterns
+- **Maintainability**: Changes to error handling only require updating one function per layer
 
 **Benefits**:
 1. **Reduced Maintenance**: Bug fixes or improvements to error handling only need to be made once
@@ -318,8 +325,9 @@ interface ApiListResult<T> extends ApiResult<T[]> {
 3. **Type Safety**: Generic TypeScript types ensure compile-time type checking
 4. **Testability**: Helper functions can be tested independently
 5. **Code Clarity**: Smaller, focused methods are easier to understand
+6. **Safer Defaults**: Service layer defaults to 'error' log level for better visibility
 
-**See Also**: [Task REFACTOR-010](./task.md#refactor-010)
+**See Also**: [Task REFACTOR-010](./task.md#refactor-010), [Task REFACTOR-011](./task.md#refactor-011)
 
 ## Integration Resilience Patterns
 

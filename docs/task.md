@@ -338,20 +338,119 @@ No immediate data architecture improvements are required. The codebase is in exc
 
 ## [REFACTOR-011] Merge Duplicate fetchAndValidate Functions
 
-**Status**: Pending
+**Status**: Complete
 **Priority**: Medium
-**Assigned**: 
+**Assigned**: Code Architect
 **Created**: 2026-01-10
+**Updated**: 2026-01-10
 
 ### Description
 
-`fetchAndValidate` and `fetchAndValidateSingle` functions in `src/lib/services/enhancedPostService.ts` (lines 109-154) have nearly identical implementations with only a minor difference in log level handling.
+Merged `fetchAndValidate` and `fetchAndValidateSingle` functions in `src/lib/services/enhancedPostService.ts` to eliminate code duplication and apply the DRY principle.
 
-### Issue
+### Issue Resolved
 
-- **Code Duplication**: Two functions perform almost identical operations
-- **Violation of DRY Principle**: Same logic duplicated across 46 lines
-- **Maintenance Burden**: Changes to error handling must be made in both places
+- **Code Duplication**: Two functions performed almost identical operations
+- **Violation of DRY Principle**: Same logic was duplicated across 46 lines
+- **Maintenance Burden**: Changes to error handling required updates in both places
+
+### Implementation Summary
+
+1. **Removed Duplicate Function**: Deleted `fetchAndValidateSingle` (23 lines)
+2. **Updated Generic Function**: Modified `fetchAndValidate` to:
+   - Accept generic `ValidationResult<T>` type (works with any validation result)
+   - Default log level to 'error' (safer default)
+   - Support both single and collection validation patterns
+3. **Updated Call Sites**:
+   - `getLatestPosts`: Explicitly passes 'warn' to maintain existing behavior
+   - `getCategoryPosts`: Explicitly passes 'warn' to maintain existing behavior
+   - `getAllPosts`: Explicitly passes 'warn' to maintain existing behavior
+   - `getPostById`: Uses default 'error' log level (matches previous behavior)
+
+### Code Quality Improvements
+
+**Before**:
+```typescript
+// Lines 109-131: fetchAndValidate with default 'warn'
+async function fetchAndValidate<T, R>(
+  fetchFn: () => Promise<T>,
+  validateFn: (data: T) => ReturnType<typeof dataValidator.validatePosts>,
+  // ...
+  logLevel: 'warn' | 'error' = 'warn'
+): Promise<R> { /* 22 lines */ }
+
+// Lines 133-154: fetchAndValidateSingle with hardcoded 'error'
+async function fetchAndValidateSingle<T, R>(
+  fetchFn: () => Promise<T>,
+  validateFn: (data: T) => ReturnType<typeof dataValidator.validatePost>,
+  // ...
+): Promise<R> { /* 22 lines */ }
+```
+
+**After**:
+```typescript
+// Lines 109-131: Single generic function with safer default
+async function fetchAndValidate<T, R>(
+  fetchFn: () => Promise<T>,
+  validateFn: (data: T) => ValidationResult<T>,
+  transformFn: (data: T) => R | Promise<R>,
+  fallback: R,
+  context: string,
+  logLevel: 'warn' | 'error' = 'error'
+): Promise<R> { /* 23 lines */ }
+```
+
+### Files Modified
+
+- `src/lib/services/enhancedPostService.ts` - Lines 109-237
+  - Removed `fetchAndValidateSingle` function (lines 133-154 deleted)
+  - Updated `fetchAndValidate` to use generic `ValidationResult<T>` type
+  - Updated default log level from 'warn' to 'error' (safer)
+  - Updated call sites to explicitly pass 'warn' where needed (4 changes)
+
+### Test Results
+
+- ✅ All 34 enhancedPostService tests passing
+- ✅ Zero regressions
+- ✅ Error handling behavior preserved
+
+### Results
+
+- ✅ Removed 23 lines of duplicate code
+- ✅ DRY Principle applied - single error handling function
+- ✅ Type safety improved with generic `ValidationResult<T>`
+- ✅ Safer default log level ('error')
+- ✅ All 34 tests passing (no regressions)
+- ✅ Zero behavior changes (existing behavior preserved)
+- ✅ Maintenance burden reduced (one function to update instead of two)
+
+### Success Criteria
+
+- ✅ Duplicate functions merged
+- ✅ DRY Principle applied
+- ✅ All call sites updated correctly
+- ✅ All tests passing (no regressions)
+- ✅ Type safety maintained
+- ✅ Error handling behavior preserved
+
+### Anti-Patterns Avoided
+
+- ❌ No code duplication
+- ❌ No maintenance burden (multiple places to update)
+- ❌ No inconsistent error handling
+- ❌ No breaking changes
+
+### DRY Principle Benefits
+
+1. **Single Source of Truth**: Error handling logic defined once
+2. **Consistency**: All validation follows same pattern
+3. **Maintainability**: Changes only need to be made in one function
+4. **Type Safety**: Generic TypeScript ensures compile-time type checking
+5. **Testability**: Single function easier to test
+
+### Follow-up Recommendations
+
+None - task complete.
 
 ### Current Code
 

@@ -108,11 +108,11 @@ function createFallbackPostsWithMediaUrls(fallbacks: Array<{ id: string; title: 
 
 async function fetchAndValidate<T, R>(
   fetchFn: () => Promise<T>,
-  validateFn: (data: T) => ReturnType<typeof dataValidator.validatePosts>,
+  validateFn: (data: T) => ValidationResult<T>,
   transformFn: (data: T) => R | Promise<R>,
   fallback: R,
   context: string,
-  logLevel: 'warn' | 'error' = 'warn'
+  logLevel: 'warn' | 'error' = 'error'
 ): Promise<R> {
   try {
     const data = await fetchFn();
@@ -130,29 +130,6 @@ async function fetchAndValidate<T, R>(
   }
 }
 
-async function fetchAndValidateSingle<T, R>(
-  fetchFn: () => Promise<T>,
-  validateFn: (data: T) => ReturnType<typeof dataValidator.validatePost>,
-  transformFn: (data: T) => R | Promise<R>,
-  fallback: R,
-  context: string
-): Promise<R> {
-  try {
-    const data = await fetchFn();
-    const validation = validateFn(data);
-
-    if (!isValidationResultValid(validation)) {
-      logger.error(`Invalid data for ${context}`, undefined, { module: 'enhancedPostService', errors: validation.errors });
-      return fallback;
-    }
-
-    return await transformFn(validation.data as T);
-  } catch (error) {
-    logger.error(`Failed to fetch ${context}`, error, { module: 'enhancedPostService' });
-    return fallback;
-  }
-}
-
 export const enhancedPostService: IPostService = {
   getLatestPosts: async (): Promise<PostWithMediaUrl[]> => {
     return fetchAndValidate(
@@ -160,7 +137,8 @@ export const enhancedPostService: IPostService = {
       dataValidator.validatePosts.bind(dataValidator),
       enrichPostsWithMediaUrls,
       createFallbackPostsWithMediaUrls(getFallbackPosts('LATEST')),
-      'latest posts'
+      'latest posts',
+      'warn'
     );
   },
 
@@ -170,7 +148,8 @@ export const enhancedPostService: IPostService = {
       dataValidator.validatePosts.bind(dataValidator),
       enrichPostsWithMediaUrls,
       createFallbackPostsWithMediaUrls(getFallbackPosts('CATEGORY')),
-      'category posts'
+      'category posts',
+      'warn'
     );
   },
 
@@ -180,7 +159,8 @@ export const enhancedPostService: IPostService = {
       dataValidator.validatePosts.bind(dataValidator),
       enrichPostsWithMediaUrls,
       [],
-      'all posts'
+      'all posts',
+      'warn'
     );
   },
 
@@ -227,7 +207,7 @@ export const enhancedPostService: IPostService = {
   },
 
   getPostById: async (id: number): Promise<PostWithDetails | null> => {
-    return fetchAndValidateSingle(
+    return fetchAndValidate(
       () => wordpressAPI.getPostById(id),
       dataValidator.validatePost.bind(dataValidator),
       enrichPostWithDetails,
