@@ -35,7 +35,7 @@ export default function Footer() {
                     <li key={`${link.href}-${index}`}>
                       <Link
                         href={link.href}
-                        className="text-[hsl(var(--color-text-muted-dark))] hover:text-white transition-all duration-[var(--transition-fast)] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--color-primary))] focus:ring-offset-2 rounded-[var(--radius-sm)]"
+                        className="text-[hsl(var(--color-text-muted-dark))] hover:text-[hsl(var(--color-surface))] transition-all duration-[var(--transition-fast)] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--color-primary))] focus:ring-offset-2 rounded-[var(--radius-sm)]"
                       >
                         {link.label}
                       </Link>
@@ -61,21 +61,21 @@ export default function Footer() {
             <div className="flex space-x-4">
               <a
                 href="/"
-                className="text-[hsl(var(--color-text-faint-dark))] hover:text-white transition-all duration-[var(--transition-fast)] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--color-primary))] focus:ring-offset-2 rounded-[var(--radius-sm)]"
+                className="text-[hsl(var(--color-text-faint-dark))] hover:text-[hsl(var(--color-surface))] transition-all duration-[var(--transition-fast)] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--color-primary))] focus:ring-offset-2 rounded-[var(--radius-sm)]"
                 aria-label="Facebook"
               >
                 <Icon type="facebook" className="h-5 w-5" />
               </a>
               <a
                 href="/"
-                className="text-[hsl(var(--color-text-faint-dark))] hover:text-white transition-all duration-[var(--transition-fast)] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--color-primary))] focus:ring-offset-2 rounded-[var(--radius-sm)]"
+                className="text-[hsl(var(--color-text-faint-dark))] hover:text-[hsl(var(--color-surface))] transition-all duration-[var(--transition-fast)] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--color-primary))] focus:ring-offset-2 rounded-[var(--radius-sm)]"
                 aria-label="Twitter"
               >
                 <Icon type="twitter" className="h-5 w-5" />
               </a>
               <a
                 href="/"
-                className="text-[hsl(var(--color-text-faint-dark))] hover:text-white transition-all duration-[var(--transition-fast)] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--color-primary))] focus:ring-offset-2 rounded-[var(--radius-sm)]"
+                className="text-[hsl(var(--color-text-faint-dark))] hover:text-[hsl(var(--color-surface))] transition-all duration-[var(--transition-fast)] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--color-primary))] focus:ring-offset-2 rounded-[var(--radius-sm)]"
                 aria-label="Instagram"
               >
                 <Icon type="instagram" className="h-5 w-5" />
