@@ -1,7 +1,6 @@
 import { WordPressPost } from '@/types/wordpress'
 import Link from 'next/link'
 import Image from 'next/image'
-import { memo } from 'react'
 import { sanitizeHTML } from '@/lib/utils/sanitizeHTML'
 import { UI_TEXT } from '@/lib/constants/uiText'
 import { formatDate } from '@/lib/utils/dateFormat'
@@ -12,7 +11,7 @@ interface PostCardProps {
   priority?: boolean
 }
 
-const PostCard = memo(function PostCard({ post, mediaUrl, priority = false }: PostCardProps) {
+export default function PostCard({ post, mediaUrl, priority = false }: PostCardProps) {
   return (
     <article className="bg-[hsl(var(--color-surface))] rounded-[var(--radius-lg)] shadow-[var(--shadow-md)] overflow-hidden hover:shadow-[var(--shadow-lg)] transition-all duration-[var(--transition-normal)] focus-within:ring-2 focus-within:ring-[hsl(var(--color-primary))] focus-within:ring-offset-2">
       {post.featured_media > 0 && (
@@ -51,6 +50,4 @@ const PostCard = memo(function PostCard({ post, mediaUrl, priority = false }: Po
       </div>
     </article>
   )
-})
-
-export default PostCard
+}
