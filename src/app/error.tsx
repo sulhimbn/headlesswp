@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react'
 import Button from '@/components/ui/Button'
+import { logger } from '@/lib/utils/logger'
 
 export default function Error({
   error,
@@ -11,7 +12,7 @@ export default function Error({
   reset: () => void
 }) {
   useEffect(() => {
-    console.error('Error page caught an error:', error)
+    logger.error('Error page caught an error:', error, { module: 'ErrorPage' })
   }, [error])
 
   return (
