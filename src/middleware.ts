@@ -1,14 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { SITE_URL, SITE_URL_WWW } from './lib/api/config'
+import { generateNonce } from './lib/utils/cspUtils'
 
 export function middleware(_request: NextRequest) {
   const response = NextResponse.next()
   
-  // Generate a simple nonce for inline scripts and styles
-  // Using a simple random string generator that works in Edge Runtime
   const nonce = generateNonce()
   
-  // Set nonce in headers for client components to use
   response.headers.set('x-nonce', nonce)
   
   // Enhanced CSP with nonce for dynamic content
@@ -53,19 +51,6 @@ export function middleware(_request: NextRequest) {
   ].join(', '))
   
   return response
-}
-
-// Simple nonce generator that works in Edge Runtime
-function generateNonce(): string {
-  const array = new Uint8Array(16)
-  crypto.getRandomValues(array)
-  
-  // Convert Uint8Array to string without spread operator
-  let result = ''
-  for (let i = 0; i < array.length; i++) {
-    result += String.fromCharCode(array[i])
-  }
-  return btoa(result)
 }
 
 export const config = {
