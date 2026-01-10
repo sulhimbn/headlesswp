@@ -15,22 +15,22 @@ export default function EmptyState({ title, description, icon, action, className
   return (
     <div className={`text-center py-12 px-4 ${className}`} role="status">
       {icon && (
-        <div className="mx-auto h-12 w-12 text-gray-400 mb-4" aria-hidden="true">
+        <div className="mx-auto h-12 w-12 text-[hsl(var(--color-text-muted))] mb-4" aria-hidden="true">
           {icon}
         </div>
       )}
-      <h3 className="text-lg font-medium text-gray-900 mb-2">
+      <h3 className="text-lg font-medium text-[hsl(var(--color-text-primary))] mb-2">
         {title}
       </h3>
       {description && (
-        <p className="text-gray-600 mb-4 max-w-md mx-auto">
+        <p className="text-[hsl(var(--color-text-secondary))] mb-4 max-w-md mx-auto">
           {description}
         </p>
       )}
       {action && (
         <Link
           href={action.href}
-          className="inline-flex items-center px-4 py-2 text-base font-medium text-white bg-red-600 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-600 focus:ring-offset-2 transition-colors"
+          className="inline-flex items-center px-4 py-2 text-base font-medium text-white bg-[hsl(var(--color-primary))] rounded-[var(--radius-md)] hover:bg-[hsl(var(--color-primary-dark))] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--color-primary))] focus:ring-offset-2 transition-colors duration-[var(--transition-normal)]"
         >
           {action.label}
         </Link>

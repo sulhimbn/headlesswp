@@ -48,21 +48,21 @@ export default memo(function Header() {
   }
 
   return (
-    <header className="bg-white shadow-sm">
+    <header className="bg-[hsl(var(--color-surface))] shadow-[var(--shadow-sm)]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          <Link 
-            href="/" 
-            className="text-2xl font-bold text-red-600 focus:outline-none focus:ring-2 focus:ring-red-600 focus:ring-offset-2 rounded"
+          <Link
+            href="/"
+            className="text-2xl font-bold text-[hsl(var(--color-primary))] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--color-primary))] focus:ring-offset-2 rounded-[var(--radius-sm)]"
             aria-label="Mitra Banten News Beranda"
           >
             Mitra Banten News
           </Link>
-          
+
           <button
             ref={menuButtonRef}
             type="button"
-            className="md:hidden inline-flex items-center justify-center p-2 rounded-md text-gray-700 hover:text-red-600 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-red-600 focus:ring-offset-2"
+            className="md:hidden inline-flex items-center justify-center p-2 rounded-[var(--radius-md)] text-[hsl(var(--color-text-primary))] hover:text-[hsl(var(--color-primary))] hover:bg-[hsl(var(--color-secondary-dark))] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--color-primary))] focus:ring-offset-2"
             aria-expanded={isMenuOpen}
             aria-controls="mobile-menu"
             aria-haspopup="true"
@@ -77,7 +77,7 @@ export default memo(function Header() {
               <Link
                 key={item.href}
                 href={item.href}
-                className="text-gray-700 hover:text-red-600 focus:outline-none focus:ring-2 focus:ring-red-600 focus:ring-offset-2 rounded px-2 py-1 transition-colors"
+                className="text-[hsl(var(--color-text-primary))] hover:text-[hsl(var(--color-primary))] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--color-primary))] focus:ring-offset-2 rounded-[var(--radius-sm)] px-2 py-1 transition-colors duration-[var(--transition-fast)]"
               >
                 {item.label}
               </Link>
@@ -87,10 +87,10 @@ export default memo(function Header() {
       </div>
 
       {isMenuOpen && (
-        <div 
+        <div
           ref={menuRef}
           id="mobile-menu"
-          className="md:hidden border-t border-gray-200"
+          className="md:hidden border-t border-[hsl(var(--color-border))]"
           onKeyDown={handleKeyDown}
         >
           <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
@@ -98,12 +98,12 @@ export default memo(function Header() {
               <Link
                 key={item.href}
                 ref={
-                  index === 0 ? firstMenuItemRef : 
-                  index === NAVIGATION_ITEMS.length - 1 ? lastMenuItemRef : 
+                  index === 0 ? firstMenuItemRef :
+                  index === NAVIGATION_ITEMS.length - 1 ? lastMenuItemRef :
                   undefined
                 }
                 href={item.href}
-                className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-red-600 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-red-600 focus:ring-offset-2"
+                className="block px-3 py-2 rounded-[var(--radius-md)] text-base font-medium text-[hsl(var(--color-text-primary))] hover:text-[hsl(var(--color-primary))] hover:bg-[hsl(var(--color-secondary-dark))] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--color-primary))] focus:ring-offset-2"
                 onClick={() => setIsMenuOpen(false)}
               >
                 {item.label}

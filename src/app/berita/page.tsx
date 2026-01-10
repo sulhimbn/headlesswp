@@ -21,14 +21,14 @@ export default async function BeritaPage({
   const { posts, totalPages } = await enhancedPostService.getPaginatedPosts(page, postsPerPage)
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[hsl(var(--color-background))]">
       <Header />
 
       <main id="main-content" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <SectionHeading level="h1" className="mb-2">
           {UI_TEXT.newsPage.heading}
         </SectionHeading>
-        <p className="text-gray-600 mb-8">{UI_TEXT.newsPage.subtitle}</p>
+        <p className="text-[hsl(var(--color-text-secondary))] mb-8">{UI_TEXT.newsPage.subtitle}</p>
 
         {posts.length > 0 ? (
           <>
