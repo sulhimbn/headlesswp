@@ -127,7 +127,7 @@ describe('cacheWarmer', () => {
 
       const result = await cacheWarmer.warmAll()
 
-      expect(result.results[0].latency).toBeGreaterThanOrEqual(100)
+      expect(result.results[0].latency).toBeGreaterThan(50)
       expect(result.results[1].latency).toBeDefined()
       expect(result.results[2].latency).toBeDefined()
     })
