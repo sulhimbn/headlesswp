@@ -442,16 +442,18 @@ describe('WordPress API - Batch Operations and Caching', () => {
 
   describe('clearCache', () => {
     it('clears all cache when no pattern provided', () => {
-      cacheManager.clear()
+      clearCache()
 
-      expect(cacheManager.clear).toHaveBeenCalled()
+      expect(cacheManager.clearAll).toHaveBeenCalled()
+      expect(cacheManager.clearPattern).not.toHaveBeenCalled()
     })
 
     it('clears cache with pattern when pattern provided', () => {
       const pattern = 'media_*'
 
-      cacheManager.clearPattern(pattern)
+      clearCache(pattern)
 
+      expect(cacheManager.clearAll).not.toHaveBeenCalled()
       expect(cacheManager.clearPattern).toHaveBeenCalledWith(pattern)
     })
   })
@@ -467,7 +469,7 @@ describe('WordPress API - Batch Operations and Caching', () => {
 
       ;(cacheManager.getStats as jest.Mock).mockReturnValue(mockStats)
 
-      const result = cacheManager.getStats()
+      const result = getCacheStats()
 
       expect(result).toEqual(mockStats)
       expect(cacheManager.getStats).toHaveBeenCalled()
