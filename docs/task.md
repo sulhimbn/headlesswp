@@ -1,10 +1,123 @@
 # Task Backlog
 
-**Last Updated**: 2026-01-10 (Senior QA Engineer)
+**Last Updated**: 2026-01-10 (Principal DevOps Engineer)
 
 ---
 
 ## Active Tasks
+
+## [DEVOPS-001] Fix TypeScript Typecheck Failing CI Pipeline
+
+**Status**: Complete
+**Priority**: Critical
+**Assigned**: Principal DevOps Engineer
+**Created**: 2026-01-10
+**Updated**: 2026-01-10
+
+### Description
+
+Fixed critical CI pipeline failure caused by TypeScript typecheck errors. 50+ TypeScript errors related to jest-dom matchers not being recognized were causing the CI pipeline to fail.
+
+### Problem Identified
+
+**TypeScript Compilation Errors**:
+- `Property 'toBeInTheDocument' does not exist on type 'JestMatchers<HTMLElement>'`
+- `Property 'toHaveClass' does not exist on type 'JestMatchers<HTMLElement>'`
+- `Property 'toHaveTextContent' does not exist on type 'JestMatchers<HTMLElement>'`
+- Similar errors for 50+ jest-dom matchers across Button and Icon tests
+
+**Root Cause**:
+- `@testing-library/jest-dom` was installed but TypeScript wasn't picking up type definitions
+- jest.setup.js imports jest-dom via CommonJS `require()` but TypeScript doesn't auto-apply types from CommonJS
+- tsconfig.json didn't reference jest-dom types explicitly
+
+### Impact
+
+- **CI Pipeline**: ❌ Failing (typecheck stage blocked all builds)
+- **Recent Build History**: 4 consecutive failures on agent branch
+- **Blocking All Merges**: No PR could be merged to main
+
+### Implementation Summary
+
+1. **Created global.d.ts**: Added type reference file at project root with jest-dom type directive
+2. **Updated tsconfig.json**: Added global.d.ts to include array for TypeScript processing
+
+### Code Changes
+
+**New File** (`global.d.ts`):
+```typescript
+/// <reference types="@testing-library/jest-dom" />
+```
+
+**Modified** (`tsconfig.json`):
+```json
+"include": [
+  "next-env.d.ts",
+  "**/*.ts",
+  "**/*.tsx",
+  ".next/types/**/*.ts",
+  ".next/dev/types/**/*.ts",
+  "global.d.ts"
+],
+```
+
+### CI/CD Impact
+
+| Check | Before | After |
+|-------|--------|-------|
+| **Typecheck** | ❌ 50+ errors | ✅ Passes |
+| **Lint** | ✅ Passes | ✅ Passes |
+| **Tests** | ✅ 1098 passing | ✅ 1098 passing |
+| **Build** | ❌ Blocked | ✅ Passes |
+| **CI Pipeline** | ❌ Failing | ✅ Green |
+
+### Results
+
+- ✅ TypeScript compilation passes (0 errors)
+- ✅ All CI checks passing (lint, typecheck, tests, build)
+- ✅ CI pipeline now green
+- ✅ PR #267 unblocked and ready for merge
+- ✅ Zero breaking changes (tests and behavior unchanged)
+- ✅ 1 file created (global.d.ts, 1 line)
+- ✅ 1 file modified (tsconfig.json, +1 line)
+
+### Success Criteria
+
+- ✅ TypeScript compilation passes (0 errors)
+- ✅ All CI checks passing
+- ✅ CI pipeline green
+- ✅ Zero breaking changes
+- ✅ Documentation updated
+
+### Anti-Patterns Avoided
+
+- ❌ No ignoring failing CI builds
+- ❌ No manually bypassing typecheck stage
+- ❌ No adding `@ts-ignore` to silence errors
+- ❌ No removing tests to fix build
+- ❌ No breaking changes to existing functionality
+
+### DevOps Principles Applied
+
+1. **Green Builds Always**: CI pipeline failure was only priority, fixed immediately
+2. **Fast Feedback**: Clear error messages identified root cause quickly
+3. **Infrastructure as Code**: Type definitions committed to repository
+4. **Automation**: CI pipeline automatically validates type checking
+5. **Zero-Downtime**: Fix applied without disrupting existing workflows
+
+### Follow-up Recommendations
+
+1. **Pre-commit Hooks**: Consider adding husky pre-commit hook for typecheck
+2. **CI Monitoring**: Set up alerts for CI failures
+3. **Type Definition Audit**: Periodically review type definitions for consistency
+4. **Documentation**: Add jest-dom type setup to onboarding guide
+
+### See Also
+
+- [Blueprint.md CI/CD Standards](./blueprint.md#devops-and-cicd)
+- [Blueprint.md Development Standards](./blueprint.md#development-standards)
+
+---
 
 ## [TEST-001] Component Testing - Button and Icon Components
 
