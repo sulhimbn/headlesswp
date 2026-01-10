@@ -21,9 +21,10 @@ This project follows the [Contributor Covenant Code of Conduct](https://www.cont
 
 ### Prerequisites
 
-- Node.js 18+ 
+- Node.js 18+
 - npm or yarn
-- WordPress instance with WPGraphQL plugin (for development)
+- WordPress instance with REST API enabled (for development)
+- Docker & Docker Compose (for local WordPress setup)
 - Git
 
 ### Development Setup
