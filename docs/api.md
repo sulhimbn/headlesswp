@@ -1101,10 +1101,10 @@ Promise<WordPressPost[]>
 
 ```typescript
 // src/app/page.tsx
-import { postService } from '@/lib/services/postService';
+import { enhancedPostService } from '@/lib/services/enhancedPostService';
 
 export default async function HomePage() {
-  const latestPosts = await postService.getLatestPosts();
+  const latestPosts = await enhancedPostService.getLatestPosts();
 
   return (
     <div>
@@ -1126,7 +1126,7 @@ export default async function HomePage() {
 Get category posts with automatic fallback on failure.
 
 ```typescript
-const posts = await postService.getCategoryPosts();
+const posts = await enhancedPostService.getCategoryPosts();
 ```
 
 **Behavior:**
@@ -1146,7 +1146,7 @@ Promise<WordPressPost[]>
 Get a single post by slug with null fallback on failure.
 
 ```typescript
-const post = await postService.getPostBySlug('berita-terbaru');
+const post = await enhancedPostService.getPostBySlug('berita-terbaru');
 ```
 
 **Behavior:**
@@ -1163,10 +1163,10 @@ Promise<WordPressPost | null>
 
 ```typescript
 // src/app/berita/[slug]/page.tsx
-import { postService } from '@/lib/services/postService';
+import { enhancedPostService } from '@/lib/services/enhancedPostService';
 
 export default async function PostPage({ params }: { params: { slug: string } }) {
-  const post = await postService.getPostBySlug(params.slug);
+  const post = await enhancedPostService.getPostBySlug(params.slug);
 
   if (!post) {
     return <div>Post not found</div>;
