@@ -173,43 +173,6 @@ export async function getAllTags(): Promise<ApiListResult<WordPressTag>> {
   }
 }
 
-export async function getTagById(id: number): Promise<ApiResult<WordPressTag>> {
-  return fetchAndHandleNotFound(
-    () => wordpressAPI.getTag(id.toString()),
-    'Tag',
-    id,
-    `/wp/v2/tags/${id}`
-  );
-}
-
-export async function getTagBySlug(slug: string): Promise<ApiResult<WordPressTag>> {
-  return fetchAndHandleNotFound(
-    () => wordpressAPI.getTag(slug),
-    'Tag',
-    slug,
-    `/wp/v2/tags?slug=${slug}`
-  );
-}
-
-export async function getAllTags(): Promise<ApiListResult<WordPressTag>> {
-  try {
-    const tags = await wordpressAPI.getTags();
-    const pagination: ApiPaginationMetadata = {
-      page: 1,
-      perPage: tags.length,
-      total: tags.length,
-      totalPages: 1
-    };
-    return createSuccessListResult(
-      tags,
-      { endpoint: '/wp/v2/tags' },
-      pagination
-    );
-  } catch (error) {
-    return createErrorListResult('/wp/v2/tags', undefined, undefined, error);
-  }
-}
-
 export async function getMediaById(id: number): Promise<ApiResult<WordPressMedia>> {
   try {
     const media = await wordpressAPI.getMedia(id);
