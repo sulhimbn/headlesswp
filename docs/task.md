@@ -1,10 +1,138 @@
 # Task Backlog
 
-**Last Updated**: 2026-01-10 (Senior Integration Engineer)
+**Last Updated**: 2026-01-10 (Senior Technical Writer)
 
 ---
 
 ## Active Tasks
+
+## [DOC-003] Code Comments - Cache Manager Documentation
+
+**Status**: Complete
+**Priority**: Medium
+**Assigned**: Senior Technical Writer
+**Created**: 2026-01-10
+**Updated**: 2026-01-10
+
+### Description
+
+Added comprehensive JSDoc documentation to `src/lib/cache.ts` to explain complex caching logic, dependency tracking, and cascade invalidation patterns. The cache manager implements sophisticated bi-directional dependency graphs that enable automatic cascade invalidation when dependencies change.
+
+### Documentation Added
+
+#### 1. CacheEntry Interface
+- Explained bi-directional dependency tracking (dependencies + dependents)
+- Documented how cascade invalidation works through dependency chains
+- Added example showing category → post relationship
+
+#### 2. CacheManager Class Documentation
+- **Class-level JSDoc**: Comprehensive overview of features:
+  - Dependency-Aware Caching
+  - Cascade Invalidation
+  - Telemetry & Monitoring
+  - Smart Cleanup (expired entries, orphan cleanup)
+- **Method Documentation**: Added JSDoc to all 15 methods:
+  - Purpose and behavior
+  - Parameter descriptions with types
+  - Return value descriptions
+  - Usage examples
+  - Performance considerations
+
+#### 3. Telemetry & Metrics
+- Explained cache statistics (hit rate, miss rate, cascade invalidations)
+- Documented `getStats()` method with all metrics
+- Added `getPerformanceMetrics()` for monitoring dashboards
+- Explained memory usage estimation algorithm
+
+#### 4. Cascade Invalidation
+- Documented recursive invalidation of dependents
+- Added example: invalidating category → invalidates all posts in that category
+- Explained why this prevents serving stale data
+
+#### 5. Dependency Graph
+- Documented `CACHE_DEPENDENCIES` helpers
+- Explained leaf nodes (media, author, categories, tags)
+- Added dependency graph ASCII diagram showing relationships
+
+#### 6. Orphan Cleanup
+- Explained what orphaned dependencies are
+- Documented how they occur (deleted dependencies, expired entries)
+- Explained why cleanup is important (prevent invalid cascade, reduce memory)
+
+#### 7. Cache Key Management
+- Documented `CACHE_KEYS` helpers for consistent naming
+- Explained key format: `{entity}:{identifier}`
+- Added examples and best practices
+
+### Key Improvements
+
+**Before**:
+- Basic inline comments (e.g., "Get data from cache")
+- No explanation of dependency tracking
+- No documentation of cascade invalidation
+- Complex algorithms undocumented
+
+**After**:
+- Comprehensive JSDoc for all interfaces, classes, and methods
+- Detailed explanation of bi-directional dependency graph
+- Examples for all public methods
+- Performance and usage considerations
+- Debugging and monitoring guidance
+
+### Code Coverage
+
+**Files Modified**:
+- `src/lib/cache.ts` - Added ~400 lines of JSDoc documentation
+
+**Documentation Added**:
+- 1 class-level JSDoc (CacheManager)
+- 1 interface-level JSDoc (CacheEntry)
+- 15 method JSDocs with examples
+- 4 constant documentation blocks (CACHE_TTL, CACHE_KEYS, CACHE_DEPENDENCIES)
+
+### Results
+
+- ✅ Comprehensive JSDoc documentation added to cache.ts
+- ✅ All public methods documented with examples
+- ✅ Complex algorithms (cascade invalidation, orphan cleanup) explained
+- ✅ Dependency graph architecture documented
+- ✅ TypeScript type checking passes
+- ✅ All tests passing (no functional changes)
+- ✅ Zero breaking changes (documentation only)
+
+### Success Criteria
+
+- ✅ Complex caching logic fully documented
+- ✅ Dependency tracking and cascade invalidation explained
+- ✅ Usage examples provided for all public methods
+- ✅ No functional changes (documentation only)
+- ✅ TypeScript type checking passes
+- ✅ All tests passing
+
+### Anti-Patterns Avoided
+
+- ❌ No misleading or incorrect documentation
+- ❌ No missing documentation for complex logic
+- ❌ No unclear or ambiguous explanations
+- ❌ No breaking changes to code
+
+### Writing Principles Applied
+
+1. **Show, Don't Tell**: Working examples for all methods
+2. **Structure for Scanning**: Clear headings, bullet points, code examples
+3. **Explain Why**: Purpose before details
+4. **Progressive Disclosure**: Simple concepts first, depth when needed
+5. **Actionable Content**: Enable readers to use the cache manager effectively
+
+### Follow-up Recommendations
+
+1. Consider adding JSDoc to other complex modules (circuitBreaker.ts, retryStrategy.ts)
+2. Add inline comments for non-obvious business logic
+3. Consider adding visual diagrams for dependency graphs
+4. Document cache warming orchestration (cacheWarmer.ts)
+5. Add performance tuning guide based on telemetry metrics
+
+---
 
 ## [INT-AUDIT-001] Integration Resilience Audit
 
