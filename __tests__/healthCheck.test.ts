@@ -218,6 +218,56 @@ describe('HealthChecker', () => {
       expect(result.healthy).toBe(false);
       expect(result.error).toBe('Unexpected error');
     });
+
+    it('should handle errors thrown during check', async () => {
+      const healthChecker = new HealthChecker();
+      (apiClient.get as jest.Mock).mockImplementation(() => {
+        throw new Error('Connection failed');
+      });
+
+      const result = await healthChecker.checkRetry(2, 10);
+
+      expect(result.healthy).toBe(false);
+      expect(result.error).toBe('Connection failed');
+      expect(apiClient.get).toHaveBeenCalledTimes(2);
+    });
+
+    it('should wait between retries', async () => {
+      const healthChecker = new HealthChecker();
+      (apiClient.get as jest.Mock)
+        .mockRejectedValueOnce(new Error('Network error'))
+        .mockResolvedValueOnce({});
+
+      const startTime = Date.now();
+      await healthChecker.checkRetry(2, 50);
+      const endTime = Date.now();
+
+      expect(endTime - startTime).toBeGreaterThanOrEqual(50);
+    });
+
+    it('should increment attempt count on each retry', async () => {
+      const healthChecker = new HealthChecker();
+      (apiClient.get as jest.Mock)
+        .mockRejectedValueOnce(new Error('Error 1'))
+        .mockRejectedValueOnce(new Error('Error 2'))
+        .mockResolvedValueOnce({});
+
+      await healthChecker.checkRetry(3, 10);
+
+      expect(apiClient.get).toHaveBeenCalledTimes(3);
+    });
+
+    it('should return unhealthy result after exhausting all retries', async () => {
+      const healthChecker = new HealthChecker();
+      (apiClient.get as jest.Mock).mockRejectedValue(new Error('Persistent error'));
+
+      const result = await healthChecker.checkRetry(3, 10);
+
+      expect(result.healthy).toBe(false);
+      expect(result.message).toBe('WordPress API is unhealthy');
+      expect(result.error).toBe('Persistent error');
+      expect(apiClient.get).toHaveBeenCalledTimes(3);
+    });
   });
 
   describe('getLastCheck()', () => {
