@@ -14,7 +14,7 @@ describe('DataValidator Type Guards', () => {
         modified: '2024-01-01T00:00:00',
         author: 1,
         featured_media: 0,
-        categories: [],
+        categories: [1],
         tags: [],
         status: 'publish',
         type: 'post',
@@ -50,7 +50,7 @@ describe('DataValidator Type Guards', () => {
         modified: '2024-01-01T00:00:00',
         author: 1,
         featured_media: 0,
-        categories: [],
+        categories: [1],
         tags: [],
         status: 'publish',
         type: 'post',
@@ -89,7 +89,7 @@ describe('DataValidator Type Guards', () => {
           modified: '2024-01-01T00:00:00',
           author: 1,
           featured_media: 0,
-          categories: [],
+          categories: [1],
           tags: [],
           status: 'publish',
           type: 'post',
@@ -211,7 +211,7 @@ describe('DataValidator Type Guards', () => {
         modified: '2024-01-01T00:00:00',
         author: 1,
         featured_media: 0,
-        categories: [],
+        categories: [1],
         tags: [],
         status: 'publish',
         type: 'post',
@@ -250,7 +250,7 @@ describe('DataValidator Type Guards', () => {
           modified: '2024-01-01T00:00:00',
           author: 1,
           featured_media: 0,
-          categories: [],
+          categories: [1],
           tags: [],
           status: 'publish',
           type: 'post',
@@ -295,7 +295,7 @@ describe('DataValidator Type Guards', () => {
         modified: '2024-01-01T00:00:00',
         author: 1,
         featured_media: 0,
-        categories: [],
+        categories: [1],
         tags: [],
         status: 'publish',
         type: 'post',
@@ -304,7 +304,7 @@ describe('DataValidator Type Guards', () => {
 
       const result = dataValidator.validatePost(mockPost);
       const fallback: WordPressPost = {
-        id: 0,
+        id: 1,
         title: { rendered: 'Fallback' },
         content: { rendered: 'Fallback content' },
         excerpt: { rendered: 'Fallback excerpt' },
@@ -313,7 +313,7 @@ describe('DataValidator Type Guards', () => {
         modified: '2024-01-01T00:00:00',
         author: 0,
         featured_media: 0,
-        categories: [],
+        categories: [1],
         tags: [],
         status: 'publish',
         type: 'post',
@@ -339,7 +339,7 @@ describe('DataValidator Type Guards', () => {
         modified: '2024-01-01T00:00:00',
         author: 0,
         featured_media: 0,
-        categories: [],
+        categories: [1],
         tags: [],
         status: 'publish',
         type: 'post',
@@ -357,7 +357,7 @@ describe('DataValidator Type Guards', () => {
       const result = dataValidator.validatePost(invalidData);
 
       const fallback: WordPressPost = {
-        id: 0,
+        id: 1,
         title: { rendered: 'Fallback' },
         content: { rendered: 'Fallback content' },
         excerpt: { rendered: 'Fallback excerpt' },
@@ -366,7 +366,7 @@ describe('DataValidator Type Guards', () => {
         modified: '2024-01-01T00:00:00',
         author: 0,
         featured_media: 0,
-        categories: [],
+        categories: [1],
         tags: [],
         status: 'publish',
         type: 'post',
@@ -419,7 +419,7 @@ describe('DataValidator Type Guards', () => {
 
       const result = dataValidator.validateCategory(mockCategory);
       const fallback: WordPressCategory = {
-        id: 0,
+        id: 1,
         name: 'Fallback',
         slug: 'fallback',
         description: 'Fallback description',
@@ -437,7 +437,7 @@ describe('DataValidator Type Guards', () => {
       const invalidData = { id: 'not a number' };
       const result = dataValidator.validatePost(invalidData);
       const fallback: WordPressPost = {
-        id: 0,
+        id: 1,
         title: { rendered: 'Fallback' },
         content: { rendered: 'Fallback content' },
         excerpt: { rendered: 'Fallback excerpt' },
@@ -446,7 +446,7 @@ describe('DataValidator Type Guards', () => {
         modified: '2024-01-01T00:00:00',
         author: 0,
         featured_media: 0,
-        categories: [],
+        categories: [1],
         tags: [],
         status: 'publish',
         type: 'post',
@@ -472,7 +472,7 @@ describe('DataValidator Type Guards', () => {
         modified: '2024-01-01T00:00:00',
         author: 1,
         featured_media: 0,
-        categories: [],
+        categories: [1],
         tags: [],
         status: 'publish',
         type: 'post',

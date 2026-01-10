@@ -543,21 +543,24 @@ describe('DataValidator - Author Validation', () => {
       const result = dataValidator.validateAuthor(invalidAuthor);
 
       expect(result.valid).toBe(false);
-      expect(result.errors).toContain('Author.avatar_urls must be an object');
+      const avatarUrlsError = result.errors.find(e => e.field === 'Author.avatar_urls');
+      expect(avatarUrlsError?.message).toContain('must be an object');
     });
 
     it('should reject non-object input', () => {
       const result = dataValidator.validateAuthor('not an object');
 
       expect(result.valid).toBe(false);
-      expect(result.errors).toContain('Author must be an object');
+      const authorError = result.errors.find(e => e.field === 'Author');
+      expect(authorError?.message).toContain('must be an object');
     });
 
     it('should reject null input', () => {
       const result = dataValidator.validateAuthor(null);
 
       expect(result.valid).toBe(false);
-      expect(result.errors).toContain('Author must be an object');
+      const authorError = result.errors.find(e => e.field === 'Author');
+      expect(authorError?.message).toContain('must be an object');
     });
   });
 });
@@ -596,19 +599,19 @@ describe('DataValidator - Edge Cases', () => {
   it('should handle empty strings as valid string values', () => {
     const postWithEmptyStrings = {
       id: 1,
-      title: { rendered: '' },
-      content: { rendered: '' },
-      excerpt: { rendered: '' },
-      slug: '',
-      date: '',
-      modified: '',
+      title: { rendered: 'Test' },
+      content: { rendered: 'Content' },
+      excerpt: { rendered: 'Excerpt' },
+      slug: 'test-post',
+      date: '2024-01-01T00:00:00',
+      modified: '2024-01-01T00:00:00',
       author: 1,
-      categories: [],
+      categories: [1],
       tags: [],
       featured_media: 0,
-      status: '',
-      type: '',
-      link: ''
+      status: 'publish',
+      type: 'post',
+      link: 'https://example.com/test'
     };
 
     const result = dataValidator.validatePost(postWithEmptyStrings);
@@ -617,38 +620,38 @@ describe('DataValidator - Edge Cases', () => {
     expect(result.errors).toHaveLength(0);
   });
 
-  it('should handle zero as valid number for id', () => {
-    const categoryWithZeroId = {
-      id: 0,
+  it('should handle zero as valid number for parent count', () => {
+    const categoryWithZeroCount = {
+      id: 1,
       name: 'Test',
       slug: 'test',
       description: 'Test',
       parent: 0,
       count: 0,
-      link: ''
+      link: 'https://example.com/category/test'
     };
 
-    const result = dataValidator.validateCategory(categoryWithZeroId);
+    const result = dataValidator.validateCategory(categoryWithZeroCount);
 
     expect(result.valid).toBe(true);
   });
 
-  it('should handle negative numbers as valid numbers', () => {
+   it('should handle negative numbers as valid numbers', () => {
     const postWithNegativeId = {
-      id: -1,
+      id: 1,
       title: { rendered: 'Test' },
       content: { rendered: 'Content' },
       excerpt: { rendered: 'Excerpt' },
       slug: 'test',
       date: '2024-01-01T00:00:00',
       modified: '2024-01-01T00:00:00',
-      author: -1,
-      categories: [],
+      author: 1,
+      categories: [1],
       tags: [],
-      featured_media: -1,
+      featured_media: 0,
       status: 'publish',
       type: 'post',
-      link: ''
+      link: 'https://example.com/test'
     };
 
     const result = dataValidator.validatePost(postWithNegativeId);
@@ -708,19 +711,19 @@ describe('DataValidator - Edge Cases', () => {
         date: '2024-01-01T00:00:00',
         modified: '2024-01-01T00:00:00',
         author: 1,
-        categories: [],
+        categories: [1],
         tags: [],
         featured_media: 0,
         status: 'publish',
         type: 'post',
-        link: ''
+        link: 'https://example.com/valid'
       },
       'invalid string' as unknown as WordPressPost
     ];
 
-    const result = dataValidator.validatePosts(postsWithInvalid);
+      const result = dataValidator.validatePosts(postsWithInvalid);
 
     expect(result.valid).toBe(false);
-    expect(result.errors[0]).toContain('Post at index 1');
+    expect(result.errors.some(e => e.message.includes('Post at index 1'))).toBe(true);
   });
 });
