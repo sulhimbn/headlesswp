@@ -2,6 +2,9 @@ import { GET as HealthGET } from '@/app/api/health/route'
 import { GET as ReadinessGET } from '@/app/api/health/readiness/route'
 import { GET as MetricsGET } from '@/app/api/observability/metrics/route'
 import { telemetryCollector } from '@/lib/api/telemetry'
+import { resetAllRateLimitState } from '@/lib/api/rateLimitMiddleware'
+
+const mockRequest = {} as any
 
 jest.mock('@/lib/api/client', () => ({
   checkApiHealth: jest.fn()
@@ -9,16 +12,19 @@ jest.mock('@/lib/api/client', () => ({
 
 jest.mock('next/server', () => ({
   NextResponse: {
-    json: jest.fn((body: any, init?: any) => ({
-      status: init?.status || 200,
-      json: () => Promise.resolve(body),
-      headers: {
-        get: jest.fn((key: string) => {
-          const headers = init?.headers || {}
-          return typeof headers === 'object' && key in headers ? headers[key as keyof typeof headers] : null
-        })
+    json: jest.fn((body: any, init?: any) => {
+      const headersMap: Record<string, string> = { ...(init?.headers || {}) }
+      return {
+        status: init?.status || 200,
+        json: () => Promise.resolve(body),
+        headers: {
+          get: (key: string) => headersMap[key] || null,
+          set: (key: string, value: string) => {
+            headersMap[key] = value
+          }
+        }
       }
-    }))
+    })
   }
 }))
 
@@ -28,6 +34,7 @@ describe('Health Check API Endpoints', () => {
   beforeEach(() => {
     jest.clearAllMocks()
     telemetryCollector.clear()
+    resetAllRateLimitState()
   })
 
   afterEach(() => {
@@ -44,7 +51,7 @@ describe('Health Check API Endpoints', () => {
         version: 'v2'
       })
 
-      const response = await HealthGET()
+      const response = await HealthGET(mockRequest)
       const data = await response.json()
 
       expect(response.status).toBe(200)
@@ -63,7 +70,7 @@ describe('Health Check API Endpoints', () => {
         error: 'ECONNREFUSED'
       })
 
-      const response = await HealthGET()
+      const response = await HealthGET(mockRequest)
       const data = await response.json()
 
       expect(response.status).toBe(503)
@@ -75,7 +82,7 @@ describe('Health Check API Endpoints', () => {
     it('should return 500 when health check throws error', async () => {
       checkApiHealth.mockRejectedValue(new Error('Network error'))
 
-      const response = await HealthGET()
+      const response = await HealthGET(mockRequest)
       const data = await response.json()
 
       expect(response.status).toBe(500)
@@ -91,7 +98,7 @@ describe('Health Check API Endpoints', () => {
         message: 'API is healthy'
       })
 
-      await HealthGET()
+      await HealthGET(mockRequest)
 
       const healthEvents = telemetryCollector.getEventsByCategory('health-check')
 
@@ -109,7 +116,7 @@ describe('Health Check API Endpoints', () => {
         error: 'ECONNREFUSED'
       })
 
-      await HealthGET()
+      await HealthGET(mockRequest)
 
       const events = telemetryCollector.getEventsByCategory('health-check')
 
@@ -126,7 +133,7 @@ describe('Health Check API Endpoints', () => {
         message: 'API is healthy'
       })
 
-      const response = await HealthGET()
+      const response = await HealthGET(mockRequest)
 
       expect(response.headers.get('Cache-Control')).toBe('no-cache, no-store, must-revalidate')
       expect(response.headers.get('Content-Type')).toBe('application/json')
@@ -135,7 +142,7 @@ describe('Health Check API Endpoints', () => {
 
   describe('GET /api/health/readiness', () => {
     it('should return 200 when system is ready', async () => {
-      const response = await ReadinessGET()
+      const response = await ReadinessGET(mockRequest)
       const data = await response.json()
 
       expect(response.status).toBe(200)
@@ -147,7 +154,7 @@ describe('Health Check API Endpoints', () => {
     })
 
     it('should record telemetry for readiness check', async () => {
-      await ReadinessGET()
+      await ReadinessGET(mockRequest)
 
       const events = telemetryCollector.getEventsByCategory('health-check')
 
@@ -157,7 +164,7 @@ describe('Health Check API Endpoints', () => {
     })
 
     it('should set no-cache headers', async () => {
-      const response = await ReadinessGET()
+      const response = await ReadinessGET(mockRequest)
 
       expect(response.headers.get('Cache-Control')).toBe('no-cache, no-store, must-revalidate')
       expect(response.headers.get('Content-Type')).toBe('application/json')
@@ -172,7 +179,7 @@ describe('Health Check API Endpoints', () => {
         data: { test: true }
       })
 
-      const response = await MetricsGET()
+      const response = await MetricsGET(mockRequest)
       const data = await response.json()
 
       expect(response.status).toBe(200)
@@ -184,7 +191,7 @@ describe('Health Check API Endpoints', () => {
     })
 
     it('should return empty stats when no events', async () => {
-      const response = await MetricsGET()
+      const response = await MetricsGET(mockRequest)
       const data = await response.json()
 
       expect(response.status).toBe(200)
@@ -208,7 +215,7 @@ describe('Health Check API Endpoints', () => {
         data: { failureCount: 5 }
       })
 
-      const response = await MetricsGET()
+      const response = await MetricsGET(mockRequest)
       const data = await response.json()
 
       expect(data.circuitBreaker.stateChanges).toBe(1)
@@ -229,7 +236,7 @@ describe('Health Check API Endpoints', () => {
         data: { attempt: 2 }
       })
 
-      const response = await MetricsGET()
+      const response = await MetricsGET(mockRequest)
       const data = await response.json()
 
       expect(data.retry.retries).toBe(1)
@@ -244,7 +251,7 @@ describe('Health Check API Endpoints', () => {
         data: { limit: 60 }
       })
 
-      const response = await MetricsGET()
+      const response = await MetricsGET(mockRequest)
       const data = await response.json()
 
       expect(data.rateLimit.exceeded).toBe(1)
@@ -263,7 +270,7 @@ describe('Health Check API Endpoints', () => {
         data: { healthy: false }
       })
 
-      const response = await MetricsGET()
+      const response = await MetricsGET(mockRequest)
       const data = await response.json()
 
       expect(data.healthCheck.healthy).toBe(1)
@@ -295,7 +302,7 @@ describe('Health Check API Endpoints', () => {
         }
       })
 
-      const response = await MetricsGET()
+      const response = await MetricsGET(mockRequest)
       const data = await response.json()
 
       expect(data.apiRequest.totalRequests).toBe(2)
@@ -328,7 +335,7 @@ describe('Health Check API Endpoints', () => {
         }
       })
 
-      const response = await MetricsGET()
+      const response = await MetricsGET(mockRequest)
       const data = await response.json()
 
       expect(data.apiRequest.averageDuration).toBe(150)
@@ -343,7 +350,7 @@ describe('Health Check API Endpoints', () => {
         })
       }
 
-      const response = await MetricsGET()
+      const response = await MetricsGET(mockRequest)
       const data = await response.json()
 
       expect(data.apiRequest.totalRequests).toBe(15)
@@ -351,7 +358,7 @@ describe('Health Check API Endpoints', () => {
     })
 
     it('should set no-cache headers', async () => {
-      const response = await MetricsGET()
+      const response = await MetricsGET(mockRequest)
 
       expect(response.headers.get('Cache-Control')).toBe('no-cache, no-store, must-revalidate')
       expect(response.headers.get('Content-Type')).toBe('application/json')
@@ -362,7 +369,7 @@ describe('Health Check API Endpoints', () => {
         throw new Error('Test error')
       })
 
-      const response = await MetricsGET()
+      const response = await MetricsGET(mockRequest)
       const data = await response.json()
 
       expect(response.status).toBe(500)

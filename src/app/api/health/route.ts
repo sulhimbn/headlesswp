@@ -1,8 +1,9 @@
 import { NextResponse } from 'next/server'
 import { checkApiHealth } from '@/lib/api/client'
 import { telemetryCollector } from '@/lib/api/telemetry'
+import { withApiRateLimit } from '@/lib/api/rateLimitMiddleware'
 
-export async function GET() {
+async function healthHandler() {
   const startTime = Date.now()
 
   try {
@@ -76,3 +77,5 @@ export async function GET() {
     })
   }
 }
+
+export const GET = withApiRateLimit(healthHandler, 'health')

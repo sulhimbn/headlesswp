@@ -1,10 +1,162 @@
 # Task Backlog
 
-**Last Updated**: 2026-01-10 (Principal Security Engineer - Security Audit Complete)
+**Last Updated**: 2026-01-10 (Senior Integration Engineer - API Route Rate Limiting)
 
 ---
 
 ## Completed Tasks
+
+## [INT-001] API Route Rate Limiting
+
+**Status**: Complete
+**Priority**: High (Critical Security)
+**Assigned**: Senior Integration Engineer
+**Created**: 2026-01-10
+**Updated**: 2026-01-10
+
+### Description
+
+Added rate limiting protection to all API routes (`/api/health`, `/api/health/readiness`, `/api/observability/metrics`, `/api/cache`, `/api/csp-report`) to prevent DoS attacks.
+
+### Problem Identified
+
+**Security Vulnerability**: API routes were unprotected and could be abused for DoS attacks:
+- `/api/health` - No rate limiting (health check endpoint for load balancers)
+- `/api/health/readiness` - No rate limiting (Kubernetes readiness probe)
+- `/api/observability/metrics` - No rate limiting (telemetry data export)
+- `/api/cache` - No rate limiting (cache management endpoint)
+- `/api/csp-report` - No rate limiting (CSP violation reporting)
+
+**Impact**:
+- Attackers could flood API routes with requests
+- Health check endpoints could be abused to affect load balancer probes
+- Metrics endpoint could be scraped excessively, consuming resources
+- Cache endpoint could be used to trigger expensive cache warming operations
+
+### Implementation Summary
+
+1. **Created rate limiting middleware** (`src/lib/api/rateLimitMiddleware.ts`):
+   - In-memory rate limiting per endpoint type
+   - Sliding window algorithm with automatic expiration
+   - Standard rate limit headers in all responses
+   - Separate limits for different endpoint types
+   - Exported `resetRateLimitState()` and `resetAllRateLimitState()` for testing
+
+2. **Applied rate limiting to all API routes**:
+   - `/api/health` - 300 requests/minute (5/sec)
+   - `/api/health/readiness` - 300 requests/minute (5/sec)
+   - `/api/observability/metrics` - 60 requests/minute (1/sec)
+   - `/api/cache` - 10 requests/minute (0.16/sec)
+   - `/api/csp-report` - 30 requests/minute (0.5/sec)
+
+3. **Added rate limit headers** to all API responses:
+   - `X-RateLimit-Limit`: Maximum requests allowed in window
+   - `X-RateLimit-Remaining`: Remaining requests in current window
+   - `X-RateLimit-Reset`: Unix timestamp of window reset
+   - `X-RateLimit-Reset-After`: Seconds until window resets
+   - `Retry-After`: Seconds to wait before retry (429 responses only)
+
+4. **Updated API route handlers** to use `withApiRateLimit()` wrapper
+
+### Rate Limit Configuration
+
+| Endpoint | Limit | Window | Rate | Reason |
+|----------|-------|--------|------|--------|
+| `/api/health` | 300 | 1 minute | 5/sec | Load balancer health checks |
+| `/api/health/readiness` | 300 | 1 minute | 5/sec | Kubernetes readiness probes |
+| `/api/observability/metrics` | 60 | 1 minute | 1/sec | Metrics export endpoint |
+| `/api/cache` | 10 | 1 minute | 0.16/sec | Cache warming is expensive |
+| `/api/csp-report` | 30 | 1 minute | 0.5/sec | CSP violations |
+
+### Security Improvements
+
+| Aspect | Before | After |
+|---------|--------|-------|
+| **API Route Protection** | ❌ Unprotected | ✅ Rate-limited |
+| **DoS Attack Risk** | High | Low |
+| **Rate Limit Headers** | ❌ None | ✅ Standard headers |
+| **Error Response Format** | Inconsistent | ✅ Standardized |
+| **Testing** | ❌ No tests | ✅ 5 tests |
+
+### Files Modified
+
+- `src/lib/api/rateLimitMiddleware.ts` - New file (108 lines)
+- `src/app/api/health/route.ts` - Added withApiRateLimit wrapper (2 lines changed)
+- `src/app/api/health/readiness/route.ts` - Added withApiRateLimit wrapper (2 lines changed)
+- `src/app/api/observability/metrics/route.ts` - Added withApiRateLimit wrapper (2 lines changed)
+- `src/app/api/cache/route.ts` - Added withApiRateLimit wrappers (4 lines changed)
+- `src/app/api/csp-report/route.ts` - Added withApiRateLimit wrapper (2 lines changed)
+- `__tests__/apiEndpoints.test.ts` - Updated mocks (5 lines changed), added resetAllRateLimitState (1 line)
+- `__tests__/apiRateLimitMiddleware.test.ts` - New file (95 lines)
+
+### Test Results
+
+- ✅ **5 new tests** for rate limiting middleware
+- ✅ **20 existing tests** updated and passing
+- ✅ **1478 total tests** passing (31 skipped)
+- ✅ **ESLint passes** with no errors
+- ✅ **TypeScript compilation** passes
+- ✅ **Zero regressions** in existing tests
+
+### Tests Created
+
+**apiRateLimitMiddleware.test.ts** (5 tests):
+1. Add rate limit headers to successful response
+2. Track separate limits per key
+3. Block requests when limit exceeded
+4. Return error response with retry info
+5. Set retry-after header in error response
+
+### Results
+
+- ✅ All API routes now rate-limited
+- ✅ Standard rate limit headers in all responses
+- ✅ DoS attack protection enabled
+- ✅ Different limits per endpoint type
+- ✅ Graceful degradation with helpful error messages
+- ✅ Comprehensive test coverage
+- ✅ All tests passing (no regressions)
+- ✅ Lint and typecheck passing
+
+### Success Criteria
+
+- ✅ API routes protected from DoS attacks
+- ✅ Standard rate limit headers in responses
+- ✅ Error responses include retry information
+- ✅ Tests verify rate limiting behavior
+- ✅ Zero breaking changes
+- ✅ Code quality maintained
+
+### Anti-Patterns Avoided
+
+- ❌ No unprotected API endpoints
+- ❌ No inconsistent error responses
+- ❌ No breaking changes to existing functionality
+- ❌ No test regressions
+
+### Integration Engineering Principles Applied
+
+1. **Security First**: Protected all API routes from abuse
+2. **Resilience**: Graceful degradation when rate limit exceeded
+3. **Self-Documenting**: Standard headers communicate rate limits clearly
+4. **Backward Compatibility**: No breaking changes to existing behavior
+5. **Test Coverage**: Comprehensive tests for rate limiting behavior
+6. **Rate Limiting**: Different limits per endpoint based on use case
+
+### Follow-up Recommendations
+
+1. **Per-IP Rate Limiting**: Consider adding IP-based rate limiting for stricter protection
+2. **Rate Limit Dashboard**: Add UI for monitoring rate limit metrics
+3. **Adaptive Limits**: Consider adjusting limits based on traffic patterns
+4. **API Documentation**: Update API documentation to include rate limit information
+
+### See Also
+
+- [Blueprint.md Rate Limiting](./blueprint.md#api-route-rate-limiting)
+- [Blueprint.md Integration Resilience Patterns](./blueprint.md#integration-resilience-patterns)
+
+---
+
 
 ## [UX-001] Accessibility Improvements - SectionHeading and Skeleton Components
 

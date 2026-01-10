@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { logger } from '@/lib/utils/logger'
+import { withApiRateLimit } from '@/lib/api/rateLimitMiddleware'
 
-export async function POST(request: NextRequest) {
+async function cspReportHandler(request: NextRequest) {
   try {
     const report = await request.json()
 
@@ -23,3 +24,5 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Failed to process report' }, { status: 400 })
   }
 }
+
+export const POST = withApiRateLimit(cspReportHandler, 'cspReport')

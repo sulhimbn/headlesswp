@@ -626,7 +626,7 @@ interface ApiListResult<T> extends ApiResult<T[]> {
 ### Rate Limiting
 - **Purpose**: Protect API from overload by limiting request rate
 - **Configuration**:
-  - Max Requests: 60 requests per window
+  - Max Requests: 60 requests per window (WordPress API)
   - Window: 60000ms (1 minute)
   - Algorithm: Token bucket with sliding window
 - **Features**:
@@ -636,6 +636,28 @@ interface ApiListResult<T> extends ApiResult<T[]> {
   - Rate limit info (remaining requests, reset time)
 - **Implementation**: `src/lib/api/rateLimiter.ts`
 - **Status**: ✅ Production-ready, verified by INT-AUDIT-001
+
+### API Route Rate Limiting
+- **Purpose**: Protect API routes from DoS attacks
+- **Configuration**:
+  - Health endpoints: 300 requests/minute (5/sec)
+  - Readiness endpoint: 300 requests/minute (5/sec)
+  - Metrics endpoint: 60 requests/minute (1/sec)
+  - Cache endpoints: 10 requests/minute (0.16/sec)
+  - CSP Report endpoint: 30 requests/minute (0.5/sec)
+- **Features**:
+  - In-memory rate limiting per endpoint
+  - Standard rate limit headers in responses
+  - Graceful degradation with retry info
+  - Separate limits per endpoint type
+- **Implementation**: `src/lib/api/rateLimitMiddleware.ts`
+- **Rate Limit Headers**:
+  - `X-RateLimit-Limit`: Maximum requests allowed
+  - `X-RateLimit-Remaining`: Remaining requests in current window
+  - `X-RateLimit-Reset`: Unix timestamp of window reset
+  - `X-RateLimit-Reset-After`: Seconds until window resets
+  - `Retry-After`: Seconds to wait before retry (429 responses)
+- **Status**: ✅ Production-ready, added in INT-001
 
 ## Security Standards
 

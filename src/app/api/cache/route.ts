@@ -2,8 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getCacheStats, clearCache } from '@/lib/cache';
 import { cacheWarmer } from '@/lib/services/cacheWarmer';
 import { logger } from '@/lib/utils/logger';
+import { withApiRateLimit } from '@/lib/api/rateLimitMiddleware';
 
-export async function GET(_request: NextRequest) {
+async function cacheGetHandler(_request: NextRequest) {
   try {
     const stats = getCacheStats();
 
@@ -26,7 +27,7 @@ export async function GET(_request: NextRequest) {
   }
 }
 
-export async function POST(_request: NextRequest) {
+async function cachePostHandler(_request: NextRequest) {
   try {
     const result = await cacheWarmer.warmAll();
     
@@ -50,7 +51,7 @@ export async function POST(_request: NextRequest) {
   }
 }
 
-export async function DELETE(request: NextRequest) {
+async function cacheDeleteHandler(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const pattern = searchParams.get('pattern');
@@ -75,3 +76,7 @@ export async function DELETE(request: NextRequest) {
     );
   }
 }
+
+export const GET = withApiRateLimit(cacheGetHandler, 'cache')
+export const POST = withApiRateLimit(cachePostHandler, 'cache')
+export const DELETE = withApiRateLimit(cacheDeleteHandler, 'cache')
