@@ -1,6 +1,6 @@
 # Architecture Blueprint
 
-**Version**: 1.4.9
+**Version**: 1.0.0
 **Last Updated**: 2026-01-10 (Code Architect)
 
 ## System Architecture
@@ -188,6 +188,11 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(({ children, ...props 
 - Use appropriate HTML elements: `<header>`, `<nav>`, `<main>`, `<article>`, `<footer>`
 - ARIA attributes for screen readers
 - Keyboard navigation support (Tab, Escape, arrow keys)
+
+**Loading States**:
+- Skeleton components use `aria-busy="true"` to indicate loading state to screen readers
+- Section headings support optional `id` prop for anchor linking
+- Design tokens used consistently across all skeleton components
 
 ### Responsive Design
 

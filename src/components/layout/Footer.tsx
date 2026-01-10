@@ -31,8 +31,8 @@ export default function Footer() {
             <h2 id="footer-nav-heading" className="text-lg font-semibold mb-4">{UI_TEXT.footer.navigation}</h2>
             <nav aria-label="Navigasi Footer">
                 <ul className="space-y-2">
-                  {footerLinks.map((link) => (
-                    <li key={link.href}>
+                  {footerLinks.map((link, index) => (
+                    <li key={`${link.href}-${index}`}>
                       <Link
                         href={link.href}
                         className="text-[hsl(var(--color-text-muted-dark))] hover:text-white transition-all duration-[var(--transition-fast)] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--color-primary))] focus:ring-offset-2 rounded-[var(--radius-sm)]"

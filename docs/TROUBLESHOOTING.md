@@ -204,6 +204,29 @@ npm run dev
 
 ---
 
+### Build shows middleware deprecation warning
+
+**Symptoms**:
+- `npm run build` shows warning: "The 'middleware' file convention is deprecated. Please use 'proxy' instead"
+- Build succeeds but shows deprecation warning
+
+**Diagnosis**:
+```bash
+# Run build to see warnings
+npm run build
+```
+
+**Solutions**:
+
+The middleware file is currently using the deprecated convention. The migration to `proxy` file is planned for a future update. For now:
+
+1. **Ignore the warning** - The middleware functionality works correctly despite the deprecation warning
+2. **Monitor for updates** - Check Next.js documentation and repository for proxy file implementation
+
+**Note**: The middleware provides security features (CSP headers, security headers) that are currently working. The deprecation warning does not affect functionality.
+
+---
+
 ### Build fails with TypeScript errors
 
 **Symptoms**:

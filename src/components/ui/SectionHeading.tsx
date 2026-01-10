@@ -3,6 +3,7 @@ interface SectionHeadingProps {
   size?: 'lg' | 'md' | 'sm'
   children: React.ReactNode
   className?: string
+  id?: string
 }
 
 const sizeStyles = {
@@ -11,13 +12,13 @@ const sizeStyles = {
   sm: 'text-[var(--text-xl)] font-semibold'
 }
 
-export default function SectionHeading({ level = 'h2', size = 'lg', children, className = '' }: SectionHeadingProps) {
+export default function SectionHeading({ level = 'h2', size = 'lg', children, className = '', id }: SectionHeadingProps) {
   const baseClassName = `text-[hsl(var(--color-text-primary))] ${sizeStyles[size]} ${className}`.trim()
 
   const HeadingTag = level
 
   return (
-    <HeadingTag className={baseClassName}>
+    <HeadingTag id={id} className={baseClassName}>
       {children}
     </HeadingTag>
   )
