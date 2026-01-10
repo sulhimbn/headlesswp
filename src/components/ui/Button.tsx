@@ -1,6 +1,6 @@
 import { ButtonHTMLAttributes, forwardRef } from 'react'
+import { BUTTON_VARIANT_STYLES, type ButtonVariant } from '@/lib/constants/buttonStyles'
 
-type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost'
 type ButtonSize = 'sm' | 'md' | 'lg'
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -10,12 +10,7 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   fullWidth?: boolean
 }
 
-const variantStyles: Record<ButtonVariant, string> = {
-  primary: 'bg-[hsl(var(--color-primary))] text-white hover:bg-[hsl(var(--color-primary-dark))] shadow-md',
-  secondary: 'bg-[hsl(var(--color-secondary-dark))] text-gray-800 hover:bg-gray-300',
-  outline: 'border-2 border-[hsl(var(--color-primary))] text-[hsl(var(--color-primary))] hover:bg-[hsl(var(--color-primary-light))]',
-  ghost: 'text-gray-700 hover:text-[hsl(var(--color-primary))] hover:bg-[hsl(var(--color-secondary-dark))]',
-}
+const variantStyles = BUTTON_VARIANT_STYLES
 
 const sizeStyles: Record<ButtonSize, string> = {
   sm: 'px-3 py-1.5 text-sm',
