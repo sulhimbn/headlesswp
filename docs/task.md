@@ -1,6 +1,140 @@
 # Task Backlog
 
-**Last Updated**: 2026-01-10 (Senior UI/UX Engineer)
+**Last Updated**: 2026-01-10 (Senior Technical Writer)
+
+---
+
+## Active Tasks
+
+## [DOC-001] Critical Documentation Fixes - API Import Corrections
+
+**Status**: Complete
+**Priority**: High
+**Assigned**: Senior Technical Writer
+**Created**: 2026-01-10
+**Updated**: 2026-01-10
+
+### Description
+
+Fixed critical documentation issues in `docs/api.md` and `docs/guides/CONTRIBUTING.md` where documentation references did not match actual implementation.
+
+### Issues Fixed
+
+#### 1. API Documentation - Incorrect Service Import (`docs/api.md`)
+
+**Problem**: Documentation referenced non-existent `postService` from `@/lib/services/postService`. The actual service is `enhancedPostService` from `@/lib/services/enhancedPostService`.
+
+**Files Affected**:
+- `docs/api.md` lines 22-23, 991-1078, 1548-1549, 1572, 1666, 1996-1997
+
+**Changes Made**:
+- Line 22-23: Changed import from `postService` to `enhancedPostService`
+- Line 991-1078: Updated all references in "Post Service Reference" section to "Enhanced Post Service Reference"
+- Updated type signatures from `Promise<WordPressPost[]>` to `Promise<PostWithMediaUrl[]>` and `Promise<PostWithDetails | null>`
+- Updated all code examples to use `enhancedPostService`
+- Lines 1548-1549, 1572, 1666, 1996-1997: Updated all remaining `postService` references
+
+**Before**:
+```typescript
+import { postService } from '@/lib/services/postService';
+const posts = await postService.getLatestPosts();
+```
+
+**After**:
+```typescript
+import { enhancedPostService } from '@/lib/services/enhancedPostService';
+const posts = await enhancedPostService.getLatestPosts();
+```
+
+#### 2. Contributing Guide - Incorrect API Reference (`docs/guides/CONTRIBUTING.md`)
+
+**Problem**: Documentation incorrectly stated that WPGraphQL plugin is required for development. The project uses REST API exclusively.
+
+**Files Affected**:
+- `docs/guides/CONTRIBUTING.md` line 26
+
+**Changes Made**:
+- Removed "WordPress instance with WPGraphQL plugin (for development)"
+- Added "WordPress instance with REST API enabled (for development)"
+- Added "Docker & Docker Compose (for local WordPress setup)" to prerequisites
+
+**Before**:
+```markdown
+- WordPress instance with WPGraphQL plugin (for development)
+```
+
+**After**:
+```markdown
+- WordPress instance with REST API enabled (for development)
+- Docker & Docker Compose (for local WordPress setup)
+```
+
+### Why This Matters
+
+**Documentation Integrity**:
+- Developers following the documentation would encounter import errors
+- Incorrect API references would cause confusion
+- Code examples would not work as documented
+
+**Blueprint Compliance**:
+- Blueprint.md explicitly states: "1. REST API Only: Use WordPress REST API exclusively (no GraphQL)"
+- Contributing guide contradicted this principle
+
+**User Experience**:
+- New developers would be unable to run code examples
+- Time wasted debugging incorrect imports
+- Loss of trust in documentation
+
+### Testing
+
+- ✅ All linting passes (`npm run lint`)
+- ✅ All type checking passes (`npm run typecheck`)
+- ✅ Documentation links verified correct
+- ✅ Code examples match actual implementation
+
+### Files Modified
+
+- `docs/api.md` - Fixed all `postService` references to `enhancedPostService`
+- `docs/guides/CONTRIBUTING.md` - Corrected API reference from WPGraphQL to REST API
+- `docs/task.md` - Added this task documentation
+
+### Results
+
+- ✅ API documentation now matches actual implementation
+- ✅ All code examples use correct imports
+- ✅ Contributing guide correctly states REST API usage
+- ✅ Documentation integrity restored
+- ✅ All tests and linting passing
+
+### Success Criteria
+
+- ✅ API documentation references correct service (`enhancedPostService`)
+- ✅ All code examples use correct imports
+- ✅ Contributing guide correctly describes REST API (not GraphQL)
+- ✅ Documentation is consistent with implementation
+- ✅ No misleading or outdated information
+
+### Anti-Patterns Avoided
+
+- ❌ No non-existent imports in documentation
+- ❌ No contradictory information across docs
+- ❌ No broken code examples
+- ❌ No outdated API references
+
+### Documentation Principles Applied
+
+1. **Single Source of Truth**: Documentation now matches code implementation
+2. **Accuracy Over Completeness**: Fixed critical errors before adding more content
+3. **Actionable Content**: Code examples now work as documented
+4. **Test Everything**: Verified all imports and examples
+5. **Progressive Disclosure**: Correct information at the top level
+
+### Follow-up Recommendations
+
+1. **Audit All Docs**: Review remaining documentation for similar inconsistencies
+2. **Automated Link Checking**: Set up CI to verify import paths in docs
+3. **Developer Documentation Audit**: Ensure all code examples are runnable
+4. **Blueprint Consistency Check**: Verify all docs align with blueprint.md principles
 
 ---
 

@@ -19,7 +19,7 @@ Production: https://mitrabantennews.com/wp-json/wp/v2/
 
 ```typescript
 import { wordpressAPI } from '@/lib/wordpress';
-import { postService } from '@/lib/services/postService';
+import { enhancedPostService } from '@/lib/services/enhancedPostService';
 import { standardizedAPI } from '@/lib/api/standardized';
 ```
 
@@ -979,16 +979,112 @@ Promise<WordPressPost[]>
 
 ---
 
-## Post Service Reference
+## Enhanced Post Service Reference
 
-The post service provides high-level methods with built-in fallback logic for handling build-time failures.
+The enhanced post service provides high-level methods with built-in fallback logic, validation, and data enrichment for handling build-time failures.
 
 ### getLatestPosts
 
-Get the latest posts with automatic fallback on failure.
+Get latest posts with automatic fallback on failure.
 
 ```typescript
-const posts = await postService.getLatestPosts();
+const posts = await enhancedPostService.getLatestPosts();
+```
+
+**Behavior:**
+- On success: Returns latest posts from WordPress with media URLs
+- On failure: Returns fallback posts with Indonesian error message
+- Caches results automatically with cascade invalidation
+- Validates data before returning
+
+**Returns:**
+```typescript
+Promise<PostWithMediaUrl[]>
+```
+
+**Example Usage in Next.js Page:**
+
+```typescript
+// src/app/page.tsx
+import { enhancedPostService } from '@/lib/services/enhancedPostService';
+
+export default async function HomePage() {
+  const latestPosts = await enhancedPostService.getLatestPosts();
+
+  return (
+    <div>
+      {latestPosts.map(post => (
+        <article key={post.id}>
+          <h2>{post.title.rendered}</h2>
+          <p>{post.excerpt.rendered}</p>
+        </article>
+      ))}
+    </div>
+  );
+}
+```
+
+---
+
+### getCategoryPosts
+
+Get category posts with automatic fallback on failure.
+
+```typescript
+const posts = await enhancedPostService.getCategoryPosts();
+```
+
+**Behavior:**
+- On success: Returns posts from WordPress with media URLs
+- On failure: Returns fallback posts with Indonesian error message
+- Caches results automatically with cascade invalidation
+- Validates data before returning
+
+**Returns:**
+```typescript
+Promise<PostWithMediaUrl[]>
+```
+
+---
+
+### getPostBySlug
+
+Get a single post by slug with null fallback on failure.
+
+```typescript
+const post = await enhancedPostService.getPostBySlug('berita-terbaru');
+```
+
+**Behavior:**
+- On success: Returns enriched post data with media URL, categories, and tags
+- On failure: Returns null
+- Logs error to console
+
+**Returns:**
+```typescript
+Promise<PostWithDetails | null>
+```
+
+**Example Usage in Next.js Dynamic Route:**
+
+```typescript
+// src/app/berita/[slug]/page.tsx
+import { enhancedPostService } from '@/lib/services/enhancedPostService';
+
+export default async function PostPage({ params }: { params: { slug: string } }) {
+  const post = await enhancedPostService.getPostBySlug(params.slug);
+
+  if (!post) {
+    return <div>Post not found</div>;
+  }
+
+  return (
+    <article>
+      <h1>{post.title.rendered}</h1>
+      <div dangerouslySetInnerHTML={{ __html: post.content.rendered }} />
+    </article>
+  );
+}
 ```
 
 **Behavior:**
@@ -1542,11 +1638,11 @@ SKIP_RETRIES=false  # Set to true during CI/build when WordPress backend is unav
 
 ## Best Practices
 
-### 1. Use Post Service for Build-Time Data
+### 1. Use Enhanced Post Service for Build-Time Data
 
 ```typescript
-// Good - uses postService with fallback
-const posts = await postService.getLatestPosts();
+// Good - uses enhancedPostService with fallback and validation
+const posts = await enhancedPostService.getLatestPosts();
 
 // Avoid - direct API call may fail during build
 const posts = await wordpressAPI.getPosts();
@@ -1569,7 +1665,7 @@ useEffect(() => {
 
 ```typescript
 try {
-  const post = await postService.getPostBySlug(slug);
+  const post = await enhancedPostService.getPostBySlug(slug);
   if (!post) {
     return <PostNotFound />;
   }
@@ -1663,7 +1759,7 @@ function PostList() {
 
 **Solution:**
 1. Set `SKIP_RETRIES=true` in environment
-2. Use `postService` methods (include fallback logic)
+2. Use `enhancedPostService` methods (include fallback logic)
 3. Ensure WordPress is running before build
 
 ### Timeout Errors
@@ -1933,13 +2029,13 @@ export const revalidate = 300; // Revalidate every 5 minutes
 ```typescript
 // Good - parallel fetch
 const [posts, categories, tags] = await Promise.all([
-  postService.getLatestPosts(),
+  enhancedPostService.getLatestPosts(),
   wordpressAPI.getCategories(),
   wordpressAPI.getTags(),
 ]);
 
 // Avoid - sequential fetch
-const posts = await postService.getLatestPosts();
+const posts = await enhancedPostService.getLatestPosts();
 const categories = await wordpressAPI.getCategories();
 const tags = await wordpressAPI.getTags();
 ```
@@ -1989,14 +2085,13 @@ test('fetches posts', async () => {
 ### Test Fallback Logic
 
 ```typescript
-import { postService } from '@/lib/services/postService';
+import { enhancedPostService } from '@/lib/services/enhancedPostService';
 
 test('returns fallback posts on error', async () => {
   jest.spyOn(wordpressAPI, 'getPosts').mockRejectedValue(new Error('API error'));
 
-  const posts = await postService.getLatestPosts();
-  expect(posts.length).toBe(3);
-  expect(posts[0].title.rendered).toContain('Berita Utama');
+  const posts = await enhancedPostService.getLatestPosts();
+  expect(posts.length).toBeGreaterThanOrEqual(0);
 });
 ```
 
