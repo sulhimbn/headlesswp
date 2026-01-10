@@ -1,7 +1,8 @@
 'use client'
 
 import Link from 'next/link'
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, memo } from 'react'
+import { Icon } from '@/components/ui/Icon'
 
 const NAVIGATION_ITEMS = [
   { href: '/', label: 'Beranda' },
@@ -11,7 +12,7 @@ const NAVIGATION_ITEMS = [
   { href: '/olahraga', label: 'Olahraga' },
 ] as const
 
-export default function Header() {
+export default memo(function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const menuButtonRef = useRef<HTMLButtonElement>(null)
   const firstMenuItemRef = useRef<HTMLAnchorElement>(null)
@@ -68,15 +69,7 @@ export default function Header() {
             onClick={() => setIsMenuOpen(!isMenuOpen)}
           >
             <span className="sr-only">{isMenuOpen ? 'Tutup menu' : 'Buka menu'}</span>
-            {isMenuOpen ? (
-              <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            ) : (
-              <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
-            )}
+            {isMenuOpen ? <Icon type="close" className="h-6 w-6" /> : <Icon type="menu" className="h-6 w-6" />}
           </button>
 
           <nav className="hidden md:flex space-x-8">
@@ -121,4 +114,4 @@ export default function Header() {
       )}
     </header>
   )
-}
+})
