@@ -468,4 +468,4 @@ export function unwrapValidationResultSafe<T>(result: ValidationResult<T>, fallb
   return result.data!;
 }
 
-export type { ValidationError };
+export type { ValidationError, ValidationResult };

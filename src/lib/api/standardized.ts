@@ -12,6 +12,23 @@ import {
 import { createApiError } from './errors';
 import { DEFAULT_PER_PAGE } from './config';
 
+async function getAllEntities<T>(
+  entities: T[],
+  endpoint: string
+): Promise<ApiListResult<T>> {
+  const pagination: ApiPaginationMetadata = {
+    page: 1,
+    perPage: entities.length,
+    total: entities.length,
+    totalPages: 1
+  };
+  return createSuccessListResult(
+    entities,
+    { endpoint },
+    pagination
+  );
+}
+
 function createErrorListResult(
   endpoint: string,
   metadataOptions?: { cacheHit?: boolean },
@@ -123,17 +140,7 @@ export async function getCategoryBySlug(slug: string): Promise<ApiResult<WordPre
 export async function getAllCategories(): Promise<ApiListResult<WordPressCategory>> {
   try {
     const categories = await wordpressAPI.getCategories();
-    const pagination: ApiPaginationMetadata = {
-      page: 1,
-      perPage: categories.length,
-      total: categories.length,
-      totalPages: 1
-    };
-    return createSuccessListResult(
-      categories,
-      { endpoint: '/wp/v2/categories' },
-      pagination
-    );
+    return getAllEntities(categories, '/wp/v2/categories');
   } catch (error) {
     return createErrorListResult('/wp/v2/categories', undefined, undefined, error);
   }
@@ -160,17 +167,7 @@ export async function getTagBySlug(slug: string): Promise<ApiResult<WordPressTag
 export async function getAllTags(): Promise<ApiListResult<WordPressTag>> {
   try {
     const tags = await wordpressAPI.getTags();
-    const pagination: ApiPaginationMetadata = {
-      page: 1,
-      perPage: tags.length,
-      total: tags.length,
-      totalPages: 1
-    };
-    return createSuccessListResult(
-      tags,
-      { endpoint: '/wp/v2/tags' },
-      pagination
-    );
+    return getAllEntities(tags, '/wp/v2/tags');
   } catch (error) {
     return createErrorListResult('/wp/v2/tags', undefined, undefined, error);
   }

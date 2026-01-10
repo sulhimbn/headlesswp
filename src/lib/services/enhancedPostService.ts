@@ -2,56 +2,65 @@ import { wordpressAPI } from '@/lib/wordpress';
 import type { WordPressPost, WordPressCategory, WordPressTag } from '@/types/wordpress';
 import { PAGINATION_LIMITS } from '@/lib/api/config';
 import { cacheManager, CACHE_TTL, CACHE_KEYS, CACHE_DEPENDENCIES } from '@/lib/cache';
-import { dataValidator, isValidationResultValid } from '@/lib/validation/dataValidator';
+import { dataValidator, isValidationResultValid, type ValidationResult } from '@/lib/validation/dataValidator';
 import { createFallbackPost } from '@/lib/utils/fallbackPost';
 import { logger } from '@/lib/utils/logger';
 import { getFallbackPosts } from '@/lib/constants/fallbackPosts';
 import type { IPostService, PostWithMediaUrl, PostWithDetails, PaginatedPostsResult } from './IPostService';
 
-async function getCategoriesMap(): Promise<Map<number, WordPressCategory>> {
-  const cacheKey = CACHE_KEYS.categories();
-  const cached = cacheManager.get<Map<number, WordPressCategory>>(cacheKey);
+interface EntityMapOptions<T> {
+  cacheKey: string;
+  fetchFn: () => Promise<T[]>;
+  validateFn: (data: T[]) => ValidationResult<T[]>;
+  ttl: number;
+  dependencies: string[];
+  entityName: string;
+}
+
+async function getEntityMap<T extends { id: number }>(
+  options: EntityMapOptions<T>
+): Promise<Map<number, T>> {
+  const cached = cacheManager.get<Map<number, T>>(options.cacheKey);
   if (cached) return cached;
 
   try {
-    const categories = await wordpressAPI.getCategories();
-    const validation = dataValidator.validateCategories(categories);
+    const entities = await options.fetchFn();
+    const validation = options.validateFn(entities);
 
     if (!isValidationResultValid(validation)) {
-      logger.error('Invalid categories data', undefined, { module: 'enhancedPostService', errors: validation.errors });
+      logger.error(`Invalid ${options.entityName} data`, undefined, { module: 'enhancedPostService', errors: validation.errors });
       return new Map();
     }
 
-    const map = new Map<number, WordPressCategory>(validation.data.map((cat: WordPressCategory) => [cat.id, cat]));
-    cacheManager.set(cacheKey, map, CACHE_TTL.CATEGORIES, CACHE_DEPENDENCIES.categories());
+    const map = new Map<number, T>(validation.data.map(entity => [entity.id, entity]));
+    cacheManager.set(options.cacheKey, map, options.ttl, options.dependencies);
     return map;
   } catch (error) {
-    logger.error('Failed to fetch categories', error, { module: 'enhancedPostService' });
+    logger.error(`Failed to fetch ${options.entityName}`, error, { module: 'enhancedPostService' });
     return new Map();
   }
 }
 
+async function getCategoriesMap(): Promise<Map<number, WordPressCategory>> {
+  return getEntityMap<WordPressCategory>({
+    cacheKey: CACHE_KEYS.categories(),
+    fetchFn: () => wordpressAPI.getCategories(),
+    validateFn: dataValidator.validateCategories.bind(dataValidator),
+    ttl: CACHE_TTL.CATEGORIES,
+    dependencies: CACHE_DEPENDENCIES.categories(),
+    entityName: 'categories'
+  });
+}
+
 async function getTagsMap(): Promise<Map<number, WordPressTag>> {
-  const cacheKey = CACHE_KEYS.tags();
-  const cached = cacheManager.get<Map<number, WordPressTag>>(cacheKey);
-  if (cached) return cached;
-
-  try {
-    const tags = await wordpressAPI.getTags();
-    const validation = dataValidator.validateTags(tags);
-
-    if (!isValidationResultValid(validation)) {
-      logger.error('Invalid tags data', undefined, { module: 'enhancedPostService', errors: validation.errors });
-      return new Map();
-    }
-
-    const map = new Map<number, WordPressTag>(validation.data.map((tag: WordPressTag) => [tag.id, tag]));
-    cacheManager.set(cacheKey, map, CACHE_TTL.TAGS, CACHE_DEPENDENCIES.tags());
-    return map;
-  } catch (error) {
-    logger.error('Failed to fetch tags', error, { module: 'enhancedPostService' });
-    return new Map();
-  }
+  return getEntityMap<WordPressTag>({
+    cacheKey: CACHE_KEYS.tags(),
+    fetchFn: () => wordpressAPI.getTags(),
+    validateFn: dataValidator.validateTags.bind(dataValidator),
+    ttl: CACHE_TTL.TAGS,
+    dependencies: CACHE_DEPENDENCIES.tags(),
+    entityName: 'tags'
+  });
 }
 
 async function enrichPostsWithMediaUrls(posts: WordPressPost[]): Promise<PostWithMediaUrl[]> {
@@ -108,11 +117,11 @@ function createFallbackPostsWithMediaUrls(fallbacks: Array<{ id: string; title: 
 
 async function fetchAndValidate<T, R>(
   fetchFn: () => Promise<T>,
-  validateFn: (data: T) => ReturnType<typeof dataValidator.validatePosts>,
+  validateFn: (data: T) => ValidationResult<T>,
   transformFn: (data: T) => R | Promise<R>,
   fallback: R,
   context: string,
-  logLevel: 'warn' | 'error' = 'warn'
+  logLevel: 'warn' | 'error' = 'error'
 ): Promise<R> {
   try {
     const data = await fetchFn();
@@ -130,29 +139,6 @@ async function fetchAndValidate<T, R>(
   }
 }
 
-async function fetchAndValidateSingle<T, R>(
-  fetchFn: () => Promise<T>,
-  validateFn: (data: T) => ReturnType<typeof dataValidator.validatePost>,
-  transformFn: (data: T) => R | Promise<R>,
-  fallback: R,
-  context: string
-): Promise<R> {
-  try {
-    const data = await fetchFn();
-    const validation = validateFn(data);
-
-    if (!isValidationResultValid(validation)) {
-      logger.error(`Invalid data for ${context}`, undefined, { module: 'enhancedPostService', errors: validation.errors });
-      return fallback;
-    }
-
-    return await transformFn(validation.data as T);
-  } catch (error) {
-    logger.error(`Failed to fetch ${context}`, error, { module: 'enhancedPostService' });
-    return fallback;
-  }
-}
-
 export const enhancedPostService: IPostService = {
   getLatestPosts: async (): Promise<PostWithMediaUrl[]> => {
     return fetchAndValidate(
@@ -160,7 +146,8 @@ export const enhancedPostService: IPostService = {
       dataValidator.validatePosts.bind(dataValidator),
       enrichPostsWithMediaUrls,
       createFallbackPostsWithMediaUrls(getFallbackPosts('LATEST')),
-      'latest posts'
+      'latest posts',
+      'warn'
     );
   },
 
@@ -170,7 +157,8 @@ export const enhancedPostService: IPostService = {
       dataValidator.validatePosts.bind(dataValidator),
       enrichPostsWithMediaUrls,
       createFallbackPostsWithMediaUrls(getFallbackPosts('CATEGORY')),
-      'category posts'
+      'category posts',
+      'warn'
     );
   },
 
@@ -180,7 +168,8 @@ export const enhancedPostService: IPostService = {
       dataValidator.validatePosts.bind(dataValidator),
       enrichPostsWithMediaUrls,
       [],
-      'all posts'
+      'all posts',
+      'warn'
     );
   },
 
@@ -227,7 +216,7 @@ export const enhancedPostService: IPostService = {
   },
 
   getPostById: async (id: number): Promise<PostWithDetails | null> => {
-    return fetchAndValidateSingle(
+    return fetchAndValidate(
       () => wordpressAPI.getPostById(id),
       dataValidator.validatePost.bind(dataValidator),
       enrichPostWithDetails,

@@ -1,6 +1,6 @@
 # Architecture Blueprint
 
-**Version**: 1.4.6
+**Version**: 1.4.9
 **Last Updated**: 2026-01-10 (Code Architect)
 
 ## System Architecture
@@ -303,23 +303,45 @@ interface ApiListResult<T> extends ApiResult<T[]> {
    - Type-safe with generic types
    - Applied to 5 methods (getPostBySlug, getCategoryById, getCategoryBySlug, getTagById, getTagBySlug)
 
+**Service Layer Helpers** (`src/lib/services/enhancedPostService.ts`):
+1. **`fetchAndValidate<T, R>()`** - Unified fetch and validate helper
+   - Merged duplicate `fetchAndValidate` and `fetchAndValidateSingle` functions
+   - Accepts generic `ValidationResult<T>` type for both single and collection validation
+   - Supports configurable log level with safer default ('error')
+   - Applied to 4 service methods (getLatestPosts, getCategoryPosts, getAllPosts, getPostById)
+
+2. **`getEntityMap<T>()`** - Generic entity map helper
+   - Merged duplicate `getCategoriesMap` and `getTagsMap` functions
+   - Accepts `EntityMapOptions<T>` interface for configuration
+   - Works with any entity type that has an `id: number` property
+   - Applied to 2 service methods (getCategoriesMap, getTagsMap)
+
+**API Layer Helpers** (`src/lib/api/standardized.ts`):
+1. **`getAllEntities<T>()`** - Generic all entities helper
+   - Merged duplicate `getAllCategories` and `getAllTags` functions
+   - Accepts entities array and endpoint string
+   - Handles pagination metadata creation (page: 1, perPage: entities.length, total: entities.length, totalPages: 1)
+   - Applied to 2 API methods (getAllCategories, getAllTags)
+
 **Code Quality Improvements**:
-- **Before**: 252 lines with 40 duplicate lines across 5 methods
-- **After**: 213 lines with single reusable helper
-- **Lines Eliminated**: 40 lines (16% reduction)
-- **DRY Principle Applied**: Error handling logic defined once
+- **Before**: 252 lines with 40 duplicate lines across 5 API methods; 46 duplicate lines across 2 service functions; 36 duplicate lines across 2 API getAllX functions
+- **After**: 213 lines (API layer) + 229 lines (service layer) + 207 lines (standardized API) with reusable helpers
+- **Lines Eliminated**: 40 lines (API layer response.ts) + 23 lines (service layer) + 14 lines (standardized API) = 77 lines total (20% reduction)
+- **DRY Principle Applied**: Error handling and pagination logic defined once
 - **Single Responsibility**: Each helper has one clear purpose
-- **Consistency**: All methods use identical error handling
-- **Maintainability**: Changes to error handling only require updating one function
+- **Consistency**: All methods use identical patterns
+- **Maintainability**: Changes to error handling or pagination only require updating one function
 
 **Benefits**:
-1. **Reduced Maintenance**: Bug fixes or improvements to error handling only need to be made once
-2. **Consistency**: All resources (posts, categories, tags) have identical error handling
+1. **Reduced Maintenance**: Bug fixes or improvements to error handling/pagination only need to be made once
+2. **Consistency**: All resources (posts, categories, tags) have identical error handling and pagination
 3. **Type Safety**: Generic TypeScript types ensure compile-time type checking
 4. **Testability**: Helper functions can be tested independently
 5. **Code Clarity**: Smaller, focused methods are easier to understand
+6. **Safer Defaults**: Service layer defaults to 'error' log level for better visibility
+7. **Extensibility**: New entity types can reuse generic patterns
 
-**See Also**: [Task REFACTOR-010](./task.md#refactor-010)
+**See Also**: [Task REFACTOR-010](./task.md#refactor-010), [Task REFACTOR-011](./task.md#refactor-011), [Task REFACTOR-012](./task.md#refactor-012), [Task REFACTOR-014](./task.md#refactor-014)
 
 ## Integration Resilience Patterns
 
