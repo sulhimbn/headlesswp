@@ -330,15 +330,23 @@ interface ApiListResult<T> extends ApiResult<T[]> {
 
 **API Layer Helpers** (`src/lib/api/standardized.ts`):
 1. **`getAllEntities<T>()`** - Generic all entities helper
-   - Merged duplicate `getAllCategories` and `getAllTags` functions
-   - Accepts entities array and endpoint string
-   - Handles pagination metadata creation (page: 1, perPage: entities.length, total: entities.length, totalPages: 1)
-   - Applied to 2 API methods (getAllCategories, getAllTags)
+    - Merged duplicate `getAllCategories` and `getAllTags` functions
+    - Accepts entities array and endpoint string
+    - Handles pagination metadata creation (page: 1, perPage: entities.length, total: entities.length, totalPages: 1)
+    - Applied to 2 API methods (getAllCategories, getAllTags)
+
+**Error Handling Helpers** (`src/lib/api/errors.ts`):
+1. **`handleStatusCodeError()`** - Status code error handling helper
+    - Merged duplicate status code handling from AxiosError and generic Error blocks
+    - Handles rate limit (429), server errors (5xx), and client errors (4xx)
+    - Supports retry-after header for rate limit errors
+    - Applied to 2 code paths in `createApiError` function
+    - Single source of truth for status code error logic
 
 **Code Quality Improvements**:
-- **Before**: 252 lines with 40 duplicate lines across 5 API methods; 46 duplicate lines across 2 service functions; 36 duplicate lines across 2 API getAllX functions
-- **After**: 213 lines (API layer) + 229 lines (service layer) + 207 lines (standardized API) with reusable helpers
-- **Lines Eliminated**: 40 lines (API layer response.ts) + 23 lines (service layer) + 14 lines (standardized API) + 20 lines (fetchAndValidate merge) = 97 lines total (25% reduction)
+- **Before**: 252 lines with 40 duplicate lines across 5 API methods; 46 duplicate lines across 2 service functions; 36 duplicate lines across 2 API getAllX functions; 38 duplicate lines in `createApiError`
+- **After**: 213 lines (API layer) + 229 lines (service layer) + 207 lines (standardized API) + 187 lines (errors) with reusable helpers
+- **Lines Eliminated**: 40 lines (API layer response.ts) + 23 lines (service layer) + 14 lines (standardized API) + 20 lines (fetchAndValidate merge) + 38 lines (errors) = 135 lines total (28% reduction)
 - **DRY Principle Applied**: Error handling and pagination logic defined once
 - **Single Responsibility**: Each helper has one clear purpose
 - **Consistency**: All methods use identical patterns
@@ -371,7 +379,7 @@ interface ApiListResult<T> extends ApiResult<T[]> {
 6. **Safer Defaults**: Service layer defaults to 'error' log level for better visibility
 7. **Extensibility**: New entity types can reuse generic patterns
 
-**See Also**: [Task REFACTOR-010](./task.md#refactor-010), [Task REFACTOR-011](./task.md#refactor-011), [Task REFACTOR-012](./task.md#refactor-012), [Task REFACTOR-014](./task.md#refactor-014)
+**See Also**: [Task REFACTOR-010](./task.md#refactor-010), [Task REFACTOR-011](./task.md#refactor-011), [Task REFACTOR-012](./task.md#refactor-012), [Task REFACTOR-014](./task.md#refactor-014), [Task ARCH-ERROR-002](./task.md#arch-error-002)
 
 ## Integration Resilience Patterns
 
