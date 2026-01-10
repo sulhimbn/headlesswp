@@ -65,6 +65,10 @@ Design tokens are CSS variables defined in `src/app/globals.css` that provide a 
 --color-background: 220 13% 98%;           /* Gray-50 equivalent */
 --color-surface: 0 0% 100%;                /* White */
 --color-border: 220 13% 91%;              /* Gray-300 equivalent */
+--color-background-dark: 220 13% 10%;     /* Gray-900 equivalent (dark theme) */
+--color-surface-dark: 220 13% 15%;         /* Gray-800 equivalent (dark theme) */
+--color-text-muted-dark: 220 9% 65%;       /* Gray-400 equivalent (dark theme) */
+--color-text-faint-dark: 220 9% 45%;       /* Gray-500 equivalent (dark theme) */
 ```
 
 **Spacing**:
@@ -157,6 +161,9 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(({ children, ...props 
 - `text-gray-800` → `text-[hsl(var(--color-text-primary))]`
 - `text-gray-700` → `text-[hsl(var(--color-text-secondary))]`
 - `hover:bg-gray-300` → `hover:bg-[hsl(var(--color-secondary))]`
+- `bg-gray-900` → `bg-[hsl(var(--color-background-dark))]`
+- `text-gray-400` → `text-[hsl(var(--color-text-muted-dark))]`
+- `border-gray-800` → `border-[hsl(var(--color-surface-dark))]`
 
 **Button Variant Mappings** (extracted to `src/lib/constants/buttonStyles.ts`):
 - **Primary variant**: `bg-[hsl(var(--color-primary))] text-white hover:bg-[hsl(var(--color-primary-dark))]`
