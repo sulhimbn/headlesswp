@@ -93,7 +93,6 @@ describe('Health Check API Endpoints', () => {
 
       await HealthGET()
 
-      const events = telemetryCollector.getEvents()
       const healthEvents = telemetryCollector.getEventsByCategory('health-check')
 
       expect(healthEvents).toHaveLength(1)

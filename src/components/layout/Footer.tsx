@@ -14,7 +14,7 @@ export default function Footer() {
   const currentYear = new Date().getFullYear()
 
   return (
-    <footer className="bg-[hsl(var(--color-background-dark))] text-white mt-12" role="contentinfo">
+    <footer className="bg-[hsl(var(--color-background-dark))] text-[hsl(var(--color-text-muted-dark))] mt-12" role="contentinfo">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
           <section aria-labelledby="footer-about-heading">

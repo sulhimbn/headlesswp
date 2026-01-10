@@ -226,25 +226,25 @@ describe('Header Component', () => {
 
   describe('Design Tokens', () => {
     test('uses design tokens for header background', () => {
-      const { container } = render(<Header />)
+      render(<Header />)
       const header = screen.getByRole('banner')
       expect(header).toHaveClass('bg-[hsl(var(--color-surface))]')
     })
 
     test('uses design tokens for shadow', () => {
-      const { container } = render(<Header />)
+      render(<Header />)
       const header = screen.getByRole('banner')
       expect(header).toHaveClass('shadow-[var(--shadow-sm)]')
     })
 
     test('uses design tokens for logo color', () => {
-      const { container } = render(<Header />)
+      render(<Header />)
       const logo = screen.getByRole('link', { name: /Mitra Banten News Beranda/ })
       expect(logo).toHaveClass('text-[hsl(var(--color-primary))]')
     })
 
     test('uses design tokens for navigation link hover', () => {
-      const { container } = render(<Header />)
+      render(<Header />)
       const navLink = screen.getByRole('link', { name: 'Beranda' })
       expect(navLink).toHaveClass('hover:text-[hsl(var(--color-primary))]')
     })

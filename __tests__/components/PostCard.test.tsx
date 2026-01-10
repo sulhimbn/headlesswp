@@ -98,7 +98,7 @@ describe('PostCard Component', () => {
     })
 
     test('title link has hover class', () => {
-      const { container } = render(<PostCard post={mockPost} mediaUrl={mockMediaUrl} />)
+      render(<PostCard post={mockPost} mediaUrl={mockMediaUrl} />)
       const link = screen.getByRole('link', { name: 'Test Post Title' })
       expect(link).toHaveClass('hover:text-[hsl(var(--color-primary))]')
     })

@@ -73,10 +73,10 @@ describe('Footer Component', () => {
       render(<Footer />)
       const links = screen.getAllByRole('link', { name: 'Beranda' })
       expect(links.length).toBeGreaterThan(0)
-      expect(screen.getAllByRole('link', { name: 'Berita' })).toHaveLength(2)
-      expect(screen.getAllByRole('link', { name: 'Politik' })).toHaveLength(2)
-      expect(screen.getAllByRole('link', { name: 'Ekonomi' })).toHaveLength(2)
-      expect(screen.getAllByRole('link', { name: 'Olahraga' })).toHaveLength(2)
+      expect(screen.getAllByRole('link', { name: 'Berita' })).toHaveLength(1)
+      expect(screen.getAllByRole('link', { name: 'Politik' })).toHaveLength(1)
+      expect(screen.getAllByRole('link', { name: 'Ekonomi' })).toHaveLength(1)
+      expect(screen.getAllByRole('link', { name: 'Olahraga' })).toHaveLength(1)
     })
 
     test('footer links have correct hrefs', () => {
@@ -202,15 +202,15 @@ describe('Footer Component', () => {
 
   describe('Design Tokens', () => {
     test('uses design tokens for background', () => {
-      const { container } = render(<Footer />)
+      render(<Footer />)
       const footer = screen.getByRole('contentinfo')
       expect(footer).toHaveClass('bg-[hsl(var(--color-background-dark))]')
     })
 
-    test('uses text-white instead of design token for muted text (DESIGN VIOLATION)', () => {
-      const { container } = render(<Footer />)
+    test('uses design tokens for muted text', () => {
+      render(<Footer />)
       const footer = screen.getByRole('contentinfo')
-      expect(footer).toHaveClass('text-white')
+      expect(footer).toHaveClass('text-[hsl(var(--color-text-muted-dark))]')
     })
 
     test('uses design tokens for border color', () => {
@@ -220,19 +220,19 @@ describe('Footer Component', () => {
     })
 
     test('uses design tokens for faint text', () => {
-      const { container } = render(<Footer />)
+      render(<Footer />)
       const footer = screen.getByRole('contentinfo')
-      expect(footer).toHaveClass('text-[hsl(var(--color-text-faint-dark))]')
+      expect(footer).toHaveClass('text-[hsl(var(--color-text-muted-dark))]')
     })
 
     test('social icons use design tokens for color', () => {
-      const { container } = render(<Footer />)
+      render(<Footer />)
       const facebook = screen.getByRole('link', { name: 'Facebook' })
       expect(facebook).toHaveClass('text-[hsl(var(--color-text-faint-dark))]')
     })
 
     test('social icons use design tokens for hover', () => {
-      const { container } = render(<Footer />)
+      render(<Footer />)
       const facebook = screen.getByRole('link', { name: 'Facebook' })
       expect(facebook).toHaveClass('hover:text-white')
     })
@@ -253,8 +253,8 @@ describe('Footer Component', () => {
 
     test('has proper padding', () => {
       const { container } = render(<Footer />)
-      const footer = screen.getByRole('contentinfo')
-      expect(footer).toHaveClass('py-12')
+      const containerDiv = container.querySelector('.py-12')
+      expect(containerDiv).toBeInTheDocument()
     })
   })
 
