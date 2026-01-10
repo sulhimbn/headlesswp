@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { memo } from 'react'
 import { PAGINATION } from '@/lib/api/config'
 
 interface PaginationProps {
@@ -7,7 +8,7 @@ interface PaginationProps {
   basePath: string
 }
 
-export default function Pagination({ currentPage, totalPages, basePath }: PaginationProps) {
+function PaginationComponent({ currentPage, totalPages, basePath }: PaginationProps) {
   const pages: (number | string)[] = []
   const maxVisible = PAGINATION.MAX_VISIBLE_PAGES
 
@@ -53,7 +54,7 @@ export default function Pagination({ currentPage, totalPages, basePath }: Pagina
 
       {pages.map((page, index) => (
         page === '...' ? (
-          <span key={index} className="px-3 py-2 text-sm text-[hsl(var(--color-text-secondary))]">
+          <span key={`ellipsis-${index}`} className="px-3 py-2 text-sm text-[hsl(var(--color-text-secondary))]">
             ...
           </span>
         ) : (
@@ -85,3 +86,13 @@ export default function Pagination({ currentPage, totalPages, basePath }: Pagina
     </nav>
   )
 }
+
+function arePropsEqual(prevProps: PaginationProps, nextProps: PaginationProps): boolean {
+  return (
+    prevProps.currentPage === nextProps.currentPage &&
+    prevProps.totalPages === nextProps.totalPages &&
+    prevProps.basePath === nextProps.basePath
+  )
+}
+
+export default memo(PaginationComponent, arePropsEqual)
