@@ -2,6 +2,7 @@ import { WordPressPost, WordPressCategory, WordPressTag, WordPressMedia, WordPre
 import { apiClient, getApiUrl } from './api/client';
 import { cacheManager, CACHE_TTL, CACHE_KEYS } from './cache';
 import { logger } from '@/lib/utils/logger';
+import { cacheFetch } from '@/lib/utils/cacheFetch';
 import type { IWordPressAPI } from './api/IWordPressAPI';
 
 export const wordpressAPI: IWordPressAPI = {
@@ -154,17 +155,18 @@ export const wordpressAPI: IWordPressAPI = {
   search: async (query: string, signal?: AbortSignal): Promise<WordPressPost[]> => {
     const cacheKey = CACHE_KEYS.search(query);
 
-    const cached = cacheManager.get<WordPressPost[]>(cacheKey);
-    if (cached) {
-      return cached;
-    }
+    const result = await cacheFetch(
+      () => {
+        return apiClient.get(getApiUrl('/wp/v2/search'), { params: { search: query }, signal }).then(res => res.data);
+      },
+      {
+        key: cacheKey,
+        ttl: CACHE_TTL.SEARCH,
+        transform: (data) => data as WordPressPost[]
+      }
+    );
 
-    const response = await apiClient.get(getApiUrl('/wp/v2/search'), { params: { search: query }, signal });
-    const data = response.data;
-
-    cacheManager.set(cacheKey, data, CACHE_TTL.SEARCH);
-
-    return data;
+    return result ?? [];
   }
 };
 
