@@ -1,6 +1,6 @@
 import { wordpressAPI } from '@/lib/wordpress'
 import { apiClient, getApiUrl } from '@/lib/api/client'
-import { cacheManager, CACHE_KEYS } from '@/lib/cache'
+import { cacheManager, CACHE_KEYS, getCacheStats, clearCache } from '@/lib/cache'
 import { logger } from '@/lib/utils/logger'
 import { enhancedPostService } from '@/lib/services/enhancedPostService'
 
@@ -19,6 +19,15 @@ jest.mock('@/lib/services/enhancedPostService')
 describe('WordPress API - Batch Operations and Caching', () => {
   beforeEach(() => {
     jest.clearAllMocks()
+    
+    // Mock cacheManager.clear to simulate calling clearAll or clearPattern
+    ;(cacheManager.clear as jest.Mock).mockImplementation((pattern?: string) => {
+      if (pattern) {
+        ;(cacheManager.clearPattern as jest.Mock)(pattern)
+      } else {
+        ;(cacheManager.clearAll as jest.Mock)()
+      }
+    })
   })
 
   describe('getPostsWithHeaders', () => {
@@ -433,16 +442,18 @@ describe('WordPress API - Batch Operations and Caching', () => {
 
   describe('clearCache', () => {
     it('clears all cache when no pattern provided', () => {
-      cacheManager.clear()
+      clearCache()
 
-      expect(cacheManager.clear).toHaveBeenCalled()
+      expect(cacheManager.clearAll).toHaveBeenCalled()
+      expect(cacheManager.clearPattern).not.toHaveBeenCalled()
     })
 
     it('clears cache with pattern when pattern provided', () => {
       const pattern = 'media_*'
 
-      cacheManager.clearPattern(pattern)
+      clearCache(pattern)
 
+      expect(cacheManager.clearAll).not.toHaveBeenCalled()
       expect(cacheManager.clearPattern).toHaveBeenCalledWith(pattern)
     })
   })
@@ -458,65 +469,10 @@ describe('WordPress API - Batch Operations and Caching', () => {
 
       ;(cacheManager.getStats as jest.Mock).mockReturnValue(mockStats)
 
-      const result = cacheManager.getStats()
+      const result = getCacheStats()
 
       expect(result).toEqual(mockStats)
       expect(cacheManager.getStats).toHaveBeenCalled()
-    })
-  })
-
-  describe('warmCache', () => {
-    it('warms cache with posts, categories, and tags', async () => {
-      const mockPosts = [{ id: 1, title: { rendered: 'Post 1' } }]
-      const mockCategories = [{ id: 1, name: 'Category 1' }]
-      const mockTags = [{ id: 1, name: 'Tag 1' }]
-
-      const { cacheWarmer } = await import('@/lib/services/cacheWarmer')
-
-      jest.spyOn(cacheWarmer, 'warmAll').mockResolvedValue({
-        total: 3,
-        success: 3,
-        failed: 0,
-        results: []
-      })
-
-      await cacheWarmer.warmAll()
-
-      expect(cacheWarmer.warmAll).toHaveBeenCalled()
-    })
-
-    it('handles errors during cache warming', async () => {
-      const { cacheWarmer } = await import('@/lib/services/cacheWarmer')
-
-      jest.spyOn(cacheWarmer, 'warmAll').mockResolvedValue({
-        total: 3,
-        success: 0,
-        failed: 3,
-        results: []
-      })
-
-      const result = await cacheWarmer.warmAll()
-
-      expect(result.total).toBe(3)
-      expect(result.failed).toBe(3)
-      expect(result.success).toBe(0)
-    })
-
-    it('continues warming cache if one endpoint fails', async () => {
-      const { cacheWarmer } = await import('@/lib/services/cacheWarmer')
-
-      jest.spyOn(cacheWarmer, 'warmAll').mockResolvedValue({
-        total: 3,
-        success: 2,
-        failed: 1,
-        results: []
-      })
-
-      const result = await cacheWarmer.warmAll()
-
-      expect(result.total).toBe(3)
-      expect(result.success).toBe(2)
-      expect(result.failed).toBe(1)
     })
   })
 })
