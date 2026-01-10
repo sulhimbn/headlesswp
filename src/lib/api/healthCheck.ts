@@ -1,4 +1,3 @@
-import { apiClient } from './client';
 import { createApiError } from './errors';
 import {
   API_TIMEOUT,
@@ -16,9 +15,18 @@ export interface HealthCheckResult {
   error?: string;
 }
 
+interface HttpClient {
+  get(url: string, config?: unknown): Promise<unknown>;
+}
+
 export class HealthChecker {
+  private httpClient: HttpClient;
   private lastCheck: HealthCheckResult | null = null;
   private checkInProgress = false;
+
+  constructor(httpClient: HttpClient) {
+    this.httpClient = httpClient;
+  }
 
   async check(): Promise<HealthCheckResult> {
     if (this.checkInProgress) {
@@ -34,7 +42,7 @@ export class HealthChecker {
     const startTime = Date.now();
 
     try {
-      const response = await apiClient.get('/');
+      const response = await this.httpClient.get('/') as { headers?: { 'x-wordpress-api-version'?: string } };
 
       const latency = Date.now() - startTime;
 
@@ -45,7 +53,7 @@ export class HealthChecker {
         message: 'WordPress API is healthy'
       };
 
-      if (response.headers['x-wordpress-api-version']) {
+      if (response.headers?.['x-wordpress-api-version']) {
         result.version = response.headers['x-wordpress-api-version'];
       }
 
@@ -129,20 +137,4 @@ export class HealthChecker {
   }
 }
 
-export const healthChecker = new HealthChecker();
 
-export async function checkApiHealth(): Promise<HealthCheckResult> {
-  return healthChecker.check();
-}
-
-export async function checkApiHealthWithTimeout(timeout: number = API_TIMEOUT): Promise<HealthCheckResult> {
-  return healthChecker.checkWithTimeout(timeout);
-}
-
-export async function checkApiHealthRetry(maxAttempts: number = MAX_RETRIES, delayMs: number = RETRY_INITIAL_DELAY): Promise<HealthCheckResult> {
-  return healthChecker.checkRetry(maxAttempts, delayMs);
-}
-
-export function getLastHealthCheck(): HealthCheckResult | null {
-  return healthChecker.getLastCheck();
-}
