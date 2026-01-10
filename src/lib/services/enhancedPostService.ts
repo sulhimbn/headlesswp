@@ -242,18 +242,6 @@ export const enhancedPostService = {
   getTags: async (): Promise<WordPressTag[]> => {
     const map = await getTagsMap();
     return Array.from(map.values());
-  },
-
-  warmCache: async (): Promise<void> => {
-    try {
-      await Promise.all([
-        getCategoriesMap(),
-        getTagsMap(),
-      ]);
-      logger.info('Enhanced cache warming completed', { module: 'enhancedPostService' });
-    } catch (error) {
-      logger.warn('Enhanced cache warming failed', error, { module: 'enhancedPostService' });
-    }
   }
 };
 

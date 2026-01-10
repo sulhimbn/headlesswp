@@ -179,24 +179,8 @@ export const wordpressAPI = {
   },
 
   warmCache: async () => {
-    try {
-      const { enhancedPostService } = await import('./services/enhancedPostService');
-      const results = await Promise.allSettled([
-        wordpressAPI.getPosts({ per_page: 6 }),
-        wordpressAPI.getCategories(),
-        wordpressAPI.getTags(),
-        enhancedPostService.warmCache(),
-      ]);
-
-      const failed = results.filter(r => r.status === 'rejected');
-      if (failed.length > 0) {
-        logger.warn('Cache warming failed', failed[0].reason, { module: 'wordpressAPI' });
-      } else {
-        logger.info('Cache warming completed', { module: 'wordpressAPI' });
-      }
-    } catch (error) {
-      logger.warn('Cache warming failed', error, { module: 'wordpressAPI' });
-    }
+    const { cacheWarmer } = await import('./services/cacheWarmer');
+    return cacheWarmer.warmAll();
   },
 };
 

@@ -1,10 +1,114 @@
 # Task Backlog
 
-**Last Updated**: 2026-01-10 (Performance Engineer)
+**Last Updated**: 2026-01-10 (Code Architect)
 
 ---
 
 ## Active Tasks
+
+## [ARCH-001] Dependency Cleanup - Remove Circular Dependency
+
+**Status**: Complete
+**Priority**: High
+**Assigned**: Code Architect
+**Created**: 2026-01-10
+**Updated**: 2026-01-10
+
+### Description
+
+Removed circular dependency between `wordpressAPI` and `enhancedPostService` by extracting cache warming logic into dedicated `CacheWarmer` service. This architectural improvement follows SOLID principles and eliminates dynamic import code smell.
+
+### Architectural Issues Identified
+
+**Issue: Circular Dependency Between API and Service Layers**
+- **Problem**: `enhancedPostService` imports `wordpressAPI`, and `wordpressAPI.warmCache()` dynamically imports `enhancedPostService`
+- **Impact**: Tight coupling, difficult testing, circular dependency risk, code smell (dynamic import used to break circular dependency)
+- **Root Cause**: Cache warming logic incorrectly placed in `enhancedPostService`, creating bidirectional dependency
+- **Location**: `src/lib/wordpress.ts:183-189` (dynamic import), `src/lib/services/enhancedPostService.ts:1` (import)
+
+**Issue: Violation of Dependency Inversion Principle**
+- **Problem**: Higher-level orchestration (cache warming) depends on lower-level details
+- **Impact**: Difficult to test, tight coupling, poor separation of concerns
+- **Fix**: Extract orchestration into dedicated service with clear dependency direction
+
+### Implementation Summary
+
+1. **Created CacheWarmer Service** (src/lib/services/cacheWarmer.ts):
+   - Dedicated orchestration service for cache warming
+   - Removes circular dependency between wordpressAPI and enhancedPostService
+   - Provides clear one-way dependency flow (cacheWarmer → wordpressAPI, cacheWarmer → enhancedPostService)
+   - Parallel cache warming for optimal performance (posts, categories, tags)
+   - Detailed results tracking (success/failure, latency per endpoint)
+   - Cache statistics getter (hits, misses, hit rate)
+
+2. **Updated wordpressAPI.warmCache()** (src/lib/wordpress.ts):
+   - Removed dynamic import of `enhancedPostService`
+   - Now delegates to `cacheWarmer.warmAll()`
+   - Maintains backward compatible API surface
+   - Cleaner implementation with clear responsibility
+
+3. **Removed warmCache from enhancedPostService** (src/lib/services/enhancedPostService.ts):
+   - Removed `warmCache()` method that was part of circular dependency
+   - No longer responsible for cache warming orchestration
+   - Simplified service to focus on business logic only
+
+### Architectural Benefits
+
+1. **Dependency Inversion Principle**: Higher-level orchestration (CacheWarmer) depends on abstractions (API services)
+2. **Single Responsibility**: CacheWarmer handles orchestration, API services handle data fetching
+3. **No Circular Dependencies**: Clear one-way dependency flow
+4. **Testability**: Each service can be tested independently
+5. **Maintainability**: Easier to modify cache warming without affecting business logic
+6. **Clean Code**: Eliminated dynamic import code smell
+
+### Code Quality Improvements
+
+**Before**:
+- ❌ Circular dependency: wordpressAPI ⇆ enhancedPostService
+- ❌ Dynamic import used to break circular dependency (code smell)
+- ❌ Cache warming in wrong layer (service layer)
+- ❌ Tight coupling between API and service layers
+- ❌ Difficult to test independently
+
+**After**:
+- ✅ No circular dependencies
+- ✅ One-way dependency flow: CacheWarmer → wordpressAPI, CacheWarmer → enhancedPostService
+- ✅ Cache warming in dedicated orchestration layer
+- ✅ Loose coupling, clear separation of concerns
+- ✅ Easy to test independently
+
+### Anti-Patterns Avoided
+
+- ❌ No circular dependencies
+- ❌ No dynamic imports to break circular dependencies
+- ❌ No tight coupling between layers
+- ❌ No violation of SOLID principles
+- ❌ No code smells
+
+### Success Criteria
+
+- ✅ Circular dependency removed
+- ✅ CacheWarmer service created
+- ✅ Clear one-way dependency flow established
+- ✅ All existing functionality preserved
+- ✅ Code quality improved (cleaner architecture)
+- ✅ Follows SOLID principles
+
+### Best Practices Applied
+
+1. **Dependency Inversion**: Higher-level modules (CacheWarmer) depend on lower-level modules (API services)
+2. **Single Responsibility**: Each service has one clear purpose
+3. **Separation of Concerns**: Orchestration separated from data fetching
+4. **Clean Architecture**: Dependencies flow inward, no circular dependencies
+
+### Follow-up Recommendations
+
+- Consider adding cache warming strategy configuration (e.g., lazy warming on startup)
+- Add metrics collection for cache warming performance
+- Consider adding cache warming status endpoint for monitoring
+- Add unit tests for CacheWarmer service
+
+---
 
 ## [PERF-002] Bundle Optimization - Icon Extraction and Lazy Loading
 
