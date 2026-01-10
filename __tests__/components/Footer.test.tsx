@@ -234,7 +234,7 @@ describe('Footer Component', () => {
     test('social icons use design tokens for hover', () => {
       render(<Footer />)
       const facebook = screen.getByRole('link', { name: 'Facebook' })
-      expect(facebook).toHaveClass('hover:text-white')
+      expect(facebook).toHaveClass('hover:text-[hsl(var(--color-surface))]')
     })
   })
 

@@ -19,7 +19,7 @@ export default async function HomePage() {
 
       <main id="main-content" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <section className="mb-12">
-          <SectionHeading className="mb-6">
+          <SectionHeading id="featured" className="mb-6">
             {UI_TEXT.homePage.featuredHeading}
           </SectionHeading>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -30,7 +30,7 @@ export default async function HomePage() {
         </section>
 
         <section>
-          <SectionHeading className="mb-6">
+          <SectionHeading id="latest" className="mb-6">
             {UI_TEXT.homePage.latestHeading}
           </SectionHeading>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

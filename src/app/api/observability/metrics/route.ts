@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server'
 import { telemetryCollector } from '@/lib/api/telemetry'
+import { withApiRateLimit } from '@/lib/api/rateLimitMiddleware'
 
-export async function GET() {
+async function metricsHandler() {
   try {
     const allEvents = telemetryCollector.getEvents()
     const stats = telemetryCollector.getStats()
@@ -98,3 +99,5 @@ export async function GET() {
     })
   }
 }
+
+export const GET = withApiRateLimit(metricsHandler, 'metrics')

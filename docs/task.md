@@ -1,10 +1,280 @@
 # Task Backlog
 
-**Last Updated**: 2026-01-10 (Principal Security Engineer - Security Audit Complete)
+**Last Updated**: 2026-01-10 (Senior UI/UX Engineer - Design System Compliance)
 
 ---
 
 ## Completed Tasks
+
+## [UX-002] Design System Compliance and Anchor Linking Improvements
+
+**Status**: Complete
+**Priority**: High
+**Assigned**: Senior UI/UX Engineer
+**Created**: 2026-01-10
+**Updated**: 2026-01-10
+
+### Description
+
+Fixed design system violations in Footer component and added anchor linking support to SectionHeading components across pages.
+
+### Problem Identified
+
+**Design System Violations** (src/components/layout/Footer.tsx):
+1. **Hardcoded `hover:text-white`** on footer navigation links (line 38)
+2. **Hardcoded `hover:text-white`** on social media icons (lines 64, 71, 78)
+- Violates blueprint.md requirement: All colors must use design tokens
+- Inconsistent with design system principles
+- Makes theming and maintenance harder
+
+**Missing Anchor Linking**:
+- SectionHeading component supports optional `id` prop (UX-001)
+- Pages don't use `id` props for anchor linking
+- Users cannot share direct links to page sections (e.g., `/#featured`)
+
+### Implementation Summary
+
+1. **Fixed Footer Design System Violations** (src/components/layout/Footer.tsx):
+   - Replaced `hover:text-white` with `hover:text-[hsl(var(--color-surface))]`
+   - Applied to 4 occurrences:
+     - Footer navigation links hover state
+     - Social media icons hover states (Facebook, Twitter, Instagram)
+   - Ensures consistency with design system principles
+
+2. **Added Anchor Linking Support**:
+   - Homepage (src/app/page.tsx):
+     - Added `id="featured"` to featured posts section
+     - Added `id="latest"` to latest posts section
+   - News page (src/app/berita/page.tsx):
+     - Added `id="news"` to news page heading
+   - Enables direct linking to page sections
+
+3. **Updated Tests** (__tests__/components/Footer.test.tsx):
+   - Changed test expectation from `hover:text-white` to `hover:text-[hsl(var(--color-surface)))]`
+   - Test now verifies design token usage
+
+### Design System Compliance
+
+| Component | Before | After | Design Token |
+|-----------|--------|-------|---------------|
+| **Footer links hover** | `hover:text-white` | `hover:text-[hsl(var(--color-surface))]` | --color-surface |
+| **Social icons hover** | `hover:text-white` | `hover:text-[hsl(var(--color-surface))]` | --color-surface |
+
+### Anchor Linking Added
+
+| Page | Section | ID | Example Link |
+|------|---------|-----|-------------|
+| **Homepage** | Featured posts | `#featured` | `https://example.com/#featured` |
+| **Homepage** | Latest posts | `#latest` | `https://example.com/#latest` |
+| **News page** | News heading | `#news` | `https://example.com/#news` |
+
+### Files Modified
+
+- `src/components/layout/Footer.tsx` - Fixed design system violations (4 lines changed)
+- `src/app/page.tsx` - Added id props to SectionHeading (2 lines changed)
+- `src/app/berita/page.tsx` - Added id prop to SectionHeading (1 line changed)
+- `__tests__/components/Footer.test.tsx` - Updated test expectation (1 line changed)
+
+### Test Results
+
+- ✅ All 1478 tests passing (no regressions)
+- ✅ ESLint passes with no errors
+- ✅ TypeScript typecheck passes
+- ✅ Zero breaking changes
+
+### Results
+
+- ✅ Footer component now follows design system principles
+- ✅ All hardcoded Tailwind colors replaced with design tokens
+- ✅ Anchor linking enabled for page sections
+- ✅ Users can share direct links to sections
+- ✅ Design system consistency improved
+- ✅ All tests passing (no regressions)
+- ✅ Lint and typecheck passing
+
+### Success Criteria
+
+- ✅ UI more intuitive (anchor linking enabled)
+- ✅ Accessible (screen reader support unchanged)
+- ✅ Consistent with design system (design tokens used)
+- ✅ Responsive all breakpoints (no changes to layout)
+- ✅ Zero regressions (all tests pass)
+
+### Anti-Patterns Avoided
+
+- ❌ No hardcoded Tailwind values in components
+- ❌ No breaking changes (all tests pass)
+- ❌ No design system violations
+- ❌ No accessibility regressions
+
+### UI/UX Principles Applied
+
+1. **Consistency**: Design tokens used throughout Footer
+2. **User-Centric**: Anchor linking improves navigation experience
+3. **Maintainability**: Single source of truth for colors
+4. **Accessibility**: Semantic HTML with id attributes for anchoring
+5. **Single Responsibility**: Clear separation between design tokens and usage
+6. **Theming**: Easier to implement dark mode or custom themes
+
+### Follow-up Recommendations
+
+1. **Other Pages**: Consider adding id props to SectionHeading in other pages (category pages, tag pages)
+2. **Footer Links**: Update footer links href values to match actual pages (currently all link to `/berita`)
+3. **Breadcrumbs**: Consider updating breadcrumbs to include anchor links when applicable
+
+---
+
+## [INT-001] API Route Rate Limiting
+
+**Status**: Complete
+**Priority**: High (Critical Security)
+**Assigned**: Senior Integration Engineer
+**Created**: 2026-01-10
+**Updated**: 2026-01-10
+
+### Description
+
+Added rate limiting protection to all API routes (`/api/health`, `/api/health/readiness`, `/api/observability/metrics`, `/api/cache`, `/api/csp-report`) to prevent DoS attacks.
+
+### Problem Identified
+
+**Security Vulnerability**: API routes were unprotected and could be abused for DoS attacks:
+- `/api/health` - No rate limiting (health check endpoint for load balancers)
+- `/api/health/readiness` - No rate limiting (Kubernetes readiness probe)
+- `/api/observability/metrics` - No rate limiting (telemetry data export)
+- `/api/cache` - No rate limiting (cache management endpoint)
+- `/api/csp-report` - No rate limiting (CSP violation reporting)
+
+**Impact**:
+- Attackers could flood API routes with requests
+- Health check endpoints could be abused to affect load balancer probes
+- Metrics endpoint could be scraped excessively, consuming resources
+- Cache endpoint could be used to trigger expensive cache warming operations
+
+### Implementation Summary
+
+1. **Created rate limiting middleware** (`src/lib/api/rateLimitMiddleware.ts`):
+   - In-memory rate limiting per endpoint type
+   - Sliding window algorithm with automatic expiration
+   - Standard rate limit headers in all responses
+   - Separate limits for different endpoint types
+   - Exported `resetRateLimitState()` and `resetAllRateLimitState()` for testing
+
+2. **Applied rate limiting to all API routes**:
+   - `/api/health` - 300 requests/minute (5/sec)
+   - `/api/health/readiness` - 300 requests/minute (5/sec)
+   - `/api/observability/metrics` - 60 requests/minute (1/sec)
+   - `/api/cache` - 10 requests/minute (0.16/sec)
+   - `/api/csp-report` - 30 requests/minute (0.5/sec)
+
+3. **Added rate limit headers** to all API responses:
+   - `X-RateLimit-Limit`: Maximum requests allowed in window
+   - `X-RateLimit-Remaining`: Remaining requests in current window
+   - `X-RateLimit-Reset`: Unix timestamp of window reset
+   - `X-RateLimit-Reset-After`: Seconds until window resets
+   - `Retry-After`: Seconds to wait before retry (429 responses only)
+
+4. **Updated API route handlers** to use `withApiRateLimit()` wrapper
+
+### Rate Limit Configuration
+
+| Endpoint | Limit | Window | Rate | Reason |
+|----------|-------|--------|------|--------|
+| `/api/health` | 300 | 1 minute | 5/sec | Load balancer health checks |
+| `/api/health/readiness` | 300 | 1 minute | 5/sec | Kubernetes readiness probes |
+| `/api/observability/metrics` | 60 | 1 minute | 1/sec | Metrics export endpoint |
+| `/api/cache` | 10 | 1 minute | 0.16/sec | Cache warming is expensive |
+| `/api/csp-report` | 30 | 1 minute | 0.5/sec | CSP violations |
+
+### Security Improvements
+
+| Aspect | Before | After |
+|---------|--------|-------|
+| **API Route Protection** | ❌ Unprotected | ✅ Rate-limited |
+| **DoS Attack Risk** | High | Low |
+| **Rate Limit Headers** | ❌ None | ✅ Standard headers |
+| **Error Response Format** | Inconsistent | ✅ Standardized |
+| **Testing** | ❌ No tests | ✅ 5 tests |
+
+### Files Modified
+
+- `src/lib/api/rateLimitMiddleware.ts` - New file (108 lines)
+- `src/app/api/health/route.ts` - Added withApiRateLimit wrapper (2 lines changed)
+- `src/app/api/health/readiness/route.ts` - Added withApiRateLimit wrapper (2 lines changed)
+- `src/app/api/observability/metrics/route.ts` - Added withApiRateLimit wrapper (2 lines changed)
+- `src/app/api/cache/route.ts` - Added withApiRateLimit wrappers (4 lines changed)
+- `src/app/api/csp-report/route.ts` - Added withApiRateLimit wrapper (2 lines changed)
+- `__tests__/apiEndpoints.test.ts` - Updated mocks (5 lines changed), added resetAllRateLimitState (1 line)
+- `__tests__/apiRateLimitMiddleware.test.ts` - New file (95 lines)
+
+### Test Results
+
+- ✅ **5 new tests** for rate limiting middleware
+- ✅ **20 existing tests** updated and passing
+- ✅ **1478 total tests** passing (31 skipped)
+- ✅ **ESLint passes** with no errors
+- ✅ **TypeScript compilation** passes
+- ✅ **Zero regressions** in existing tests
+
+### Tests Created
+
+**apiRateLimitMiddleware.test.ts** (5 tests):
+1. Add rate limit headers to successful response
+2. Track separate limits per key
+3. Block requests when limit exceeded
+4. Return error response with retry info
+5. Set retry-after header in error response
+
+### Results
+
+- ✅ All API routes now rate-limited
+- ✅ Standard rate limit headers in all responses
+- ✅ DoS attack protection enabled
+- ✅ Different limits per endpoint type
+- ✅ Graceful degradation with helpful error messages
+- ✅ Comprehensive test coverage
+- ✅ All tests passing (no regressions)
+- ✅ Lint and typecheck passing
+
+### Success Criteria
+
+- ✅ API routes protected from DoS attacks
+- ✅ Standard rate limit headers in responses
+- ✅ Error responses include retry information
+- ✅ Tests verify rate limiting behavior
+- ✅ Zero breaking changes
+- ✅ Code quality maintained
+
+### Anti-Patterns Avoided
+
+- ❌ No unprotected API endpoints
+- ❌ No inconsistent error responses
+- ❌ No breaking changes to existing functionality
+- ❌ No test regressions
+
+### Integration Engineering Principles Applied
+
+1. **Security First**: Protected all API routes from abuse
+2. **Resilience**: Graceful degradation when rate limit exceeded
+3. **Self-Documenting**: Standard headers communicate rate limits clearly
+4. **Backward Compatibility**: No breaking changes to existing behavior
+5. **Test Coverage**: Comprehensive tests for rate limiting behavior
+6. **Rate Limiting**: Different limits per endpoint based on use case
+
+### Follow-up Recommendations
+
+1. **Per-IP Rate Limiting**: Consider adding IP-based rate limiting for stricter protection
+2. **Rate Limit Dashboard**: Add UI for monitoring rate limit metrics
+3. **Adaptive Limits**: Consider adjusting limits based on traffic patterns
+4. **API Documentation**: Update API documentation to include rate limit information
+
+### See Also
+
+- [Blueprint.md Rate Limiting](./blueprint.md#api-route-rate-limiting)
+- [Blueprint.md Integration Resilience Patterns](./blueprint.md#integration-resilience-patterns)
+
+---
+
 
 ## [UX-001] Accessibility Improvements - SectionHeading and Skeleton Components
 
