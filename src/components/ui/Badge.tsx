@@ -8,15 +8,15 @@ interface BadgeProps {
   href?: string
 }
 
-const Badge = memo(function Badge({ children, variant = 'default', className = '', href }: BadgeProps) {
-  const baseStyles = 'inline-flex items-center text-xs px-2 py-1 rounded-full'
-  
-  const variantStyles = {
-    category: 'bg-red-100 text-red-800',
-    tag: 'bg-gray-100 text-gray-700',
-    default: 'bg-gray-100 text-gray-700'
-  }
+const baseStyles = 'inline-flex items-center text-xs px-2 py-1 rounded-full'
 
+const variantStyles = {
+  category: 'bg-red-100 text-red-800',
+  tag: 'bg-gray-100 text-gray-700',
+  default: 'bg-gray-100 text-gray-700'
+}
+
+const Badge = memo(function Badge({ children, variant = 'default', className = '', href }: BadgeProps) {
   const combinedClassName = `${baseStyles} ${variantStyles[variant]} ${className}`.trim()
 
   if (href) {

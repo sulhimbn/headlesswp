@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { memo } from 'react'
+import { memo, useMemo } from 'react'
 
 interface PaginationProps {
   currentPage: number
@@ -8,7 +8,7 @@ interface PaginationProps {
 }
 
 const Pagination = memo(function Pagination({ currentPage, totalPages, basePath }: PaginationProps) {
-  const getPageNumbers = () => {
+  const pageNumbers = useMemo(() => {
     const pages: (number | string)[] = []
     const maxVisible = 5
 
@@ -41,7 +41,7 @@ const Pagination = memo(function Pagination({ currentPage, totalPages, basePath 
     }
 
     return pages
-  }
+  }, [currentPage, totalPages])
 
   return (
     <nav className="flex items-center justify-center space-x-2 mt-8" aria-label="Pagination">
@@ -55,7 +55,7 @@ const Pagination = memo(function Pagination({ currentPage, totalPages, basePath 
         </Link>
       )}
 
-      {getPageNumbers().map((page, index) => (
+      {pageNumbers.map((page, index) => (
         page === '...' ? (
           <span key={index} className="px-3 py-2 text-sm text-gray-700">
             ...

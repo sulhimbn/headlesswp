@@ -377,7 +377,7 @@ interface ApiListResult<T> extends ApiResult<T[]> {
 **See Also**: [Task DATA-ARCH-006: Cache Strategy Enhancement](./task.md#data-arch-006)
 
 ### Service Layer
-Two service layers provide different levels of abstraction:
+Service layers provide different levels of abstraction with clear separation of concerns:
 1. **postService.ts**: Basic service with fallback logic
 2. **enhancedPostService.ts**: Enhanced service with:
     - Runtime data validation
@@ -385,6 +385,12 @@ Two service layers provide different levels of abstraction:
     - Category/Tag resolution
     - **Dependency-aware caching** (automatic cascade invalidation)
     - Type-safe enriched data (PostWithMediaUrl, PostWithDetails)
+3. **cacheWarmer.ts**: Orchestration service for cache warming:
+    - Decouples cache warming from API services
+    - Removes circular dependency between wordpressAPI and enhancedPostService
+    - Provides cache statistics (hits, misses, hit rate)
+    - Parallel cache warming for optimal performance
+    - Detailed results tracking (success/failure, latency per endpoint)
 
 ### Data Integrity
 - Validation ensures data structure matches expected schema
@@ -462,8 +468,9 @@ src/
 │   │   ├── healthCheck.ts    # API health monitoring
 │   │   ├── response.ts       # Standardized response wrappers
 │   │   └── standardized.ts   # Standardized API methods
-│   ├── services/     # Business logic layer
-│   │   └── enhancedPostService.ts # Enhanced service with validation & batch operations
+ │   ├── services/     # Business logic layer
+ │   │   ├── cacheWarmer.ts # Cache warming orchestration service
+ │   │   └── enhancedPostService.ts # Enhanced service with validation & batch operations
 │   ├── validation/   # Data validation layer
 │   │   └── dataValidator.ts # Runtime data validation at API boundaries
 │   ├── utils/        # Utility functions
