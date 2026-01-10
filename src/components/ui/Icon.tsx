@@ -1,4 +1,4 @@
-type IconType = 'facebook' | 'twitter' | 'instagram' | 'close' | 'menu'
+export type IconType = 'facebook' | 'twitter' | 'instagram' | 'close' | 'menu'
 
 export interface IconProps {
   type: IconType
