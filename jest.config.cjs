@@ -11,6 +11,9 @@ module.exports = {
     '/node_modules/',
     '/.next/',
   ],
+  modulePathIgnorePatterns: [
+    '/.next/',
+  ],
   testMatch: [
     '**/__tests__/**/*test.(ts|tsx|js)',
   ],
