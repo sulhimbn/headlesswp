@@ -1,4 +1,4 @@
-import { WordPressPost, WordPressCategory, WordPressTag } from '@/types/wordpress';
+import type { WordPressPost, WordPressCategory, WordPressTag } from '@/types/wordpress';
 
 export interface PostWithMediaUrl extends WordPressPost {
   mediaUrl: string | null;

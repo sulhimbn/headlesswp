@@ -1,4 +1,4 @@
-import { WordPressPost, WordPressCategory, WordPressTag, WordPressMedia, WordPressAuthor } from '@/types/wordpress';
+import type { WordPressPost, WordPressCategory, WordPressTag, WordPressMedia, WordPressAuthor } from '@/types/wordpress';
 import { wordpressAPI } from '../wordpress';
 import {
   ApiResult,

@@ -1,4 +1,4 @@
-import { WordPressPost } from '@/types/wordpress'
+import type { WordPressPost } from '@/types/wordpress'
 import Link from 'next/link'
 import Image from 'next/image'
 import { sanitizeHTML } from '@/lib/utils/sanitizeHTML'
