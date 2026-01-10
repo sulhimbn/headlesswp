@@ -10698,3 +10698,563 @@ Returns: {
 5. **Consider Pagination Cache**: Cache pagination metadata separately from data for better cache efficiency
 
 ---
+
+## [REFACTOR-010] Extract Duplicate Try-Catch Patterns in Standardized API
+
+**Status**: Pending
+**Priority**: Medium
+**Assigned**: Code Architect
+**Created**: 2026-01-10
+
+### Description
+
+Extract duplicate try-catch patterns from standardized API layer (`src/lib/api/standardized.ts`). Methods like `getCategoryById`, `getCategoryBySlug`, `getTagById`, `getTagBySlug` have nearly identical error handling patterns that violate DRY principle.
+
+### Code Smells Identified
+
+**Duplicate Pattern** across 4 methods (`getCategoryById`, `getCategoryBySlug`, `getTagById`, `getTagBySlug`):
+
+```typescript
+// Example from getCategoryById (lines 112-127)
+try {
+  const category = await wordpressAPI.getCategory(id.toString());
+  if (!category) {
+    const notFoundError = createApiError(
+      new Error(`Category not found: ${id}`),
+      `/wp/v2/categories/${id}`
+    );
+    return createErrorResult(notFoundError, { endpoint: `/wp/v2/categories/${id}` });
+  }
+  return createSuccessResult(category, { endpoint: `/wp/v2/categories/${id}` });
+} catch (error) {
+  const apiError = createApiError(error, `/wp/v2/categories/${id}`);
+  return createErrorResult(apiError, { endpoint: `/wp/v2/categories/${id}` });
+}
+```
+
+**Issues**:
+- 4 identical patterns across 4 methods (~16 lines each = 64 lines of duplicate code)
+- Changes to error handling require updating 4 methods
+- Pattern is generic but not extracted as reusable utility
+- Violates DRY (Don't Repeat Yourself) principle
+
+### Suggested Refactoring
+
+Create a generic helper function in `src/lib/api/response.ts`:
+
+```typescript
+async function fetchAndHandleNotFound<T>(
+  fetchFn: () => Promise<T | null>,
+  resourceName: string,
+  identifier: string | number,
+  endpoint: string
+): Promise<ApiResult<T>> {
+  try {
+    const data = await fetchFn();
+    if (!data) {
+      const notFoundError = createApiError(
+        new Error(`${resourceName} not found: ${identifier}`),
+        endpoint
+      );
+      return createErrorResult(notFoundError, { endpoint });
+    }
+    return createSuccessResult(data, { endpoint });
+  } catch (error) {
+    const apiError = createApiError(error, endpoint);
+    return createErrorResult(apiError, { endpoint });
+  }
+}
+```
+
+**Refactored Methods**:
+- `getCategoryById`: Uses `fetchAndHandleNotFound(wordpressAPI.getCategory.bind(null, id.toString()), 'Category', id, '/wp/v2/categories/' + id)`
+- `getCategoryBySlug`: Uses `fetchAndHandleNotFound(wordpressAPI.getCategory.bind(null, slug), 'Category', slug, '/wp/v2/categories?slug=' + slug)`
+- `getTagById`: Uses `fetchAndHandleNotFound(wordpressAPI.getTag.bind(null, id.toString()), 'Tag', id, '/wp/v2/tags/' + id)`
+- `getTagBySlug`: Uses `fetchAndHandleNotFound(wordpressAPI.getTag.bind(null, slug), 'Tag', slug, '/wp/v2/tags?slug=' + slug)`
+
+### Expected Benefits
+
+- **Code Reduction**: ~48 lines eliminated (12 lines per method × 4 methods)
+- **Single Responsibility**: Error handling logic defined once
+- **Consistency**: All methods use identical error handling
+- **Maintainability**: Changes to error handling only require updating one function
+- **DRY Principle Applied**: No duplicate code
+
+### Files to Modify
+
+- `src/lib/api/response.ts` - Add `fetchAndHandleNotFound` helper
+- `src/lib/api/standardized.ts` - Refactor 4 methods to use helper
+
+### Success Criteria
+
+- [ ] Generic `fetchAndHandleNotFound` helper created
+- [ ] All 4 methods refactored to use helper
+- [ ] Code duplication eliminated
+- [ ] All existing tests passing (no regressions)
+- [ ] TypeScript type checking passes
+- [ ] ESLint passes
+
+### Anti-Patterns Avoided
+
+- ❌ No duplicate error handling patterns
+- ❌ No changes to external API or behavior
+- ❌ No breaking changes to existing consumers
+
+---
+
+## [REFACTOR-011] Extract Duplicate Pagination Metadata Creation in Standardized API
+
+**Status**: Pending
+**Priority**: Medium
+**Assigned**: Code Architect
+**Created**: 2026-01-10
+
+### Description
+
+Extract duplicate pagination metadata creation pattern from standardized API layer. Methods `getAllCategories`, `getAllTags`, `searchPosts` create identical pagination metadata with pattern `{ page: 1, perPage: array.length, total: array.length, totalPages: 1 }`.
+
+### Code Smells Identified
+
+**Duplicate Pattern** across 3 methods:
+
+```typescript
+// From getAllCategories (lines 146-159)
+const pagination: ApiPaginationMetadata = {
+  page: 1,
+  perPage: categories.length,
+  total: categories.length,
+  totalPages: 1
+};
+return createSuccessListResult(
+  categories,
+  { endpoint: '/wp/v2/categories' },
+  pagination
+);
+
+// From getAllTags (lines 199-216)
+const pagination: ApiPaginationMetadata = {
+  page: 1,
+  perPage: tags.length,
+  total: tags.length,
+  totalPages: 1
+};
+return createSuccessListResult(
+  tags,
+  { endpoint: '/wp/v2/tags' },
+  pagination
+);
+
+// From searchPosts (lines 93-110)
+const pagination: ApiPaginationMetadata = {
+  page: 1,
+  perPage: posts.length,
+  total: posts.length,
+  totalPages: 1
+};
+return createSuccessListResult(
+  posts,
+  { endpoint: '/wp/v2/search', cacheHit: false },
+  pagination
+);
+```
+
+**Issues**:
+- 3 identical patterns across 3 methods
+- Changes to pagination structure require updating 3 methods
+- Pattern represents "single page collection" - should be explicit
+- Violates DRY principle
+
+### Suggested Refactoring
+
+Create a helper function in `src/lib/api/response.ts`:
+
+```typescript
+function createSinglePagePagination(dataLength: number): ApiPaginationMetadata {
+  return {
+    page: 1,
+    perPage: dataLength,
+    total: dataLength,
+    totalPages: 1
+  };
+}
+```
+
+**Refactored Methods**:
+- `getAllCategories`: Uses `createSinglePagePagination(categories.length)`
+- `getAllTags`: Uses `createSinglePagePagination(tags.length)`
+- `searchPosts`: Uses `createSinglePagePagination(posts.length)`
+
+### Expected Benefits
+
+- **Code Reduction**: ~6 lines eliminated (2 lines per method × 3 methods)
+- **Semantic Clarity**: Function name explicitly states "single page collection"
+- **Consistency**: All single-page collections use same pattern
+- **Maintainability**: Pagination structure changes only require one update
+- **DRY Principle Applied**: No duplicate code
+
+### Files to Modify
+
+- `src/lib/api/response.ts` - Add `createSinglePagePagination` helper
+- `src/lib/api/standardized.ts` - Refactor 3 methods to use helper
+
+### Success Criteria
+
+- [ ] Generic `createSinglePagePagination` helper created
+- [ ] All 3 methods refactored to use helper
+- [ ] Code duplication eliminated
+- [ ] All existing tests passing (no regressions)
+- [ ] TypeScript type checking passes
+- [ ] ESLint passes
+
+### Anti-Patterns Avoided
+
+- ❌ No duplicate pagination metadata creation
+- ❌ No magic numbers for page/totalPages
+- ❌ No breaking changes to existing API
+
+---
+
+## [REFACTOR-012] Extract Hardcoded Navigation Items from Header Component
+
+**Status**: Pending
+**Priority**: Low
+**Assigned**: Code Architect
+**Created**: 2026-01-10
+
+### Description
+
+Extract hardcoded `NAVIGATION_ITEMS` constant from Header component to a configuration file. The navigation items are currently hardcoded in component (`src/components/layout/Header.tsx:7-13`) and should follow pattern established by `UI_TEXT` constants for better localization and configuration management.
+
+### Code Smells Identified
+
+```typescript
+// src/components/layout/Header.tsx:7-13
+const NAVIGATION_ITEMS = [
+  { href: '/', label: 'Beranda' },
+  { href: '/berita', label: 'Berita' },
+  { href: '/politik', label: 'Politik' },
+  { href: '/ekonomi', label: 'Ekonomi' },
+  { href: '/olahraga', label: 'Olahraga' },
+] as const
+```
+
+**Issues**:
+- Navigation items hardcoded in component (not in constants layer)
+- Doesn't follow UI_TEXT pattern used for other text constants
+- Difficult to manage navigation changes (requires editing component)
+- No support for future localization/translation
+- Inconsistent with existing constant extraction pattern
+
+### Suggested Refactoring
+
+Create navigation configuration in `src/lib/constants/navigation.ts`:
+
+```typescript
+export interface NavigationItem {
+  href: string;
+  label: string;
+}
+
+export const NAVIGATION_ITEMS: readonly NavigationItem[] = [
+  { href: '/', label: 'Beranda' },
+  { href: '/berita', label: 'Berita' },
+  { href: '/politik', label: 'Politik' },
+  { href: '/ekonomi', label: 'Ekonomi' },
+  { href: '/olahraga', label: 'Olahraga' },
+] as const;
+```
+
+**Refactored Header Component**:
+```typescript
+import { NAVIGATION_ITEMS } from '@/lib/constants/navigation';
+
+// Component imports NAVIGATION_ITEMS from constants instead of defining locally
+```
+
+### Expected Benefits
+
+- **Consistency**: Follows UI_TEXT pattern for constant management
+- **Maintainability**: Navigation changes in one place (constants file)
+- **Localization Ready**: Structure supports future translation
+- **Layer Separation**: Configuration separate from presentation
+- **Better Discoverability**: Constants easier to find than embedded in components
+
+### Files to Create
+
+- `src/lib/constants/navigation.ts` - NEW: Navigation configuration
+
+### Files to Modify
+
+- `src/components/layout/Header.tsx` - Import NAVIGATION_ITEMS from constants
+- Update blueprint.md to document navigation constant pattern
+
+### Success Criteria
+
+- [ ] Navigation configuration extracted to constants file
+- [ ] Header component imports from constants
+- [ ] Follows existing UI_TEXT pattern
+- [ ] All existing tests passing (no regressions)
+- [ ] TypeScript type checking passes
+- [ ] ESLint passes
+- [ ] Blueprint.md updated with navigation pattern documentation
+
+### Anti-Patterns Avoided
+
+- ❌ No hardcoded configuration in components
+- ❌ No breaking changes to existing functionality
+- ❌ No inconsistent constant management patterns
+
+---
+
+## [REFACTOR-013] Extract Button Variant Styles to Design Token Constants
+
+**Status**: Pending
+**Priority**: Low
+**Assigned**: Code Architect
+**Created**: 2026-01-10
+
+### Description
+
+Extract Button component variant styles to design token constants. The Button component (`src/components/ui/Button.tsx:13-18`) has hardcoded Tailwind classes for variant styles, mixing design tokens with hard-coded values (e.g., `'text-gray-800'` in secondary variant). This violates design token principle established in blueprint.
+
+### Code Smells Identified
+
+```typescript
+// src/components/ui/Button.tsx:13-18
+const variantStyles: Record<ButtonVariant, string> = {
+  primary: 'bg-[hsl(var(--color-primary))] text-white hover:bg-[hsl(var(--color-primary-dark))] shadow-md',
+  secondary: 'bg-[hsl(var(--color-secondary-dark))] text-gray-800 hover:bg-gray-300',  // ❌ gray-800, gray-300 hardcoded
+  outline: 'border-2 border-[hsl(var(--color-primary))] text-[hsl(var(--color-primary))] hover:bg-[hsl(var(--color-primary-light))]',
+  ghost: 'text-gray-700 hover:text-[hsl(var(--color-primary))] hover:bg-[hsl(var(--color-secondary-dark))]',  // ❌ gray-700 hardcoded
+}
+```
+
+**Issues**:
+- Secondary variant mixes design tokens (`color-secondary-dark`) with hard-coded gray values
+- Ghost variant uses hard-coded `text-gray-700` instead of design tokens
+- Primary variant has `shadow-md` hardcoded instead of using design token
+- Inconsistent with blueprint's "Use Design Tokens" principle
+- Future dark mode support blocked by hardcoded colors
+
+### Suggested Refactoring
+
+Create button style constants in `src/lib/constants/buttonStyles.ts`:
+
+```typescript
+export const BUTTON_VARIANT_STYLES = {
+  primary: 'bg-[hsl(var(--color-primary))] text-white hover:bg-[hsl(var(--color-primary-dark))] shadow-[var(--shadow-md)]',
+  secondary: 'bg-[hsl(var(--color-secondary-dark))] text-[hsl(var(--color-text-primary))] hover:bg-[hsl(var(--color-secondary))]',
+  outline: 'border-2 border-[hsl(var(--color-primary))] text-[hsl(var(--color-primary))] hover:bg-[hsl(var(--color-primary-light))]',
+  ghost: 'text-[hsl(var(--color-text-secondary))] hover:text-[hsl(var(--color-primary))] hover:bg-[hsl(var(--color-secondary-dark))]',
+} as const;
+```
+
+**Design Token Mapping Applied**:
+- `text-gray-800` → `text-[hsl(var(--color-text-primary))]`
+- `hover:bg-gray-300` → `hover:bg-[hsl(var(--color-secondary))]`
+- `text-gray-700` → `text-[hsl(var(--color-text-secondary))]`
+- `shadow-md` → `shadow-[var(--shadow-md)]`
+
+**Refactored Button Component**:
+```typescript
+import { BUTTON_VARIANT_STYLES } from '@/lib/constants/buttonStyles';
+
+const variantStyles = BUTTON_VARIANT_STYLES;
+```
+
+### Expected Benefits
+
+- **Consistency**: All colors use design tokens
+- **Dark Mode Ready**: No hardcoded colors blocking theme switching
+- **Maintainability**: Style changes in one place (constants file)
+- **Blueprint Compliance**: Follows established design token principle
+- **Visual Consistency**: Uses same tokens as other components
+
+### Files to Create
+
+- `src/lib/constants/buttonStyles.ts` - NEW: Button variant style constants
+
+### Files to Modify
+
+- `src/components/ui/Button.tsx` - Import styles from constants
+- Update blueprint.md design token mapping to include button variants
+
+### Success Criteria
+
+- [ ] Button variant styles extracted to constants
+- [ ] All hardcoded colors replaced with design tokens
+- [ ] All existing tests passing (no regressions)
+- [ ] TypeScript type checking passes
+- [ ] ESLint passes
+- [ ] Blueprint.md updated with button variant mappings
+- [ ] Zero visual regressions (Button still looks the same)
+
+### Anti-Patterns Avoided
+
+- ❌ No hardcoded Tailwind colors
+- ❌ No breaking changes to component API
+- ❌ No design token violations
+
+---
+
+## [REFACTOR-014] Standardize Error Handling in WordPress API Layer
+
+**Status**: Pending
+**Priority**: Medium
+**Assigned**: Code Architect
+**Created**: 2026-01-10
+
+### Description
+
+Standardize error handling in WordPress API layer (`src/lib/wordpress.ts`). Methods like `getMediaBatch` and `getMediaUrl` have manual error handling and logging that doesn't follow resilience patterns established in API client layer (circuit breaker, retry strategy, standardized error types).
+
+### Code Smells Identified
+
+**Inconsistent Error Handling**:
+
+```typescript
+// src/lib/wordpress.ts:72-107 (getMediaBatch)
+try {
+  const response = await apiClient.get(getApiUrl('/wp/v2/media'), { 
+    params: { include: idsToFetch.join(',') },
+    signal 
+  });
+  
+  const mediaList: WordPressMedia[] = response.data;
+  
+  for (const media of mediaList) {
+    result.set(media.id, media);
+    cacheManager.set(CACHE_KEYS.media(media.id), media, CACHE_TTL.MEDIA);
+  }
+} catch (error) {
+  logger.warn('Failed to fetch media batch', error, { module: 'wordpressAPI' });
+}  // ❌ Returns partial result instead of propagating error
+
+// src/lib/wordpress.ts:109-128 (getMediaUrl)
+try {
+  const media = await wordpressAPI.getMedia(mediaId, signal);
+  const url = media.source_url;
+  if (url) {
+    cacheManager.set(cacheKey, url, CACHE_TTL.MEDIA);
+    return url;
+  }
+  return null;
+} catch (error) {
+  logger.warn(`Failed to fetch media ${mediaId}`, error, { module: 'wordpressAPI' });
+  return null;  // ❌ Returns null instead of propagating error
+}
+```
+
+**Issues**:
+- `getMediaBatch`: Catches errors, logs, returns partial result (swallows errors)
+- `getMediaUrl`: Catches errors, logs, returns null (swallows errors)
+- No integration with circuit breaker (errors not recorded)
+- No integration with retry strategy (no retry logic)
+- Inconsistent with standardized error handling in client layer
+- Violates "fail fast" principle
+
+### Suggested Refactoring
+
+**Option 1: Let Errors Propagate (Recommended)**
+
+```typescript
+// getMediaBatch - Remove try-catch, let apiClient handle errors
+export async function getMediaBatch(ids: number[], signal?: AbortSignal): Promise<Map<number, WordPressMedia>> {
+  const result = new Map<number, WordPressMedia>();
+  const idsToFetch: number[] = [];
+
+  for (const id of ids) {
+    if (id === 0) continue;
+
+    const cacheKey = CACHE_KEYS.media(id);
+    const cached = cacheManager.get<WordPressMedia>(cacheKey);
+    if (cached) {
+      result.set(id, cached);
+    } else {
+      idsToFetch.push(id);
+    }
+  }
+
+  if (idsToFetch.length === 0) return result;
+
+  // Let apiClient handle circuit breaker, retry, and standardized errors
+  const response = await apiClient.get(getApiUrl('/wp/v2/media'), { 
+    params: { include: idsToFetch.join(',') },
+    signal 
+  });
+  
+  const mediaList: WordPressMedia[] = response.data;
+  
+  for (const media of mediaList) {
+    result.set(media.id, media);
+    cacheManager.set(CACHE_KEYS.media(media.id), media, CACHE_TTL.MEDIA);
+  }
+
+  return result;
+}
+
+// getMediaUrl - Let errors propagate, caller handles fallbacks
+export async function getMediaUrl(mediaId: number, signal?: AbortSignal): Promise<string | null> {
+  if (mediaId === 0) return null;
+
+  const cacheKey = CACHE_KEYS.media(mediaId);
+  const cached = cacheManager.get<string>(cacheKey);
+  if (cached) return cached;
+
+  const media = await wordpressAPI.getMedia(mediaId, signal);
+  const url = media.source_url;
+  if (url) {
+    cacheManager.set(cacheKey, url, CACHE_TTL.MEDIA);
+  }
+  return url;
+}
+```
+
+**Option 2: Fallback Pattern (if swallowing errors is intentional)**
+
+- Document why errors are swallowed
+- Add telemetry for tracking partial failures
+- Return explicit `result` object with `partial: true` flag
+
+### Expected Benefits
+
+- **Consistency**: All API errors handled by client layer resilience patterns
+- **Reliability**: Circuit breaker tracks all WordPress API failures
+- **Debugging**: Errors visible to caller for proper handling
+- **Fail Fast**: Errors propagate instead of being hidden
+- **Resilience Integration**: Retry strategy applies to media operations
+
+### Files to Modify
+
+- `src/lib/wordpress.ts` - Remove error handling from `getMediaBatch` and `getMediaUrl`
+
+### Impact Analysis
+
+**Affected Callers** (need to handle errors):
+- `enhancedPostService.enrichPostsWithMediaUrls` - Currently handles null from `getMediaUrl`
+- `enhancedPostService.enrichPostWithDetails` - Currently handles null from `getMediaUrl`
+
+**Migration Strategy**:
+1. Update callers to catch errors from API layer
+2. Maintain current fallback behavior at caller level
+3. Add tests for error scenarios
+
+### Success Criteria
+
+- [ ] Error handling removed from `getMediaBatch` and `getMediaUrl`
+- [ ] Errors propagate to caller level
+- [ ] Circuit breaker integrates with media API errors
+- [ ] Retry strategy applies to media operations
+- [ ] Callers updated to handle errors gracefully
+- [ ] All existing tests passing (no regressions)
+- [ ] TypeScript type checking passes
+- [ ] ESLint passes
+
+### Anti-Patterns Avoided
+
+- ❌ No silent error swallowing
+- ❌ No inconsistent error handling patterns
+- ❌ No breaking changes to existing behavior (callers maintain fallbacks)
+
+---
+
