@@ -189,6 +189,11 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(({ children, ...props 
 - ARIA attributes for screen readers
 - Keyboard navigation support (Tab, Escape, arrow keys)
 
+**Loading States**:
+- Skeleton components use `aria-busy="true"` to indicate loading state to screen readers
+- Section headings support optional `id` prop for anchor linking
+- Design tokens used consistently across all skeleton components
+
 ### Responsive Design
 
 **Breakpoints**:
