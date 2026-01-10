@@ -4,16 +4,72 @@ Headless WordPress implementation for [mitrabantennews.com](https://mitrabantenn
 
 ## Quick Start
 
+Get HeadlessWP running in 5 minutes with these steps:
+
+### 1. Clone Repository
+
 ```bash
 git clone https://github.com/sulhimbn/headlesswp.git
 cd headlesswp
+```
+
+### 2. Configure Environment
+
+```bash
 cp .env.example .env
+```
+
+Edit `.env` with your WordPress credentials. For local development, the default configuration works with the WordPress container.
+
+### 3. Start WordPress Backend
+
+```bash
 docker-compose up -d
+```
+
+Wait for containers to start (~30 seconds). Verify WordPress is running:
+
+```bash
+# Check container status
+docker-compose ps
+
+# Check WordPress logs
+docker-compose logs wordpress
+```
+
+Access services:
+- WordPress Admin: http://localhost:8080/wp-admin
+- WordPress API: http://localhost:8080/wp-json/wp/v2/
+- phpMyAdmin: http://localhost:8081
+
+### 4. Install Frontend Dependencies
+
+```bash
 npm install
+```
+
+### 5. Start Next.js Development Server
+
+```bash
 npm run dev
 ```
 
 Access the application at [http://localhost:3000](http://localhost:3000)
+
+### Verify Everything Works
+
+```bash
+# Run tests
+npm test
+
+# Run type checking
+npm run typecheck
+
+# Run linting
+npm run lint
+```
+
+All commands should complete successfully.
 
 ## Overview
 
@@ -33,6 +89,8 @@ WordPress as a headless CMS with a Next.js 16 frontend. WordPress manages conten
 - 🔌 [API Documentation](docs/api.md) - Complete API reference and usage examples
 - 🛡️ [Security Guide](docs/guides/SECURITY.md) - Security policies and best practices
 - 🤝 [Contributing Guide](docs/guides/CONTRIBUTING.md) - How to contribute
+- 🔧 [Troubleshooting Guide](docs/TROUBLESHOOTING.md) - Common issues and solutions
+- 👥 [User Guide](docs/USER_GUIDE.md) - End-user documentation
 - 📋 [Task Backlog](docs/task.md) - Current development tasks
 
 ## Technology Stack

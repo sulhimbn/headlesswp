@@ -1,7 +1,7 @@
 # Roadmap
 
-**Version**: 1.1.0  
-**Last Updated**: 2026-01-07
+**Version**: 1.2.0  
+**Last Updated**: 2026-01-10
 
 ---
 
@@ -39,13 +39,13 @@ Build a high-performance, secure headless WordPress platform that delivers news 
 ### Phase 2: Core Features
 **Goal**: Deliver essential news platform functionality
 
-**Status**: In Progress (80% Complete)
+**Status**: In Progress (40% Complete)
 
 **Milestones**:
 - [x] Post listing and detail pages
-- [x] Category and tag navigation
-- [x] Search functionality
-- [x] Author profiles
+- [ ] Category and tag navigation (See #226, #191, #192)
+- [ ] Search functionality (See #227, #189, #221)
+- [ ] Author profiles (See #190)
 - [x] Responsive design
 
 **Estimated Completion**: Q1 2026
@@ -77,7 +77,7 @@ Build a high-performance, secure headless WordPress platform that delivers news 
 - [ ] Comments system
 - [ ] Newsletter integration
 - [ ] Social sharing
-- [ ] Related posts
+- [ ] Related posts (See #228 - In progress as P2 enhancement)
 - [ ] Analytics integration
 
 **Estimated Completion**: TBD
