@@ -1,10 +1,128 @@
 # Task Backlog
 
-**Last Updated**: 2026-01-10 (Senior Integration Engineer - API Route Rate Limiting)
+**Last Updated**: 2026-01-10 (Senior UI/UX Engineer - Design System Compliance)
 
 ---
 
 ## Completed Tasks
+
+## [UX-002] Design System Compliance and Anchor Linking Improvements
+
+**Status**: Complete
+**Priority**: High
+**Assigned**: Senior UI/UX Engineer
+**Created**: 2026-01-10
+**Updated**: 2026-01-10
+
+### Description
+
+Fixed design system violations in Footer component and added anchor linking support to SectionHeading components across pages.
+
+### Problem Identified
+
+**Design System Violations** (src/components/layout/Footer.tsx):
+1. **Hardcoded `hover:text-white`** on footer navigation links (line 38)
+2. **Hardcoded `hover:text-white`** on social media icons (lines 64, 71, 78)
+- Violates blueprint.md requirement: All colors must use design tokens
+- Inconsistent with design system principles
+- Makes theming and maintenance harder
+
+**Missing Anchor Linking**:
+- SectionHeading component supports optional `id` prop (UX-001)
+- Pages don't use `id` props for anchor linking
+- Users cannot share direct links to page sections (e.g., `/#featured`)
+
+### Implementation Summary
+
+1. **Fixed Footer Design System Violations** (src/components/layout/Footer.tsx):
+   - Replaced `hover:text-white` with `hover:text-[hsl(var(--color-surface))]`
+   - Applied to 4 occurrences:
+     - Footer navigation links hover state
+     - Social media icons hover states (Facebook, Twitter, Instagram)
+   - Ensures consistency with design system principles
+
+2. **Added Anchor Linking Support**:
+   - Homepage (src/app/page.tsx):
+     - Added `id="featured"` to featured posts section
+     - Added `id="latest"` to latest posts section
+   - News page (src/app/berita/page.tsx):
+     - Added `id="news"` to news page heading
+   - Enables direct linking to page sections
+
+3. **Updated Tests** (__tests__/components/Footer.test.tsx):
+   - Changed test expectation from `hover:text-white` to `hover:text-[hsl(var(--color-surface)))]`
+   - Test now verifies design token usage
+
+### Design System Compliance
+
+| Component | Before | After | Design Token |
+|-----------|--------|-------|---------------|
+| **Footer links hover** | `hover:text-white` | `hover:text-[hsl(var(--color-surface))]` | --color-surface |
+| **Social icons hover** | `hover:text-white` | `hover:text-[hsl(var(--color-surface))]` | --color-surface |
+
+### Anchor Linking Added
+
+| Page | Section | ID | Example Link |
+|------|---------|-----|-------------|
+| **Homepage** | Featured posts | `#featured` | `https://example.com/#featured` |
+| **Homepage** | Latest posts | `#latest` | `https://example.com/#latest` |
+| **News page** | News heading | `#news` | `https://example.com/#news` |
+
+### Files Modified
+
+- `src/components/layout/Footer.tsx` - Fixed design system violations (4 lines changed)
+- `src/app/page.tsx` - Added id props to SectionHeading (2 lines changed)
+- `src/app/berita/page.tsx` - Added id prop to SectionHeading (1 line changed)
+- `__tests__/components/Footer.test.tsx` - Updated test expectation (1 line changed)
+
+### Test Results
+
+- ✅ All 1478 tests passing (no regressions)
+- ✅ ESLint passes with no errors
+- ✅ TypeScript typecheck passes
+- ✅ Zero breaking changes
+
+### Results
+
+- ✅ Footer component now follows design system principles
+- ✅ All hardcoded Tailwind colors replaced with design tokens
+- ✅ Anchor linking enabled for page sections
+- ✅ Users can share direct links to sections
+- ✅ Design system consistency improved
+- ✅ All tests passing (no regressions)
+- ✅ Lint and typecheck passing
+
+### Success Criteria
+
+- ✅ UI more intuitive (anchor linking enabled)
+- ✅ Accessible (screen reader support unchanged)
+- ✅ Consistent with design system (design tokens used)
+- ✅ Responsive all breakpoints (no changes to layout)
+- ✅ Zero regressions (all tests pass)
+
+### Anti-Patterns Avoided
+
+- ❌ No hardcoded Tailwind values in components
+- ❌ No breaking changes (all tests pass)
+- ❌ No design system violations
+- ❌ No accessibility regressions
+
+### UI/UX Principles Applied
+
+1. **Consistency**: Design tokens used throughout Footer
+2. **User-Centric**: Anchor linking improves navigation experience
+3. **Maintainability**: Single source of truth for colors
+4. **Accessibility**: Semantic HTML with id attributes for anchoring
+5. **Single Responsibility**: Clear separation between design tokens and usage
+6. **Theming**: Easier to implement dark mode or custom themes
+
+### Follow-up Recommendations
+
+1. **Other Pages**: Consider adding id props to SectionHeading in other pages (category pages, tag pages)
+2. **Footer Links**: Update footer links href values to match actual pages (currently all link to `/berita`)
+3. **Breadcrumbs**: Consider updating breadcrumbs to include anchor links when applicable
+
+---
 
 ## [INT-001] API Route Rate Limiting
 
