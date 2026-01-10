@@ -1,4 +1,5 @@
-import { cacheManager, CACHE_TTL, CACHE_KEYS, CACHE_DEPENDENCIES } from '@/lib/cache';
+import { cacheManager, CACHE_TTL, CACHE_KEYS, CACHE_DEPENDENCIES, getCacheStats, clearCache } from '@/lib/cache';
+import { wordpressAPI } from '@/lib/wordpress';
 
 // Mock axios for testing
 jest.mock('axios', () => ({
@@ -17,7 +18,7 @@ jest.mock('axios', () => ({
 
 describe('Cache Manager', () => {
   beforeEach(() => {
-    cacheManager.clear();
+    cacheManager.clearAll();
     cacheManager.resetStats();
   });
 
@@ -250,7 +251,7 @@ describe('WordPress API Caching', () => {
 
   describe('Cache Integration', () => {
     it('should cache getPosts calls', async () => {
-      // This would normally make an API call, but we'll test the caching logic
+      // This would normally make an API call, but we'll test's caching logic
       const stats1 = cacheManager.getStats();
       expect(stats1.hits).toBe(0);
 
@@ -263,7 +264,7 @@ describe('WordPress API Caching', () => {
     it('should use different cache keys for different parameters', () => {
       const key1 = CACHE_KEYS.posts('{"page":1}');
       const key2 = CACHE_KEYS.posts('{"page":2}');
-
+      
       expect(key1).not.toBe(key2);
       expect(key1).toBe('posts:{"page":1}');
       expect(key2).toBe('posts:{"page":2}');
@@ -273,7 +274,7 @@ describe('WordPress API Caching', () => {
   describe('Cache Management Functions', () => {
     it('should provide cache statistics', () => {
       const stats = cacheManager.getStats();
-
+      
       expect(stats).toHaveProperty('hits');
       expect(stats).toHaveProperty('misses');
       expect(stats).toHaveProperty('sets');
@@ -287,7 +288,7 @@ describe('WordPress API Caching', () => {
       // Set some test data
       cacheManager.set('test-key', 'test-data', 1000);
       expect(cacheManager.get('test-key')).toBe('test-data');
-
+      
       // Clear cache
       cacheManager.clear();
       expect(cacheManager.get('test-key')).toBeNull();
@@ -296,9 +297,9 @@ describe('WordPress API Caching', () => {
     it('should clear cache with pattern', () => {
       cacheManager.set('posts:1', 'post1', 1000);
       cacheManager.set('categories:1', 'cat1', 1000);
-
-      cacheManager.clearPattern('posts:*');
-
+      
+      cacheManager.clear('posts:*');
+      
       expect(cacheManager.get('posts:1')).toBeNull();
       expect(cacheManager.get('categories:1')).toBe('cat1');
     });
