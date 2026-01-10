@@ -19,7 +19,7 @@ const PostCard = memo(function PostCard({ post, mediaUrl, priority = false }: Po
         <Link href={`/berita/${post.slug}`} className="relative block h-48 sm:h-56 md:h-48 focus:outline-none" aria-label={UI_TEXT.postCard.readArticle(post.title.rendered)}>
           <Image
             src={mediaUrl || '/placeholder-image.jpg'}
-            alt={featuredImageAlt}
+            alt={UI_TEXT.postCard.altText(post.title.rendered)}
             fill
             className="object-cover"
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
