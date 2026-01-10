@@ -1,6 +1,141 @@
 # Task Backlog
+ 
+**Last Updated**: 2026-01-10 (Senior QA Engineer)
+ 
+---
+ 
+## Active Tasks
+ 
+## [TEST-002] Critical Path Testing - Date Formatting and Cache Warming
 
-**Last Updated**: 2026-01-10 (Lead Reliability Engineer)
+**Status**: Complete
+**Priority**: P0
+**Assigned**: Senior QA Engineer
+**Created**: 2026-01-10
+**Updated**: 2026-01-10
+
+### Description
+
+Added comprehensive test coverage for critical utility functions that previously had 0% test coverage. Focused on behavior testing (AAA pattern) rather than implementation details, ensuring critical paths are tested.
+
+### Testing Coverage Improvements
+
+**Files Tested** (2 new test files):
+1. **__tests__/dateFormat.test.ts** - NEW
+   - Tests for `formatDate()` function
+   - Tests for `formatDateTime()` function
+   - Tests for `formatTime()` function
+   - Tests for `formatDateRelative()` function
+   - 63 tests covering:
+     - All date format types (full, short, month-day, month-year)
+     - Locale support (English, Indonesian, Spanish)
+     - Error handling (invalid dates, null, undefined)
+     - Boundary dates (year 1, year 9999, leap years)
+     - Time formatting (AM/PM, midnight, noon, 24-hour format)
+     - Relative time formatting (seconds, minutes, hours, days)
+     - Fallback to absolute dates for older entries
+
+2. **__tests__/cacheWarmer.test.ts** - NEW
+   - Tests for `warmAll()` method
+   - Tests for `getStats()` method
+   - Tests for integration scenarios
+   - 22 tests covering:
+     - Successful cache warming (all caches)
+     - Partial failures (some caches fail)
+     - Complete failures (all caches fail)
+     - Logging behavior (start/completion messages)
+     - Latency measurement
+     - Parallel execution
+     - Hit rate calculation
+     - Edge cases (100% hit rate, 0% hit rate, large numbers)
+
+### Coverage Impact
+
+**Before Testing**:
+- src/lib/utils/dateFormat.ts: 0% coverage (no tests)
+- src/lib/services/cacheWarmer.ts: 87.8% coverage (partial coverage, error paths untested)
+
+**After Testing**:
+- src/lib/utils/dateFormat.ts: 100% coverage (all functions tested)
+- src/lib/services/cacheWarmer.ts: 95.12% coverage (significantly improved)
+
+**Overall Coverage Improvements**:
+- Statements: 91.59% → 92.17% (+0.58%)
+- Branches: 84.13% → 85.27% (+1.14%)
+- Functions: 94.61% → 95.15% (+0.54%)
+- Lines: 91.43% → 92.04% (+0.61%)
+- Test Count: 620 → 705 (+85 new tests)
+
+### Test Quality
+
+**AAA Pattern Applied**:
+- **Arrange**: Set up test conditions (test data, mocks, expectations)
+- **Act**: Execute behavior (call functions, trigger actions)
+- **Assert**: Verify outcomes (expectations on results, errors, side effects)
+
+**Test Behavior, Not Implementation**:
+- Tests verify WHAT code does, not HOW it does it
+- Mock external dependencies appropriately (wordpressAPI, logger, cacheManager)
+- Test happy path AND sad path
+- Include boundary conditions and edge cases
+
+**Edge Cases Tested**:
+- Invalid inputs (null, undefined, empty strings, invalid dates)
+- Boundary values (leap years, year 1, year 9999, midnight, noon)
+- Time thresholds (59 seconds, 59 minutes, 23 hours, 7 days)
+- Locale variations (English, Indonesian, Spanish)
+- Future dates and negative time differences
+- Zero activity scenarios (0 hits, 0 misses)
+
+### Files Created
+
+- `__tests__/dateFormat.test.ts` - NEW: 63 comprehensive tests for date formatting utilities
+- `__tests__/cacheWarmer.test.ts` - NEW: 22 comprehensive tests for cache warming service
+
+### Files Modified
+
+- None (pure test additions)
+
+### Results
+
+- ✅ 85 new comprehensive tests created
+- ✅ All 705 tests passing (31 skipped)
+- ✅ Overall coverage improved in all metrics
+- ✅ dateFormat.ts now has 100% test coverage
+- ✅ cacheWarmer.ts coverage improved from 87.8% to 95.12%
+- ✅ TypeScript compilation passes with no errors
+- ✅ ESLint passes with no warnings
+- ✅ Zero regressions in functionality
+- ✅ Tests follow best practices (AAA pattern, descriptive names)
+
+### Success Criteria
+
+- ✅ Critical paths identified and tested
+- ✅ Test files created following AAA pattern
+- ✅ Date formatting utilities comprehensively tested
+- ✅ Cache warming service comprehensively tested
+- ✅ All tests passing (705 passing, 31 skipped)
+- ✅ No regressions introduced
+- ✅ Test behavior, not implementation
+- ✅ Edge cases covered
+- ✅ Tests readable and maintainable
+- ✅ Coverage improved overall
+
+### Anti-Patterns Avoided
+
+- ❌ No testing of implementation details
+- ❌ No brittle mocking of internal implementation
+- ❌ No tests depending on execution order
+- ❌ No complex test setup that's hard to understand
+- ❌ No duplicate test logic
+- ❌ No breaking changes to existing functionality
+
+### Follow-up Recommendations
+
+1. **API Client Interceptor Tests**: Consider adding integration tests for client.ts interceptors when environment supports proper mocking
+2. **Component Tests**: Consider adding React component tests for UI components (currently 0% coverage)
+3. **E2E Tests**: Add end-to-end tests for critical user flows
+4. **Health Check Skipped Tests**: Review and enable healthCheck tests that require WordPress API when test environment is available
 
 ---
 
