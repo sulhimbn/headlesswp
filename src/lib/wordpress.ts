@@ -2,8 +2,9 @@ import { WordPressPost, WordPressCategory, WordPressTag, WordPressMedia, WordPre
 import { apiClient, getApiUrl } from './api/client';
 import { cacheManager, CACHE_TTL, CACHE_KEYS } from './cache';
 import { logger } from '@/lib/utils/logger';
+import type { IWordPressAPI } from './api/IWordPressAPI';
 
-export const wordpressAPI = {
+export const wordpressAPI: IWordPressAPI = {
   // Posts
   getPostsWithHeaders: async (params?: {
     page?: number;
@@ -29,9 +30,9 @@ export const wordpressAPI = {
     return response.data;
   },
 
-  getPost: async (slug: string, signal?: AbortSignal): Promise<WordPressPost> => {
+  getPost: async (slug: string, signal?: AbortSignal): Promise<WordPressPost | null> => {
     const response = await apiClient.get(getApiUrl('/wp/v2/posts'), { params: { slug }, signal });
-    return response.data[0];
+    return response.data[0] || null;
   },
 
   getPostById: async (id: number, signal?: AbortSignal): Promise<WordPressPost> => {
@@ -45,9 +46,9 @@ export const wordpressAPI = {
     return response.data;
   },
 
-  getCategory: async (slug: string, signal?: AbortSignal): Promise<WordPressCategory> => {
+  getCategory: async (slug: string, signal?: AbortSignal): Promise<WordPressCategory | null> => {
     const response = await apiClient.get(getApiUrl('/wp/v2/categories'), { params: { slug }, signal });
-    return response.data[0];
+    return response.data[0] || null;
   },
 
   // Tags
@@ -56,9 +57,9 @@ export const wordpressAPI = {
     return response.data;
   },
 
-  getTag: async (slug: string, signal?: AbortSignal): Promise<WordPressTag> => {
+  getTag: async (slug: string, signal?: AbortSignal): Promise<WordPressTag | null> => {
     const response = await apiClient.get(getApiUrl('/wp/v2/tags'), { params: { slug }, signal });
-    return response.data[0];
+    return response.data[0] || null;
   },
 
   // Media
@@ -150,7 +151,7 @@ export const wordpressAPI = {
     return response.data;
   },
 
-  search: async (query: string): Promise<WordPressPost[]> => {
+  search: async (query: string, signal?: AbortSignal): Promise<WordPressPost[]> => {
     const cacheKey = CACHE_KEYS.search(query);
 
     const cached = cacheManager.get<WordPressPost[]>(cacheKey);
@@ -158,7 +159,7 @@ export const wordpressAPI = {
       return cached;
     }
 
-    const response = await apiClient.get(getApiUrl('/wp/v2/search'), { params: { search: query } });
+    const response = await apiClient.get(getApiUrl('/wp/v2/search'), { params: { search: query }, signal });
     const data = response.data;
 
     cacheManager.set(cacheKey, data, CACHE_TTL.SEARCH);

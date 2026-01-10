@@ -83,8 +83,9 @@ describe('WordPress REST API', () => {
 
       const result = await wordpressAPI.getPost('test');
 
-      expect(result.id).toBe(1);
-      expect(result.title.rendered).toBe('First');
+      expect(result).not.toBeNull();
+      expect(result?.id).toBe(1);
+      expect(result?.title.rendered).toBe('First');
     });
 
     it('should support optional signal parameter', async () => {

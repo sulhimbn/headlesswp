@@ -6,16 +6,7 @@ import { dataValidator, isValidationResultValid } from '@/lib/validation/dataVal
 import { createFallbackPost } from '@/lib/utils/fallbackPost';
 import { logger } from '@/lib/utils/logger';
 import { getFallbackPosts } from '@/lib/constants/fallbackPosts';
-
-interface PostWithMediaUrl extends WordPressPost {
-  mediaUrl: string | null;
-}
-
-interface PostWithDetails extends WordPressPost {
-  mediaUrl: string | null;
-  categoriesDetails: WordPressCategory[];
-  tagsDetails: WordPressTag[];
-}
+import type { IPostService, PostWithMediaUrl, PostWithDetails, PaginatedPostsResult } from './IPostService';
 
 async function getCategoriesMap(): Promise<Map<number, WordPressCategory>> {
   const cacheKey = CACHE_KEYS.categories();
@@ -147,7 +138,7 @@ async function fetchAndValidateSingle<T, R>(
   }
 }
 
-export const enhancedPostService = {
+export const enhancedPostService: IPostService = {
   getLatestPosts: async (): Promise<PostWithMediaUrl[]> => {
     return fetchAndValidate(
       () => wordpressAPI.getPosts({ per_page: PAGINATION_LIMITS.LATEST_POSTS }),
@@ -178,11 +169,7 @@ export const enhancedPostService = {
     );
   },
 
-  getPaginatedPosts: async (page: number = 1, perPage: number = 10): Promise<{
-    posts: PostWithMediaUrl[];
-    totalPosts: number;
-    totalPages: number;
-  }> => {
+  getPaginatedPosts: async (page: number = 1, perPage: number = 10): Promise<PaginatedPostsResult> => {
     try {
       const { data, total, totalPages } = await wordpressAPI.getPostsWithHeaders({ page, per_page: perPage });
       const validation = dataValidator.validatePosts(data);

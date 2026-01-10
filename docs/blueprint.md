@@ -1,6 +1,6 @@
 # Architecture Blueprint
 
-**Version**: 1.2.0
+**Version**: 1.3.0
 **Last Updated**: 2026-01-10
 
 ## System Architecture
@@ -387,6 +387,7 @@ interface ApiListResult<T> extends ApiResult<T[]> {
    - Handles GET requests to WordPress REST API endpoints
    - Provides batch operations (media batch, search)
    - **No cache management concerns** (extracted to cache.ts)
+   - **Implements `IWordPressAPI` interface** for contract definition
 
 2. **Service Layer** (`src/lib/services/`): Business logic abstraction
    - **postService.ts**: Basic service with fallback logic
@@ -396,6 +397,7 @@ interface ApiListResult<T> extends ApiResult<T[]> {
      - Category/Tag resolution
      - **Dependency-aware caching** (automatic cascade invalidation)
      - Type-safe enriched data (PostWithMediaUrl, PostWithDetails)
+     - **Implements `IPostService` interface** for contract definition
    - **cacheWarmer.ts**: Orchestration service for cache warming:
      - Decouples cache warming from API services
      - Removes circular dependency between wordpressAPI and enhancedPostService
@@ -413,6 +415,26 @@ interface ApiListResult<T> extends ApiResult<T[]> {
 - API layer: WordPress REST API calls only
 - Service layer: Business logic, validation, enrichment
 - Cache layer: Cache storage, invalidation, telemetry
+
+### Interface Definitions (ARCH-INTERFACE-001)
+
+**Principle**: Define contracts between modules for dependency inversion and improved testability.
+
+**Interfaces Created**:
+- `IWordPressAPI` (`src/lib/api/IWordPressAPI.ts`): WordPress API contract
+  - Defines all WordPress API operations (posts, categories, tags, media, authors)
+  - Includes optional `signal` parameter for request cancellation (AbortController)
+  - Returns types include `null` for potentially missing resources (get*, getTag, getCategory, getMediaUrl)
+- `IPostService` (`src/lib/services/IPostService.ts`): Post service contract
+  - Defines post service operations (getLatest, getCategory, getAll, getPaginated, getBySlug, getById)
+  - Includes enriched types (PostWithMediaUrl, PostWithDetails, PaginatedPostsResult)
+
+**Benefits**:
+1. **Dependency Inversion**: High-level modules depend on abstractions (interfaces) not concretions
+2. **Testability**: Easy to mock interfaces for unit testing
+3. **Type Safety**: Explicit contracts documented in TypeScript interfaces
+4. **Maintainability**: Clear separation between interface and implementation
+5. **Extensibility**: New implementations can be swapped without changing consumers
 
 ### Data Integrity
 - Validation ensures data structure matches expected schema
