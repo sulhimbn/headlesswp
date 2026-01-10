@@ -483,7 +483,7 @@ describe('WordPress API - Batch Operations and Caching', () => {
       expect(apiClient.get).toHaveBeenCalledWith(getApiUrl('/wp/v2/posts'), { params: { per_page: 6 }, signal: undefined })
       expect(apiClient.get).toHaveBeenCalledWith(getApiUrl('/wp/v2/categories'), { signal: undefined })
       expect(apiClient.get).toHaveBeenCalledWith(getApiUrl('/wp/v2/tags'), { signal: undefined })
-      expect(logger.info).toHaveBeenLastCalledWith('Cache warming completed: 3/3 succeeded in 0ms', { module: 'CacheWarmer', results: expect.any(Array) })
+      expect(logger.info).toHaveBeenLastCalledWith(expect.stringMatching(/Cache warming completed: 3\/3 succeeded in \d+ms/), { module: 'CacheWarmer', results: expect.any(Array) })
     })
 
     it('handles errors during cache warming', async () => {
