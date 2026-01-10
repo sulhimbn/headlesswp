@@ -219,6 +219,170 @@ All resilience patterns are **PRODUCTION READY** and properly integrated:
 
 ## Active Tasks
 
+## [TEST-002] Component Testing - Skeleton, SectionHeading, Badge, PostCardSkeleton, PostDetailSkeleton
+
+**Status**: Complete
+**Priority**: High
+**Assigned**: Senior QA Engineer
+**Created**: 2026-01-10
+**Updated**: 2026-01-10
+
+### Description
+
+Added comprehensive component tests for 5 previously untested components following QA best practices and AAA (Arrange, Act, Assert) pattern.
+
+### Components Tested
+
+**1. Skeleton Component** (`__tests__/components/Skeleton.test.tsx`) - **16 tests**
+   - Rendering scenarios (3 tests)
+   - All 4 variants (text, circular, rectangular, rounded)
+   - Accessibility (aria-hidden, role presentation)
+   - Design tokens (background color, radius tokens)
+   - Edge cases (multiple classes, variant-specific styling)
+
+**2. SectionHeading Component** (`__tests__/components/SectionHeading.test.tsx`) - **25 tests**
+   - Rendering scenarios (4 tests)
+   - All 3 heading levels (h1, h2, h3)
+   - All 3 sizes (lg, md, sm)
+   - ID prop for anchor linking
+   - Design tokens (text color, typography tokens)
+   - Edge cases (combined props, whitespace content)
+   - Combined props scenarios
+
+**3. Badge Component** (`__tests__/components/Badge.test.tsx`) - **27 tests**
+   - Rendering scenarios (3 tests)
+   - All 3 variants (category, tag, default)
+   - Link behavior (span vs Link)
+   - Base styles (inline-flex, padding, rounded)
+   - Design tokens (color, border, transition tokens)
+   - Edge cases (multiple classes, number children)
+   - Combined props scenarios
+
+**4. PostCardSkeleton Component** (`__tests__/components/PostCardSkeleton.test.tsx`) - **23 tests**
+   - Rendering scenarios (2 tests)
+   - Accessibility (aria-busy, aria-label, not aria-hidden)
+   - Structure (image, content, text lines)
+   - Design tokens (surface color, radius, shadow tokens)
+   - Responsive design (heights, padding classes)
+   - Edge cases (spacing, overflow-hidden, re-renders)
+
+**5. PostDetailSkeleton Component** (`__tests__/components/PostDetailSkeleton.test.tsx`) - **36 tests**
+   - Rendering scenarios (3 tests)
+   - Accessibility (aria-busy, aria-label, not aria-hidden)
+   - Layout structure (breadcrumb, image, content sections)
+   - Design tokens (background, surface, border tokens)
+   - Responsive design (padding, height classes)
+   - Content sections (meta, title, body, footer)
+   - Spacing (margins, padding)
+   - Edge cases (consistency, overflow, min-height, varying widths)
+
+### Testing Principles Applied
+
+- **Test Behavior, Not Implementation**: Verified WHAT components render, not HOW they work
+- **Test Pyramid**: Added component tests (UI layer) to complement existing unit tests
+- **Isolation**: Each test is independent with proper cleanup
+- **Determinism**: All tests produce same result every time
+- **Fast Feedback**: Tests execute in ~1 second per component
+- **Meaningful Coverage**: Covered critical paths and edge cases
+- **AAA Pattern**: Arrange → Act → Assert for all tests
+- **Accessibility Testing**: Verified ARIA attributes, screen reader support
+- **Design Token Verification**: Confirmed design tokens used throughout components
+
+### Test Categories
+
+**Critical Path Testing** (Happy Paths):
+- Components render correctly with default props
+- All variants work as expected
+- Props pass through correctly
+- Structure matches component design
+
+**Edge Case Coverage** (Sad Paths):
+- Empty className
+- Multiple custom classes
+- Number as children
+- Whitespace-only content
+- Missing optional props
+
+**Accessibility Testing**:
+- ARIA attributes present and correct
+- Screen reader loading state (aria-busy vs aria-hidden)
+- ARIA labels for context
+- Role attributes where appropriate
+
+**Design Token Testing**:
+- All colors use HSL variables
+- Spacing uses spacing tokens
+- Typography uses text size tokens
+- Border radius uses radius tokens
+- Shadows use shadow tokens
+
+**Responsive Design Testing**:
+- Mobile-first classes present
+- Breakpoint-specific styles applied
+- Touch-friendly sizing
+
+### Anti-Patterns Avoided
+
+- ❌ No tests depending on execution order
+- ❌ No tests for implementation details
+- ❌ No ignoring flaky tests (all tests pass consistently)
+- ❌ No tests requiring external services without mocking
+- ❌ No tests that pass when code is broken
+
+### Files Created
+
+- `__tests__/components/Skeleton.test.tsx` - 16 tests
+- `__tests__/components/SectionHeading.test.tsx` - 25 tests
+- `__tests__/components/Badge.test.tsx` - 27 tests
+- `__tests__/components/PostCardSkeleton.test.tsx` - 23 tests
+- `__tests__/components/PostDetailSkeleton.test.tsx` - 36 tests
+
+### Test Results
+
+- ✅ **127 new tests added**
+- ✅ **1473 total tests passing** (1346 → 1473)
+- ✅ **44 test suites passing** (39 → 44)
+- ✅ **No regressions** in existing tests
+- ✅ **ESLint passes** with no errors
+- ✅ **TypeScript compilation passes** with no errors
+- ✅ **All tests pass consistently** (no flaky tests)
+- ✅ **Build succeeds**
+
+### Results
+
+- ✅ 5 previously untested components now have comprehensive test coverage
+- ✅ Critical paths covered (rendering, variants, props)
+- ✅ Edge cases tested (empty states, boundary conditions)
+- ✅ Accessibility verified (ARIA attributes, screen reader support)
+- ✅ Design system compliance confirmed (design tokens used)
+- ✅ Responsive design tested (mobile-first, breakpoints)
+- ✅ All tests pass consistently (no flaky tests)
+- ✅ Breaking code causes test failure
+- ✅ Zero regressions in existing tests
+- ✅ Code quality maintained (lint/typecheck pass)
+
+### Success Criteria
+
+- ✅ Critical paths covered
+- ✅ All tests pass consistently
+- ✅ Edge cases tested
+- ✅ Tests readable and maintainable (descriptive names, AAA pattern)
+- ✅ Breaking code causes test failure
+
+### Follow-up Recommendations
+
+1. **Component Test Coverage**: Consider adding tests for other untested components if any exist
+2. **Integration Tests**: Add integration tests for component interactions (e.g., Button + Modal)
+3. **E2E Tests**: Consider E2E tests for critical user flows (using Playwright or Cypress)
+4. **Performance Tests**: Add performance tests for frequently-rendered components (PostCard, Pagination)
+
+### See Also
+
+- [Blueprint.md Testing Standards](./blueprint.md#testing-standards)
+- [Task TEST-001: Button and Icon Component Tests](./task.md#test-001)
+
+---
+
 ## [ARCH-ERROR-002] Extract Error Status Code Handling Helper
 
 **Status**: Complete
