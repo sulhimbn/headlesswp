@@ -6,6 +6,146 @@
 
 ## Active Tasks
 
+## [TEST-006] Critical Path Testing - Standardized API Edge Cases
+
+**Status**: Complete
+**Priority**: High
+**Assigned**: Senior QA Engineer
+**Created**: 2026-01-10
+**Updated**: 2026-01-10
+
+### Description
+
+Added comprehensive edge case tests for critical paths in the standardized API layer. The existing test suite (standardizedApi.test.ts) had excellent coverage for happy paths and common error scenarios, but lacked tests for important edge cases and boundary conditions.
+
+### Problem Identified
+
+**Missing Test Coverage**:
+1. **getAllPosts with category/tag filtering** - The `PostQueryParams` interface supports `category` and `tag` parameters, but there were no tests for these filtering scenarios
+2. **searchPosts with empty results** - Edge case where search returns no results was untested
+3. **getAllPosts pagination edge cases** - Boundary conditions like page=0, very large page numbers, custom per_page values were not tested
+4. **getAllCategories/getAllTags edge cases** - Empty lists, large numbers of items were not tested
+5. **getMediaById/getAuthorById edge cases** - 404 errors, zero IDs were not tested
+
+### Implementation Summary
+
+Created comprehensive test suite (`__tests__/standardizedApiEdgeCases.test.ts`) with 23 new tests covering:
+
+1. **Category and Tag Filtering** (4 tests):
+   - Filters posts by category ID
+   - Filters posts by tag ID
+   - Filters posts by both category and tag
+   - Handles filtering errors gracefully
+
+2. **searchPosts Edge Cases** (4 tests):
+   - Handles empty search results
+   - Handles empty search query
+   - Handles special characters in search query
+   - Handles search API errors
+
+3. **getAllPosts Pagination Edge Cases** (7 tests):
+   - Handles zero page number (defaults to 1)
+   - Handles large page numbers
+   - Handles custom per_page values
+   - Calculates correct totalPages for multiple pages
+   - Handles single post correctly
+   - Handles pagination with category filter
+   - Handles pagination with tag filter
+
+4. **getAllCategories and getAllTags Edge Cases** (4 tests):
+   - Handles empty categories list
+   - Handles empty tags list
+   - Handles large number of categories (100)
+   - Handles large number of tags (50)
+
+5. **getMediaById Edge Cases** (2 tests):
+   - Handles 404 for non-existent media
+   - Handles media with zero ID
+
+6. **getAuthorById Edge Cases** (2 tests):
+   - Handles 404 for non-existent author
+   - Handles author with zero ID
+
+### Test Results
+
+**Before**:
+- 810 tests passing
+- 31 skipped (integration tests)
+
+**After**:
+- 833 tests passing (23 new tests added)
+- 31 skipped (integration tests)
+- 0 failures
+
+**New Test Suite** (`__tests__/standardizedApiEdgeCases.test.ts`):
+- 23 tests all passing
+- 6 describe blocks covering critical edge cases
+- AAA pattern (Arrange, Act, Assert) applied
+- Descriptive test names following best practices
+
+### Files Created
+
+- `__tests__/standardizedApiEdgeCases.test.ts` - NEW: Comprehensive edge case test suite (313 lines, 23 tests)
+
+### Files Modified
+
+- `docs/task.md` - Added task documentation
+
+### Results
+
+- ✅ 23 new edge case tests added
+- ✅ All 833 tests passing (810 + 23)
+- ✅ 31 skipped tests (integration tests)
+- ✅ Zero test failures
+- ✅ TypeScript compilation passes with no errors
+- ✅ ESLint passes with no warnings
+- ✅ Category and tag filtering tests added
+- ✅ Search edge cases covered
+- ✅ Pagination boundary conditions tested
+- ✅ Empty result scenarios tested
+- ✅ Large dataset handling verified
+- ✅ Error paths validated
+
+### Success Criteria
+
+- ✅ Edge case tests created for standardized API
+- ✅ Category and tag filtering tests added
+- ✅ Search edge cases covered
+- ✅ Pagination boundary conditions tested
+- ✅ Empty result scenarios tested
+- ✅ All tests passing (no regressions)
+- ✅ TypeScript type checking passes
+- ✅ ESLint passes
+- ✅ Test behavior not implementation
+- ✅ AAA pattern applied consistently
+
+### Anti-Patterns Avoided
+
+- ❌ No tests depending on execution order
+- ❌ No testing implementation details
+- ❌ No flaky tests
+- ❌ No tests requiring external services (all mocked)
+- ❌ No tests that pass when code is broken
+
+### Test Principles Applied
+
+1. **Test Behavior, Not Implementation**: Tests verify WHAT the API returns, not HOW it works
+2. **Test Pyramid**: Unit tests (edge cases) supplementing existing integration tests
+3. **Isolation**: Each test independent, no shared state between tests
+4. **Determinism**: Same result every time (all mocks deterministic)
+5. **Fast Feedback**: Tests execute in < 1 second
+6. **Meaningful Coverage**: Critical paths and edge cases covered
+
+### Follow-up Recommendations
+
+1. Consider adding E2E tests for pagination flows with Playwright/Cypress
+2. Add visual regression tests for search results UI
+3. Consider performance tests for large category/tag lists (>1000 items)
+4. Add test coverage for concurrent request handling
+5. Consider property-based testing (using fast-check) for pagination logic
+
+---
+
 ## [ARCH-CACHE-FETCH-001] Cache Fetch Utility - Extract Duplicated Caching Pattern
 
 **Status**: Complete
