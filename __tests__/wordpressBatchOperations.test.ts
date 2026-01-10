@@ -2,12 +2,10 @@ import { wordpressAPI } from '@/lib/wordpress'
 import { apiClient, getApiUrl } from '@/lib/api/client'
 import { cacheManager, CACHE_KEYS, getCacheStats, clearCache } from '@/lib/cache'
 import { logger } from '@/lib/utils/logger'
-import { enhancedPostService } from '@/lib/services/enhancedPostService'
 
 jest.mock('@/lib/api/client')
 jest.mock('@/lib/cache')
 jest.mock('@/lib/utils/logger')
-jest.mock('@/lib/services/enhancedPostService')
 
 // Unmock getApiUrl to use actual implementation
 ;(getApiUrl as jest.MockedFunction<typeof getApiUrl>).mockImplementation((path) => path)

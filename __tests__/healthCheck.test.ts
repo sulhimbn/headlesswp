@@ -1,4 +1,4 @@
-import { HealthChecker, HealthCheckResult } from '@/lib/api/healthCheck';
+import { HealthChecker } from '@/lib/api/healthCheck';
 
 // Mock HTTP client for testing
 const mockHttpClient = {

@@ -1,7 +1,7 @@
 import { enhancedPostService } from '@/lib/services/enhancedPostService';
 import { wordpressAPI } from '@/lib/wordpress';
 import { cacheManager } from '@/lib/cache';
-import { dataValidator, isValidationResultValid } from '@/lib/validation/dataValidator';
+import { dataValidator } from '@/lib/validation/dataValidator';
 import { WordPressPost, WordPressCategory, WordPressTag } from '@/types/wordpress';
 import { PAGINATION_LIMITS } from '@/lib/api/config';
 

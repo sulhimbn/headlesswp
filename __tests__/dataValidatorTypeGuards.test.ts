@@ -495,9 +495,7 @@ describe('DataValidator Type Guards', () => {
 
       if (!isValidationResultValid(result)) {
         expect(result.data).toBeUndefined();
-        expect(() => {
-          const title = result.data?.title?.rendered;
-        }).not.toThrow();
+        expect(result.data?.title?.rendered).toBeUndefined();
       }
     });
   });

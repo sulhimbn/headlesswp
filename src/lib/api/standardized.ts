@@ -6,7 +6,8 @@ import {
   ApiPaginationMetadata,
   createSuccessResult,
   createErrorResult,
-  createSuccessListResult
+  createSuccessListResult,
+  fetchAndHandleNotFound
 } from './response';
 import { createApiError } from './errors';
 import { DEFAULT_PER_PAGE } from './config';
@@ -53,20 +54,12 @@ export async function getPostById(id: number): Promise<ApiResult<WordPressPost>>
 }
 
 export async function getPostBySlug(slug: string): Promise<ApiResult<WordPressPost>> {
-  try {
-    const post = await wordpressAPI.getPost(slug);
-    if (!post) {
-      const notFoundError = createApiError(
-        new Error(`Post not found: ${slug}`),
-        `/wp/v2/posts?slug=${slug}`
-      );
-      return createErrorResult(notFoundError, { endpoint: `/wp/v2/posts?slug=${slug}` });
-    }
-    return createSuccessResult(post, { endpoint: `/wp/v2/posts?slug=${slug}` });
-  } catch (error) {
-    const apiError = createApiError(error, `/wp/v2/posts?slug=${slug}`);
-    return createErrorResult(apiError, { endpoint: `/wp/v2/posts?slug=${slug}` });
-  }
+  return fetchAndHandleNotFound(
+    () => wordpressAPI.getPost(slug),
+    'Post',
+    slug,
+    `/wp/v2/posts?slug=${slug}`
+  );
 }
 
 export async function getAllPosts(
@@ -110,37 +103,21 @@ export async function searchPosts(query: string): Promise<ApiListResult<WordPres
 }
 
 export async function getCategoryById(id: number): Promise<ApiResult<WordPressCategory>> {
-  try {
-    const category = await wordpressAPI.getCategory(id.toString());
-    if (!category) {
-      const notFoundError = createApiError(
-        new Error(`Category not found: ${id}`),
-        `/wp/v2/categories/${id}`
-      );
-      return createErrorResult(notFoundError, { endpoint: `/wp/v2/categories/${id}` });
-    }
-    return createSuccessResult(category, { endpoint: `/wp/v2/categories/${id}` });
-  } catch (error) {
-    const apiError = createApiError(error, `/wp/v2/categories/${id}`);
-    return createErrorResult(apiError, { endpoint: `/wp/v2/categories/${id}` });
-  }
+  return fetchAndHandleNotFound(
+    () => wordpressAPI.getCategory(id.toString()),
+    'Category',
+    id,
+    `/wp/v2/categories/${id}`
+  );
 }
 
 export async function getCategoryBySlug(slug: string): Promise<ApiResult<WordPressCategory>> {
-  try {
-    const category = await wordpressAPI.getCategory(slug);
-    if (!category) {
-      const notFoundError = createApiError(
-        new Error(`Category not found: ${slug}`),
-        `/wp/v2/categories?slug=${slug}`
-      );
-      return createErrorResult(notFoundError, { endpoint: `/wp/v2/categories?slug=${slug}` });
-    }
-    return createSuccessResult(category, { endpoint: `/wp/v2/categories?slug=${slug}` });
-  } catch (error) {
-    const apiError = createApiError(error, `/wp/v2/categories?slug=${slug}`);
-    return createErrorResult(apiError, { endpoint: `/wp/v2/categories?slug=${slug}` });
-  }
+  return fetchAndHandleNotFound(
+    () => wordpressAPI.getCategory(slug),
+    'Category',
+    slug,
+    `/wp/v2/categories?slug=${slug}`
+  );
 }
 
 export async function getAllCategories(): Promise<ApiListResult<WordPressCategory>> {
@@ -163,37 +140,21 @@ export async function getAllCategories(): Promise<ApiListResult<WordPressCategor
 }
 
 export async function getTagById(id: number): Promise<ApiResult<WordPressTag>> {
-  try {
-    const tag = await wordpressAPI.getTag(id.toString());
-    if (!tag) {
-      const notFoundError = createApiError(
-        new Error(`Tag not found: ${id}`),
-        `/wp/v2/tags/${id}`
-      );
-      return createErrorResult(notFoundError, { endpoint: `/wp/v2/tags/${id}` });
-    }
-    return createSuccessResult(tag, { endpoint: `/wp/v2/tags/${id}` });
-  } catch (error) {
-    const apiError = createApiError(error, `/wp/v2/tags/${id}`);
-    return createErrorResult(apiError, { endpoint: `/wp/v2/tags/${id}` });
-  }
+  return fetchAndHandleNotFound(
+    () => wordpressAPI.getTag(id.toString()),
+    'Tag',
+    id,
+    `/wp/v2/tags/${id}`
+  );
 }
 
 export async function getTagBySlug(slug: string): Promise<ApiResult<WordPressTag>> {
-  try {
-    const tag = await wordpressAPI.getTag(slug);
-    if (!tag) {
-      const notFoundError = createApiError(
-        new Error(`Tag not found: ${slug}`),
-        `/wp/v2/tags?slug=${slug}`
-      );
-      return createErrorResult(notFoundError, { endpoint: `/wp/v2/tags?slug=${slug}` });
-    }
-    return createSuccessResult(tag, { endpoint: `/wp/v2/tags?slug=${slug}` });
-  } catch (error) {
-    const apiError = createApiError(error, `/wp/v2/tags?slug=${slug}`);
-    return createErrorResult(apiError, { endpoint: `/wp/v2/tags?slug=${slug}` });
-  }
+  return fetchAndHandleNotFound(
+    () => wordpressAPI.getTag(slug),
+    'Tag',
+    slug,
+    `/wp/v2/tags?slug=${slug}`
+  );
 }
 
 export async function getAllTags(): Promise<ApiListResult<WordPressTag>> {

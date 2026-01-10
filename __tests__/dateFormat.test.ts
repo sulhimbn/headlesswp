@@ -1,4 +1,4 @@
-import { formatDate, formatDateTime, formatTime, formatDateRelative, DateFormat } from '@/lib/utils/dateFormat'
+import { formatDate, formatDateTime, formatTime, formatDateRelative } from '@/lib/utils/dateFormat'
 
 describe('dateFormat utility', () => {
   describe('formatDate()', () => {
@@ -404,11 +404,10 @@ describe('dateFormat utility', () => {
       })
 
       it('should return formatted date for dates more than 7 days ago', () => {
-        const now = new Date('2024-01-15')
-        const date = new Date('2024-01-01') // 14 days ago
-        
+        const date = new Date('2024-01-01')
+
         const result = formatDateRelative(date, 'en-US')
-        
+
         expect(result).toBe('Jan 1, 2024')
       })
 

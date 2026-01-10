@@ -1,4 +1,4 @@
-import { ApiError } from './errors';
+import { ApiError, createApiError } from './errors';
 
 export interface ApiMetadata {
   timestamp: string;
@@ -87,4 +87,26 @@ export function createSuccessListResult<T>(
     },
     pagination
   };
+}
+
+export async function fetchAndHandleNotFound<T>(
+  fetchFn: () => Promise<T | null>,
+  resourceName: string,
+  identifier: string | number,
+  endpoint: string
+): Promise<ApiResult<T>> {
+  try {
+    const data = await fetchFn();
+    if (!data) {
+      const notFoundError = createApiError(
+        new Error(`${resourceName} not found: ${identifier}`),
+        endpoint
+      );
+      return createErrorResult(notFoundError, { endpoint });
+    }
+    return createSuccessResult(data, { endpoint });
+  } catch (error) {
+    const apiError = createApiError(error as Error, endpoint);
+    return createErrorResult(apiError, { endpoint });
+  }
 }

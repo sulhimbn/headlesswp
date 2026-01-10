@@ -1,4 +1,3 @@
-import axios, { AxiosError } from 'axios'
 import { CircuitBreaker, CircuitState } from '@/lib/api/circuitBreaker'
 import { createApiError, shouldTriggerCircuitBreaker, ApiErrorType } from '@/lib/api/errors'
 import { RateLimiterManager } from '@/lib/api/rateLimiter'
