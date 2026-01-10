@@ -1,4 +1,4 @@
-import { dataValidator, unwrapValidationResult, unwrapValidationResultSafe, isValidationResultValid, ValidationError } from '@/lib/validation/dataValidator';
+import { dataValidator, unwrapValidationResult, unwrapValidationResultSafe, isValidationResultValid } from '@/lib/validation/dataValidator';
 import {
   validateEnum,
   validatePattern,
