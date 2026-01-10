@@ -1,10 +1,73 @@
 # Task Backlog
 
-**Last Updated**: 2026-01-10 (Code Architect)
+**Last Updated**: 2026-01-10 (Lead Reliability Engineer)
 
 ---
 
 ## Active Tasks
+
+## [CLEANUP-001] Fix Lint and Type Errors from ARCH-001
+
+**Status**: Complete
+**Priority**: High
+**Assigned**: Lead Reliability Engineer
+**Created**: 2026-01-10
+**Updated**: 2026-01-10
+
+### Description
+
+Fixed lint and type errors that resulted from ARCH-001 circular dependency refactoring. The `cacheWarmer` service had unnecessary try/catch wrappers and tests still referenced the old `enhancedPostService.warmCache` method that was removed.
+
+### Issues Fixed
+
+**Lint Errors (3 issues)**:
+- `src/lib/services/cacheWarmer.ts:59` - Unnecessary try/catch wrapper
+- `src/lib/services/cacheWarmer.ts:69` - Unnecessary try/catch wrapper
+- `src/lib/services/cacheWarmer.ts:80` - Unnecessary try/catch wrapper
+
+**Root Cause**: The `warmLatestPosts()`, `warmCategories()`, and `warmTags()` methods had try/catch blocks that only rethrew errors, providing no value.
+
+**Fix Applied**: Removed unnecessary try/catch wrappers from all three private methods. Errors now propagate naturally to `warmAll()` which handles them via `Promise.allSettled()`.
+
+**Type Errors (3 issues)**:
+- `__tests__/wordpressBatchOperations.test.ts:491` - `Property 'warmCache' does not exist on type`
+- `__tests__/wordpressBatchOperations.test.ts:511` - `Property 'warmCache' does not exist on type`
+- `__tests__/wordpressBatchOperations.test.ts:516` - `Property 'warmCache' does not exist on type`
+
+**Root Cause**: Tests still referenced `enhancedPostService.warmCache` which was removed in ARCH-001. Cache warming is now handled by `cacheWarmer.warmAll()`.
+
+**Fix Applied**:
+1. Removed mock of `cacheWarmer` module to allow real implementation to execute
+2. Updated tests to match actual `cacheWarmer` behavior:
+   - Test 1: Updated log message expectation to include latency ("3/3 succeeded in 0ms")
+   - Test 2: Changed to verify result object (total, success, failed) instead of error logging
+   - Test 3: Changed to verify result object instead of mocking `cacheWarmer.warmAll`
+3. Removed unused `cacheWarmer` import
+
+### Results
+
+- ✅ All 3 lint errors fixed
+- ✅ All 3 type errors fixed
+- ✅ All 591 tests passing (34 skipped - integration tests)
+- ✅ Build passes
+- ✅ Lint passes
+- ✅ TypeScript compilation passes
+- ✅ Zero regressions in existing functionality
+
+### Files Modified
+
+- `src/lib/services/cacheWarmer.ts` - Removed 3 unnecessary try/catch wrappers
+- `__tests__/wordpressBatchOperations.test.ts` - Updated tests to match new `cacheWarmer` implementation
+
+### Success Criteria
+
+- ✅ Lint errors resolved
+- ✅ Type errors resolved
+- ✅ All tests passing
+- ✅ Build passes
+- ✅ Zero regressions
+
+---
 
 ## [ARCH-001] Dependency Cleanup - Remove Circular Dependency
 

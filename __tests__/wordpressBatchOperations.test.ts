@@ -483,20 +483,17 @@ describe('WordPress API - Batch Operations and Caching', () => {
       expect(apiClient.get).toHaveBeenCalledWith(getApiUrl('/wp/v2/posts'), { params: { per_page: 6 }, signal: undefined })
       expect(apiClient.get).toHaveBeenCalledWith(getApiUrl('/wp/v2/categories'), { signal: undefined })
       expect(apiClient.get).toHaveBeenCalledWith(getApiUrl('/wp/v2/tags'), { signal: undefined })
-      expect(logger.info).toHaveBeenCalledWith('Cache warming completed', { module: 'wordpressAPI' })
+      expect(logger.info).toHaveBeenLastCalledWith('Cache warming completed: 3/3 succeeded in 0ms', { module: 'CacheWarmer', results: expect.any(Array) })
     })
 
     it('handles errors during cache warming', async () => {
       ;(apiClient.get as jest.Mock).mockRejectedValue(new Error('API error'))
-      ;(enhancedPostService.warmCache as jest.Mock).mockRejectedValue(new Error('Enhanced post service error'))
 
-      await wordpressAPI.warmCache()
+      const result = await wordpressAPI.warmCache()
 
-      expect(logger.warn).toHaveBeenCalledWith(
-        'Cache warming failed',
-        expect.any(Error),
-        { module: 'wordpressAPI' }
-      )
+      expect(result.total).toBe(3)
+      expect(result.failed).toBe(3)
+      expect(result.success).toBe(0)
     })
 
     it('continues warming cache if one endpoint fails', async () => {
@@ -508,13 +505,12 @@ describe('WordPress API - Batch Operations and Caching', () => {
         .mockRejectedValueOnce(new Error('Categories error'))
         .mockResolvedValueOnce({ data: mockTags })
 
-      ;(enhancedPostService.warmCache as jest.Mock).mockResolvedValue(undefined)
-
-      await wordpressAPI.warmCache()
+      const result = await wordpressAPI.warmCache()
 
       expect(apiClient.get).toHaveBeenCalledTimes(3)
-      expect(enhancedPostService.warmCache).toHaveBeenCalled()
-      expect(logger.warn).toHaveBeenCalledWith('Cache warming failed', expect.any(Error), { module: 'wordpressAPI' })
+      expect(result.total).toBe(3)
+      expect(result.success).toBe(2)
+      expect(result.failed).toBe(1)
     })
   })
 })

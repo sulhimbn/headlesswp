@@ -56,34 +56,22 @@ class CacheWarmer {
 
   private async warmLatestPosts(): Promise<number> {
     const startTime = Date.now();
-    try {
-      await wordpressAPI.getPosts({ per_page: 6 });
-      return Date.now() - startTime;
-    } catch (error) {
-      throw error;
-    }
+    await wordpressAPI.getPosts({ per_page: 6 });
+    return Date.now() - startTime;
   }
 
   private async warmCategories(): Promise<number> {
     const startTime = Date.now();
-    try {
-      const categories = await wordpressAPI.getCategories();
-      cacheManager.set('categories', categories, CACHE_TTL.CATEGORIES);
-      return Date.now() - startTime;
-    } catch (error) {
-      throw error;
-    }
+    const categories = await wordpressAPI.getCategories();
+    cacheManager.set('categories', categories, CACHE_TTL.CATEGORIES);
+    return Date.now() - startTime;
   }
 
   private async warmTags(): Promise<number> {
     const startTime = Date.now();
-    try {
-      const tags = await wordpressAPI.getTags();
-      cacheManager.set('tags', tags, CACHE_TTL.TAGS);
-      return Date.now() - startTime;
-    } catch (error) {
-      throw error;
-    }
+    const tags = await wordpressAPI.getTags();
+    cacheManager.set('tags', tags, CACHE_TTL.TAGS);
+    return Date.now() - startTime;
   }
 
   getStats(): { hits: number; misses: number; hitsRate: number } {
