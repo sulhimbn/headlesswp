@@ -5,13 +5,13 @@ interface SectionHeadingProps {
   className?: string
 }
 
-export default function SectionHeading({ level = 'h2', size = 'lg', children, className = '' }: SectionHeadingProps) {
-  const sizeStyles = {
-    lg: 'text-3xl font-bold',
-    md: 'text-2xl font-semibold',
-    sm: 'text-xl font-semibold'
-  }
+const sizeStyles = {
+  lg: 'text-3xl font-bold',
+  md: 'text-2xl font-semibold',
+  sm: 'text-xl font-semibold'
+}
 
+export default function SectionHeading({ level = 'h2', size = 'lg', children, className = '' }: SectionHeadingProps) {
   const baseClassName = `text-gray-900 ${sizeStyles[size]} ${className}`.trim()
 
   const HeadingTag = level

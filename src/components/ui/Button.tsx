@@ -10,6 +10,21 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   fullWidth?: boolean
 }
 
+const variantStyles: Record<ButtonVariant, string> = {
+  primary: 'bg-red-600 text-white hover:bg-red-700',
+  secondary: 'bg-gray-200 text-gray-800 hover:bg-gray-300',
+  outline: 'border-2 border-red-600 text-red-600 hover:bg-red-50',
+  ghost: 'text-gray-700 hover:text-red-600 hover:bg-gray-100',
+}
+
+const sizeStyles: Record<ButtonSize, string> = {
+  sm: 'px-3 py-1.5 text-sm',
+  md: 'px-4 py-2 text-base',
+  lg: 'px-6 py-3 text-lg',
+}
+
+const baseStyles = 'font-medium rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-red-600 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed'
+
 const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   (
     {
@@ -24,21 +39,6 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     },
     ref
   ) => {
-    const baseStyles = 'font-medium rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-red-600 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed'
-
-    const variantStyles: Record<ButtonVariant, string> = {
-      primary: 'bg-red-600 text-white hover:bg-red-700',
-      secondary: 'bg-gray-200 text-gray-800 hover:bg-gray-300',
-      outline: 'border-2 border-red-600 text-red-600 hover:bg-red-50',
-      ghost: 'text-gray-700 hover:text-red-600 hover:bg-gray-100',
-    }
-
-    const sizeStyles: Record<ButtonSize, string> = {
-      sm: 'px-3 py-1.5 text-sm',
-      md: 'px-4 py-2 text-base',
-      lg: 'px-6 py-3 text-lg',
-    }
-
     const widthStyles = fullWidth ? 'w-full' : ''
 
     return (
