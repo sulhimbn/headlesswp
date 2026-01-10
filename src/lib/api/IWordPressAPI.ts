@@ -1,4 +1,4 @@
-import { WordPressPost, WordPressCategory, WordPressTag, WordPressMedia, WordPressAuthor } from '@/types/wordpress';
+import type { WordPressPost, WordPressCategory, WordPressTag, WordPressMedia, WordPressAuthor } from '@/types/wordpress';
 
 export interface IWordPressAPI {
   getPost(slug: string, signal?: AbortSignal): Promise<WordPressPost | null>;

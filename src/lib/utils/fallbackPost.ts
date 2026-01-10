@@ -1,4 +1,4 @@
-import { WordPressPost } from '@/types/wordpress';
+import type { WordPressPost } from '@/types/wordpress';
 
 export function createFallbackPost(id: string, title: string): WordPressPost {
   return {
