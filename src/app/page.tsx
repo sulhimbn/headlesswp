@@ -5,7 +5,7 @@ import SectionHeading from '@/components/ui/SectionHeading'
 import Footer from '@/components/layout/Footer'
 import { UI_TEXT } from '@/lib/constants/uiText'
 
-export const revalidate = 300
+export const revalidate = 300 // REVALIDATE_TIMES.HOMEPAGE (5 minutes)
 
 export default async function HomePage() {
   const [latestPosts, categoryPosts] = await Promise.all([

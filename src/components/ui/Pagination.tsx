@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { PAGINATION } from '@/lib/api/config'
 
 interface PaginationProps {
   currentPage: number
@@ -8,7 +9,7 @@ interface PaginationProps {
 
 export default function Pagination({ currentPage, totalPages, basePath }: PaginationProps) {
   const pages: (number | string)[] = []
-  const maxVisible = 5
+  const maxVisible = PAGINATION.MAX_VISIBLE_PAGES
 
   if (totalPages <= maxVisible) {
     for (let i = 1; i <= totalPages; i++) {

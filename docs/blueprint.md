@@ -1,6 +1,6 @@
 # Architecture Blueprint
 
-**Version**: 1.4.5
+**Version**: 1.4.6
 **Last Updated**: 2026-01-10 (Code Architect)
 
 ## System Architecture
@@ -154,6 +154,15 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(({ children, ...props 
 - `shadow-md` → `shadow-[var(--shadow-md)]`
 - `shadow-lg` → `shadow-[var(--shadow-lg)]`
 - `transition-colors` → `transition-all duration-[var(--transition-normal)]` (or `--transition-fast` for micro-interactions)
+- `text-gray-800` → `text-[hsl(var(--color-text-primary))]`
+- `text-gray-700` → `text-[hsl(var(--color-text-secondary))]`
+- `hover:bg-gray-300` → `hover:bg-[hsl(var(--color-secondary))]`
+
+**Button Variant Mappings** (extracted to `src/lib/constants/buttonStyles.ts`):
+- **Primary variant**: `bg-[hsl(var(--color-primary))] text-white hover:bg-[hsl(var(--color-primary-dark))]`
+- **Secondary variant**: `bg-[hsl(var(--color-secondary-dark))] text-[hsl(var(--color-text-primary))] hover:bg-[hsl(var(--color-secondary))]`
+- **Outline variant**: `border-[hsl(var(--color-primary))] text-[hsl(var(--color-primary))] hover:bg-[hsl(var(--color-primary-light))]`
+- **Ghost variant**: `text-[hsl(var(--color-text-secondary))] hover:text-[hsl(var(--color-primary))] hover:bg-[hsl(var(--color-secondary-dark))]`
 
 ### Accessibility Features
 

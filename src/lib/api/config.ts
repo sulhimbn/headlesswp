@@ -46,3 +46,7 @@ export const REVALIDATE_TIMES = {
   POST_LIST: 5 * 60, // 300 seconds (5 minutes)
   POST_DETAIL: 60 * 60, // 3600 seconds (1 hour)
 } as const
+
+export const PAGINATION = {
+  MAX_VISIBLE_PAGES: 5,
+} as const
