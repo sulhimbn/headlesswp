@@ -18,6 +18,10 @@
     --color-background: 220 13% 98%;
     --color-surface: 0 0% 100%;
     --color-border: 220 13% 91%;
+    --color-background-dark: 220 13% 10%;
+    --color-surface-dark: 220 13% 15%;
+    --color-text-muted-dark: 220 9% 65%;
+    --color-text-faint-dark: 220 9% 45%;
     --color-success: 142 76% 36%;
     --color-warning: 38 92% 50%;
     --color-error: 0 84% 60%;
