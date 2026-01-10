@@ -6,6 +6,7 @@ const withBundleAnalyzerConfig = withBundleAnalyzer({
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  output: 'standalone',
   compress: true,
   images: {
     remotePatterns: [

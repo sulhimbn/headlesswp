@@ -23,24 +23,20 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
+          cache: 'npm'
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
-      - name: Build application to install SWC binaries
-        run: npm run build || true
-        env:
-          NEXT_PUBLIC_WORDPRESS_URL: ${{ secrets.WORDPRESS_URL }}
-
-      - name: Copy SWC binaries from cache to node_modules
-        run: |
-          if [ -d /home/runner/.cache/next-swc ]; then
-            mkdir -p node_modules/next
-            cp -r /home/runner/.cache/next-swc/* node_modules/next/ 2>/dev/null || true
-          fi
-
-      - name: Install SWC binaries
-        run: npx next build --dry-run || true
+      - name: Cache Next.js build
+        uses: actions/cache@v4
+        with:
+          path: |
+            .next/cache
+          key: ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json') }}-${{ hashFiles('**/*.js', '**/*.jsx', '**/*.ts', '**/*.tsx') }}
+          restore-keys: |
+            ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json') }}-
+            ${{ runner.os }}-nextjs-
 
       - name: Run linting
         run: npm run lint
@@ -68,6 +64,16 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Cache Next.js build
+        uses: actions/cache@v4
+        with:
+          path: |
+            .next/cache
+          key: ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json') }}-${{ hashFiles('**/*.js', '**/*.jsx', '**/*.ts', '**/*.tsx') }}
+          restore-keys: |
+            ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json') }}-
+            ${{ runner.os }}-nextjs-
 
       - name: Build application
         run: npm run build

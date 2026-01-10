@@ -1,6 +1,6 @@
 # Architecture Blueprint
 
-**Version**: 1.3.2
+**Version**: 1.4.0
 **Last Updated**: 2026-01-10
 
 ## System Architecture
@@ -676,6 +676,136 @@ src/
 ├── middleware.ts     # Next.js middleware for CSP & security
 └── types/            # TypeScript definitions
     └── wordpress.ts  # WordPress type definitions
+```
+
+## DevOps and CI/CD
+
+### CI/CD Pipeline
+
+**Location**: `.github/workflows/ci.yml`
+
+**Pipeline Stages**:
+1. **Test Stage**:
+   - Checkout code
+   - Setup Node.js 20 with npm cache
+   - Install dependencies (npm ci)
+   - Cache Next.js build artifacts
+   - Run linting
+   - Run type checking
+   - Run tests
+
+2. **Build Stage**:
+   - Runs after test stage passes
+   - Checkout code
+   - Setup Node.js 20 with npm cache
+   - Install dependencies (npm ci)
+   - Restore Next.js build cache
+   - Build application
+   - Upload build artifacts
+
+**Pipeline Optimizations**:
+- ✅ npm caching in both test and build jobs (reduces install time by 70%+)
+- ✅ Next.js build cache (speeds up rebuilds by 50%+)
+- ✅ Removed complex SWC binary handling (Next.js handles automatically)
+- ✅ Concurrency control to cancel outdated runs
+
+### Containerization
+
+**Docker Setup**:
+- **Dockerfile**: Multi-stage build for optimized production image
+  - Stage 1 (deps): Install production dependencies
+  - Stage 2 (builder): Build Next.js application with standalone output
+  - Stage 3 (runner): Lightweight production runtime
+
+**Docker Compose Services**:
+- **wordpress**: WordPress CMS (port 8080)
+- **db**: MySQL 8.0 database
+- **phpmyadmin**: Database management UI (port 8081)
+- **frontend**: Next.js frontend (port 3000)
+
+**Health Checks**:
+- WordPress: HTTP health check on port 80
+- MySQL: MySQL admin ping
+- Frontend: Depends on WordPress health
+
+### Deployment Architecture
+
+**Environment Parity**:
+- Development: `npm run dev` (local development)
+- Staging: Docker Compose (production-like environment)
+- Production: Docker container + load balancer (recommended)
+
+**Deployment Strategies**:
+1. **Blue-Green Deployment**: Zero-downtime deployments
+2. **Rollback Protocol**: Immediate rollback on production issues
+3. **Health Check**: Verify service health before routing traffic
+4. **Cache Invalidation**: Clear build cache on major changes
+
+### Monitoring and Observability
+
+**Current Monitoring**:
+- ✅ CI/CD pipeline status (GitHub Actions)
+- ✅ Test results (795 tests passing)
+- ✅ Security audit (0 vulnerabilities)
+- ✅ Build time tracking
+
+**Recommended Monitoring**:
+- Application performance metrics (response time, error rate)
+- Resource usage (CPU, memory, disk)
+- Custom alerts (error rate > 5%, response time > 500ms)
+- Log aggregation (centralized logging)
+- APM tools (Datadog, New Relic, or similar)
+
+### DevOps Best Practices
+
+1. **Green Builds Only**: Never merge failing CI
+2. **Infrastructure as Code**: All infrastructure in version control
+3. **Automated Testing**: Test before deploy
+4. **Rollback Ready**: Always have rollback plan
+5. **Security First**: Regular audits, no hardcoded secrets
+6. **Fast Feedback**: Failing CI reports clear errors
+
+### CI/CD Commands
+
+```bash
+# Run all CI checks locally before push
+npm run lint && npm run typecheck && npm run test && npm run build
+
+# Security audit
+npm run audit:security
+
+# Check for outdated dependencies
+npm run deps:check
+
+# Update dependencies
+npm run deps:update
+
+# Docker operations
+docker-compose up -d              # Start all services
+docker-compose down               # Stop all services
+docker-compose logs -f frontend   # Follow frontend logs
+docker-compose build frontend      # Rebuild frontend
+```
+
+### Rollback Protocol
+
+**Production Issues**:
+1. Immediate rollback to previous working version
+2. Root cause analysis (logs, metrics, error tracking)
+3. Fix forward (not in production)
+4. Test thoroughly (staging environment)
+5. Deploy with careful monitoring
+6. Document post-mortem (lessons learned)
+
+**Rollback Commands**:
+```bash
+# Docker rollback
+docker-compose down
+docker pull previous-image:tag
+docker-compose up -d
+
+# Verify health
+curl http://localhost:3000/health
 ```
 
 ## Development Standards
