@@ -1,13 +1,9 @@
 import { enhancedPostService } from '@/lib/services/enhancedPostService'
-import dynamic from 'next/dynamic'
 import Header from '@/components/layout/Header'
 import PostCard from '@/components/post/PostCard'
 import SectionHeading from '@/components/ui/SectionHeading'
-
-const Footer = dynamic(() => import('@/components/layout/Footer'), {
-  loading: () => null,
-  ssr: true
-})
+import Footer from '@/components/layout/Footer'
+import { UI_TEXT } from '@/lib/constants/uiText'
 
 export const revalidate = 300
 
@@ -24,7 +20,7 @@ export default async function HomePage() {
       <main id="main-content" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <section className="mb-12">
           <SectionHeading className="mb-6">
-            Berita Utama
+            {UI_TEXT.homePage.featuredHeading}
           </SectionHeading>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {categoryPosts.map((post, index) => (
@@ -35,7 +31,7 @@ export default async function HomePage() {
 
         <section>
           <SectionHeading className="mb-6">
-            Berita Terkini
+            {UI_TEXT.homePage.latestHeading}
           </SectionHeading>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {latestPosts.map((post, index) => (

@@ -500,9 +500,18 @@ src/
 
 1. **DRY Principle**: No code duplication - extract shared logic to utilities
 2. **Utility Functions**: Centralized utilities in `src/lib/utils/`
+   - `sanitizeHTML.ts`: XSS protection with DOMPurify
+   - `logger.ts`: Centralized logging with log levels
+   - `dateFormat.ts`: Date formatting utilities with locale support
 3. **Type Safety**: All utility functions properly typed
 4. **Configuration Management**: Centralize configuration constants
-5. **Component Optimization**: Remove unnecessary React.memo from server components
+   - `src/lib/constants/fallbackPosts.ts`: Fallback data constants
+   - `src/lib/constants/uiText.ts`: UI text constants for localization layer
+5. **Layer Separation**: Text and formatting separated from presentation
+   - UI text in `src/lib/constants/uiText.ts`
+   - Date formatting in `src/lib/utils/dateFormat.ts`
+   - Components import and use these utilities
+6. **Component Optimization**: Remove unnecessary React.memo from server components
 
 ### Sanitization Standards
 

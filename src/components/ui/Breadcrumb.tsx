@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { UI_TEXT } from '@/lib/constants/uiText'
 
 interface BreadcrumbItem {
   label: string
@@ -18,7 +19,7 @@ export default function Breadcrumb({ items }: BreadcrumbProps) {
             href="/"
             className="text-gray-700 hover:text-red-600 focus:outline-none focus:ring-2 focus:ring-red-600 focus:ring-offset-2 rounded text-sm"
           >
-            Beranda
+            {UI_TEXT.breadcrumb.home}
           </Link>
         </li>
         {items.map((item, index) => (

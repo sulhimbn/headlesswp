@@ -3,6 +3,7 @@
 import { useEffect } from 'react'
 import Button from '@/components/ui/Button'
 import { logger } from '@/lib/utils/logger'
+import { UI_TEXT } from '@/lib/constants/uiText'
 
 export default function Error({
   error,
@@ -36,10 +37,10 @@ export default function Error({
             </svg>
           </div>
           <h1 className="text-3xl font-bold text-gray-900 mb-4">
-            Terjadi Kesalahan
+            {UI_TEXT.error.heading}
           </h1>
           <p className="text-lg text-gray-600 mb-4">
-            Maaf, terjadi kesalahan saat memuat halaman ini. Ini bukan kesalahan dari pihak Anda.
+            {UI_TEXT.error.description}
           </p>
           <p className="text-sm text-gray-500">
             Error ID: {error.digest || 'Unknown'}
@@ -53,7 +54,7 @@ export default function Error({
             size="lg"
             className="w-full sm:w-auto"
           >
-            Coba Lagi
+            {UI_TEXT.error.tryAgain}
           </Button>
           <Button
             onClick={() => window.location.href = '/'}
@@ -61,20 +62,20 @@ export default function Error({
             size="lg"
             className="w-full sm:w-auto"
           >
-            Kembali ke Beranda
+            {UI_TEXT.error.backToHome}
           </Button>
         </div>
 
         <div className="mt-12 pt-8 border-t border-gray-200">
           <p className="text-sm text-gray-500">
-            Jika masalah berlanjut, silakan{' '}
+            {UI_TEXT.error.contactHelp}{' '}
             <a
               href="/"
               className="text-red-600 hover:text-red-700 focus:outline-none focus:ring-2 focus:ring-red-600 focus:ring-offset-2 rounded"
             >
-              hubungi kami
+              {UI_TEXT.error.contactUs}
             </a>{' '}
-            untuk bantuan.
+            {UI_TEXT.error.contactForHelp}
           </p>
         </div>
       </div>
