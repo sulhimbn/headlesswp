@@ -17,7 +17,19 @@ const SANITIZE_CONFIGS: Record<SanitizeConfig, { ALLOWED_TAGS: string[]; ALLOWED
   }
 }
 
+const sanitizeCache = new Map<string, string>()
+
 export function sanitizeHTML(html: string, config: SanitizeConfig = 'full'): string {
+  const cacheKey = `${config}:${html}`
+  
+  const cached = sanitizeCache.get(cacheKey)
+  if (cached !== undefined) {
+    return cached
+  }
+  
   const sanitizeConfig = SANITIZE_CONFIGS[config]
-  return DOMPurify.sanitize(html, sanitizeConfig)
+  const result = DOMPurify.sanitize(html, sanitizeConfig)
+  
+  sanitizeCache.set(cacheKey, result)
+  return result
 }
