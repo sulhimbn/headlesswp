@@ -338,119 +338,20 @@ No immediate data architecture improvements are required. The codebase is in exc
 
 ## [REFACTOR-011] Merge Duplicate fetchAndValidate Functions
 
-**Status**: Complete
+**Status**: Pending
 **Priority**: Medium
-**Assigned**: Code Architect
+**Assigned**: 
 **Created**: 2026-01-10
-**Updated**: 2026-01-10
 
 ### Description
 
-Merged `fetchAndValidate` and `fetchAndValidateSingle` functions in `src/lib/services/enhancedPostService.ts` to eliminate code duplication and apply the DRY principle.
+`fetchAndValidate` and `fetchAndValidateSingle` functions in `src/lib/services/enhancedPostService.ts` (lines 109-154) have nearly identical implementations with only a minor difference in log level handling.
 
-### Issue Resolved
+### Issue
 
-- **Code Duplication**: Two functions performed almost identical operations
-- **Violation of DRY Principle**: Same logic was duplicated across 46 lines
-- **Maintenance Burden**: Changes to error handling required updates in both places
-
-### Implementation Summary
-
-1. **Removed Duplicate Function**: Deleted `fetchAndValidateSingle` (23 lines)
-2. **Updated Generic Function**: Modified `fetchAndValidate` to:
-   - Accept generic `ValidationResult<T>` type (works with any validation result)
-   - Default log level to 'error' (safer default)
-   - Support both single and collection validation patterns
-3. **Updated Call Sites**:
-   - `getLatestPosts`: Explicitly passes 'warn' to maintain existing behavior
-   - `getCategoryPosts`: Explicitly passes 'warn' to maintain existing behavior
-   - `getAllPosts`: Explicitly passes 'warn' to maintain existing behavior
-   - `getPostById`: Uses default 'error' log level (matches previous behavior)
-
-### Code Quality Improvements
-
-**Before**:
-```typescript
-// Lines 109-131: fetchAndValidate with default 'warn'
-async function fetchAndValidate<T, R>(
-  fetchFn: () => Promise<T>,
-  validateFn: (data: T) => ReturnType<typeof dataValidator.validatePosts>,
-  // ...
-  logLevel: 'warn' | 'error' = 'warn'
-): Promise<R> { /* 22 lines */ }
-
-// Lines 133-154: fetchAndValidateSingle with hardcoded 'error'
-async function fetchAndValidateSingle<T, R>(
-  fetchFn: () => Promise<T>,
-  validateFn: (data: T) => ReturnType<typeof dataValidator.validatePost>,
-  // ...
-): Promise<R> { /* 22 lines */ }
-```
-
-**After**:
-```typescript
-// Lines 109-131: Single generic function with safer default
-async function fetchAndValidate<T, R>(
-  fetchFn: () => Promise<T>,
-  validateFn: (data: T) => ValidationResult<T>,
-  transformFn: (data: T) => R | Promise<R>,
-  fallback: R,
-  context: string,
-  logLevel: 'warn' | 'error' = 'error'
-): Promise<R> { /* 23 lines */ }
-```
-
-### Files Modified
-
-- `src/lib/services/enhancedPostService.ts` - Lines 109-237
-  - Removed `fetchAndValidateSingle` function (lines 133-154 deleted)
-  - Updated `fetchAndValidate` to use generic `ValidationResult<T>` type
-  - Updated default log level from 'warn' to 'error' (safer)
-  - Updated call sites to explicitly pass 'warn' where needed (4 changes)
-
-### Test Results
-
-- ✅ All 34 enhancedPostService tests passing
-- ✅ Zero regressions
-- ✅ Error handling behavior preserved
-
-### Results
-
-- ✅ Removed 23 lines of duplicate code
-- ✅ DRY Principle applied - single error handling function
-- ✅ Type safety improved with generic `ValidationResult<T>`
-- ✅ Safer default log level ('error')
-- ✅ All 34 tests passing (no regressions)
-- ✅ Zero behavior changes (existing behavior preserved)
-- ✅ Maintenance burden reduced (one function to update instead of two)
-
-### Success Criteria
-
-- ✅ Duplicate functions merged
-- ✅ DRY Principle applied
-- ✅ All call sites updated correctly
-- ✅ All tests passing (no regressions)
-- ✅ Type safety maintained
-- ✅ Error handling behavior preserved
-
-### Anti-Patterns Avoided
-
-- ❌ No code duplication
-- ❌ No maintenance burden (multiple places to update)
-- ❌ No inconsistent error handling
-- ❌ No breaking changes
-
-### DRY Principle Benefits
-
-1. **Single Source of Truth**: Error handling logic defined once
-2. **Consistency**: All validation follows same pattern
-3. **Maintainability**: Changes only need to be made in one function
-4. **Type Safety**: Generic TypeScript ensures compile-time type checking
-5. **Testability**: Single function easier to test
-
-### Follow-up Recommendations
-
-None - task complete.
+- **Code Duplication**: Two functions perform almost identical operations
+- **Violation of DRY Principle**: Same logic duplicated across 46 lines
+- **Maintenance Burden**: Changes to error handling must be made in both places
 
 ### Current Code
 
@@ -562,37 +463,20 @@ Small - Simple merge, update all call sites (6 usages found)
 
 ## [REFACTOR-012] Extract Generic Entity Map Function
 
-**Status**: Complete
+**Status**: Pending
 **Priority**: Medium
-**Assigned**: Code Architect
+**Assigned**: 
 **Created**: 2026-01-10
-**Updated**: 2026-01-10
 
 ### Description
 
-Extracted duplicate `getCategoriesMap` and `getTagsMap` functions into a generic `getEntityMap<T>()` helper to eliminate code duplication and apply the DRY principle.
+`getCategoriesMap` and `getTagsMap` functions in `src/lib/services/enhancedPostService.ts` (lines 11-55) have nearly identical implementations. Both functions fetch, validate, cache, and return a Map - the only differences are the API calls and validation functions.
 
-### Issue Resolved
+### Issue
 
-- **Code Duplication**: Two functions performed identical operations for different entity types
+- **Code Duplication**: Two functions perform identical operations for different entity types
 - **Violation of DRY Principle**: Same caching and validation pattern duplicated
-- **Maintainability**: Adding a new entity type required duplicating entire pattern
-
-### Implementation Summary
-
-1. **Created Generic Helper** (`getEntityMap<T>()`):
-   - Generic function that handles fetching, validation, caching, and Map conversion
-   - Accepts `EntityMapOptions<T>` interface for configuration
-   - Works with any entity type that has an `id: number` property
-   - Returns `Map<number, T>` for O(1) lookups
-
-2. **Refactored Existing Functions**:
-   - `getCategoriesMap()`: Now calls `getEntityMap<WordPressCategory>()`
-   - `getTagsMap()`: Now calls `getEntityMap<WordPressTag>()`
-
-3. **Type Safety Improvements**:
-   - Added `ValidationResult<T>` import for proper type support
-   - Generic constraint `T extends { id: number }` ensures entities have required property
+- **Maintainability**: Adding a new entity type requires duplicating the entire pattern
 
 ### Current Code
 
@@ -695,97 +579,31 @@ async function getCategoriesMap(): Promise<Map<number, WordPressCategory>> {
 }
 ```
 
-### Code Quality Improvements
+### Priority
 
-**Before**:
-```typescript
-// Lines 11-32: getCategoriesMap - 22 lines
-async function getCategoriesMap(): Promise<Map<number, WordPressCategory>> {
-  // Check cache, fetch, validate, set cache
-}
+Medium - Code quality improvement, DRY principle
 
-// Lines 34-55: getTagsMap - 22 lines
-async function getTagsMap(): Promise<Map<number, WordPressTag>> {
-  // Check cache, fetch, validate, set cache
-}
-```
+### Effort
 
-**After**:
-```typescript
-// Lines 11-42: getEntityMap - 23 lines
-async function getEntityMap<T extends { id: number }>(
-  options: EntityMapOptions<T>
-): Promise<Map<number, T>> {
-  // Generic implementation
-}
+Medium - Requires careful typing and update of 2 functions
 
-// Lines 44-57: getCategoriesMap - 14 lines (refactored)
-async function getCategoriesMap(): Promise<Map<number, WordPressCategory>> {
-  return getEntityMap<WordPressCategory>({ /* options */ });
-}
+### Benefits
 
-// Lines 59-72: getTagsMap - 14 lines (refactored)
-async function getTagsMap(): Promise<Map<number, WordPressTag>> {
-  return getEntityMap<WordPressTag>({ /* options */ });
-}
-```
+- **DRY Principle**: Entity map logic defined once
+- **Extensibility**: Adding new entity types is trivial
+- **Type Safety**: Generic TypeScript ensures compile-time checks
+- **Testability**: Generic function can be tested independently
+- **Lines Reduced**: ~30 lines eliminated
 
-### Files Modified
+### Files Affected
 
-- `src/lib/services/enhancedPostService.ts` - Lines 11-72
-  - Added `EntityMapOptions<T>` interface (7 lines)
-  - Added generic `getEntityMap<T>()` function (32 lines)
-  - Refactored `getCategoriesMap()` to use generic helper (14 lines)
-  - Refactored `getTagsMap()` to use generic helper (14 lines)
-  - Added `ValidationResult<T>` type import
+- `src/lib/services/enhancedPostService.ts` - Lines 11-55
 
-### Test Results
+### Tests
 
-- ✅ All 34 enhancedPostService tests passing
-- ✅ Zero regressions
-- ✅ Entity map functionality preserved
-- ✅ Cache behavior unchanged
-- ✅ Error handling behavior preserved
-
-### Results
-
-- ✅ Removed 23 lines of duplicate code
-- ✅ DRY Principle applied - entity map logic defined once
-- ✅ Type safety improved with generic `getEntityMap<T>()`
-- ✅ Extensibility: Adding new entity types is trivial
-- ✅ All 34 tests passing (no regressions)
-- ✅ Zero behavior changes (existing behavior preserved)
-- ✅ Maintenance burden reduced
-
-### Success Criteria
-
-- ✅ Duplicate functions merged into generic helper
-- ✅ DRY Principle applied
-- ✅ Type safety maintained
-- ✅ All call sites updated correctly
-- ✅ All tests passing (no regressions)
-- ✅ Error handling behavior preserved
-- ✅ Cache behavior preserved
-
-### Anti-Patterns Avoided
-
-- ❌ No code duplication
-- ❌ No maintenance burden (multiple places to update)
-- ❌ No inconsistent caching patterns
-- ❌ No breaking changes
-
-### DRY Principle Benefits
-
-1. **Single Source of Truth**: Entity map logic defined once
-2. **Consistency**: All entity maps follow same pattern
-3. **Maintainability**: Changes only need to be made in one function
-4. **Type Safety**: Generic TypeScript ensures compile-time type checking
-5. **Extensibility**: New entity types can use same pattern
-6. **Testability**: Generic function tested implicitly via getCategoriesMap/getTagsMap
-
-### Follow-up Recommendations
-
-None - task complete. Potential future work: Consider extracting similar patterns for other entity types (users, media, etc.) if needed.
+- Update tests for `getCategoriesMap()` and `getTagsMap()`
+- Add tests for the generic `getEntityMap()` function
+- Verify error handling for both entities
 
 ---
 
@@ -927,37 +745,20 @@ Small - Update 2 files (Icon.tsx and Button.tsx)
 
 ## [REFACTOR-014] Extract getAllX Generic Helper from Standardized API
 
-**Status**: Complete
+**Status**: Pending
 **Priority**: Medium
-**Assigned**: Code Architect
+**Assigned**: 
 **Created**: 2026-01-10
-**Updated**: 2026-01-10
 
 ### Description
 
-Extracted duplicate `getAllCategories()` and `getAllTags()` functions into a generic `getAllEntities<T>()` helper to eliminate code duplication and apply DRY principle.
+`getAllCategories()` and `getAllTags()` functions in `src/lib/api/standardized.ts` (lines 123-140 and 160-177) have nearly identical implementations. Both fetch entities, build pagination metadata, and return standardized results.
 
-### Issue Resolved
+### Issue
 
 - **Code Duplication**: Same pattern repeated for categories and tags
 - **Violation of DRY Principle**: Pagination logic duplicated
-- **Maintainability**: Adding new getAllX functions required duplicating entire pattern
-
-### Implementation Summary
-
-1. **Created Generic Helper** (`getAllEntities<T>()`):
-   - Generic function that handles pagination metadata creation
-   - Accepts entities array and endpoint string
-   - Works with any entity type
-   - Returns standardized `ApiListResult<T>`
-
-2. **Refactored Existing Functions**:
-   - `getAllCategories()`: Now calls `getAllEntities<WordPressCategory>()`
-   - `getAllTags()`: Now calls `getAllEntities<WordPressTag>()`
-
-3. **Type Safety**:
-   - Generic `<T>` type parameter for any entity type
-   - Preserves type safety for pagination metadata
+- **Maintainability**: Adding new getAllX functions requires duplicating entire pattern
 
 ### Current Code
 
@@ -1038,127 +839,31 @@ export async function getAllTags(): Promise<ApiListResult<WordPressTag>> {
 }
 ```
 
-### Code Quality Improvements
+### Priority
 
-**Before**:
-```typescript
-// Lines 123-140: getAllCategories - 18 lines
-export async function getAllCategories(): Promise<ApiListResult<WordPressCategory>> {
-  try {
-    const categories = await wordpressAPI.getCategories();
-    const pagination: ApiPaginationMetadata = { /* 4 lines */ };
-    return createSuccessListResult(categories, { endpoint: '/wp/v2/categories' }, pagination);
-  } catch (error) {
-    return createErrorListResult('/wp/v2/categories', undefined, undefined, error);
-  }
-}
+Medium - Code quality improvement, DRY principle
 
-// Lines 160-177: getAllTags - 18 lines
-export async function getAllTags(): Promise<ApiListResult<WordPressTag>> {
-  try {
-    const tags = await wordpressAPI.getTags();
-    const pagination: ApiPaginationMetadata = { /* 4 lines */ };
-    return createSuccessListResult(tags, { endpoint: '/wp/v2/tags' }, pagination);
-  } catch (error) {
-    return createErrorListResult('/wp/v2/tags', undefined, undefined, error);
-  }
-}
-```
+### Effort
 
-**After**:
-```typescript
-// Lines 15-28: getAllEntities - 14 lines
-async function getAllEntities<T>(
-  entities: T[],
-  endpoint: string
-): Promise<ApiListResult<T>> {
-  const pagination: ApiPaginationMetadata = {
-    page:1,
-    perPage: entities.length,
-    total: entities.length,
-    totalPages: 1
-  };
-  return createSuccessListResult(
-    entities,
-    { endpoint },
-    pagination
-  );
-}
+Small - Simple extraction, update 2 functions
 
-// Lines 130-138: getAllCategories - 9 lines (refactored)
-export async function getAllCategories(): Promise<ApiListResult<WordPressCategory>> {
-  try {
-    const categories = await wordpressAPI.getCategories();
-    return getAllEntities(categories, '/wp/v2/categories');
-  } catch (error) {
-    return createErrorListResult('/wp/v2/categories', undefined, undefined, error);
-  }
-}
+### Benefits
 
-// Lines 167-175: getAllTags - 9 lines (refactored)
-export async function getAllTags(): Promise<ApiListResult<WordPressTag>> {
-  try {
-    const tags = await wordpressAPI.getTags();
-    return getAllEntities(tags, '/wp/v2/tags');
-  } catch (error) {
-    return createErrorListResult('/wp/v2/tags', undefined, undefined, error);
-  }
-}
-```
+- **DRY Principle**: Pagination logic defined once
+- **Consistency**: All getAllX functions use same pattern
+- **Maintainability**: Changes to pagination logic only need to be made once
+- **Testability**: Generic function can be tested independently
+- **Lines Reduced**: ~14 lines eliminated
 
-### Files Modified
+### Files Affected
 
-- `src/lib/api/standardized.ts` - Lines 15-175
-  - Added generic `getAllEntities<T>()` function (14 lines)
-  - Refactored `getAllCategories()` to use generic helper (9 lines)
-  - Refactored `getAllTags()` to use generic helper (9 lines)
+- `src/lib/api/standardized.ts` - Lines 123-140 and 160-177
 
-### Test Results
+### Tests
 
-- ✅ All 73 standardized API tests passing
-- ✅ Zero regressions
-- ✅ Pagination metadata unchanged
-- ✅ Error handling behavior preserved
-
-### Results
-
-- ✅ Removed 14 lines of duplicate code
-- ✅ DRY Principle applied - pagination logic defined once
-- ✅ Type safety improved with generic `getAllEntities<T>()`
-- ✅ Consistency across all getAllX functions
-- ✅ All 73 tests passing (no regressions)
-- ✅ Zero behavior changes (existing behavior preserved)
-- ✅ Maintenance burden reduced
-
-### Success Criteria
-
-- ✅ Duplicate functions merged into generic helper
-- ✅ DRY Principle applied
-- ✅ All call sites updated correctly
-- ✅ All tests passing (no regressions)
-- ✅ Type safety maintained
-- ✅ Pagination behavior preserved
-- ✅ Error handling behavior preserved
-
-### Anti-Patterns Avoided
-
-- ❌ No code duplication
-- ❌ No maintenance burden (multiple places to update)
-- ❌ No inconsistent pagination patterns
-- ❌ No breaking changes
-
-### DRY Principle Benefits
-
-1. **Single Source of Truth**: Pagination logic defined once
-2. **Consistency**: All getAllX functions follow same pattern
-3. **Maintainability**: Changes to pagination logic only need to be made once
-4. **Type Safety**: Generic TypeScript ensures compile-time type checking
-5. **Extensibility**: New getAllX functions can use same pattern
-6. **Testability**: Generic function tested implicitly via getAllCategories/getAllTags
-
-### Follow-up Recommendations
-
-None - task complete. Future work: Consider if `getAllPosts` and `searchPosts` could benefit from similar pattern.
+- Update tests for `getAllCategories()` and `getAllTags()`
+- Add tests for the generic `getAllEntities()` helper
+- Verify pagination metadata is correct
 
 ---
 
