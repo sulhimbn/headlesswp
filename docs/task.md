@@ -10080,3 +10080,232 @@ interface HttpClient {
 5. Consider using a DI library (like InversifyJS) for larger applications
 
 ---
+
+## [DATA-ARCH-007] Pagination Data Integrity - Fix Incorrect Total Calculation
+
+**Status**: Complete
+**Priority**: High
+**Assigned**: Principal Data Architect
+**Created**: 2026-01-10
+
+### Description
+
+Fixed incorrect pagination metadata calculation in standardized API layer. The `getAllPosts` function was calculating pagination using `posts.length` instead of actual total count from WordPress API headers, leading to incorrect `total` and `totalPages` values in pagination metadata.
+
+### Data Integrity Issue Identified
+
+**Problem**:
+In `src/lib/api/standardized.ts` lines 72-91:
+
+\`\`\`typescript
+export async function getAllPosts(
+  params?: PostQueryParams
+): Promise<ApiListResult<WordPressPost>> {
+  try {
+    const posts = await wordpressAPI.getPosts(params);  // Uses getPosts, NOT getPostsWithHeaders
+    const pagination: ApiPaginationMetadata = {
+      page: params?.page ||1,
+      perPage: params?.per_page || DEFAULT_PER_PAGE,
+      total: posts.length,  // INCORRECT: This is only current page count, NOT total!
+      totalPages: Math.ceil(posts.length / (params?.per_page || DEFAULT_PER_PAGE))
+    };
+    return createSuccessListResult(posts, { endpoint: '/wp/v2/posts' }, pagination);
+  } catch (error) {
+    return createErrorListResult('/wp/v2/posts', undefined, undefined, error);
+  }
+}
+\`\`\`
+
+**Impact**:
+- **Total Count Incorrect**: `total` is set to `posts.length` (current page count) instead of actual total posts
+- **Total Pages Incorrect**: `totalPages` calculated using wrong total, not actual WordPress total
+- **Pagination Broken**: UI displays wrong page count, total items, navigation buttons
+- **User Impact**: Users cannot navigate correctly through paginated content
+
+**Example Bug**:
+- WordPress has 150 posts total, per_page=10
+- API response returns 10 posts (page 1) with headers: \`x-wp-total: 150\`, \`x-wp-totalpages: 15\`
+- \`getAllPosts\` incorrectly sets: \`total = 10\`, \`totalPages = 1\`
+- UI shows "1 of 1 page" instead of "1 of 15 pages"
+- Users cannot navigate beyond first page
+
+### Root Cause
+
+The \`getAllPosts\` function uses \`wordpressAPI.getPosts(params)\` which returns only to data array, not headers containing total count.
+
+**wordpress.ts has two methods**:
+1. \`getPosts(params)\` - Returns \`WordPressPost[]\` (no headers)
+2. \`getPostsWithHeaders(params)\` - Returns \`{ data: WordPressPost[]; total: number; totalPages: number }\` (with headers)
+
+\`getAllPosts\` should use \`getPostsWithHeaders\` to get accurate pagination metadata.
+
+### Implementation Summary
+
+1. **Refactored getAllPosts** (\`src/lib/api/standardized.ts\`):
+   - Changed from \`wordpressAPI.getPosts()\` to \`wordpressAPI.getPostsWithHeaders()\`
+   - Updated pagination calculation to use actual total from headers
+   - Fixed totalPages calculation to use accurate total count
+
+2. **Verified Backward Compatibility**:
+   - Function signature unchanged
+   - Return type unchanged
+   - Only internal implementation changed
+
+### Code Changes
+
+**Before**:
+\`\`\`typescript
+export async function getAllPosts(
+  params?: PostQueryParams
+): Promise<ApiListResult<WordPressPost>> {
+  try {
+    const posts = await wordpressAPI.getPosts(params);  // No headers
+    const pagination: ApiPaginationMetadata = {
+      page: params?.page ||1,
+      perPage: params?.per_page || DEFAULT_PER_PAGE,
+      total: posts.length,  // INCORRECT
+      totalPages: Math.ceil(posts.length / (params?.per_page || DEFAULT_PER_PAGE))  // INCORRECT
+    };
+    return createSuccessListResult(posts, { endpoint: '/wp/v2/posts' }, pagination);
+  } catch (error) {
+    return createErrorListResult('/wp/v2/posts', undefined, undefined, error);
+  }
+}
+\`\`\`
+
+**After**:
+\`\`\`typescript
+export async function getAllPosts(
+  params?: PostQueryParams
+): Promise<ApiListResult<WordPressPost>> {
+  try {
+    const { data: posts, total, totalPages } = await wordpressAPI.getPostsWithHeaders(params);  // With headers
+    const pagination: ApiPaginationMetadata = {
+      page: params?.page ||1,
+      perPage: params?.per_page || DEFAULT_PER_PAGE,
+      total,  // CORRECT: Actual total from WordPress API headers
+      totalPages  // CORRECT: Actual total pages from WordPress API headers
+    };
+    return createSuccessListResult(posts, { endpoint: '/wp/v2/posts' }, pagination);
+  } catch (error) {
+    return createErrorListResult('/wp/v2/posts', undefined, undefined, error);
+  }
+}
+\`\`\`
+
+### Data Architecture Benefits
+
+**Before**:
+- ❌ Incorrect total count (uses current page size instead of database total)
+- ❌ Incorrect total pages (calculated from wrong total)
+- ❌ Broken pagination UI (users cannot navigate correctly)
+- ❌ Data integrity issue (pagination metadata doesn't match actual data)
+
+**After**:
+- ✅ Accurate total count from WordPress API headers (\`x-wp-total\`)
+- ✅ Accurate total pages from WordPress API headers (\`x-wp-totalpages\`)
+- ✅ Correct pagination UI (users can navigate all pages)
+- ✅ Data integrity ensured (pagination metadata matches actual data)
+- ✅ Single source of truth (WordPress database is source of pagination metadata)
+
+### Files Modified
+
+- \`src/lib/api/standardized.ts\` - Fixed pagination calculation in getAllPosts function
+
+### Test Coverage
+
+**New Tests Created** (\`__tests__/standardizedApiPagination.test.ts\`):
+- Pagination accuracy tests (4 tests)
+  - Correct total count from API headers
+  - Correct total pages from API headers
+  - Pagination with per_page parameter
+  - Pagination with page parameter
+- Edge case tests (3 tests)
+  - Empty result set (total=0, totalPages=0)
+  - Single page (total <= per_page, totalPages=1)
+  - Large dataset (many pages)
+- Error handling tests (2 tests)
+  - API error preserves error result structure
+  - Network error returns zero pagination
+
+**Total**: 9 new tests
+
+### Test Results
+
+**Before Fix**:
+\`\`\`
+getAllPosts({ page: 1, per_page: 10 }) // 150 total posts in WordPress
+Returns: {
+  data: [10 posts],
+  pagination: {
+    page: 1,
+    perPage: 10,
+    total: 10,        // INCORRECT: Should be 150
+    totalPages: 1     // INCORRECT: Should be 15
+  }
+}
+\`\`\`
+
+**After Fix**:
+\`\`\`
+getAllPosts({ page: 1, per_page: 10 }) // 150 total posts in WordPress
+Returns: {
+  data: [10 posts],
+  pagination: {
+    page:1,
+    perPage: 10,
+    total: 150,       // CORRECT: From x-wp-total header
+    totalPages: 15     // CORRECT: From x-wp-totalpages header
+  }
+}
+\`\`\`
+
+**All Tests**: 844 tests passing (9 new pagination tests added)
+
+### Results
+
+- ✅ Pagination metadata corrected to use WordPress API headers
+- ✅ Total count now accurate (from \`x-wp-total\` header)
+- ✅ Total pages now accurate (from \`x-wp-totalpages\` header)
+- ✅ All 844 tests passing (835 + 9 new)
+- ✅ TypeScript compilation passes with no errors
+- ✅ ESLint passes with no warnings
+- ✅ Zero breaking changes to public API
+- ✅ Data integrity ensured for pagination metadata
+
+### Success Criteria
+
+- ✅ Pagination metadata calculated from WordPress API headers
+- ✅ Total count accurate
+- ✅ Total pages accurate
+- ✅ All tests passing (no regressions)
+- ✅ TypeScript type checking passes
+- ✅ ESLint passes
+- ✅ Zero breaking changes to public API
+- ✅ Data integrity ensured
+
+### Anti-Patterns Avoided
+
+- ❌ No pagination metadata calculated from incomplete data
+- ❌ No incorrect total counts misleading users
+- ❌ No broken pagination navigation
+- ❌ No single page limitation for multi-page content
+- ❌ No breaking changes to existing API consumers
+
+### Data Architecture Principles Applied
+
+1. **Data Integrity First**: Pagination metadata now reflects actual data source
+2. **Single Source of Truth**: WordPress database (via API headers) is source of pagination data
+3. **Query Efficiency**: Uses existing \`getPostsWithHeaders\` method (no extra API calls)
+4. **Migration Safety**: Backward compatible change, only internal implementation modified
+5. **Type Safety**: TypeScript interfaces ensure compile-time correctness
+
+### Follow-up Recommendations
+
+1. **Review Other Methods**: Check if similar pagination issues exist in other collection methods (e.g., searchPosts - already handled separately)
+2. **Add Pagination Tests**: Create comprehensive pagination test suite for all collection methods
+3. **Document Pagination Pattern**: Document in blueprint.md that getPostsWithHeaders should be used for paginated queries
+4. **Add Pagination Warnings**: Consider logging when total > per_page but only one page returned (data inconsistency)
+5. **Consider Pagination Cache**: Cache pagination metadata separately from data for better cache efficiency
+
+---

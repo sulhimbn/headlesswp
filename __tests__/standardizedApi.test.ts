@@ -135,7 +135,11 @@ describe('Standardized API - getAllPosts', () => {
       { id: 3, title: { rendered: 'Post 3' } }
     ] as any[];
 
-    mockedWordpressAPI.getPosts.mockResolvedValue(mockPosts);
+    mockedWordpressAPI.getPostsWithHeaders?.mockResolvedValue({
+      data: mockPosts,
+      total: 3,
+      totalPages: 1,
+    });
 
     const result = await standardizedAPI.getAllPosts();
 
@@ -157,7 +161,11 @@ describe('Standardized API - getAllPosts', () => {
       title: { rendered: `Post ${i + 1}` }
     })) as any[];
 
-    mockedWordpressAPI.getPosts.mockResolvedValue(mockPosts);
+    mockedWordpressAPI.getPostsWithHeaders?.mockResolvedValue({
+      data: mockPosts,
+      total: 25,
+      totalPages: 3,
+    });
 
     const result = await standardizedAPI.getAllPosts({ page: 2, per_page: 10 });
 
@@ -171,7 +179,7 @@ describe('Standardized API - getAllPosts', () => {
 
   test('returns ApiListResult with error on failure', async () => {
     const error = new Error('Network error');
-    mockedWordpressAPI.getPosts.mockRejectedValue(error);
+    mockedWordpressAPI.getPostsWithHeaders?.mockRejectedValue(error);
 
     const result = await standardizedAPI.getAllPosts();
 

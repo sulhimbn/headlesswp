@@ -73,12 +73,12 @@ export async function getAllPosts(
   params?: PostQueryParams
 ): Promise<ApiListResult<WordPressPost>> {
   try {
-    const posts = await wordpressAPI.getPosts(params);
+    const { data: posts, total, totalPages } = await wordpressAPI.getPostsWithHeaders(params);
     const pagination: ApiPaginationMetadata = {
       page: params?.page || 1,
       perPage: params?.per_page || DEFAULT_PER_PAGE,
-      total: posts.length,
-      totalPages: Math.ceil(posts.length / (params?.per_page || DEFAULT_PER_PAGE))
+      total,
+      totalPages
     };
     return createSuccessListResult(
       posts,

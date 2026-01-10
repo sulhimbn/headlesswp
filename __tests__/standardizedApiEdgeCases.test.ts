@@ -17,12 +17,16 @@ describe('Standardized API - Edge Cases and Critical Paths', () => {
         { id: 2, title: { rendered: 'Tech Post 2' }, categories: [5] }
       ] as any[];
 
-      mockedWordpressAPI.getPosts.mockResolvedValue(mockPosts);
+      mockedWordpressAPI.getPostsWithHeaders?.mockResolvedValue({
+        data: mockPosts,
+        total: mockPosts.length,
+        totalPages: 1,
+      });
 
       const result = await standardizedAPI.getAllPosts({ category: 5 });
 
       expect(isApiResultSuccessful(result)).toBe(true);
-      expect(wordpressAPI.getPosts).toHaveBeenCalledWith({ category: 5 });
+      expect(mockedWordpressAPI.getPostsWithHeaders).toHaveBeenCalledWith({ category: 5 });
       expect(result.data).toEqual(mockPosts);
     });
 
@@ -32,30 +36,39 @@ describe('Standardized API - Edge Cases and Critical Paths', () => {
         { id: 2, title: { rendered: 'Another React Post' }, tags: [10] }
       ] as any[];
 
-      mockedWordpressAPI.getPosts.mockResolvedValue(mockPosts);
+      mockedWordpressAPI.getPostsWithHeaders?.mockResolvedValue({
+        data: mockPosts,
+        total: mockPosts.length,
+        totalPages: 1,
+      });
 
       const result = await standardizedAPI.getAllPosts({ tag: 10 });
 
       expect(isApiResultSuccessful(result)).toBe(true);
-      expect(wordpressAPI.getPosts).toHaveBeenCalledWith({ tag: 10 });
+      expect(mockedWordpressAPI.getPostsWithHeaders).toHaveBeenCalledWith({ tag: 10 });
       expect(result.data).toEqual(mockPosts);
     });
 
     test('filters posts by both category and tag', async () => {
       const mockPosts = [
-        { id: 1, title: { rendered: 'Filtered Post' }, categories: [5], tags: [10] }
+        { id: 1, title: { rendered: 'React in Tech' }, categories: [5], tags: [10] }
       ] as any[];
 
-      mockedWordpressAPI.getPosts.mockResolvedValue(mockPosts);
+      mockedWordpressAPI.getPostsWithHeaders?.mockResolvedValue({
+        data: mockPosts,
+        total: mockPosts.length,
+        totalPages: 1,
+      });
 
       const result = await standardizedAPI.getAllPosts({ category: 5, tag: 10 });
 
       expect(isApiResultSuccessful(result)).toBe(true);
-      expect(wordpressAPI.getPosts).toHaveBeenCalledWith({ category: 5, tag: 10 });
+      expect(mockedWordpressAPI.getPostsWithHeaders).toHaveBeenCalledWith({ category: 5, tag: 10 });
+      expect(result.data).toEqual(mockPosts);
     });
 
     test('handles filtering errors gracefully', async () => {
-      mockedWordpressAPI.getPosts.mockRejectedValue(new Error('Filtering failed'));
+      mockedWordpressAPI.getPostsWithHeaders?.mockRejectedValue(new Error('Filtering failed'));
 
       const result = await standardizedAPI.getAllPosts({ category: 999 });
 
@@ -121,7 +134,12 @@ describe('Standardized API - Edge Cases and Critical Paths', () => {
   describe('getAllPosts Pagination Edge Cases', () => {
     test('handles zero page number (defaults to 1)', async () => {
       const mockPosts = [{ id: 1, title: { rendered: 'Post 1' } }] as any[];
-      mockedWordpressAPI.getPosts.mockResolvedValue(mockPosts);
+
+      mockedWordpressAPI.getPostsWithHeaders?.mockResolvedValue({
+        data: mockPosts,
+        total: mockPosts.length,
+        totalPages: 1,
+      });
 
       const result = await standardizedAPI.getAllPosts({ page: 0, per_page: 10 });
 
@@ -131,7 +149,12 @@ describe('Standardized API - Edge Cases and Critical Paths', () => {
 
     test('handles large page numbers', async () => {
       const mockPosts = [] as any[];
-      mockedWordpressAPI.getPosts.mockResolvedValue(mockPosts);
+
+      mockedWordpressAPI.getPostsWithHeaders?.mockResolvedValue({
+        data: mockPosts,
+        total: 0,
+        totalPages: 0,
+      });
 
       const result = await standardizedAPI.getAllPosts({ page: 9999, per_page: 10 });
 
@@ -147,7 +170,11 @@ describe('Standardized API - Edge Cases and Critical Paths', () => {
         title: { rendered: `Post ${i + 1}` }
       })) as any[];
 
-      mockedWordpressAPI.getPosts.mockResolvedValue(mockPosts);
+      mockedWordpressAPI.getPostsWithHeaders?.mockResolvedValue({
+        data: mockPosts,
+        total: 25,
+        totalPages: 1,
+      });
 
       const result = await standardizedAPI.getAllPosts({ per_page: 25 });
 
@@ -163,7 +190,11 @@ describe('Standardized API - Edge Cases and Critical Paths', () => {
         title: { rendered: `Post ${i + 1}` }
       })) as any[];
 
-      mockedWordpressAPI.getPosts.mockResolvedValue(mockPosts);
+      mockedWordpressAPI.getPostsWithHeaders?.mockResolvedValue({
+        data: mockPosts,
+        total: 100,
+        totalPages: 10,
+      });
 
       const result = await standardizedAPI.getAllPosts({ per_page: 10 });
 
@@ -175,7 +206,11 @@ describe('Standardized API - Edge Cases and Critical Paths', () => {
     test('handles single post correctly', async () => {
       const mockPosts = [{ id: 1, title: { rendered: 'Single Post' } }] as any[];
 
-      mockedWordpressAPI.getPosts.mockResolvedValue(mockPosts);
+      mockedWordpressAPI.getPostsWithHeaders?.mockResolvedValue({
+        data: mockPosts,
+        total: 1,
+        totalPages: 1,
+      });
 
       const result = await standardizedAPI.getAllPosts();
 
@@ -187,24 +222,32 @@ describe('Standardized API - Edge Cases and Critical Paths', () => {
     test('handles pagination with category filter', async () => {
       const mockPosts = [{ id: 1, title: { rendered: 'Category Post' } }] as any[];
 
-      mockedWordpressAPI.getPosts.mockResolvedValue(mockPosts);
+      mockedWordpressAPI.getPostsWithHeaders?.mockResolvedValue({
+        data: mockPosts,
+        total: mockPosts.length,
+        totalPages: 1,
+      });
 
       const result = await standardizedAPI.getAllPosts({ page: 2, per_page: 10, category: 5 });
 
       expect(isApiResultSuccessful(result)).toBe(true);
-      expect(wordpressAPI.getPosts).toHaveBeenCalledWith({ page: 2, per_page: 10, category: 5 });
+      expect(mockedWordpressAPI.getPostsWithHeaders).toHaveBeenCalledWith({ page: 2, per_page: 10, category: 5 });
       expect(result.pagination.page).toBe(2);
     });
 
     test('handles pagination with tag filter', async () => {
       const mockPosts = [{ id: 1, title: { rendered: 'Tag Post' } }] as any[];
 
-      mockedWordpressAPI.getPosts.mockResolvedValue(mockPosts);
+      mockedWordpressAPI.getPostsWithHeaders?.mockResolvedValue({
+        data: mockPosts,
+        total: mockPosts.length,
+        totalPages: 1,
+      });
 
       const result = await standardizedAPI.getAllPosts({ page: 3, per_page: 20, tag: 15 });
 
       expect(isApiResultSuccessful(result)).toBe(true);
-      expect(wordpressAPI.getPosts).toHaveBeenCalledWith({ page: 3, per_page: 20, tag: 15 });
+      expect(mockedWordpressAPI.getPostsWithHeaders).toHaveBeenCalledWith({ page: 3, per_page: 20, tag: 15 });
       expect(result.pagination.page).toBe(3);
     });
   });
