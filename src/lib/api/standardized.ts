@@ -12,6 +12,23 @@ import {
 import { createApiError } from './errors';
 import { DEFAULT_PER_PAGE } from './config';
 
+async function getAllEntities<T>(
+  entities: T[],
+  endpoint: string
+): Promise<ApiListResult<T>> {
+  const pagination: ApiPaginationMetadata = {
+    page: 1,
+    perPage: entities.length,
+    total: entities.length,
+    totalPages: 1
+  };
+  return createSuccessListResult(
+    entities,
+    { endpoint },
+    pagination
+  );
+}
+
 function createErrorListResult(
   endpoint: string,
   metadataOptions?: { cacheHit?: boolean },
@@ -123,19 +140,36 @@ export async function getCategoryBySlug(slug: string): Promise<ApiResult<WordPre
 export async function getAllCategories(): Promise<ApiListResult<WordPressCategory>> {
   try {
     const categories = await wordpressAPI.getCategories();
-    const pagination: ApiPaginationMetadata = {
-      page: 1,
-      perPage: categories.length,
-      total: categories.length,
-      totalPages: 1
-    };
-    return createSuccessListResult(
-      categories,
-      { endpoint: '/wp/v2/categories' },
-      pagination
-    );
+    return getAllEntities(categories, '/wp/v2/categories');
   } catch (error) {
     return createErrorListResult('/wp/v2/categories', undefined, undefined, error);
+  }
+}
+
+export async function getTagById(id: number): Promise<ApiResult<WordPressTag>> {
+  return fetchAndHandleNotFound(
+    () => wordpressAPI.getTag(id.toString()),
+    'Tag',
+    id,
+    `/wp/v2/tags/${id}`
+  );
+}
+
+export async function getTagBySlug(slug: string): Promise<ApiResult<WordPressTag>> {
+  return fetchAndHandleNotFound(
+    () => wordpressAPI.getTag(slug),
+    'Tag',
+    slug,
+    `/wp/v2/tags?slug=${slug}`
+  );
+}
+
+export async function getAllTags(): Promise<ApiListResult<WordPressTag>> {
+  try {
+    const tags = await wordpressAPI.getTags();
+    return getAllEntities(tags, '/wp/v2/tags');
+  } catch (error) {
+    return createErrorListResult('/wp/v2/tags', undefined, undefined, error);
   }
 }
 
