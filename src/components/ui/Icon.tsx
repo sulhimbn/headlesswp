@@ -1,5 +1,3 @@
-import { memo } from 'react'
-
 type IconType = 'facebook' | 'twitter' | 'instagram' | 'close' | 'menu'
 
 export interface IconProps {
@@ -8,7 +6,7 @@ export interface IconProps {
   'aria-hidden'?: boolean
 }
 
-export const Icon = memo(function Icon({ type, className, 'aria-hidden': ariaHidden = true }: IconProps) {
+export function Icon({ type, className, 'aria-hidden': ariaHidden = true }: IconProps) {
   switch (type) {
     case 'facebook':
       return (
@@ -43,4 +41,4 @@ export const Icon = memo(function Icon({ type, className, 'aria-hidden': ariaHid
     default:
       return null
   }
-})
+}

@@ -1,9 +1,6 @@
 import Link from 'next/link'
-import { memo } from 'react'
 import { Icon } from '@/components/ui/Icon'
 import { UI_TEXT } from '@/lib/constants/uiText'
-
-const currentYear = new Date().getFullYear()
 
 const footerLinks = [
   { href: '/', label: UI_TEXT.footer.links.home },
@@ -13,16 +10,18 @@ const footerLinks = [
   { href: '/berita', label: UI_TEXT.footer.links.sports },
 ]
 
-export default memo(function Footer() {
+export default function Footer() {
+  const currentYear = new Date().getFullYear()
+
   return (
-    <footer className="bg-gray-800 text-white mt-12" role="contentinfo">
+    <footer className="bg-gray-900 text-white mt-12" role="contentinfo">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
           <section aria-labelledby="footer-about-heading">
             <h2 id="footer-about-heading" className="sr-only">Tentang Mitra Banten News</h2>
             <div className="mb-4">
               <h3 className="text-xl font-bold mb-2">{UI_TEXT.footer.aboutTitle}</h3>
-              <p className="text-gray-300 text-sm">
+              <p className="text-gray-400 text-sm">
                 {UI_TEXT.footer.aboutDescription}
               </p>
             </div>
@@ -36,7 +35,7 @@ export default memo(function Footer() {
                     <li key={link.href}>
                       <Link
                         href={link.href}
-                        className="text-gray-300 hover:text-white transition-colors duration-[var(--transition-fast)] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--color-primary))] focus:ring-offset-2 rounded-[var(--radius-sm)] focus:text-white"
+                        className="text-gray-400 hover:text-white transition-all duration-[var(--transition-fast)] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--color-primary))] focus:ring-offset-2 rounded-[var(--radius-sm)]"
                       >
                         {link.label}
                       </Link>
@@ -48,7 +47,7 @@ export default memo(function Footer() {
 
           <section aria-labelledby="footer-contact-heading">
             <h2 id="footer-contact-heading" className="text-lg font-semibold mb-4">{UI_TEXT.footer.contactTitle}</h2>
-            <address className="not-italic text-gray-300 text-sm space-y-2">
+            <address className="not-italic text-gray-400 text-sm space-y-2">
               <p>{UI_TEXT.footer.email}</p>
               <p>{UI_TEXT.footer.phone}</p>
               <p>{UI_TEXT.footer.address}</p>
@@ -56,27 +55,27 @@ export default memo(function Footer() {
           </section>
         </div>
 
-        <div className="border-t border-gray-700 pt-8">
+        <div className="border-t border-gray-800 pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
-            <p className="text-sm text-gray-400 text-center md:text-left" dangerouslySetInnerHTML={{ __html: UI_TEXT.footer.copyright(currentYear) }} />
+            <p className="text-sm text-gray-500 text-center md:text-left" dangerouslySetInnerHTML={{ __html: UI_TEXT.footer.copyright(currentYear) }} />
             <div className="flex space-x-4">
               <a
                 href="/"
-                className="text-gray-400 hover:text-white transition-colors duration-[var(--transition-fast)] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--color-primary))] focus:ring-offset-2 rounded-[var(--radius-sm)]"
+                className="text-gray-500 hover:text-white transition-all duration-[var(--transition-fast)] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--color-primary))] focus:ring-offset-2 rounded-[var(--radius-sm)]"
                 aria-label="Facebook"
               >
                 <Icon type="facebook" className="h-5 w-5" />
               </a>
               <a
                 href="/"
-                className="text-gray-400 hover:text-white transition-colors duration-[var(--transition-fast)] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--color-primary))] focus:ring-offset-2 rounded-[var(--radius-sm)]"
+                className="text-gray-500 hover:text-white transition-all duration-[var(--transition-fast)] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--color-primary))] focus:ring-offset-2 rounded-[var(--radius-sm)]"
                 aria-label="Twitter"
               >
                 <Icon type="twitter" className="h-5 w-5" />
               </a>
               <a
                 href="/"
-                className="text-gray-400 hover:text-white transition-colors duration-[var(--transition-fast)] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--color-primary))] focus:ring-offset-2 rounded-[var(--radius-sm)]"
+                className="text-gray-500 hover:text-white transition-all duration-[var(--transition-fast)] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--color-primary))] focus:ring-offset-2 rounded-[var(--radius-sm)]"
                 aria-label="Instagram"
               >
                 <Icon type="instagram" className="h-5 w-5" />
@@ -87,4 +86,4 @@ export default memo(function Footer() {
       </div>
     </footer>
   )
-})
+}
