@@ -15,7 +15,7 @@ function createErrorListResult(
   endpoint: string,
   metadataOptions?: { cacheHit?: boolean },
   paginationOverride?: Partial<ApiPaginationMetadata>
-): ApiListResult<any> {
+): ApiListResult<never> {
   return {
     data: [],
     error: createApiError(new Error('API error'), endpoint),
