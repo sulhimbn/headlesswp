@@ -53,7 +53,7 @@ export default function Pagination({ currentPage, totalPages, basePath }: Pagina
 
       {pages.map((page, index) => (
         page === '...' ? (
-          <span key={index} className="px-3 py-2 text-sm text-[hsl(var(--color-text-secondary))]">
+          <span key={`ellipsis-${index}`} className="px-3 py-2 text-sm text-[hsl(var(--color-text-secondary))]">
             ...
           </span>
         ) : (
