@@ -4,6 +4,11 @@ import {
   CIRCUIT_BREAKER_RECOVERY_TIMEOUT,
   CIRCUIT_BREAKER_SUCCESS_THRESHOLD
 } from './config'
+import {
+  recordCircuitBreakerStateChange,
+  recordCircuitBreakerFailure,
+  recordCircuitBreakerSuccess
+} from './telemetry'
 
 export enum CircuitState {
   CLOSED = 'CLOSED',
@@ -16,6 +21,7 @@ export interface CircuitBreakerOptions {
   recoveryTimeout?: number
   successThreshold?: number
   onStateChange?: (state: CircuitState) => void
+  endpoint?: string
 }
 
 export class CircuitBreaker {
@@ -28,12 +34,14 @@ export class CircuitBreaker {
   private recoveryTimeout: number
   private successThreshold: number
   private onStateChange?: (state: CircuitState) => void
+  private endpoint?: string
 
   constructor(options: CircuitBreakerOptions = {}) {
     this.failureThreshold = options.failureThreshold ?? CIRCUIT_BREAKER_FAILURE_THRESHOLD
     this.recoveryTimeout = options.recoveryTimeout ?? CIRCUIT_BREAKER_RECOVERY_TIMEOUT
     this.successThreshold = options.successThreshold ?? CIRCUIT_BREAKER_SUCCESS_THRESHOLD
     this.onStateChange = options.onStateChange
+    this.endpoint = options.endpoint
   }
 
   getState(): CircuitState {
@@ -44,6 +52,15 @@ export class CircuitBreaker {
     if (this.state !== newState) {
       this.state = newState
       this.onStateChange?.(newState)
+
+      recordCircuitBreakerStateChange({
+        state: newState,
+        failureCount: this.failureCount,
+        successCount: this.successCount,
+        lastFailureTime: this.lastFailureTime || null,
+        nextAttemptTime: this.nextAttemptTime || null,
+        endpoint: this.endpoint
+      })
     }
   }
 
@@ -69,11 +86,29 @@ export class CircuitBreaker {
     } else {
       this.failureCount = Math.max(0, this.failureCount - 1)
     }
+
+    recordCircuitBreakerSuccess({
+      state: this.state,
+      failureCount: this.failureCount,
+      successCount: this.successCount,
+      lastFailureTime: this.lastFailureTime || null,
+      nextAttemptTime: this.nextAttemptTime || null,
+      endpoint: this.endpoint
+    })
   }
 
   onFailure(): void {
     this.failureCount++
     this.lastFailureTime = Date.now()
+
+    recordCircuitBreakerFailure({
+      state: this.state,
+      failureCount: this.failureCount,
+      successCount: this.successCount,
+      lastFailureTime: this.lastFailureTime || null,
+      nextAttemptTime: this.nextAttemptTime || null,
+      endpoint: this.endpoint
+    })
 
     if (this.failureCount >= this.failureThreshold) {
       this.nextAttemptTime = Date.now() + this.recoveryTimeout
