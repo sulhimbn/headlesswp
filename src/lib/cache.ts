@@ -847,13 +847,13 @@ export const CACHE_DEPENDENCIES = {
    * 
    * When any of these change, the post should be invalidated.
    */
-  post: (postId: number | string, categories: number[], tags: number[], mediaId: number): string[] => {
-    const deps: string[] = [];
-    categories.forEach(catId => deps.push(CACHE_KEYS.category(catId.toString())));
-    tags.forEach(tagId => deps.push(CACHE_KEYS.tag(tagId.toString())));
-    if (mediaId > 0) deps.push(CACHE_KEYS.media(mediaId));
-    return deps;
-  },
+   post: (_postId: number | string, categories: number[], tags: number[], mediaId: number): string[] => {
+     const deps: string[] = [];
+     categories.forEach(catId => deps.push(CACHE_KEYS.category(catId.toString())));
+     tags.forEach(tagId => deps.push(CACHE_KEYS.tag(tagId.toString())));
+     if (mediaId > 0) deps.push(CACHE_KEYS.media(mediaId));
+     return deps;
+   },
 
   /**
    * Posts list dependencies: categories and tags.

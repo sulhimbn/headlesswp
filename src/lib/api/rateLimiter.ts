@@ -14,14 +14,12 @@ export interface RateLimitInfo {
 }
 
 export class RateLimiter {
-  private tokens: number
   private lastRefill: number
   private options: RateLimiterOptions
   private requestTimes: number[]
 
   constructor(options: RateLimiterOptions) {
     this.options = options
-    this.tokens = options.maxRequests
     this.lastRefill = Date.now()
     this.requestTimes = []
   }
@@ -31,7 +29,6 @@ export class RateLimiter {
     const timePassed = now - this.lastRefill
 
     if (timePassed >= this.options.windowMs) {
-      this.tokens = this.options.maxRequests
       this.lastRefill = now
       this.requestTimes = []
     }
@@ -76,7 +73,6 @@ export class RateLimiter {
   }
 
   reset(): void {
-    this.tokens = this.options.maxRequests
     this.lastRefill = Date.now()
     this.requestTimes = []
   }

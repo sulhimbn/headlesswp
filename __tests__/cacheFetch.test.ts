@@ -32,7 +32,7 @@ describe('cacheFetch', () => {
       (cacheManager.get as jest.Mock).mockReturnValue(null);
 
       const mockFetchFn = jest.fn().mockResolvedValue({ id: 1, name: 'Test' });
-      
+
       const result = await cacheFetch(mockFetchFn, {
         key: 'test-key',
         ttl: 60000,
@@ -40,6 +40,7 @@ describe('cacheFetch', () => {
 
       expect(cacheManager.get).toHaveBeenCalledWith('test-key');
       expect(mockFetchFn).toHaveBeenCalled();
+      expect(result).toEqual({ id: 1, name: 'Test' });
     });
   });
 

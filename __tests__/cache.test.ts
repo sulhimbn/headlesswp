@@ -1,5 +1,4 @@
-import { cacheManager, CACHE_TTL, CACHE_KEYS, CACHE_DEPENDENCIES, getCacheStats, clearCache } from '@/lib/cache';
-import { wordpressAPI } from '@/lib/wordpress';
+import { cacheManager, CACHE_TTL, CACHE_KEYS, CACHE_DEPENDENCIES } from '@/lib/cache';
 
 // Mock axios for testing
 jest.mock('axios', () => ({

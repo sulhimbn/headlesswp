@@ -1,8 +1,7 @@
 import { wordpressAPI } from '@/lib/wordpress';
 import { WordPressPost } from '@/types/wordpress';
-import { apiClient, getApiUrl } from '@/lib/api/client';
-import { cacheManager, CACHE_KEYS } from '@/lib/cache';
-import { logger } from '@/lib/utils/logger';
+import { apiClient } from '@/lib/api/client';
+import { cacheManager } from '@/lib/cache';
 
 jest.mock('@/lib/api/client');
 jest.mock('@/lib/cache');

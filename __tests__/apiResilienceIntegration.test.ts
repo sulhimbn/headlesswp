@@ -78,7 +78,6 @@ describe('API Resilience Integration Tests', () => {
 
     test('rate limiter enforces max requests per window', async () => {
       const maxRequests = 60
-      const windowMs = 60000
 
       for (let i = 0; i < maxRequests; i++) {
         await expect(rateLimiterManager.checkLimit()).resolves.toBeUndefined()
@@ -231,8 +230,6 @@ describe('API Resilience Integration Tests', () => {
 
   describeOrSkip('Error Handling Across All Layers', () => {
     test('network errors trigger circuit breaker', async () => {
-      const initialState = circuitBreaker.getState()
-
       try {
         await apiClient.get('http://invalid-host-that-does-not-exist.example/wp/v2/posts')
       } catch (error: any) {
