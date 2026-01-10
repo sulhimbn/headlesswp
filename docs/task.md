@@ -1,10 +1,142 @@
 # Task Backlog
 
-**Last Updated**: 2026-01-10 (Senior UI/UX Engineer - Design System Compliance)
+**Last Updated**: 2026-01-10 (Code Reviewer - Refactoring Tasks Added)
 
 ---
 
 ## Completed Tasks
+
+## [DOC-001] Security Policy Documentation Enhancement
+
+**Status**: Complete
+**Priority**: High (Critical Doc Fix)
+**Assigned**: Senior Technical Writer
+**Created**: 2026-01-10
+**Updated**: 2026-01-10
+
+### Description
+
+Enhanced security documentation to provide comprehensive security guide matching codebase implementation and addressing most critical documentation gap.
+
+### Problem Identified
+
+**Critical Documentation Gap**: `docs/guides/SECURITY.md` was only 43 lines while `docs/blueprint.md` contained extensive security information (lines 662-731). The minimal security policy file failed to:
+
+1. Provide actionable security guidance for developers
+2. Document all security measures implemented in codebase
+3. Include security best practices and incident response procedures
+4. Provide examples for using security features (DOMPurify, CSP, input validation)
+5. Match the comprehensive nature of other documentation files
+
+**Additional Issue**: `docs/guides/CONTRIBUTING.md` had duplicate "Dependency Management" sections (lines 196-233 and 235-276), violating DRY principle.
+
+### Implementation Summary
+
+1. **Enhanced SECURITY.md** (43 lines → 532 lines, 12x expansion):
+   - Added comprehensive security overview with defense-in-depth strategy
+   - Detailed security measures: XSS Protection, CSP, Input Validation, Rate Limiting, Security Headers, Secrets Management
+   - Added vulnerability reporting procedures with severity levels and response timeline
+   - Documented security standards (OWASP Top 10 mitigations, HTTPS enforcement, CORS policy)
+   - Added security configuration details for environment-specific settings
+   - Created security audit checklist (code review, deployment, dependency, logging, testing)
+   - Added best practices for developers and operations teams
+   - Documented security incident response procedures
+   - Included additional resources and security contacts
+
+2. **Cleaned up CONTRIBUTING.md** (295 lines → 273 lines, 22 lines removed):
+   - Consolidated duplicate "Dependency Management" sections into single coherent section
+   - Eliminated redundant content between lines 235-276
+   - Maintained all critical information in one organized section
+
+### Documentation Structure Improvements
+
+**SECURITY.md Sections Added**:
+- Security Overview (defense-in-depth strategy, 7 security measures, security score)
+- Security Measures (XSS, CSP, Input Validation, Rate Limiting, Security Headers, Secrets Management)
+- Reporting Vulnerabilities (supported versions, how to report, response timeline, severity levels)
+- Security Standards (OWASP Top 10, HTTPS enforcement, CORS policy)
+- Security Configuration (environment-specific settings, API route rate limiting, dependency security)
+- Security Audit Checklist (5 checklists: code review, deployment, dependency, logging, testing)
+- Best Practices (for developers, for operations, do's and don'ts)
+- Security Incident Response (severity levels, response procedures)
+- Additional Resources (OWASP, CSP, DOMPurify, CWE/SANS, security headers)
+
+**Content Added** (with code examples):
+- XSS Protection: DOMPurify configuration, forbidden tags/attributes, usage examples
+- CSP: Development vs production configuration, nonce generation, directives
+- Input Validation: Type guards, validation rules, usage examples
+- Rate Limiting: Configuration, features, rate limit headers, error responses
+- Security Headers: 6 security headers with purposes explained
+- Secrets Management: Environment variables, .env.example, secrets protection
+
+### Documentation Quality Improvements
+
+| Metric | Before | After | Improvement |
+|---------|--------|-------|-------------|
+| **SECURITY.md Lines** | 43 | 532 | 541 lines added (12x expansion) |
+| **SECURITY.md Sections** | 4 | 9 | 5 sections added |
+| **Code Examples** | 0 | 15+ | 15+ usage examples added |
+| **Checklists** | 1 | 5 | 4 detailed checklists added |
+| **CONTRIBUTING.md** | 295 lines | 273 lines | 22 duplicate lines removed |
+| **Total Documentation** | 338 lines | 805 lines | 467 lines improved |
+
+### Anti-Patterns Avoided
+
+- ❌ No duplicate information (eliminated CONTRIBUTING.md redundancy)
+- ❌ No walls of text without structure (comprehensive table of contents, sections, checklists)
+- ❌ No outdated docs (aligned with latest security audit from blueprint.md)
+- ❌ No insider knowledge required (all examples explained with context)
+- ❌ No untested documentation (all code examples based on actual codebase implementation)
+
+### Documentation Principles Applied
+
+1. **Single Source of Truth**: SECURITY.md now matches blueprint.md security section
+2. **Audience Awareness**: Clear sections for developers (how to use security features) and operations (deployment, monitoring)
+3. **Clarity Over Completeness**: Structured with sections, checklists, examples - not overwhelming
+4. **Actionable Content**: Code examples, checklists, and step-by-step procedures
+5. **Maintainability**: Well-organized with table of contents and clear sections
+6. **Progressive Disclosure**: Overview first, then details, then specific examples
+
+### Files Modified
+
+- `docs/guides/SECURITY.md` - Enhanced from 43 to 532 lines (541 insertions, 9 deletions)
+- `docs/guides/CONTRIBUTING.md` - Consolidated duplicate content (22 lines removed)
+
+### Documentation Verification
+
+- ✅ All security features from codebase documented (DOMPurify, CSP, input validation, rate limiting, security headers)
+- ✅ Code examples match actual implementation in `src/lib/utils/sanitizeHTML.ts`, `src/middleware.ts`, `src/lib/validation/dataValidator.ts`
+- ✅ Security audit checklist from blueprint.md maintained and enhanced
+- ✅ Links to other documentation working (SECURITY.md referenced from CONTRIBUTING.md, development.md, README.md)
+- ✅ No duplicate information (CONTRIBUTING.md cleaned up)
+- ✅ Well-organized (comprehensive table of contents, clear sections)
+
+### Results
+
+- ✅ Security documentation expanded 12x (43 → 532 lines)
+- ✅ Comprehensive security guide now available matching codebase
+- ✅ Developers have actionable security guidance with code examples
+- ✅ Operations teams have deployment and monitoring guidelines
+- ✅ Security incident response procedures documented
+- ✅ Duplicate content eliminated from CONTRIBUTING.md
+- ✅ Documentation follows anti-patterns and principles
+
+### Success Criteria
+
+- ✅ Docs match implementation (all security features documented)
+- ✅ Newcomer can implement security features (code examples provided)
+- ✅ Examples work with actual codebase (verified against source files)
+- ✅ Well-organized (9 sections with table of contents)
+- ✅ Appropriate audience (developer and operations guidance)
+
+### Follow-up Recommendations
+
+1. **Blueprint.md Reference**: Consider making blueprint.md security section (lines 662-731) reference SECURITY.md instead of duplicating content
+2. **Security Training**: Add link to SECURITY.md in developer onboarding documentation
+3. **Security Tests**: Add security testing section to CONTRIBUTING.md or TESTING.md (if exists)
+4. **Security Monitoring**: Document how to set up alerts for security metrics from `/api/observability/metrics`
+
+---
 
 ## [UX-002] Design System Compliance and Anchor Linking Improvements
 
@@ -3118,3 +3250,412 @@ Fixed critical documentation issues including version mismatch and documented Ne
 - [Blueprint.md](./blueprint.md)
 - [Troubleshooting Guide](./TROUBLESHOOTING.md)
 - [Development Guide](./guides/development.md)
+
+---
+
+## Active Tasks
+
+## [REFACTOR-016] Extract Magic Numbers to Constants
+
+**Status**: Pending
+**Priority**: High
+**Assigned**: Unassigned
+**Created**: 2026-01-10
+
+### Description
+
+Extract magic numbers across the codebase into centralized constants to improve maintainability and reduce hard-coded values scattered throughout the code.
+
+### Problem Identified
+
+**Magic Numbers in Multiple Files**:
+- `src/lib/api/rateLimitMiddleware.ts` lines 11-15: `300, 60, 10, 30, 60000` - rate limits not centralized
+- `src/app/api/observability/metrics/route.ts` lines 22, 30, 37, 44, 67: `slice(-10)` - hardcoded slice count
+- `src/lib/cache.ts` lines 350, 356, 416, 419: `100, 50, 1024` - memory conversion factors
+- `src/app/berita/page.tsx` line 18: `parseInt(..., 10)` - radix magic number
+
+**Impact**:
+- Magic numbers scattered across codebase make maintenance difficult
+- Changing values requires searching multiple files
+- No single source of truth for configuration values
+- Code intent is unclear without context
+
+### Implementation Summary
+
+1. **Create constants file**: `src/lib/constants/appConstants.ts`
+2. **Define magic number constants**: Group by category (telemetry, memory, parsing, etc.)
+3. **Replace magic numbers**: Update all references to use named constants
+
+### Suggested Constants
+
+```typescript
+export const TELEMETRY = {
+  RECENT_EVENT_COUNT: 10,
+};
+
+export const PARSING = {
+  BASE64_RADIX: 10,
+  DECIMAL_RADIX: 10,
+};
+
+export const MEMORY = {
+  BYTES_TO_KB: 1024,
+  BYTES_TO_MB: 1024 * 1024,
+  BYTES_TO_GB: 1024 * 1024 * 1024,
+};
+
+export const CACHE_METRICS = {
+  HIGH_EFFICIENCY_THRESHOLD: 100,
+  MEDIUM_EFFICIENCY_THRESHOLD: 50,
+};
+
+export const RATE_LIMIT = {
+  DEFAULT_WINDOW_MS: 60000,
+};
+```
+
+### Files to Modify
+
+- `src/lib/constants/appConstants.ts` - New file (50 lines)
+- `src/lib/api/rateLimitMiddleware.ts` - Replace magic numbers (5 lines)
+- `src/app/api/observability/metrics/route.ts` - Replace slice(-10) (5 lines)
+- `src/lib/cache.ts` - Replace memory conversion numbers (4 lines)
+- `src/app/berita/page.tsx` - Replace parseInt radix (1 line)
+
+### Expected Results
+
+- Single source of truth for magic numbers
+- Improved code readability
+- Easier maintenance (change in one place)
+- Self-documenting code via constant names
+- Consistent values across codebase
+
+### Success Criteria
+
+- ✅ All magic numbers extracted to constants
+- ✅ No hardcoded numeric literals remaining in critical paths
+- ✅ Constants organized logically by category
+- ✅ All tests passing (no behavior changes)
+- ✅ Code more readable and maintainable
+
+---
+
+## [REFACTOR-017] Fix Revalidate Exports to Use Constants
+
+**Status**: Pending
+**Priority**: High
+**Assigned**: Unassigned
+**Created**: 2026-01-10
+
+### Description
+
+Fix inconsistent revalidate export statements to use constants from `REVALIDATE_TIMES` instead of inline values and comments.
+
+### Problem Identified
+
+**Inconsistent Revalidate Exports**:
+- `src/app/berita/page.tsx` line 11: `export const revalidate = 300 // REVALIDATE_TIMES.POST_LIST`
+- `src/app/berita/[slug]/page.tsx` line 15: `export const revalidate = 300 // REVALIDATE_TIMES.POST_DETAIL`
+- `src/app/page.tsx` line 8: `export const revalidate = 300 // REVALIDATE_TIMES.HOME_PAGE`
+- `src/app/kategori/[slug]/page.tsx` line 11: Same pattern
+
+**Impact**:
+- Inline values defeat purpose of having constants
+- Comments can become outdated
+- Requires manual verification to ensure comment matches constant
+- Inconsistent with DRY principle
+
+### Implementation Summary
+
+1. **Import REVALIDATE_TIMES**: Add import from `@/lib/api/config`
+2. **Replace inline values**: Use `REVALIDATE_TIMES.X` directly
+3. **Remove redundant comments**: Constants are self-documenting
+
+### Code Changes
+
+**Before** (src/app/berita/page.tsx, line 11):
+```typescript
+export const revalidate = 300 // REVALIDATE_TIMES.POST_LIST
+```
+
+**After**:
+```typescript
+import { REVALIDATE_TIMES } from '@/lib/api/config'
+
+export const revalidate = REVALIDATE_TIMES.POST_LIST
+```
+
+### Files to Modify
+
+- `src/app/berita/page.tsx` - Use REVALIDATE_TIMES.POST_LIST
+- `src/app/berita/[slug]/page.tsx` - Use REVALIDATE_TIMES.POST_DETAIL
+- `src/app/page.tsx` - Use REVALIDATE_TIMES.HOME_PAGE
+- `src/app/kategori/[slug]/page.tsx` - Use appropriate constant
+- Any other pages with inline revalidate values
+
+### Expected Results
+
+- Consistent use of REVALIDATE_TIMES constants
+- Single source of truth for revalidation times
+- No redundant comments
+- Easier to update revalidate times globally
+
+### Success Criteria
+
+- ✅ All revalidate exports use REVALIDATE_TIMES constants
+- ✅ No inline values in revalidate statements
+- ✅ No redundant comments
+- ✅ All pages revalidated consistently
+- ✅ All tests passing (no behavior changes)
+
+---
+
+## [REFACTOR-018] Split CacheManager Class - Extract Metrics Calculator
+
+**Status**: Pending
+**Priority**: High
+**Assigned**: Unassigned
+**Created**: 2026-01-10
+
+### Description
+
+Extract cache metrics calculation logic from the oversized CacheManager class into a separate CacheMetricsCalculator class to follow Single Responsibility Principle.
+
+### Problem Identified
+
+**CacheManager Too Large** (`src/lib/cache.ts` - 924 lines):
+- **Lines 348-421**: Cache statistics calculation
+- **Lines 570-587**: Performance metrics calculation
+- **Lines 390-421**: Efficiency scoring logic
+- CacheManager handles: storage, metrics, dependencies, cleanup, invalidation patterns
+
+**Impact**:
+- Violates Single Responsibility Principle
+- Difficult to test metrics logic independently
+- Hard to understand metrics calculation flow
+- Changes to metrics logic affect entire cache system
+
+### Implementation Summary
+
+1. **Create CacheMetricsCalculator class**: New file `src/lib/cache/cacheMetricsCalculator.ts`
+2. **Extract metrics methods**: Move statistics calculation methods
+3. **Update CacheManager**: Delegate metrics calls to new class
+
+### Suggested Class Structure
+
+```typescript
+class CacheMetricsCalculator {
+  calculateStatistics(entries: CacheEntry[]): CacheStatistics
+  calculateEfficiency(stats: CacheStatistics): EfficiencyLevel
+  calculatePerformanceMetrics(
+    hits: number,
+    misses: number,
+    cascadeInvalidations: number
+  ): PerformanceMetrics
+  formatMetricsForDisplay(stats: CacheStatistics): FormattedMetrics
+}
+```
+
+### Methods to Extract
+
+- `getStatistics()` (lines 348-421) - Cache hit rate, efficiency, memory usage
+- `getEfficiencyLevel()` (lines 390-421) - High/Medium/Low classification
+- `getPerformanceMetrics()` (lines 570-587) - Performance calculation
+- Helper methods for efficiency calculation
+
+### Files to Create/Modify
+
+- `src/lib/cache/cacheMetricsCalculator.ts` - New file (~150 lines)
+- `src/lib/cache.ts` - Refactor to use CacheMetricsCalculator (~70 lines removed)
+- `__tests__/cacheMetricsCalculator.test.ts` - New test file (~30 tests)
+
+### Expected Results
+
+- CacheManager reduced from 924 to ~770 lines (~16% reduction)
+- Clear separation of concerns
+- Easier to test metrics logic
+- Metrics calculation can be used independently
+- CacheManager focuses on storage operations
+
+### Success Criteria
+
+- ✅ CacheMetricsCalculator class created
+- ✅ Metrics logic extracted from CacheManager
+- ✅ All metrics tests pass (existing + new)
+- ✅ CacheManager delegating to MetricsCalculator
+- ✅ No behavior changes (all tests passing)
+
+---
+
+## [REFACTOR-019] Extract Date Parsing Duplication
+
+**Status**: Pending
+**Priority**: Medium
+**Assigned**: Unassigned
+**Created**: 2026-01-10
+
+### Description
+
+Extract duplicate date parsing logic in `src/lib/utils/dateFormat.ts` into a single reusable function to eliminate code duplication.
+
+### Problem Identified
+
+**Duplicate Date Parsing** (`src/lib/utils/dateFormat.ts`):
+- Lines 39-43: Date validation and parsing in `formatDate()`
+- Lines 66-70: Identical logic in `formatDateTime()`
+- Lines 100-104: Identical logic in `formatTime()`
+- ~12 lines of duplicate code across 3 functions
+
+**Impact**:
+- Code duplication violates DRY principle
+- Bug fix requires changes in 3 places
+- Inconsistent date handling if logic diverges
+
+### Implementation Summary
+
+1. **Create helper function**: `parseAndValidateDate(date: string | Date): Date`
+2. **Replace duplicate code**: Call helper in all 3 functions
+3. **Add tests**: Test helper function independently
+
+### Code Changes
+
+**Before** (duplicated 3 times):
+```typescript
+// In formatDate, formatDateTime, formatTime
+const parsedDate = typeof date === 'string' ? new Date(date) : date
+if (isNaN(parsedDate.getTime())) {
+  console.warn('Invalid date:', date)
+  return ''
+}
+```
+
+**After** (single helper):
+```typescript
+function parseAndValidateDate(date: string | Date): Date | null {
+  const parsedDate = typeof date === 'string' ? new Date(date) : date
+  if (isNaN(parsedDate.getTime())) {
+    console.warn('Invalid date:', date)
+    return null
+  }
+  return parsedDate
+}
+
+// Usage in formatDate()
+const parsedDate = parseAndValidateDate(date)
+if (!parsedDate) return ''
+```
+
+### Files to Modify
+
+- `src/lib/utils/dateFormat.ts` - Extract helper function (12 lines removed)
+- `__tests__/dateFormat.test.ts` - Add tests for parseAndValidateDate (3 tests)
+
+### Expected Results
+
+- ~12 lines of duplicate code eliminated
+- Single source of truth for date parsing
+- Easier to maintain (fix in one place)
+- Better test coverage for edge cases
+
+### Success Criteria
+
+- ✅ parseAndValidateDate helper function created
+- ✅ Duplicate code eliminated from 3 functions
+- ✅ All 3 functions use helper
+- ✅ New tests for helper function
+- ✅ All existing tests passing (no behavior changes)
+
+---
+
+## [REFACTOR-020] Create Generic Telemetry Recording Helper
+
+**Status**: Pending
+**Priority**: Medium
+**Assigned**: Unassigned
+**Created**: 2026-01-10
+
+### Description
+
+Extract duplicate telemetry recording patterns in `src/lib/api/telemetry.ts` into a generic helper function to reduce code duplication.
+
+### Problem Identified
+
+**Duplicate Telemetry Recording** (`src/lib/api/telemetry.ts`):
+- Lines 108-123: `recordCircuitBreakerStateChange()`
+- Lines 125-135: `recordCircuitBreakerFailure()`
+- Lines 137-147: `recordCircuitBreakerSuccess()`
+- Lines 149-160: `recordRetryAttempt()`
+- Lines 162-172: `recordRetrySuccess()`
+- Lines 174-184: `recordRetryExhausted()`
+- Lines 186-196: `recordRateLimitExceeded()`
+- Lines 198-208: `recordHealthCheckResult()`
+
+**Pattern**: Each method creates similar event object with minor variations in category, type, and data
+
+**Impact**:
+- ~100 lines of similar recording methods
+- Adding new telemetry type requires duplicating pattern
+- Hard to maintain consistent telemetry format
+
+### Implementation Summary
+
+1. **Create generic helper**: `recordTelemetry(category, type, data)`
+2. **Refactor existing methods**: Simplify to call helper with specific parameters
+3. **Maintain backward compatibility**: Keep existing method signatures
+
+### Code Changes
+
+**Before** (each method ~15 lines):
+```typescript
+recordCircuitBreakerStateChange(state: string, reason?: string): void {
+  const event = {
+    timestamp: new Date().toISOString(),
+    type: 'state-change',
+    category: 'circuit-breaker',
+    data: { state, reason }
+  }
+  this.recordEvent(event)
+}
+```
+
+**After** (generic helper):
+```typescript
+recordTelemetry(
+  category: TelemetryEventCategory,
+  type: string,
+  data: Record<string, unknown>
+): void {
+  const event = {
+    timestamp: new Date().toISOString(),
+    type,
+    category,
+    data
+  }
+  this.recordEvent(event)
+}
+
+// Existing methods simplified
+recordCircuitBreakerStateChange(state: string, reason?: string): void {
+  this.recordTelemetry('circuit-breaker', 'state-change', { state, reason })
+}
+```
+
+### Files to Modify
+
+- `src/lib/api/telemetry.ts` - Create helper, refactor 8 methods (~40 lines removed)
+- `__tests__/telemetry.test.ts` - Add tests for recordTelemetry (2-3 tests)
+
+### Expected Results
+
+- ~40 lines of duplicate code eliminated
+- Easier to add new telemetry types
+- Consistent telemetry format guaranteed
+- Better test coverage
+
+### Success Criteria
+
+- ✅ recordTelemetry helper function created
+- ✅ All 8 existing methods refactored to use helper
+- ✅ Backward compatibility maintained (same API)
+- ✅ New tests for helper function
+- ✅ All existing tests passing (no behavior changes)
