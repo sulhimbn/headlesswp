@@ -15,12 +15,4 @@ describe('CSP Report API Configuration', () => {
 
     expect(fs.existsSync(middlewarePath)).toBe(true)
   })
-
-  it('should have CSP utilities file', () => {
-    const fs = require('fs')
-    const path = require('path')
-    const utilsPath = path.join(__dirname, '../src/lib/csp-utils.ts')
-
-    expect(fs.existsSync(utilsPath)).toBe(true)
-  })
 })

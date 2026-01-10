@@ -1,6 +1,6 @@
 # Architecture Blueprint
 
-**Version**: 1.4.4
+**Version**: 1.4.5
 **Last Updated**: 2026-01-10 (Code Architect)
 
 ## System Architecture
@@ -725,6 +725,97 @@ async function cacheFetch<T>(
 - Concurrent requests (1 test)
 
 **See Also**: [Task ARCH-CACHE-FETCH-001: Cache Fetch Utility](./task.md#arch-cache-fetch-001)
+
+### Error Handling Refactoring (ARCH-ERROR-001)
+
+**Principle**: Centralized error handling via apiClient resilience patterns instead of layer-specific error swallowing.
+
+**Problem**: API layer methods (`getMediaBatch`, `getMediaUrl`) had their own error handling that caught errors and returned fallback values, bypassing the apiClient's resilience patterns (circuit breaker, retry strategy).
+
+**Solution**: Removed error handling from API layer methods to let errors propagate to apiClient interceptors, where resilience patterns are applied. Service layer maintains graceful fallback behavior.
+
+**Before Refactoring**:
+```typescript
+// getMediaBatch - Swallowed errors, bypassed resilience patterns
+try {
+  const response = await apiClient.get(getApiUrl('/wp/v2/media'), { params });
+  // ... process response
+} catch (error) {
+  logger.warn('Failed to fetch media batch', error);
+}
+return result; // Partial result returned, error hidden
+
+// getMediaUrl - Swallowed errors, bypassed resilience patterns
+try {
+  const media = await wordpressAPI.getMedia(mediaId, signal);
+  // ... process media
+} catch (error) {
+  logger.warn(`Failed to fetch media ${mediaId}`, error);
+  return null;
+}
+```
+
+**After Refactoring**:
+```typescript
+// getMediaBatch - Errors propagate to apiClient resilience patterns
+const response = await apiClient.get(getApiUrl('/wp/v2/media'), { params });
+// ... process response
+return result;
+
+// getMediaUrl - Errors propagate to apiClient resilience patterns
+const media = await wordpressAPI.getMedia(mediaId, signal);
+const url = media.source_url;
+if (url) {
+  cacheManager.set(cacheKey, url, CACHE_TTL.MEDIA);
+}
+return url ?? null;
+```
+
+**Service Layer Error Handling**:
+```typescript
+// enrichPostsWithMediaUrls - Handles errors at service layer
+try {
+  mediaUrls = await wordpressAPI.getMediaUrlsBatch(mediaIds);
+} catch (error) {
+  logger.warn('Failed to fetch media URLs, using fallbacks', error);
+  mediaUrls = new Map();
+}
+
+// enrichPostWithDetails - Handles errors at service layer
+try {
+  mediaUrl = await wordpressAPI.getMediaUrl(post.featured_media);
+} catch (error) {
+  logger.warn(`Failed to fetch media for post ${post.id}, using fallback`, error);
+  mediaUrl = null;
+}
+```
+
+**Benefits**:
+1. **Consistent Error Handling**: All errors flow through apiClient's centralized resilience patterns
+2. **Circuit Breaker Integration**: Media API failures now tracked and trigger circuit opening
+3. **Retry Strategy Application**: Transient media failures automatically retried with backoff
+4. **Better Observability**: Errors propagate to monitoring dashboards via circuit breaker stats
+5. **Fail Fast**: Errors visible immediately instead of being hidden in logs
+6. **Single Responsibility**: API layer focuses on API calls, error handling at appropriate level
+7. **No Behavior Changes**: Service layer maintains graceful fallbacks (null media URLs, fallback posts)
+
+**Error Flow**:
+1. Component → Service Layer → API Layer (`getMediaBatch`/`getMediaUrl`)
+2. API Layer → apiClient → Network Request
+3. Error: apiClient interceptors handle error
+   - Circuit breaker: Updates failure count, opens circuit if threshold exceeded
+   - Retry strategy: Retries on transient errors (429, 5xx)
+   - Error classification: Categorizes error types (NETWORK_ERROR, TIMEOUT_ERROR, etc.)
+4. Error propagates to Service Layer (`fetchAndValidate` wrapper)
+5. Service Layer: Returns fallback posts/empty results
+6. Component: Renders fallback content
+
+**Files Modified**:
+- `src/lib/wordpress.ts` - Removed error handling from getMediaBatch and getMediaUrl
+- `src/lib/services/enhancedPostService.ts` - Added error handling in service layer methods
+- `__tests__/wordpressBatchOperations.test.ts` - Updated test expectations
+
+**See Also**: [Task ARCH-ERROR-001: Error Handling Refactoring](./task.md#arch-error-001)
 
 ### Data Integrity
 - Validation ensures data structure matches expected schema
