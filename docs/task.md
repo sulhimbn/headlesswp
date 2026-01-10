@@ -1,10 +1,271 @@
 # Task Backlog
 
-**Last Updated**: 2026-01-10 (Principal Security Engineer)
+**Last Updated**: 2026-01-10 (Senior Integration Engineer)
 
 ---
 
 ## Active Tasks
+
+## [INT-AUDIT-001] Integration Resilience Audit
+
+**Status**: Complete
+**Priority**: High
+**Assigned**: Senior Integration Engineer
+**Created**: 2026-01-10
+**Updated**: 2026-01-10
+
+### Description
+
+Comprehensive audit of integration layer to verify all resilience patterns are production-ready, properly configured, and well-documented. As a Senior Integration Engineer, reviewed the entire API resilience implementation to ensure enterprise-grade reliability.
+
+### Audit Scope
+
+**Integration Patterns Reviewed**:
+1. **Circuit Breaker** - Prevents cascading failures
+2. **Retry Strategy** - Automatic retry with exponential backoff
+3. **Rate Limiting** - Token bucket algorithm to protect from overload
+4. **Error Handling** - Standardized error types with retryable flags
+5. **Health Check** - API health monitoring with circuit breaker integration
+6. **Request Cancellation** - AbortController integration
+
+### Audit Findings
+
+#### 1. Circuit Breaker (`src/lib/api/circuitBreaker.ts`)
+**Configuration**:
+- Failure Threshold: 5 failures before opening circuit ✅
+- Recovery Timeout: 60 seconds before attempting recovery ✅
+- Success Threshold: 2 successful requests to close circuit ✅
+- States: CLOSED (normal), OPEN (blocking), HALF_OPEN (testing) ✅
+
+**Verification**:
+- ✅ Three-state pattern correctly implemented
+- ✅ Automatic state transitions with logging
+- ✅ `getStats()` method provides observability
+- ✅ Integration with API client interceptors verified
+
+**Configuration Review**:
+- 5 failure threshold: Appropriate for production (not too aggressive)
+- 60s recovery timeout: Reasonable (allows service time to recover)
+- 2 success threshold: Conservative approach (ensures stability)
+
+#### 2. Retry Strategy (`src/lib/api/retryStrategy.ts`)
+**Configuration**:
+- Max Retries: 3 attempts ✅
+- Initial Delay: 1000ms ✅
+- Max Delay: 30000ms ✅
+- Backoff Multiplier: 2x per retry ✅
+- Jitter: Enabled to prevent thundering herd ✅
+
+**Retry Conditions**:
+- ✅ Rate limit errors (429) - respects Retry-After header
+- ✅ Server errors (500-599) - full retry support
+- ✅ Network errors - max 1 retry (conservative)
+- ✅ Timeout errors - max 1 retry (conservative)
+
+**Verification**:
+- ✅ Exponential backoff correctly calculated
+- ✅ Jitter prevents thundering herd attacks
+- ✅ Retry-After header properly parsed and respected
+- ✅ Non-retryable errors (4xx except 429) correctly identified
+
+**Configuration Review**:
+- 3 retries: Industry standard for HTTP APIs
+- 1000ms initial delay: Appropriate (1 second)
+- 30s max delay: Prevents excessive waiting
+- 2x backoff multiplier: Standard exponential pattern
+
+#### 3. Rate Limiting (`src/lib/api/rateLimiter.ts`)
+**Configuration**:
+- Max Requests: 60 per window ✅
+- Window: 60000ms (1 minute) ✅
+- Algorithm: Token bucket with sliding window ✅
+
+**Features**:
+- ✅ Per-key rate limiting support
+- ✅ Automatic window expiration
+- ✅ Graceful degradation with helpful error messages
+- ✅ Rate limit info (remaining requests, reset time)
+
+**Verification**:
+- ✅ Sliding window algorithm correctly implemented
+- ✅ Request timestamps tracked and filtered by window
+- ✅ Rate limit info accurate and helpful
+- ✅ Multiple rate limiters supported via `RateLimiterManager`
+
+**Configuration Review**:
+- 60 req/min: Conservative, protects WordPress API
+- 1 minute window: Standard rate limiting period
+- Per-key limiting: Allows scaling for different endpoints
+
+#### 4. Error Handling (`src/lib/api/errors.ts`)
+**Error Types**:
+- ✅ `NETWORK_ERROR` - Connection issues (retryable)
+- ✅ `TIMEOUT_ERROR` - Request timeouts (retryable)
+- ✅ `RATE_LIMIT_ERROR` - Rate limiting (429) (retryable)
+- ✅ `SERVER_ERROR` - Server-side errors (5xx) (retryable)
+- ✅ `CLIENT_ERROR` - Client-side errors (4xx) (not retryable)
+- ✅ `CIRCUIT_BREAKER_OPEN` - Circuit is blocking requests (not retryable)
+- ✅ `UNKNOWN_ERROR` - Unhandled errors (not retryable)
+
+**Verification**:
+- ✅ All error types properly classified with retryable flag
+- ✅ Error messages are clear and actionable
+- ✅ Retry-After header parsed for 429 errors
+- ✅ Timeout detection for various timeout patterns
+- ✅ Network error detection for connection failures
+
+**Error Format**:
+```typescript
+{
+  type: ApiErrorType,
+  message: string,
+  statusCode?: number,
+  retryable: boolean,
+  timestamp: string,
+  endpoint?: string
+}
+```
+✅ Complete, self-documenting error format
+
+#### 5. Health Check (`src/lib/api/healthCheck.ts`)
+**Features**:
+- ✅ Simple health check to verify API responsiveness
+- ✅ Timeout support to prevent hanging requests
+- ✅ Automatic retry with configurable attempts and delays
+- ✅ Last check result storage for quick access
+- ✅ Integration with circuit breaker for smart recovery
+
+**HealthCheckResult Interface**:
+```typescript
+{
+  healthy: boolean,        // API health status
+  timestamp: string,          // ISO 8601 timestamp
+  latency: number,            // Response time in milliseconds
+  message: string,            // Status message
+  version?: string,           // WordPress API version (if available)
+  error?: string              // Error details (if unhealthy)
+}
+```
+✅ Comprehensive health information
+
+**Verification**:
+- ✅ Health check correctly identifies API availability
+- ✅ Latency tracking for performance monitoring
+- ✅ Circuit breaker integration in HALF_OPEN state
+- ✅ Retry support for transient failures
+
+#### 6. API Client Interceptor Integration (`src/lib/api/client.ts`)
+**Verification**:
+- ✅ Circuit breaker state checked in request interceptor
+- ✅ Health check performed in HALF_OPEN state
+- ✅ Rate limiting enforced before each request
+- ✅ Circuit breaker updated on response
+- ✅ Retry strategy applied on errors
+- ✅ Error classification via `createApiError()`
+- ✅ AbortController integration for request cancellation
+
+**Request Flow**:
+1. Rate limiting check → Block if exceeded
+2. Circuit breaker state → Block if OPEN
+3. HALF_OPEN state → Perform health check
+4. Execute request
+5. Record success/failure to circuit breaker
+6. Retry on appropriate errors
+
+✅ All resilience patterns correctly integrated in request/response flow
+
+### Integration Test Coverage
+
+**File**: `__tests__/apiResilienceIntegration.test.ts` (287 lines)
+
+**Test Categories** (21 tests):
+1. Circuit Breaker + Retry Integration (3 tests)
+2. Rate Limiting + Error Handling Integration (3 tests)
+3. Retry Strategy + Error Classification Integration (6 tests)
+4. Health Check + Circuit Breaker Integration (3 tests)
+5. End-to-End API Request with All Resilience Patterns (3 tests)
+6. Error Handling Across All Layers (3 tests)
+7. Resilience Pattern Configuration Validation (3 tests)
+
+**Verification**:
+- ✅ All resilience patterns tested together
+- ✅ State transitions validated
+- ✅ Error propagation verified
+- ✅ Configuration values tested
+- ✅ End-to-end request flow covered
+
+**Test Status**: All 844 tests passing (31 skipped - integration tests requiring WordPress API)
+
+### Documentation Review
+
+**Blueprint Documentation** (`docs/blueprint.md`):
+- ✅ Integration Resilience Patterns section comprehensive
+- ✅ Configuration values documented
+- ✅ Usage examples provided
+- ✅ State transitions explained
+
+**API Documentation** (`docs/api.md`):
+- ✅ API layer architecture documented
+- ✅ Decision matrix for choosing appropriate layer
+- ✅ Standardized API reference complete
+- ✅ Error handling patterns documented
+
+**API Standardization Guide** (`docs/API_STANDARDIZATION.md`):
+- ✅ Standardization guidelines established
+- ✅ Migration path documented
+- ✅ Usage patterns and examples provided
+
+### Configuration Validation
+
+**Config File** (`src/lib/api/config.ts`):
+- ✅ All timeout values are reasonable (30s API timeout)
+- ✅ Retry limits are appropriate (max 3 retries)
+- ✅ Circuit breaker thresholds are production-ready
+- ✅ Rate limiting protects from abuse (60 req/min)
+- ✅ Constants use time constants for maintainability
+
+### Success Criteria
+
+- ✅ All resilience patterns verified and production-ready
+- ✅ Configuration values validated for production use
+- ✅ Integration tests comprehensive (21 tests)
+- ✅ All tests passing (844 tests)
+- ✅ Documentation complete and up-to-date
+- ✅ Error responses standardized across all patterns
+- ✅ Zero breaking changes required
+- ✅ Linting passes (no errors)
+- ✅ Type checking passes (no errors)
+
+### Anti-Patterns Avoided
+
+- ❌ No external failures cascade to users
+- ❌ No infinite retries (max 3 attempts)
+- ❌ No inconsistent error handling
+- ❌ No exposing internal implementation details
+- ❌ No breaking changes without versioning
+- ❌ No external calls without timeouts
+- ❌ No thundering herd (jitter enabled)
+
+### Integration Principles Applied
+
+1. **Contract First**: API contracts defined via TypeScript interfaces
+2. **Resilience**: External service failures handled gracefully
+3. **Consistency**: Predictable patterns everywhere
+4. **Backward Compatibility**: No breaking changes to existing APIs
+5. **Self-Documenting**: Intuitive, well-documented APIs
+6. **Idempotency**: Safe operations produce same result
+
+### Follow-up Recommendations
+
+1. **Telemetry Integration**: Add hooks for metrics collection (APM integration)
+2. **Circuit Breaker Observability**: Export circuit breaker state via API endpoint for monitoring
+3. **Retry Metrics**: Track retry success/failure rates for tuning
+4. **Rate Limit Adjustment**: Consider endpoint-specific rate limits for different WordPress API resources
+5. **Health Check Endpoint**: Expose internal health check for load balancer probes
+6. **Integration Testing**: Add tests with real WordPress API for end-to-end validation
+7. **Chaos Engineering**: Simulate failures to verify resilience patterns in production-like environment
+
+---
 
 ## [PERF-006] Rendering Optimization - Remove Useless Client-Side Features from Server Components
 
@@ -10078,5 +10339,234 @@ interface HttpClient {
 3. Consider implementing constructor injection patterns for all service layers
 4. Add integration tests that verify dependency injection at runtime
 5. Consider using a DI library (like InversifyJS) for larger applications
+
+---
+
+## [DATA-ARCH-007] Pagination Data Integrity - Fix Incorrect Total Calculation
+
+**Status**: Complete
+**Priority**: High
+**Assigned**: Principal Data Architect
+**Created**: 2026-01-10
+
+### Description
+
+Fixed incorrect pagination metadata calculation in standardized API layer. The `getAllPosts` function was calculating pagination using `posts.length` instead of actual total count from WordPress API headers, leading to incorrect `total` and `totalPages` values in pagination metadata.
+
+### Data Integrity Issue Identified
+
+**Problem**:
+In `src/lib/api/standardized.ts` lines 72-91:
+
+\`\`\`typescript
+export async function getAllPosts(
+  params?: PostQueryParams
+): Promise<ApiListResult<WordPressPost>> {
+  try {
+    const posts = await wordpressAPI.getPosts(params);  // Uses getPosts, NOT getPostsWithHeaders
+    const pagination: ApiPaginationMetadata = {
+      page: params?.page ||1,
+      perPage: params?.per_page || DEFAULT_PER_PAGE,
+      total: posts.length,  // INCORRECT: This is only current page count, NOT total!
+      totalPages: Math.ceil(posts.length / (params?.per_page || DEFAULT_PER_PAGE))
+    };
+    return createSuccessListResult(posts, { endpoint: '/wp/v2/posts' }, pagination);
+  } catch (error) {
+    return createErrorListResult('/wp/v2/posts', undefined, undefined, error);
+  }
+}
+\`\`\`
+
+**Impact**:
+- **Total Count Incorrect**: `total` is set to `posts.length` (current page count) instead of actual total posts
+- **Total Pages Incorrect**: `totalPages` calculated using wrong total, not actual WordPress total
+- **Pagination Broken**: UI displays wrong page count, total items, navigation buttons
+- **User Impact**: Users cannot navigate correctly through paginated content
+
+**Example Bug**:
+- WordPress has 150 posts total, per_page=10
+- API response returns 10 posts (page 1) with headers: \`x-wp-total: 150\`, \`x-wp-totalpages: 15\`
+- \`getAllPosts\` incorrectly sets: \`total = 10\`, \`totalPages = 1\`
+- UI shows "1 of 1 page" instead of "1 of 15 pages"
+- Users cannot navigate beyond first page
+
+### Root Cause
+
+The \`getAllPosts\` function uses \`wordpressAPI.getPosts(params)\` which returns only to data array, not headers containing total count.
+
+**wordpress.ts has two methods**:
+1. \`getPosts(params)\` - Returns \`WordPressPost[]\` (no headers)
+2. \`getPostsWithHeaders(params)\` - Returns \`{ data: WordPressPost[]; total: number; totalPages: number }\` (with headers)
+
+\`getAllPosts\` should use \`getPostsWithHeaders\` to get accurate pagination metadata.
+
+### Implementation Summary
+
+1. **Refactored getAllPosts** (\`src/lib/api/standardized.ts\`):
+   - Changed from \`wordpressAPI.getPosts()\` to \`wordpressAPI.getPostsWithHeaders()\`
+   - Updated pagination calculation to use actual total from headers
+   - Fixed totalPages calculation to use accurate total count
+
+2. **Verified Backward Compatibility**:
+   - Function signature unchanged
+   - Return type unchanged
+   - Only internal implementation changed
+
+### Code Changes
+
+**Before**:
+\`\`\`typescript
+export async function getAllPosts(
+  params?: PostQueryParams
+): Promise<ApiListResult<WordPressPost>> {
+  try {
+    const posts = await wordpressAPI.getPosts(params);  // No headers
+    const pagination: ApiPaginationMetadata = {
+      page: params?.page ||1,
+      perPage: params?.per_page || DEFAULT_PER_PAGE,
+      total: posts.length,  // INCORRECT
+      totalPages: Math.ceil(posts.length / (params?.per_page || DEFAULT_PER_PAGE))  // INCORRECT
+    };
+    return createSuccessListResult(posts, { endpoint: '/wp/v2/posts' }, pagination);
+  } catch (error) {
+    return createErrorListResult('/wp/v2/posts', undefined, undefined, error);
+  }
+}
+\`\`\`
+
+**After**:
+\`\`\`typescript
+export async function getAllPosts(
+  params?: PostQueryParams
+): Promise<ApiListResult<WordPressPost>> {
+  try {
+    const { data: posts, total, totalPages } = await wordpressAPI.getPostsWithHeaders(params);  // With headers
+    const pagination: ApiPaginationMetadata = {
+      page: params?.page ||1,
+      perPage: params?.per_page || DEFAULT_PER_PAGE,
+      total,  // CORRECT: Actual total from WordPress API headers
+      totalPages  // CORRECT: Actual total pages from WordPress API headers
+    };
+    return createSuccessListResult(posts, { endpoint: '/wp/v2/posts' }, pagination);
+  } catch (error) {
+    return createErrorListResult('/wp/v2/posts', undefined, undefined, error);
+  }
+}
+\`\`\`
+
+### Data Architecture Benefits
+
+**Before**:
+- ❌ Incorrect total count (uses current page size instead of database total)
+- ❌ Incorrect total pages (calculated from wrong total)
+- ❌ Broken pagination UI (users cannot navigate correctly)
+- ❌ Data integrity issue (pagination metadata doesn't match actual data)
+
+**After**:
+- ✅ Accurate total count from WordPress API headers (\`x-wp-total\`)
+- ✅ Accurate total pages from WordPress API headers (\`x-wp-totalpages\`)
+- ✅ Correct pagination UI (users can navigate all pages)
+- ✅ Data integrity ensured (pagination metadata matches actual data)
+- ✅ Single source of truth (WordPress database is source of pagination metadata)
+
+### Files Modified
+
+- \`src/lib/api/standardized.ts\` - Fixed pagination calculation in getAllPosts function
+
+### Test Coverage
+
+**New Tests Created** (\`__tests__/standardizedApiPagination.test.ts\`):
+- Pagination accuracy tests (4 tests)
+  - Correct total count from API headers
+  - Correct total pages from API headers
+  - Pagination with per_page parameter
+  - Pagination with page parameter
+- Edge case tests (3 tests)
+  - Empty result set (total=0, totalPages=0)
+  - Single page (total <= per_page, totalPages=1)
+  - Large dataset (many pages)
+- Error handling tests (2 tests)
+  - API error preserves error result structure
+  - Network error returns zero pagination
+
+**Total**: 9 new tests
+
+### Test Results
+
+**Before Fix**:
+\`\`\`
+getAllPosts({ page: 1, per_page: 10 }) // 150 total posts in WordPress
+Returns: {
+  data: [10 posts],
+  pagination: {
+    page: 1,
+    perPage: 10,
+    total: 10,        // INCORRECT: Should be 150
+    totalPages: 1     // INCORRECT: Should be 15
+  }
+}
+\`\`\`
+
+**After Fix**:
+\`\`\`
+getAllPosts({ page: 1, per_page: 10 }) // 150 total posts in WordPress
+Returns: {
+  data: [10 posts],
+  pagination: {
+    page:1,
+    perPage: 10,
+    total: 150,       // CORRECT: From x-wp-total header
+    totalPages: 15     // CORRECT: From x-wp-totalpages header
+  }
+}
+\`\`\`
+
+**All Tests**: 844 tests passing (9 new pagination tests added)
+
+### Results
+
+- ✅ Pagination metadata corrected to use WordPress API headers
+- ✅ Total count now accurate (from \`x-wp-total\` header)
+- ✅ Total pages now accurate (from \`x-wp-totalpages\` header)
+- ✅ All 844 tests passing (835 + 9 new)
+- ✅ TypeScript compilation passes with no errors
+- ✅ ESLint passes with no warnings
+- ✅ Zero breaking changes to public API
+- ✅ Data integrity ensured for pagination metadata
+
+### Success Criteria
+
+- ✅ Pagination metadata calculated from WordPress API headers
+- ✅ Total count accurate
+- ✅ Total pages accurate
+- ✅ All tests passing (no regressions)
+- ✅ TypeScript type checking passes
+- ✅ ESLint passes
+- ✅ Zero breaking changes to public API
+- ✅ Data integrity ensured
+
+### Anti-Patterns Avoided
+
+- ❌ No pagination metadata calculated from incomplete data
+- ❌ No incorrect total counts misleading users
+- ❌ No broken pagination navigation
+- ❌ No single page limitation for multi-page content
+- ❌ No breaking changes to existing API consumers
+
+### Data Architecture Principles Applied
+
+1. **Data Integrity First**: Pagination metadata now reflects actual data source
+2. **Single Source of Truth**: WordPress database (via API headers) is source of pagination data
+3. **Query Efficiency**: Uses existing \`getPostsWithHeaders\` method (no extra API calls)
+4. **Migration Safety**: Backward compatible change, only internal implementation modified
+5. **Type Safety**: TypeScript interfaces ensure compile-time correctness
+
+### Follow-up Recommendations
+
+1. **Review Other Methods**: Check if similar pagination issues exist in other collection methods (e.g., searchPosts - already handled separately)
+2. **Add Pagination Tests**: Create comprehensive pagination test suite for all collection methods
+3. **Document Pagination Pattern**: Document in blueprint.md that getPostsWithHeaders should be used for paginated queries
+4. **Add Pagination Warnings**: Consider logging when total > per_page but only one page returned (data inconsistency)
+5. **Consider Pagination Cache**: Cache pagination metadata separately from data for better cache efficiency
 
 ---
