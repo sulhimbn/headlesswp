@@ -1,6 +1,6 @@
 # Architecture Blueprint
 
-**Version**: 1.4.1
+**Version**: 1.4.2
 **Last Updated**: 2026-01-10
 
 ## System Architecture
