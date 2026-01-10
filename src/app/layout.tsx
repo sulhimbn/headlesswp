@@ -1,7 +1,6 @@
 import './globals.css'
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
-import ClientLayout from '@/components/ClientLayout'
 import { SITE_URL, SITE_URL_WWW } from '@/lib/api/config'
 
 const inter = Inter({ subsets: ['latin'], display: 'swap' })
@@ -49,9 +48,7 @@ export default function RootLayout({
         >
           Langsung ke konten utama
         </a>
-        <ClientLayout>
-          {children}
-        </ClientLayout>
+        {children}
       </body>
     </html>
   )
