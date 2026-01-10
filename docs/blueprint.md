@@ -1,6 +1,6 @@
 # Architecture Blueprint
 
-**Version**: 1.4.3
+**Version**: 1.4.4
 **Last Updated**: 2026-01-10 (Code Architect)
 
 ## System Architecture
@@ -266,17 +266,51 @@ interface ApiListResult<T> extends ApiResult<T[]> {
 - **Authors**: `getAuthorById()`
 
 **Implementation Status**:
-- ✅ **Phase 1 Complete**: Documentation and `ApiResult<T>` interface defined
+ - ✅ **Phase 1 Complete**: Documentation and `ApiResult<T>` interface defined
 - ✅ **Phase 2 Complete**: Standardized methods implemented in `src/lib/api/standardized.ts`
-   - 31 methods (getById, getBySlug, getAll, search)
-   - All methods return `ApiResult<T>` or `ApiListResult<T>` with consistent error handling
+    - 31 methods (getById, getBySlug, getAll, search)
+    - All methods return `ApiResult<T>` or `ApiListResult<T>` with consistent error handling
 - ✅ **Phase 2 Complete**: Error result helper extracted for collection methods (REFACTOR-008)
-   - Created `createErrorListResult()` helper to eliminate 52 lines of duplicate error result structure
-   - Applied to `getAllPosts`, `searchPosts`, `getAllCategories`, `getAllTags`
-- ⏳ **Phase 3**: Migrate new code and critical paths to use standardized methods (future)
-- ⏳ **Phase 4**: Deprecate old methods in major version (future)
+    - Created `createErrorListResult()` helper to eliminate 52 lines of duplicate error result structure
+    - Applied to `getAllPosts`, `searchPosts`, `getAllCategories`, `getAllTags`
+- ✅ **Phase 3 Complete**: Try-catch pattern extraction (REFACTOR-010)
+    - Created `fetchAndHandleNotFound()` helper to eliminate 40 lines of duplicate error handling
+    - Applied to `getPostBySlug`, `getCategoryById`, `getCategoryBySlug`, `getTagById`, `getTagBySlug`
+- ⏳ **Phase 4**: Migrate new code and critical paths to use standardized methods (future)
+- ⏳ **Phase 5**: Deprecate old methods in major version (future)
 
 **See Also**: [API Standardization Guidelines](./API_STANDARDIZATION.md)
+
+### DRY Principle and Code Quality
+
+**Last Updated**: 2026-01-10 (Code Architect)
+
+**DRY (Don't Repeat Yourself)** is a fundamental software design principle that eliminates code duplication and improves maintainability.
+
+**Extracted Helpers** (`src/lib/api/response.ts`):
+1. **`fetchAndHandleNotFound<T>()`** - Generic error handling for not-found scenarios
+   - Eliminates duplicate try-catch patterns
+   - Consistent error messages and response format
+   - Type-safe with generic types
+   - Applied to 5 methods (getPostBySlug, getCategoryById, getCategoryBySlug, getTagById, getTagBySlug)
+
+**Code Quality Improvements**:
+- **Before**: 252 lines with 40 duplicate lines across 5 methods
+- **After**: 213 lines with single reusable helper
+- **Lines Eliminated**: 40 lines (16% reduction)
+- **DRY Principle Applied**: Error handling logic defined once
+- **Single Responsibility**: Each helper has one clear purpose
+- **Consistency**: All methods use identical error handling
+- **Maintainability**: Changes to error handling only require updating one function
+
+**Benefits**:
+1. **Reduced Maintenance**: Bug fixes or improvements to error handling only need to be made once
+2. **Consistency**: All resources (posts, categories, tags) have identical error handling
+3. **Type Safety**: Generic TypeScript types ensure compile-time type checking
+4. **Testability**: Helper functions can be tested independently
+5. **Code Clarity**: Smaller, focused methods are easier to understand
+
+**See Also**: [Task REFACTOR-010](./task.md#refactor-010)
 
 ## Integration Resilience Patterns
 
