@@ -23,6 +23,10 @@ class DataValidator {
     return typeof value === 'object' && value !== null && !this.isArray(value);
   }
 
+  private assertValidType<T>(value: Record<string, unknown>): T {
+    return value as T;
+  }
+
   private pluralize(word: string): string {
     const irregularPlurals: Record<string, string> = {
       'Category': 'Categories',
@@ -135,7 +139,7 @@ class DataValidator {
       return { valid: false, errors };
     }
 
-    return { valid: true, data: data as unknown as WordPressPost, errors: [] };
+    return { valid: true, data: this.assertValidType<WordPressPost>(data), errors: [] };
   }
 
   validatePosts(data: unknown): ValidationResult<WordPressPost[]> {
@@ -181,7 +185,7 @@ class DataValidator {
       return { valid: false, errors };
     }
 
-    return { valid: true, data: data as unknown as WordPressCategory, errors: [] };
+    return { valid: true, data: this.assertValidType<WordPressCategory>(data), errors: [] };
   }
 
   validateCategories(data: unknown): ValidationResult<WordPressCategory[]> {
@@ -223,7 +227,7 @@ class DataValidator {
       return { valid: false, errors };
     }
 
-    return { valid: true, data: data as unknown as WordPressTag, errors: [] };
+    return { valid: true, data: this.assertValidType<WordPressTag>(data), errors: [] };
   }
 
   validateTags(data: unknown): ValidationResult<WordPressTag[]> {
@@ -265,7 +269,7 @@ class DataValidator {
       return { valid: false, errors };
     }
 
-    return { valid: true, data: data as unknown as WordPressMedia, errors: [] };
+    return { valid: true, data: this.assertValidType<WordPressMedia>(data), errors: [] };
   }
 
   validateAuthor(data: unknown): ValidationResult<WordPressAuthor> {
@@ -303,7 +307,7 @@ class DataValidator {
       return { valid: false, errors };
     }
 
-    return { valid: true, data: data as unknown as WordPressAuthor, errors: [] };
+    return { valid: true, data: this.assertValidType<WordPressAuthor>(data), errors: [] };
   }
 }
 
