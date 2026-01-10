@@ -280,18 +280,13 @@ class CacheManager {
       this.clearAll();
     }
   }
-
-  async warmAll() {
-    const { cacheWarmer } = await import('./services/cacheWarmer');
-    return cacheWarmer.warmAll();
-  }
 }
 
 // Global cache instance
 export const cacheManager = new CacheManager();
 
 // Convenience exports for cache management
-export const { getStats: getCacheStats, clear: clearCache, warmAll: warmCache } = cacheManager;
+export const { getStats: getCacheStats, clear: clearCache } = cacheManager;
 
 // Cache TTL constants (in milliseconds)
 export const CACHE_TTL = {

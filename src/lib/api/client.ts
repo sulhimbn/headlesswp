@@ -18,7 +18,7 @@ import { CircuitBreaker, CircuitState } from './circuitBreaker'
 import { RetryStrategy } from './retryStrategy'
 import { RateLimiterManager } from './rateLimiter'
 import { createApiError, ApiError, shouldTriggerCircuitBreaker } from './errors'
-import { checkApiHealth, checkApiHealthRetry, getLastHealthCheck } from './healthCheck'
+import { HealthChecker, HealthCheckResult } from './healthCheck'
 import { logger } from '@/lib/utils/logger'
 
 function getApiUrl(path: string): string {
@@ -47,6 +47,9 @@ const rateLimiterManager = new RateLimiterManager({
   windowMs: RATE_LIMIT_WINDOW_MS,
 })
 
+// Placeholder for health checker functions - will be set after apiClient is created
+let checkApiHealthFn: (() => Promise<HealthCheckResult | null>) | null = null;
+
 const createApiClient = (): AxiosInstance => {
   const api = axios.create({
     baseURL: WORDPRESS_API_BASE_URL,
@@ -73,8 +76,8 @@ const createApiClient = (): AxiosInstance => {
       if (circuitBreakerState === CircuitState.HALF_OPEN) {
         logger.warn('Circuit in HALF_OPEN state, performing health check...', undefined, { module: 'APIClient' })
 
-        const healthResult = await checkApiHealth()
-        if (!healthResult.healthy) {
+        const healthResult = await checkApiHealthFn?.()
+        if (healthResult && !healthResult.healthy) {
           logger.warn('Health check failed, preventing request', undefined, { module: 'APIClient' })
           const healthError = createApiError(
             new Error(`Health check failed: ${healthResult.message}. Service still recovering.`),
@@ -83,7 +86,9 @@ const createApiClient = (): AxiosInstance => {
           return Promise.reject(healthError)
         }
 
-        logger.warn(`Health check passed (${healthResult.latency}ms), allowing request`, undefined, { module: 'APIClient' })
+        if (healthResult) {
+          logger.warn(`Health check passed (${healthResult.latency}ms), allowing request`, undefined, { module: 'APIClient' })
+        }
       }
 
       return config
@@ -147,5 +152,28 @@ const createApiClient = (): AxiosInstance => {
 
 export const apiClient = createApiClient()
 
-export { getApiUrl, circuitBreaker, retryStrategy, rateLimiterManager, checkApiHealth, checkApiHealthRetry, getLastHealthCheck }
+// Create health checker instance with apiClient injected (Dependency Injection)
+const healthChecker = new HealthChecker(apiClient)
+
+// Set health check function for circuit breaker interceptor
+checkApiHealthFn = () => healthChecker.check()
+
+// Export health checker functions
+export async function checkApiHealth() {
+  return healthChecker.check()
+}
+
+export async function checkApiHealthWithTimeout(timeout: number = API_TIMEOUT) {
+  return healthChecker.checkWithTimeout(timeout)
+}
+
+export async function checkApiHealthRetry(maxAttempts: number = MAX_RETRIES, delayMs: number = RETRY_INITIAL_DELAY) {
+  return healthChecker.checkRetry(maxAttempts, delayMs)
+}
+
+export function getLastHealthCheck() {
+  return healthChecker.getLastCheck()
+}
+
+export { getApiUrl, circuitBreaker, retryStrategy, rateLimiterManager, healthChecker }
 export type { ApiError }

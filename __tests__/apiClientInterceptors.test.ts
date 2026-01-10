@@ -1,14 +1,21 @@
 import axios, { AxiosError } from 'axios'
-import { getApiUrl } from '@/lib/api/client'
 import { CircuitBreaker, CircuitState } from '@/lib/api/circuitBreaker'
 import { createApiError, shouldTriggerCircuitBreaker, ApiErrorType } from '@/lib/api/errors'
 import { RateLimiterManager } from '@/lib/api/rateLimiter'
 import { RetryStrategy } from '@/lib/api/retryStrategy'
-import { checkApiHealth } from '@/lib/api/healthCheck'
 import { logger } from '@/lib/utils/logger'
 
-jest.mock('@/lib/api/healthCheck')
+jest.mock('@/lib/api/client', () => {
+  const original = jest.requireActual('@/lib/api/client')
+  return {
+    ...original,
+    checkApiHealth: jest.fn(),
+  }
+})
 jest.mock('@/lib/utils/logger')
+
+// Import from mocked module
+import { checkApiHealth, getApiUrl } from '@/lib/api/client'
 
 describe('API Client Components', () => {
   let mockedCheckApiHealth: jest.MockedFunction<typeof checkApiHealth>

@@ -1,6 +1,6 @@
 # Architecture Blueprint
 
-**Version**: 1.4.0
+**Version**: 1.4.1
 **Last Updated**: 2026-01-10
 
 ## System Architecture
@@ -577,11 +577,55 @@ interface ApiListResult<T> extends ApiResult<T[]> {
   - Includes enriched types (PostWithMediaUrl, PostWithDetails, PaginatedPostsResult)
 
 **Benefits**:
-1. **Dependency Inversion**: High-level modules depend on abstractions (interfaces) not concretions
+1. **Dependency Inversion**: High-level modules depend on abstractions (interfaces), not low-level modules (API layer)
 2. **Testability**: Easy to mock interfaces for unit testing
 3. **Type Safety**: Explicit contracts documented in TypeScript interfaces
-4. **Maintainability**: Clear separation between interface and implementation
+4. **Maintainability**: Clear boundaries between API and service layers
 5. **Extensibility**: New implementations can be swapped without changing consumers
+
+### Dependency Management (ARCH-DEP-001)
+
+**Principle**: Apply Dependency Injection to break circular dependencies and improve modularity.
+
+**Circular Dependency Cleanup**:
+- **Before**: `client.ts` imported `checkApiHealth` from `healthCheck.ts`, which imported `apiClient` from `client.ts` (circular)
+- **After**: `HealthChecker` accepts HTTP client via constructor parameter (Dependency Injection)
+- **Implementation**:
+  - `client.ts` creates `healthChecker` instance after `apiClient` is created
+  - `client.ts` exports health check functions: `checkApiHealth()`, `checkApiHealthWithTimeout()`, `checkApiHealthRetry()`, `getLastHealthCheck()`
+  - `healthCheck.ts` no longer imports `apiClient` directly, accepts `HttpClient` interface
+
+**Dependency Injection Applied**:
+```typescript
+// HealthChecker accepts HTTP client via constructor (Dependency Injection)
+export class HealthChecker {
+  private httpClient: HttpClient;
+
+  constructor(httpClient: HttpClient) {
+    this.httpClient = httpClient;
+  }
+}
+
+// client.ts creates healthChecker with apiClient injected
+const healthChecker = new HealthChecker(apiClient)
+export async function checkApiHealth() {
+  return healthChecker.check()
+}
+```
+
+**Benefits**:
+1. **Circular Dependency Eliminated**: Zero circular dependencies in codebase
+2. **Testability**: Easy to mock HTTP client for health check tests
+3. **Loose Coupling**: `healthCheck.ts` no longer depends on concrete `apiClient` implementation
+4. **Flexibility**: Can inject different HTTP clients (for testing, mocking, or alternative implementations)
+5. **SOLID Compliance**: Dependency Inversion Principle (DIP) applied
+
+**Cache Module Cleanup**:
+- **Removed**: `warmAll()` method from `cache.ts` that created circular dependency with `cacheWarmer.ts`
+- **Result**: Cache manager now has single responsibility (cache storage only)
+- **Orchestration**: Cache warming moved to `cacheWarmer.ts` as separate service
+
+**See Also**: [Task ARCH-DEP-001: Dependency Cleanup](./task.md#arch-dep-001)
 
 ### Data Integrity
 - Validation ensures data structure matches expected schema
