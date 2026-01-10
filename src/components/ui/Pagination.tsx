@@ -48,7 +48,7 @@ const Pagination = memo(function Pagination({ currentPage, totalPages, basePath 
       {currentPage > 1 && (
         <Link
           href={`${basePath}?page=${currentPage - 1}`}
-          className="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-red-600 focus:ring-offset-2"
+          className="px-3 py-2 text-sm font-medium text-[hsl(var(--color-text-secondary))] bg-[hsl(var(--color-surface))] border border-[hsl(var(--color-border))] rounded-[var(--radius-md)] hover:bg-[hsl(var(--color-secondary-dark))] transition-colors duration-[var(--transition-fast)] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--color-primary))] focus:ring-offset-2"
           aria-label="Previous page"
         >
           ← Sebelumnya
@@ -57,17 +57,17 @@ const Pagination = memo(function Pagination({ currentPage, totalPages, basePath 
 
       {pageNumbers.map((page, index) => (
         page === '...' ? (
-          <span key={index} className="px-3 py-2 text-sm text-gray-700">
+          <span key={index} className="px-3 py-2 text-sm text-[hsl(var(--color-text-secondary))]">
             ...
           </span>
         ) : (
           <Link
             key={page}
             href={`${basePath}?page=${page}`}
-            className={`px-3 py-2 text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-red-600 focus:ring-offset-2 ${
+            className={`px-3 py-2 text-sm font-medium rounded-[var(--radius-md)] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--color-primary))] focus:ring-offset-2 transition-colors duration-[var(--transition-fast)] ${
               currentPage === page
-                ? 'bg-red-600 text-white'
-                : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                ? 'bg-[hsl(var(--color-primary))] text-white'
+                : 'bg-[hsl(var(--color-surface))] text-[hsl(var(--color-text-secondary))] border border-[hsl(var(--color-border))] hover:bg-[hsl(var(--color-secondary-dark))]'
             }`}
             aria-label={`Page ${page}`}
             aria-current={currentPage === page ? 'page' : undefined}
@@ -80,7 +80,7 @@ const Pagination = memo(function Pagination({ currentPage, totalPages, basePath 
       {currentPage < totalPages && (
         <Link
           href={`${basePath}?page=${currentPage + 1}`}
-          className="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-red-600 focus:ring-offset-2"
+          className="px-3 py-2 text-sm font-medium text-[hsl(var(--color-text-secondary))] bg-[hsl(var(--color-surface))] border border-[hsl(var(--color-border))] rounded-[var(--radius-md)] hover:bg-[hsl(var(--color-secondary-dark))] transition-colors duration-[var(--transition-fast)] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--color-primary))] focus:ring-offset-2"
           aria-label="Next page"
         >
           Selanjutnya →

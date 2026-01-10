@@ -14,7 +14,7 @@ interface PostCardProps {
 
 const PostCard = memo(function PostCard({ post, mediaUrl, priority = false }: PostCardProps) {
   return (
-    <article className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-all duration-300 focus-within:ring-2 focus-within:ring-red-600 focus-within:ring-offset-2">
+    <article className="bg-[hsl(var(--color-surface))] rounded-[var(--radius-lg)] shadow-[var(--shadow-md)] overflow-hidden hover:shadow-[var(--shadow-lg)] transition-all duration-[var(--transition-normal)] focus-within:ring-2 focus-within:ring-[hsl(var(--color-primary))] focus-within:ring-offset-2">
       {post.featured_media > 0 && (
         <Link href={`/berita/${post.slug}`} className="relative block h-48 sm:h-56 md:h-48 focus:outline-none" aria-label={UI_TEXT.postCard.readArticle(post.title.rendered)}>
           <Image
@@ -31,19 +31,19 @@ const PostCard = memo(function PostCard({ post, mediaUrl, priority = false }: Po
       )}
       <div className="p-4 sm:p-5 md:p-4">
         <h3 className="text-lg sm:text-xl md:text-lg font-semibold mb-2">
-          <Link 
-            href={`/berita/${post.slug}`} 
-            className="text-gray-900 hover:text-red-600 transition-colors focus:outline-none focus:ring-2 focus:ring-red-600 focus:ring-offset-2 rounded"
+          <Link
+            href={`/berita/${post.slug}`}
+            className="text-[hsl(var(--color-text-primary))] hover:text-[hsl(var(--color-primary))] transition-colors duration-[var(--transition-fast)] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--color-primary))] focus:ring-offset-2 rounded-[var(--radius-sm)]"
           >
             {post.title.rendered}
           </Link>
         </h3>
         <div
-          className="text-sm sm:text-base text-gray-600 mb-3 line-clamp-3"
+          className="text-sm sm:text-base text-[hsl(var(--color-text-secondary))] mb-3 line-clamp-3"
           dangerouslySetInnerHTML={{ __html: sanitizeHTML(post.excerpt.rendered, 'excerpt') }}
           aria-hidden="true"
         />
-         <div className="text-xs sm:text-sm text-gray-500">
+         <div className="text-xs sm:text-sm text-[hsl(var(--color-text-muted))]">
           <time dateTime={post.date}>
             {formatDate(post.date, 'full')}
           </time>

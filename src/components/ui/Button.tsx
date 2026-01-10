@@ -11,10 +11,10 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const variantStyles: Record<ButtonVariant, string> = {
-  primary: 'bg-red-600 text-white hover:bg-red-700',
-  secondary: 'bg-gray-200 text-gray-800 hover:bg-gray-300',
-  outline: 'border-2 border-red-600 text-red-600 hover:bg-red-50',
-  ghost: 'text-gray-700 hover:text-red-600 hover:bg-gray-100',
+  primary: 'bg-[hsl(var(--color-primary))] text-white hover:bg-[hsl(var(--color-primary-dark))] shadow-md',
+  secondary: 'bg-[hsl(var(--color-secondary-dark))] text-gray-800 hover:bg-gray-300',
+  outline: 'border-2 border-[hsl(var(--color-primary))] text-[hsl(var(--color-primary))] hover:bg-[hsl(var(--color-primary-light))]',
+  ghost: 'text-gray-700 hover:text-[hsl(var(--color-primary))] hover:bg-[hsl(var(--color-secondary-dark))]',
 }
 
 const sizeStyles: Record<ButtonSize, string> = {
@@ -23,7 +23,7 @@ const sizeStyles: Record<ButtonSize, string> = {
   lg: 'px-6 py-3 text-lg',
 }
 
-const baseStyles = 'font-medium rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-red-600 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed'
+const baseStyles = 'font-medium rounded-[var(--radius-md)] transition-all duration-[var(--transition-normal)] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--color-primary))] focus:ring-offset-2 focus:shadow-md disabled:opacity-50 disabled:cursor-not-allowed'
 
 const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   (

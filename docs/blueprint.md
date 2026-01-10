@@ -1,6 +1,6 @@
 # Architecture Blueprint
 
-**Version**: 1.3.1
+**Version**: 1.3.2
 **Last Updated**: 2026-01-10
 
 ## System Architecture
@@ -37,6 +37,153 @@
 - **Testing**: Jest 30 + React Testing Library 16
 - **Linting**: ESLint 8 with Next.js config
 - **Version Control**: Git
+
+## Design System
+
+### Design Tokens
+
+Design tokens are CSS variables defined in `src/app/globals.css` that provide a single source of truth for visual design. All components should use design tokens instead of hardcoded Tailwind values.
+
+**Why Design Tokens?**
+- **Consistency**: Ensures visual consistency across all components
+- **Maintainability**: Change colors, spacing, typography in one place
+- **Theming**: Enables easy theme switching for dark mode or custom themes
+- **Scalability**: Centralized design system that grows with the application
+
+### Available Tokens
+
+**Colors** (HSL values for CSS):
+```css
+--color-primary: 0 84% 40%;              /* Red-600 equivalent */
+--color-primary-dark: 0 86% 38%;           /* Red-700 equivalent */
+--color-primary-light: 0 96% 95%;           /* Red-50 equivalent */
+--color-secondary: 220 10% 96%;             /* Gray-100 equivalent */
+--color-secondary-dark: 220 12% 90%;         /* Gray-200 equivalent */
+--color-text-primary: 220 13% 13%;         /* Gray-900 equivalent */
+--color-text-secondary: 220 9% 46%;         /* Gray-600 equivalent */
+--color-text-muted: 220 9% 60%;            /* Gray-500 equivalent */
+--color-background: 220 13% 98%;           /* Gray-50 equivalent */
+--color-surface: 0 0% 100%;                /* White */
+--color-border: 220 13% 91%;              /* Gray-300 equivalent */
+```
+
+**Spacing**:
+```css
+--spacing-xs: 0.25rem;   /* 4px */
+--spacing-sm: 0.5rem;    /* 8px */
+--spacing-md: 1rem;       /* 16px */
+--spacing-lg: 1.5rem;     /* 24px */
+--spacing-xl: 2rem;       /* 32px */
+--spacing-2xl: 3rem;      /* 48px */
+--spacing-3xl: 4rem;      /* 64px */
+```
+
+**Typography**:
+```css
+--text-xs: 0.75rem;       /* 12px */
+--text-sm: 0.875rem;      /* 14px */
+--text-base: 1rem;         /* 16px */
+--text-lg: 1.125rem;      /* 18px */
+--text-xl: 1.25rem;       /* 20px */
+--text-2xl: 1.5rem;      /* 24px */
+--text-3xl: 1.875rem;     /* 30px */
+```
+
+**Border Radius**:
+```css
+--radius-sm: 0.25rem;     /* 4px */
+--radius-md: 0.375rem;     /* 6px */
+--radius-lg: 0.5rem;       /* 8px */
+--radius-xl: 0.75rem;      /* 12px */
+```
+
+**Shadows**:
+```css
+--shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+--shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+--shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+--shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1);
+```
+
+**Transitions**:
+```css
+--transition-fast: 150ms;
+--transition-normal: 300ms;
+--transition-slow: 500ms;
+```
+
+### Usage Guidelines
+
+**Using Design Tokens in Components**:
+```tsx
+import { forwardRef } from 'react'
+
+const Button = forwardRef<HTMLButtonElement, ButtonProps>(({ children, ...props }, ref) => (
+  <button
+    ref={ref}
+    className={`
+      bg-[hsl(var(--color-primary))]
+      text-white
+      rounded-[var(--radius-md)]
+      px-4
+      py-2
+      transition-all
+      duration-[var(--transition-normal)]
+      hover:bg-[hsl(var(--color-primary-dark))]
+      focus:ring-2
+      focus:ring-[hsl(var(--color-primary))]
+    `}
+    {...props}
+  >
+    {children}
+  </button>
+))
+```
+
+**Token Mapping for Common Patterns**:
+- `bg-white` → `bg-[hsl(var(--color-surface))]`
+- `bg-gray-50` → `bg-[hsl(var(--color-background))]`
+- `bg-red-600` → `bg-[hsl(var(--color-primary))]`
+- `bg-red-700` → `bg-[hsl(var(--color-primary-dark))]`
+- `text-gray-900` → `text-[hsl(var(--color-text-primary))]`
+- `text-gray-600` → `text-[hsl(var(--color-text-secondary))]`
+- `text-gray-500` → `text-[hsl(var(--color-text-muted))]`
+- `text-red-600` → `text-[hsl(var(--color-primary))]`
+- `rounded-md` → `rounded-[var(--radius-md)]`
+- `rounded-lg` → `rounded-[var(--radius-lg)]`
+- `shadow-md` → `shadow-[var(--shadow-md)]`
+- `shadow-lg` → `shadow-[var(--shadow-lg)]`
+- `transition-colors` → `transition-all duration-[var(--transition-normal)]` (or `--transition-fast` for micro-interactions)
+
+### Accessibility Features
+
+**Skip-to-Content Link**:
+- Implemented in `src/app/layout.tsx`
+- Allows keyboard users to skip navigation
+- Hidden by default, visible on focus
+- Located at top of page
+
+**Focus Indicators**:
+- Global focus styles defined in `src/app/globals.css`
+- `*:focus-visible` uses `ring-2 ring-[hsl(var(--color-primary))]`
+- All interactive elements have visible focus states
+
+**Semantic HTML**:
+- Use appropriate HTML elements: `<header>`, `<nav>`, `<main>`, `<article>`, `<footer>`
+- ARIA attributes for screen readers
+- Keyboard navigation support (Tab, Escape, arrow keys)
+
+### Responsive Design
+
+**Breakpoints**:
+- Mobile: < 640px (`sm:` prefix)
+- Tablet: 640px - 1024px (`md:` prefix)
+- Desktop: >= 1024px (`lg:` prefix)
+
+**Component Patterns**:
+- Mobile-first approach
+- Progressive enhancement
+- Touch-friendly tap targets (minimum 44x44px)
 
 ## Design Principles
 

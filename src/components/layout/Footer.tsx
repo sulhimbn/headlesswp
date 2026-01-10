@@ -31,18 +31,18 @@ export default memo(function Footer() {
           <section aria-labelledby="footer-nav-heading">
             <h2 id="footer-nav-heading" className="text-lg font-semibold mb-4">{UI_TEXT.footer.navigation}</h2>
             <nav aria-label="Navigasi Footer">
-              <ul className="space-y-2">
-                {footerLinks.map((link) => (
-                  <li key={link.href}>
-                    <Link
-                      href={link.href}
-                      className="text-gray-300 hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-red-600 focus:ring-offset-2 rounded focus:text-white"
-                    >
-                      {link.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
+                <ul className="space-y-2">
+                  {footerLinks.map((link) => (
+                    <li key={link.href}>
+                      <Link
+                        href={link.href}
+                        className="text-gray-300 hover:text-white transition-colors duration-[var(--transition-fast)] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--color-primary))] focus:ring-offset-2 rounded-[var(--radius-sm)] focus:text-white"
+                      >
+                        {link.label}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
             </nav>
           </section>
 
@@ -62,21 +62,21 @@ export default memo(function Footer() {
             <div className="flex space-x-4">
               <a
                 href="/"
-                className="text-gray-400 hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-red-600 focus:ring-offset-2 rounded"
+                className="text-gray-400 hover:text-white transition-colors duration-[var(--transition-fast)] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--color-primary))] focus:ring-offset-2 rounded-[var(--radius-sm)]"
                 aria-label="Facebook"
               >
                 <Icon type="facebook" className="h-5 w-5" />
               </a>
               <a
                 href="/"
-                className="text-gray-400 hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-red-600 focus:ring-offset-2 rounded"
+                className="text-gray-400 hover:text-white transition-colors duration-[var(--transition-fast)] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--color-primary))] focus:ring-offset-2 rounded-[var(--radius-sm)]"
                 aria-label="Twitter"
               >
                 <Icon type="twitter" className="h-5 w-5" />
               </a>
               <a
                 href="/"
-                className="text-gray-400 hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-red-600 focus:ring-offset-2 rounded"
+                className="text-gray-400 hover:text-white transition-colors duration-[var(--transition-fast)] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--color-primary))] focus:ring-offset-2 rounded-[var(--radius-sm)]"
                 aria-label="Instagram"
               >
                 <Icon type="instagram" className="h-5 w-5" />

@@ -6,13 +6,13 @@ interface SectionHeadingProps {
 }
 
 const sizeStyles = {
-  lg: 'text-3xl font-bold',
-  md: 'text-2xl font-semibold',
-  sm: 'text-xl font-semibold'
+  lg: 'text-[var(--text-3xl)] font-bold',
+  md: 'text-[var(--text-2xl)] font-semibold',
+  sm: 'text-[var(--text-xl)] font-semibold'
 }
 
 export default function SectionHeading({ level = 'h2', size = 'lg', children, className = '' }: SectionHeadingProps) {
-  const baseClassName = `text-gray-900 ${sizeStyles[size]} ${className}`.trim()
+  const baseClassName = `text-[hsl(var(--color-text-primary))] ${sizeStyles[size]} ${className}`.trim()
 
   const HeadingTag = level
 

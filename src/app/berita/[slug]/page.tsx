@@ -35,12 +35,12 @@ export default async function PostPage({ params }: { params: { slug: string } })
   ]
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[hsl(var(--color-background))]">
       <Header />
 
 <main id="main-content" className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Breadcrumb items={breadcrumbItems} />
-        <article className="bg-white rounded-lg shadow-lg overflow-hidden mt-4">
+        <article className="bg-[hsl(var(--color-surface))] rounded-[var(--radius-lg)] shadow-[var(--shadow-lg)] overflow-hidden mt-4">
           {post.featured_media > 0 && (
             <div className="relative h-64 sm:h-80 md:h-96 lg:h-[450px]">
               <Image
@@ -69,18 +69,18 @@ export default async function PostPage({ params }: { params: { slug: string } })
               )}
             </div>
 
-            <h1 className="text-4xl font-bold text-gray-900 mb-6">
+            <h1 className="text-4xl font-bold text-[hsl(var(--color-text-primary))] mb-6">
               {post.title.rendered}
             </h1>
 
 <div
-  className="prose prose-lg max-w-none text-gray-700"
+  className="prose prose-lg max-w-none text-[hsl(var(--color-text-secondary))]"
   dangerouslySetInnerHTML={{ __html: sanitizeHTML(post.content.rendered, 'full') }}
  />
 
             {tagsDetails.length > 0 && (
-              <div className="mt-8 pt-6 border-t">
-                <h3 className="text-sm font-semibold text-gray-500 mb-3">{UI_TEXT.postDetail.tags}</h3>
+              <div className="mt-8 pt-6 border-t border-[hsl(var(--color-border))]">
+                <h3 className="text-sm font-semibold text-[hsl(var(--color-text-muted))] mb-3">{UI_TEXT.postDetail.tags}</h3>
                 <div className="flex flex-wrap gap-2">
                   {tagsDetails.map((tag) => (
                     <Badge key={tag.id} variant="tag">
@@ -94,9 +94,9 @@ export default async function PostPage({ params }: { params: { slug: string } })
         </article>
 
         <div className="mt-8">
-          <Link 
-            href="/" 
-            className="inline-flex items-center text-red-600 hover:text-red-700 focus:outline-none focus:ring-2 focus:ring-red-600 focus:ring-offset-2 rounded px-3 py-2 transition-colors font-medium"
+          <Link
+            href="/"
+            className="inline-flex items-center text-[hsl(var(--color-primary))] hover:text-[hsl(var(--color-primary-dark))] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--color-primary))] focus:ring-offset-2 rounded-[var(--radius-sm)] px-3 py-2 transition-colors duration-[var(--transition-fast)] font-medium"
           >
             ← {UI_TEXT.postDetail.backToHome}
           </Link>
