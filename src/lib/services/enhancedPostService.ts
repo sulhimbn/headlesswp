@@ -56,7 +56,14 @@ async function getTagsMap(): Promise<Map<number, WordPressTag>> {
 
 async function enrichPostsWithMediaUrls(posts: WordPressPost[]): Promise<PostWithMediaUrl[]> {
   const mediaIds = [...new Set(posts.map(post => post.featured_media).filter(id => id > 0))];
-  const mediaUrls = await wordpressAPI.getMediaUrlsBatch(mediaIds);
+  let mediaUrls: Map<number, string | null>;
+
+  try {
+    mediaUrls = await wordpressAPI.getMediaUrlsBatch(mediaIds);
+  } catch (error) {
+    logger.warn('Failed to fetch media URLs, using fallbacks', error, { module: 'enhancedPostService' });
+    mediaUrls = new Map();
+  }
 
   return posts.map(post => ({
     ...post,
@@ -65,8 +72,16 @@ async function enrichPostsWithMediaUrls(posts: WordPressPost[]): Promise<PostWit
 }
 
 async function enrichPostWithDetails(post: WordPressPost): Promise<PostWithDetails> {
-  const [mediaUrl, categoriesMap, tagsMap] = await Promise.all([
-    wordpressAPI.getMediaUrl(post.featured_media),
+  let mediaUrl: string | null;
+
+  try {
+    mediaUrl = await wordpressAPI.getMediaUrl(post.featured_media);
+  } catch (error) {
+    logger.warn(`Failed to fetch media for post ${post.id}, using fallback`, error, { module: 'enhancedPostService' });
+    mediaUrl = null;
+  }
+
+  const [categoriesMap, tagsMap] = await Promise.all([
     getCategoriesMap(),
     getTagsMap()
   ]);

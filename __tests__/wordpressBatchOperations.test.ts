@@ -231,18 +231,11 @@ describe('WordPress API - Batch Operations and Caching', () => {
       expect(cacheManager.set).toHaveBeenCalledWith('media_1', mockMedia[0], expect.any(Number))
     })
 
-    it('handles API errors gracefully and returns empty result', async () => {
+    it('propagates API errors to caller', async () => {
       ;(cacheManager.get as jest.Mock).mockReturnValue(null)
       ;(apiClient.get as jest.Mock).mockRejectedValue(new Error('Network error'))
 
-      const result = await wordpressAPI.getMediaBatch([1, 2, 3])
-
-      expect(result.size).toBe(0)
-      expect(logger.warn).toHaveBeenCalledWith(
-        'Failed to fetch media batch',
-        expect.any(Error),
-        { module: 'wordpressAPI' }
-      )
+      await expect(wordpressAPI.getMediaBatch([1, 2, 3])).rejects.toThrow('Network error')
     })
 
     it('supports optional signal parameter', async () => {
@@ -325,18 +318,11 @@ describe('WordPress API - Batch Operations and Caching', () => {
       expect(cacheManager.set).not.toHaveBeenCalled()
     })
 
-    it('handles API errors and returns null', async () => {
+    it('propagates API errors to caller', async () => {
       ;(cacheManager.get as jest.Mock).mockReturnValue(null)
       ;(apiClient.get as jest.Mock).mockRejectedValue(new Error('Media not found'))
 
-      const result = await wordpressAPI.getMediaUrl(1)
-
-      expect(result).toBeNull()
-      expect(logger.warn).toHaveBeenCalledWith(
-        'Failed to fetch media 1',
-        expect.any(Error),
-        { module: 'wordpressAPI' }
-      )
+      await expect(wordpressAPI.getMediaUrl(1)).rejects.toThrow('Media not found')
     })
 
     it('supports optional signal parameter', async () => {

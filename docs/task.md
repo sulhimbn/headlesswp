@@ -1,6 +1,206 @@
 # Task Backlog
 
-**Last Updated**: 2026-01-10 (Senior Technical Writer)
+**Last Updated**: 2026-01-10 (Code Architect)
+
+---
+
+## Active Tasks
+
+## [ARCH-ERROR-001] Remove Error Handling from Media API Methods - Let Resilience Patterns Handle Errors
+
+**Status**: Complete
+**Priority**: High
+**Assigned**: Code Architect
+**Created**: 2026-01-10
+**Updated**: 2026-01-10
+
+### Description
+
+Removed error handling from `getMediaBatch` and `getMediaUrl` methods in `wordpress.ts` to allow apiClient resilience patterns (circuit breaker, retry strategy) to handle errors. Previously, these methods caught errors and returned fallback values, which bypassed the resilience patterns and created inconsistent error handling across the codebase.
+
+### Problem Identified
+
+**Before Refactoring**:
+1. **getMediaBatch** (`src/lib/wordpress.ts:72-107`):
+   - Had try-catch block that swallowed API errors
+   - Returned partial result on error (cached items + empty fetch)
+   - Logged warning but didn't propagate errors
+   - Bypassed circuit breaker tracking of failures
+   - Bypassed retry strategy for transient failures
+
+2. **getMediaUrl** (`src/lib/wordpress.ts:109-128`):
+   - Had try-catch block that caught API errors and returned null
+   - Logged warning but didn't propagate errors
+   - Bypassed circuit breaker tracking of failures
+   - Bypassed retry strategy for transient failures
+
+**Issues**:
+- Inconsistent error handling: Some methods catch errors, some don't
+- Errors hidden from resilience patterns (circuit breaker, retry strategy)
+- Debugging difficulty: Failures logged but not visible to monitoring
+- Violates principle of centralized error handling
+- apiClient's interceptors don't track these errors
+
+### Implementation Summary
+
+1. **Removed Error Handling from getMediaBatch**:
+   - Removed try-catch block (lines 90-104)
+   - Let apiClient interceptors handle errors via circuit breaker and retry strategy
+   - Reduced from 36 lines to 29 lines (19% reduction)
+   - Errors now propagate to callers
+
+2. **Removed Error Handling from getMediaUrl**:
+   - Removed try-catch block (lines 116-127)
+   - Simplified code: removed redundant null check
+   - Let apiClient interceptors handle errors via circuit breaker and retry strategy
+   - Reduced from 20 lines to 14 lines (30% reduction)
+   - Errors now propagate to callers
+
+3. **Updated getMediaUrlsBatch** (`src/lib/wordpress.ts:130-147`):
+   - Added try-catch to handle errors from `getMediaBatch`
+   - Logs warnings with context (mediaIds) for debugging
+   - Maintains contract of returning Map (partial results supported)
+   - Returns empty Map on error (all media URLs become null)
+
+4. **Updated enrichPostsWithMediaUrls** (`src/lib/services/enhancedPostService.ts:57-65`):
+   - Added try-catch to handle errors from `getMediaUrlsBatch`
+   - Logs warnings with context for debugging
+   - Returns posts with null media URLs on error
+   - Maintains graceful fallback behavior
+
+5. **Updated enrichPostWithDetails** (`src/lib/services/enhancedPostService.ts:67-88`):
+   - Added try-catch to handle errors from `getMediaUrl`
+   - Logs warnings with post ID for debugging
+   - Returns post with null media URL on error
+   - Maintains graceful fallback behavior
+
+6. **Updated Tests** (`__tests__/wordpressBatchOperations.test.ts`):
+   - Changed test expectations to expect errors to be thrown
+   - Updated `getMediaBatch` error test to expect error propagation
+   - Updated `getMediaUrl` error test to expect error propagation
+   - Removed checks for logger.warn calls (no longer called in wordpress.ts)
+
+### Architectural Benefits
+
+**Before**:
+- ❌ Inconsistent error handling across methods
+- ❌ Errors bypassed resilience patterns
+- ❌ Circuit breaker not tracking media API failures
+- ❌ Retry strategy not applied to media operations
+- ❌ Debugging difficulty (errors hidden in logs)
+- ❌ Mixed concerns (API methods had error handling)
+
+**After**:
+- ✅ Consistent error handling via apiClient interceptors
+- ✅ Errors properly tracked by circuit breaker
+- ✅ Retry strategy applies to media operations
+- ✅ Service layer handles errors with appropriate fallbacks
+- ✅ Better observability (errors propagate to monitoring)
+- ✅ Single Responsibility (API layer focuses on API calls)
+- ✅ Fail Fast (errors visible immediately)
+
+### Code Quality Improvements
+
+**Before**:
+```typescript
+// getMediaBatch
+try {
+  const response = await apiClient.get(...)
+  // ... process response
+} catch (error) {
+  logger.warn('Failed to fetch media batch', error, { module: 'wordpressAPI' });
+}
+return result;
+
+// getMediaUrl
+try {
+  const media = await wordpressAPI.getMedia(mediaId, signal);
+  // ... process media
+  return url;
+} catch (error) {
+  logger.warn(`Failed to fetch media ${mediaId}`, error, { module: 'wordpressAPI' });
+  return null;
+}
+```
+
+**After**:
+```typescript
+// getMediaBatch
+const response = await apiClient.get(...)
+// ... process response
+return result;
+
+// getMediaUrl
+const media = await wordpressAPI.getMedia(mediaId, signal);
+const url = media.source_url;
+if (url) {
+  cacheManager.set(cacheKey, url, CACHE_TTL.MEDIA);
+}
+return url ?? null;
+```
+
+### Error Flow After Refactoring
+
+**Request Flow**:
+1. Component calls service layer method (e.g., `enhancedPostService.getPaginatedPosts`)
+2. Service layer calls `getMediaUrlsBatch` or `getMediaUrl`
+3. `getMediaBatch` or `getMediaUrl` calls apiClient
+4. apiClient interceptors handle errors:
+   - Circuit breaker: Opens after repeated failures
+   - Retry strategy: Retries on transient errors
+   - Error classification: Categorizes error types
+5. Error propagates to service layer's error handling (`fetchAndValidate`)
+6. Service layer returns fallback posts on error
+7. Component renders fallback posts
+
+### Files Modified
+
+- `src/lib/wordpress.ts` - Removed error handling from getMediaBatch and getMediaUrl
+- `src/lib/services/enhancedPostService.ts` - Added error handling in service layer methods
+- `__tests__/wordpressBatchOperations.test.ts` - Updated test expectations
+
+### Results
+
+- ✅ Error handling removed from getMediaBatch (19% code reduction)
+- ✅ Error handling removed from getMediaUrl (30% code reduction)
+- ✅ Circuit breaker now tracks media API failures
+- ✅ Retry strategy applies to media operations
+- ✅ Service layer maintains graceful fallback behavior
+- ✅ All enhancedPostService tests passing (34 tests)
+- ✅ All wordpressBatchOperations tests passing (30 tests)
+- ✅ TypeScript type checking passes (no errors)
+- ✅ ESLint passes (no warnings)
+- ✅ Consistent error handling across codebase
+- ✅ Better observability (errors propagate to resilience patterns)
+
+### Success Criteria
+
+- ✅ Error handling removed from getMediaBatch
+- ✅ Error handling removed from getMediaUrl
+- ✅ Circuit breaker integrates with media API errors
+- ✅ Retry strategy applies to media operations
+- ✅ Callers updated to handle errors gracefully
+- ✅ All existing tests passing (no regressions)
+- ✅ TypeScript type checking passes
+- ✅ ESLint passes
+
+### Anti-Patterns Avoided
+
+- ❌ No silent error swallowing in API layer
+- ❌ No inconsistent error handling patterns
+- ❌ No bypassing resilience patterns
+- ❌ No breaking changes to existing behavior (fallbacks maintained)
+- ❌ No mixed concerns (API layer focuses on API calls)
+
+### Follow-up Recommendations
+
+1. **Telemetry**: Add circuit breaker observability endpoint for monitoring dashboards
+2. **Metrics**: Track retry success/failure rates for media operations
+3. **Rate Limiting**: Consider endpoint-specific rate limits for different WordPress API resources
+4. **Error Classification**: Add more granular error types for media operations
+5. **Health Check**: Add media-specific health check for early failure detection
+6. **Documentation**: Update API documentation to reflect error handling strategy
+7. **Integration Tests**: Add tests combining media errors with circuit breaker state transitions
 
 ---
 

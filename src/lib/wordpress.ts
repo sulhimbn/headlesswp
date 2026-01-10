@@ -87,20 +87,16 @@ export const wordpressAPI: IWordPressAPI = {
 
     if (idsToFetch.length === 0) return result;
 
-    try {
-      const response = await apiClient.get(getApiUrl('/wp/v2/media'), { 
-        params: { include: idsToFetch.join(',') },
-        signal 
-      });
-      
-      const mediaList: WordPressMedia[] = response.data;
-      
-      for (const media of mediaList) {
-        result.set(media.id, media);
-        cacheManager.set(CACHE_KEYS.media(media.id), media, CACHE_TTL.MEDIA);
-      }
-    } catch (error) {
-      logger.warn('Failed to fetch media batch', error, { module: 'wordpressAPI' });
+    const response = await apiClient.get(getApiUrl('/wp/v2/media'), { 
+      params: { include: idsToFetch.join(',') },
+      signal 
+    });
+    
+    const mediaList: WordPressMedia[] = response.data;
+    
+    for (const media of mediaList) {
+      result.set(media.id, media);
+      cacheManager.set(CACHE_KEYS.media(media.id), media, CACHE_TTL.MEDIA);
     }
 
     return result;
@@ -113,26 +109,25 @@ export const wordpressAPI: IWordPressAPI = {
     const cached = cacheManager.get<string>(cacheKey);
     if (cached) return cached;
 
-    try {
-      const media = await wordpressAPI.getMedia(mediaId, signal);
-      const url = media.source_url;
-      if (url) {
-        cacheManager.set(cacheKey, url, CACHE_TTL.MEDIA);
-        return url;
-      }
-      return null;
-    } catch (error) {
-      logger.warn(`Failed to fetch media ${mediaId}`, error, { module: 'wordpressAPI' });
-      return null;
+    const media = await wordpressAPI.getMedia(mediaId, signal);
+    const url = media.source_url;
+    if (url) {
+      cacheManager.set(cacheKey, url, CACHE_TTL.MEDIA);
     }
+    return url ?? null;
   },
 
   getMediaUrlsBatch: async (mediaIds: number[], signal?: AbortSignal): Promise<Map<number, string | null>> => {
     const urlMap = new Map<number, string | null>();
-    const mediaBatch = await wordpressAPI.getMediaBatch(mediaIds, signal);
 
-    for (const [id, media] of mediaBatch) {
-      urlMap.set(id, media.source_url);
+    try {
+      const mediaBatch = await wordpressAPI.getMediaBatch(mediaIds, signal);
+
+      for (const [id, media] of mediaBatch) {
+        urlMap.set(id, media.source_url);
+      }
+    } catch (error) {
+      logger.warn('Failed to fetch media batch for URLs', error, { module: 'wordpressAPI', mediaIds });
     }
 
     for (const id of mediaIds) {
