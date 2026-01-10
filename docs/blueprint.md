@@ -1182,10 +1182,19 @@ src/
   - Stage 3 (runner): Lightweight production runtime
 
 **Docker Compose Services**:
-- **wordpress**: WordPress CMS (port 8080)
-- **db**: MySQL 8.0 database
-- **phpmyadmin**: Database management UI (port 8081)
-- **frontend**: Next.js frontend (port 3000)
+- **wordpress**: WordPress CMS (port 8080) - 512M RAM, 1.0 CPU
+- **db**: MySQL 8.0 database - 1G RAM, 1.0 CPU
+- **phpmyadmin**: Database management UI (port 8081) - 256M RAM, 0.5 CPU
+- **frontend**: Next.js frontend (port 3000) - 1G RAM, 2.0 CPU
+
+**Resource Limits** (Added: 2026-01-10):
+- All containers have CPU and memory limits to prevent resource exhaustion
+- WordPress: 512MB memory limit, 1.0 CPU cores
+- MySQL: 1GB memory limit, 1.0 CPU cores
+- phpMyAdmin: 256MB memory limit, 0.5 CPU cores
+- Frontend: 1GB memory limit, 2.0 CPU cores
+- Prevents runaway containers from affecting host system
+- Ensures fair resource allocation across services
 
 **Health Checks**:
 - WordPress: HTTP health check on port 80

@@ -15,6 +15,8 @@ services:
       - db
     networks:
       - wp_network
+    mem_limit: 512m
+    cpus: '1.0'
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:80"]
       interval: 30s
@@ -32,6 +34,8 @@ services:
       - db_data:/var/lib/mysql
     networks:
       - wp_network
+    mem_limit: 1g
+    cpus: '1.0'
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}"]
       interval: 30s
@@ -50,6 +54,8 @@ services:
         condition: service_healthy
     networks:
       - wp_network
+    mem_limit: 256m
+    cpus: '0.5'
 
   frontend:
     build:
@@ -74,6 +80,8 @@ services:
         condition: service_healthy
     networks:
       - wp_network
+    mem_limit: 1g
+    cpus: '2.0'
     restart: unless-stopped
 
 volumes:
