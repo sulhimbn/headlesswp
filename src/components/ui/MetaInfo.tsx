@@ -1,3 +1,6 @@
+import { UI_TEXT } from '@/lib/constants/uiText'
+import { formatDate } from '@/lib/utils/dateFormat'
+
 interface MetaInfoProps {
   author?: string
   date: string
@@ -6,11 +9,8 @@ interface MetaInfoProps {
 }
 
 export default function MetaInfo({ author = 'By Admin', date, separator = '•', className = '' }: MetaInfoProps) {
-  const formattedDate = new Date(date).toLocaleDateString('id-ID', {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric'
-  })
+  const formattedDate = formatDate(date, 'full')
+  const defaultAuthor = `${UI_TEXT.metaInfo.by} Admin`
 
   return (
     <div className={`flex items-center space-x-4 text-sm text-gray-500 ${className}`}>

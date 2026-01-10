@@ -1,15 +1,16 @@
 import Link from 'next/link'
 import { memo } from 'react'
 import { Icon } from '@/components/ui/Icon'
+import { UI_TEXT } from '@/lib/constants/uiText'
 
 const currentYear = new Date().getFullYear()
 
 const footerLinks = [
-  { href: '/', label: 'Beranda' },
-  { href: '/berita', label: 'Berita' },
-  { href: '/berita', label: 'Politik' },
-  { href: '/berita', label: 'Ekonomi' },
-  { href: '/berita', label: 'Olahraga' },
+  { href: '/', label: UI_TEXT.footer.links.home },
+  { href: '/berita', label: UI_TEXT.footer.links.news },
+  { href: '/berita', label: UI_TEXT.footer.links.politics },
+  { href: '/berita', label: UI_TEXT.footer.links.economy },
+  { href: '/berita', label: UI_TEXT.footer.links.sports },
 ]
 
 export default memo(function Footer() {
@@ -20,15 +21,15 @@ export default memo(function Footer() {
           <section aria-labelledby="footer-about-heading">
             <h2 id="footer-about-heading" className="sr-only">Tentang Mitra Banten News</h2>
             <div className="mb-4">
-              <h3 className="text-xl font-bold mb-2">Mitra Banten News</h3>
+              <h3 className="text-xl font-bold mb-2">{UI_TEXT.footer.aboutTitle}</h3>
               <p className="text-gray-300 text-sm">
-                Menyajikan berita terkini dan terpercaya dari Banten dan sekitarnya.
+                {UI_TEXT.footer.aboutDescription}
               </p>
             </div>
           </section>
 
           <section aria-labelledby="footer-nav-heading">
-            <h2 id="footer-nav-heading" className="text-lg font-semibold mb-4">Navigasi</h2>
+            <h2 id="footer-nav-heading" className="text-lg font-semibold mb-4">{UI_TEXT.footer.navigation}</h2>
             <nav aria-label="Navigasi Footer">
               <ul className="space-y-2">
                 {footerLinks.map((link) => (
@@ -46,20 +47,18 @@ export default memo(function Footer() {
           </section>
 
           <section aria-labelledby="footer-contact-heading">
-            <h2 id="footer-contact-heading" className="text-lg font-semibold mb-4">Hubungi Kami</h2>
+            <h2 id="footer-contact-heading" className="text-lg font-semibold mb-4">{UI_TEXT.footer.contactTitle}</h2>
             <address className="not-italic text-gray-300 text-sm space-y-2">
-              <p>Email: info@mitrabantennews.com</p>
-              <p>Telepon: (0254) 123-4567</p>
-              <p>Alamat: Banten, Indonesia</p>
+              <p>{UI_TEXT.footer.email}</p>
+              <p>{UI_TEXT.footer.phone}</p>
+              <p>{UI_TEXT.footer.address}</p>
             </address>
           </section>
         </div>
 
         <div className="border-t border-gray-700 pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
-            <p className="text-sm text-gray-400 text-center md:text-left">
-              &copy; {currentYear} Mitra Banten News. All rights reserved.
-            </p>
+            <p className="text-sm text-gray-400 text-center md:text-left" dangerouslySetInnerHTML={{ __html: UI_TEXT.footer.copyright(currentYear) }} />
             <div className="flex space-x-4">
               <a
                 href="/"

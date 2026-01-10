@@ -3,6 +3,8 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { memo } from 'react'
 import { sanitizeHTML } from '@/lib/utils/sanitizeHTML'
+import { UI_TEXT } from '@/lib/constants/uiText'
+import { formatDate } from '@/lib/utils/dateFormat'
 
 interface PostCardProps {
   post: WordPressPost
@@ -11,12 +13,10 @@ interface PostCardProps {
 }
 
 const PostCard = memo(function PostCard({ post, mediaUrl, priority = false }: PostCardProps) {
-  const featuredImageAlt = `Gambar utama untuk artikel: ${post.title.rendered}`
-
   return (
     <article className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-all duration-300 focus-within:ring-2 focus-within:ring-red-600 focus-within:ring-offset-2">
       {post.featured_media > 0 && (
-        <Link href={`/berita/${post.slug}`} className="relative block h-48 sm:h-56 md:h-48 focus:outline-none" aria-label={`Baca artikel: ${post.title.rendered}`}>
+        <Link href={`/berita/${post.slug}`} className="relative block h-48 sm:h-56 md:h-48 focus:outline-none" aria-label={UI_TEXT.postCard.readArticle(post.title.rendered)}>
           <Image
             src={mediaUrl || '/placeholder-image.jpg'}
             alt={featuredImageAlt}
@@ -43,13 +43,9 @@ const PostCard = memo(function PostCard({ post, mediaUrl, priority = false }: Po
           dangerouslySetInnerHTML={{ __html: sanitizeHTML(post.excerpt.rendered, 'excerpt') }}
           aria-hidden="true"
         />
-        <div className="text-xs sm:text-sm text-gray-500">
+         <div className="text-xs sm:text-sm text-gray-500">
           <time dateTime={post.date}>
-            {new Date(post.date).toLocaleDateString('id-ID', {
-              day: 'numeric',
-              month: 'long',
-              year: 'numeric'
-            })}
+            {formatDate(post.date, 'full')}
           </time>
         </div>
       </div>
