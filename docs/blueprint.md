@@ -433,6 +433,136 @@ interface ApiListResult<T> extends ApiResult<T[]> {
   const lastCheck = getLastHealthCheck();
   ```
 
+### Telemetry and Observability
+- **Purpose**: Centralized metrics collection for monitoring resilience patterns
+- **Implementation**: `src/lib/api/telemetry.ts`
+- **Status**: ✅ Production-ready, added for INT-001 through INT-005
+- **Telemetry System Architecture**:
+  - In-memory event buffer (max 1000 events)
+  - Auto-flush every 60 seconds
+  - Event callback support for APM integration (DataDog, New Relic, Prometheus)
+  - Event filtering by type and category
+  - Statistics aggregation
+- **Event Categories**:
+  - **Circuit Breaker**: State changes, failures, successes, blocked requests
+  - **Retry**: Retry attempts, retry successes, retry exhaustions
+  - **Rate Limit**: Rate limit exceeded events, reset events
+  - **Health Check**: Healthy and unhealthy health checks
+  - **API Request**: Request completions with duration, cache hit/miss, error types
+- **Telemetry Event Structure**:
+  ```typescript
+  interface TelemetryEvent {
+    timestamp: string,      // ISO 8601 timestamp
+    type: string,         // Event type (e.g., 'state-change', 'retry')
+    category: 'circuit-breaker' | 'retry' | 'rate-limit' | 'health-check' | 'api-request',
+    data: Record<string, unknown>  // Event-specific data
+  }
+  ```
+- **Configuration**:
+  ```typescript
+  const telemetryCollector = new TelemetryCollector({
+    enabled: true,        // Enable/disable via TELEMETRY_ENABLED env var
+    maxEvents: 1000,     // Max events before auto-flush
+    flushInterval: 60000, // Auto-flush interval (60 seconds)
+    onEvent: (event) => {  // Custom event callback
+      // Send to APM (DataDog, New Relic, etc.)
+    }
+  })
+  ```
+- **Health Check API Endpoints**:
+  - **GET /api/health** - WordPress API health check (load balancer probes)
+  - **GET /api/health/readiness** - Application readiness check (Kubernetes probes)
+- **Observability Endpoint**:
+  - **GET /api/observability/metrics** - Export all resilience pattern metrics
+- **API Responses**:
+  - **Health Check (200)**:
+    ```json
+    {
+      "status": "healthy",
+      "timestamp": "2026-01-10T10:00:00Z",
+      "latency": 123,
+      "version": "v2",
+      "uptime": 3600
+    }
+    ```
+  - **Metrics Endpoint**:
+    ```json
+    {
+      "summary": {
+        "totalEvents": 1234,
+        "eventTypes": 5,
+        "timestamp": "2026-01-10T10:00:00Z",
+        "uptime": 3600
+      },
+      "circuitBreaker": {
+        "stateChanges": 5,
+        "failures": 23,
+        "successes": 1567,
+        "requestsBlocked": 12,
+        "totalEvents": 1607
+      },
+      "retry": {
+        "retries": 45,
+        "retrySuccesses": 38,
+        "retryExhausted": 7,
+        "totalEvents": 90
+      },
+      "rateLimit": {
+        "exceeded": 3,
+        "resets": 0,
+        "totalEvents": 3
+      },
+      "healthCheck": {
+        "healthy": 120,
+        "unhealthy": 5,
+        "totalEvents": 125
+      },
+      "apiRequest": {
+        "totalRequests": 1600,
+        "successful": 1590,
+        "failed": 10,
+        "averageDuration": 125,
+        "cacheHits": 1200,
+        "cacheMisses": 400,
+        "totalEvents": 1600
+      }
+    }
+    ```
+- **Kubernetes Probes**:
+  ```yaml
+  # Liveness probe
+  livenessProbe:
+    httpGet:
+      path: /api/health
+      port: 3000
+    initialDelaySeconds: 30
+    periodSeconds: 10
+
+  # Readiness probe
+  readinessProbe:
+    httpGet:
+      path: /api/health/readiness
+      port: 3000
+    initialDelaySeconds: 10
+    periodSeconds: 5
+  ```
+- **Key Metrics to Monitor**:
+  - **Circuit Breaker**: State (should be CLOSED), failure rate, blocked requests
+  - **Retry**: Retry rate (< 20%), retry success rate (> 80%), exhaustions (< 5%)
+  - **Rate Limit**: Rate limit hits, reset events
+  - **Health Check**: Healthy/unhealthy ratio, consecutive failures
+  - **API Request**: Response time (< 500ms), error rate (< 5%), cache hit rate (> 70%)
+- **Alerting Rules**:
+  - **CRITICAL**: Circuit breaker OPEN, Health check failed (3+ times), High retry exhaustion rate (> 5%)
+  - **WARNING**: High circuit failure rate (> 10/min), High retry rate (> 20%), High response time (> 500ms), High error rate (> 5%)
+  - **INFO**: Rate limit exceeded, Low cache hit rate (< 50%)
+- **External APM Integration**:
+  - Support for DataDog, New Relic, Prometheus, custom APM solutions
+  - Event callback mechanism for real-time metric export
+  - See [Monitoring Guide](./MONITORING.md) for integration examples
+- **Documentation**: [Monitoring Guide](./MONITORING.md)
+- **Tests**: 48 tests (28 telemetry tests + 20 API endpoint tests)
+
 ### Rate Limiting
 - **Purpose**: Protect API from overload by limiting request rate
 - **Configuration**:

@@ -1677,6 +1677,248 @@ function PostList() {
 
 ---
 
+## Health Check & Observability Endpoints
+
+### GET /api/health
+
+**Purpose**: Check WordPress API health and availability.
+
+**Usage**: Load balancer health probes, uptime monitoring services.
+
+**Response** (Healthy - 200):
+```json
+{
+  "status": "healthy",
+  "timestamp": "2026-01-10T10:00:00Z",
+  "latency": 123,
+  "version": "v2",
+  "uptime": 3600
+}
+```
+
+**Response** (Unhealthy - 503):
+```json
+{
+  "status": "unhealthy",
+  "timestamp": "2026-01-10T10:00:00Z",
+  "message": "API is unhealthy",
+  "error": "ECONNREFUSED",
+  "latency": 5000
+}
+```
+
+**Example**:
+```typescript
+// From monitoring service
+const response = await fetch('http://localhost:3000/api/health');
+const health = await response.json();
+
+if (health.status === 'healthy') {
+  console.log(`API is healthy (${health.latency}ms)`);
+} else {
+  console.error(`API is unhealthy: ${health.error}`);
+  // Trigger alert
+}
+```
+
+**Kubernetes Liveness Probe**:
+```yaml
+apiVersion: v1
+kind: Pod
+spec:
+  containers:
+  - name: headlesswp
+    livenessProbe:
+      httpGet:
+        path: /api/health
+        port: 3000
+      initialDelaySeconds: 30
+      periodSeconds: 10
+      timeoutSeconds: 5
+      failureThreshold: 3
+```
+
+---
+
+### GET /api/health/readiness
+
+**Purpose**: Check if application is ready to receive traffic.
+
+**Usage**: Kubernetes readiness probes, deployment verification.
+
+**Response** (Ready - 200):
+```json
+{
+  "status": "ready",
+  "checks": {
+    "cache": {
+      "status": "ok",
+      "message": "Cache manager initialized"
+    },
+    "memory": {
+      "status": "ok",
+      "message": "Memory usage within limits"
+    }
+  },
+  "timestamp": "2026-01-10T10:00:00Z",
+  "uptime": 3600
+}
+```
+
+**Response** (Not Ready - 503):
+```json
+{
+  "status": "not-ready",
+  "error": "Cache manager not initialized"
+}
+```
+
+**Kubernetes Readiness Probe**:
+```yaml
+apiVersion: v1
+kind: Pod
+spec:
+  containers:
+  - name: headlesswp
+    readinessProbe:
+      httpGet:
+        path: /api/health/readiness
+        port: 3000
+      initialDelaySeconds: 10
+      periodSeconds: 5
+      timeoutSeconds: 3
+      failureThreshold: 3
+```
+
+---
+
+### GET /api/observability/metrics
+
+**Purpose**: Export all resilience pattern metrics for monitoring dashboards and alerting.
+
+**Usage**: Monitoring dashboards (Grafana, DataDog, New Relic), custom monitoring tools.
+
+**Response**:
+```json
+{
+  "summary": {
+    "totalEvents": 1234,
+    "eventTypes": 5,
+    "timestamp": "2026-01-10T10:00:00Z",
+    "uptime": 3600
+  },
+  "circuitBreaker": {
+    "stateChanges": 5,
+    "failures": 23,
+    "successes": 1567,
+    "requestsBlocked": 12,
+    "totalEvents": 1607,
+    "recentEvents": [...]
+  },
+  "retry": {
+    "retries": 45,
+    "retrySuccesses": 38,
+    "retryExhausted": 7,
+    "totalEvents": 90,
+    "recentEvents": [...]
+  },
+  "rateLimit": {
+    "exceeded": 3,
+    "resets": 0,
+    "totalEvents": 3,
+    "recentEvents": [...]
+  },
+  "healthCheck": {
+    "healthy": 120,
+    "unhealthy": 5,
+    "totalEvents": 125,
+    "recentEvents": [...]
+  },
+  "apiRequest": {
+    "totalRequests": 1600,
+    "successful": 1590,
+    "failed": 10,
+    "averageDuration": 125,
+    "cacheHits": 1200,
+    "cacheMisses": 400,
+    "totalEvents": 1600,
+    "recentEvents": [...]
+  }
+}
+```
+
+**Example - Monitor Circuit Breaker**:
+```typescript
+// From monitoring dashboard
+const response = await fetch('http://localhost:3000/api/observability/metrics');
+const metrics = await response.json();
+
+// Check circuit breaker state
+if (metrics.circuitBreaker.requestsBlocked > 0) {
+  console.warn('Circuit breaker blocking requests!');
+  // Trigger alert
+}
+
+// Check retry rate
+const retryRate = metrics.retry.retries / metrics.apiRequest.totalRequests;
+if (retryRate > 0.20) {
+  console.warn(`High retry rate: ${retryRate.toFixed(2)}%`);
+  // Trigger warning alert
+}
+
+// Check API response time
+if (metrics.apiRequest.averageDuration > 500) {
+  console.warn(`High API response time: ${metrics.apiRequest.averageDuration}ms`);
+  // Trigger warning alert
+}
+```
+
+**Example - Grafana Dashboard**:
+```javascript
+// Circuit Breaker State Changes
+new PrometheusQuery(
+  'circuit_breaker_state_changes_total',
+  'Circuit Breaker State Changes'
+);
+
+// API Response Time
+new PrometheusQuery(
+  'api_request_duration_avg',
+  'API Response Time (ms)'
+);
+
+// Cache Hit Rate
+new PrometheusQuery(
+  'api_request_cache_hits / api_request_total * 100',
+  'Cache Hit Rate (%)'
+);
+```
+
+**DataDog Integration**:
+```typescript
+// Send metrics to DataDog
+const response = await fetch('http://localhost:3000/api/observability/metrics');
+const metrics = await response.json();
+
+fetch('https://http-intake.logs.datadoghq.com/v1/input/', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'DD-API-KEY': process.env.DATADOG_API_KEY
+  },
+  body: JSON.stringify({
+    ddsource: 'headlesswp',
+    ddtags: 'env:production',
+    message: 'Resilience metrics',
+    metrics
+  })
+});
+```
+
+**See Also**: [Monitoring Guide](./MONITORING.md)
+
+---
+
 ## Performance Tips
 
 ### 1. Use ISR Caching
