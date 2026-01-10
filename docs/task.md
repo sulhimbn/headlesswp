@@ -6,6 +6,180 @@
 
 ## Active Tasks
 
+## [DOC-002] Documentation Enhancement - Getting Started, Troubleshooting, and User Guides
+
+**Status**: Complete
+**Priority**: High
+**Assigned**: Senior Technical Writer
+**Created**: 2026-01-10
+**Updated**: 2026-01-10
+
+### Description
+
+Enhanced project documentation with improved Getting Started guide, comprehensive Troubleshooting guide, and end-user documentation. This task addresses documentation completeness and user experience for both developers and end-users.
+
+### Documentation Improvements
+
+#### 1. Improved Getting Started Guide (README.md)
+
+**Before**:
+- Basic command sequence without explanation
+- No verification steps
+- No troubleshooting tips
+- Limited context on what each step does
+
+**After**:
+- ✅ Step-by-step detailed guide with 5 clear phases
+- ✅ Explanation for each command and action
+- ✅ Verification steps to ensure setup works
+- ✅ Access URLs for all services (WordPress, phpMyAdmin, Next.js)
+- ✅ Troubleshooting tips for common setup issues
+- ✅ Pre-verification checklist before starting development
+
+#### 2. Fixed Outdated API Documentation Link
+
+**Issue**: `docs/guides/development.md` line 290 showed "API usage examples (coming soon)" but comprehensive API documentation already existed at `docs/api.md` (1769 lines).
+
+**Fix**: Updated link to "Complete API reference and usage examples" to reflect actual documentation status.
+
+#### 3. Removed Documentation Duplication
+
+**Issue**: `docs/guides/development.md` duplicated content from README.md (Technology Stack, Prerequisites, Quick Start, etc.), creating maintenance burden and confusion.
+
+**Fix**: Completely rewrote `docs/guides/development.md` to focus on development workflow and practices:
+- **Development Workflow**: Daily workflow, branch strategy, contribution process
+- **Code Organization**: Directory structure, component guidelines, API layer usage
+- **Coding Standards**: TypeScript, error handling, security, performance
+- **Testing**: Running tests, test structure, best practices, coverage goals
+- **Debugging**: Common issues, debugging tools
+- **Common Development Tasks**: Adding pages, components, API endpoints
+- **Pre-Commit Checklist**: Quality checks before committing
+- **Performance Optimization**: Bundle size, API optimization
+
+**Result**: Eliminated ~200 lines of duplication, created focused development guide.
+
+#### 4. Created Comprehensive Troubleshooting Guide (docs/TROUBLESHOOTING.md)
+
+**New documentation** - 500+ lines covering:
+
+**Troubleshooting Categories**:
+- Docker & WordPress Issues (container startup, API errors, database issues)
+- Next.js & Frontend Issues (not loading, build errors, API fetch failures)
+- API & Data Issues (empty data, media loading, rate limiting)
+- Build & Deployment Issues (static generation, production build, Docker build)
+- Testing Issues (timeouts, CI vs local differences)
+- Performance Issues (slow loading, high memory)
+- Security Issues (XSS vulnerabilities, CSP violations)
+
+**For Each Issue**:
+- Symptoms description
+- Diagnosis commands
+- Multiple solution options
+- Code examples where applicable
+
+**Additional Sections**:
+- Getting Help (GitHub issues, documentation links)
+- Quick Reference (common commands, ports, log locations)
+
+#### 5. Created User Guide (docs/USER_GUIDE.md)
+
+**New documentation** - 400+ lines for end-users:
+
+**User-Focused Content**:
+- Getting Started (accessing website, homepage layout, navigation)
+- Browsing Posts (viewing all news, understanding post cards)
+- Reading Articles (article layout, features, sharing)
+- Searching Content (current status, alternatives)
+- Categories & Tags (browsing, available categories)
+- Mobile Usage (mobile view, navigation, tips)
+- Accessibility Features (screen reader support, keyboard navigation, visual accessibility)
+
+**Troubleshooting User Issues**:
+- Page not loading
+- Images not displaying
+- Content in wrong language
+- Slow page loading
+- Mobile-specific issues
+
+**Additional Sections**:
+- Contact & Support (reporting issues, feedback)
+- Tips for Better Experience (reading, browsing, mobile)
+- Future Features (planned enhancements)
+- Glossary (technical terms explained)
+- Legal & Policies (terms, privacy, copyright)
+
+### Files Created
+
+- `docs/TROUBLESHOOTING.md` - NEW: Comprehensive troubleshooting guide (500+ lines)
+- `docs/USER_GUIDE.md` - NEW: End-user guide (400+ lines)
+
+### Files Modified
+
+- `README.md` - Improved Quick Start section with detailed steps and verification
+- `docs/guides/development.md` - Completely rewritten to eliminate duplication, focus on development workflow
+
+### Documentation Structure Improvements
+
+**Before**:
+- README: Basic getting started
+- development.md: Duplicated README content
+- No dedicated troubleshooting guide
+- No user guide
+- Outdated "coming soon" references
+
+**After**:
+- README: Enhanced Quick Start with 5-phase detailed guide
+- development.md: Focused development workflow (no duplication)
+- TROUBLESHOOTING.md: 500+ lines of troubleshooting content
+- USER_GUIDE.md: 400+ lines of end-user documentation
+- All documentation links accurate and up-to-date
+
+### Results
+
+- ✅ Getting Started guide improved with detailed 5-phase setup process
+- ✅ Outdated "coming soon" reference fixed
+- ✅ ~200 lines of duplication eliminated between README and development.md
+- ✅ Comprehensive troubleshooting guide created (500+ lines)
+- ✅ End-user guide created (400+ lines)
+- ✅ Documentation links updated in README
+- ✅ All quality checks pass (ESLint, TypeScript)
+- ✅ No breaking changes to existing content
+- ✅ Documentation better serves both developers and end-users
+
+### Success Criteria
+
+- ✅ Getting Started guide provides clear, actionable steps
+- ✅ Outdated documentation references fixed
+- ✅ Duplication eliminated between docs
+- ✅ Troubleshooting guide covers common issues
+- ✅ User guide helps end-users navigate website
+- ✅ Documentation accessible to intended audiences
+- ✅ All quality checks pass (lint, typecheck)
+- ✅ No breaking changes to existing functionality
+
+### Anti-Patterns Avoided
+
+- ❌ No vague instructions without context
+- ❌ No outdated documentation references
+- ❌ No duplication of content across files
+- ❌ No jargon-heavy explanations without glossary
+- ❌ No assuming user knowledge without explanation
+- ❌ No breaking changes to existing documentation structure
+
+### Follow-up Recommendations
+
+1. **Add Screenshots**: Include visual guides for key setup steps
+2. **Video Tutorials**: Create short video guides for complex troubleshooting steps
+3. **Interactive Examples**: Add code playground for API examples
+4. **Translations**: Consider translating user guide to Indonesian (matches content language)
+5. **Documentation Analytics**: Track most-accessed sections to identify improvement areas
+6. **Regular Reviews**: Schedule quarterly documentation reviews for accuracy
+7. **Community Contributions**: Enable community documentation edits via GitHub
+
+---
+
+## Active Tasks
+
 ## [DEVOPS-001] CI/CD Pipeline Optimization and Containerization
 
 **Status**: Complete
