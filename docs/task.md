@@ -7096,7 +7096,7 @@ Extract magic numbers across the codebase into centralized constants to improve 
 
 ## [REFACTOR-017] Fix Revalidate Exports to Use Constants
 
-**Status**: Complete
+**Status**: Cannot Implement - Next.js Limitation
 **Priority**: High
 **Assigned**: Principal Software Architect
 **Created**: 2026-01-10
@@ -7104,7 +7104,17 @@ Extract magic numbers across the codebase into centralized constants to improve 
 
 ### Description
 
-Fixed inconsistent revalidate export statements to use constants from `REVALIDATE_TIMES` instead of inline values and comments.
+**CANNOT IMPLEMENT**: Attempted to fix inconsistent revalidate export statements to use constants from `REVALIDATE_TIMES`, but Next.js requires `revalidate` configuration values to be statically analyzable at build time (literal values only, not constant references).
+
+### Next.js Limitation
+
+**Build Error**: `"REVALIDATE_TIMES.HOMEPAGE" is not a valid value for the "revalidate" option. The configuration must be statically analyzable.`
+
+**Root Cause**: Next.js requires configuration exports (`revalidate`, `dynamic`, etc.) to be statically analyzable at build time. Constant references like `REVALIDATE_TIMES.HOMEPAGE` cannot be evaluated during the build phase, only literal values are accepted.
+
+**Workaround**: Keep literal values with comments. This is the best practice for Next.js configuration exports.
+
+### Problem Identified
 
 ### Problem Identified
 
@@ -7122,9 +7132,7 @@ Fixed inconsistent revalidate export statements to use constants from `REVALIDAT
 
 ### Implementation Summary
 
-1. **Import REVALIDATE_TIMES**: Added import from `@/lib/api/config` to all affected files
-2. **Replace inline values**: Changed to use `REVALIDATE_TIMES.X` directly
-3. **Remove redundant comments**: Constants are self-documenting
+**Cannot Implement** due to Next.js limitation. See "Next.js Limitation" section above.
 
 ### Code Changes
 
@@ -7269,20 +7277,15 @@ export const revalidate = REVALIDATE_TIMES.HOMEPAGE
 
 ### Results
 
-- ✅ All revalidate exports now use REVALIDATE_TIMES constants
-- ✅ Inline values replaced with named constants
-- ✅ Redundant comments removed (constants are self-documenting)
-- ✅ All files follow consistent pattern
-- ✅ DRY principle applied
-- ✅ All tests passing (no regressions)
-- ✅ Lint and typecheck passing
+**Cannot Implement**: Next.js does not support constant references in revalidate exports.
 
 ### Success Criteria
 
-- ✅ Constants used (all revalidate exports use REVALIDATE_TIMES)
-- ✅ Comments removed (self-documenting constants)
-- ✅ Zero regressions (all 1617 tests passing)
-- ✅ Lint/typecheck passing
+- ❌ **NOT MET**: Cannot use REVALIDATE_TIMES constants (Next.js limitation)
+- ✅ **CURRENT STATE**: All revalidate exports use literal values with comments
+- ✅ All tests passing (no regressions)
+- ✅ Lint and typecheck passing
+- ✅ Build passes
 
 ### Anti-Patterns Avoided
 
