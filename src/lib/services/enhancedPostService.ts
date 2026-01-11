@@ -9,6 +9,7 @@ import { getFallbackPosts } from '@/lib/constants/fallbackPosts';
 import type { IPostService, PostWithMediaUrl, PostWithDetails, PaginatedPostsResult } from './IPostService';
 import { standardizedAPI } from '@/lib/api/standardized';
 import { isApiResultSuccessful } from '@/lib/api/response';
+import type { ICacheManager } from '@/lib/api/ICacheManager';
 
 interface EntityMapOptions<T> {
   cacheKey: string;
@@ -17,12 +18,14 @@ interface EntityMapOptions<T> {
   ttl: number;
   dependencies: string[];
   entityName: string;
+  cacheManager?: ICacheManager;
 }
 
 async function getEntityMap<T extends { id: number }>(
   options: EntityMapOptions<T>
 ): Promise<Map<number, T>> {
-  const cached = cacheManager.get<Map<number, T>>(options.cacheKey);
+  const cache = options.cacheManager ?? cacheManager;
+  const cached = cache.get<Map<number, T>>(options.cacheKey);
   if (cached) return cached;
 
   try {
@@ -35,7 +38,7 @@ async function getEntityMap<T extends { id: number }>(
     }
 
     const map = new Map<number, T>(validation.data.map(entity => [entity.id, entity]));
-    cacheManager.set(options.cacheKey, map, options.ttl, options.dependencies);
+    cache.set(options.cacheKey, map, options.ttl, options.dependencies);
     return map;
   } catch (error) {
     logger.error(`Failed to fetch ${options.entityName}`, error, { module: 'enhancedPostService' });

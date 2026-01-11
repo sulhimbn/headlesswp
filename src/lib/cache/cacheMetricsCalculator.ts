@@ -1,4 +1,5 @@
 import { CACHE_METRICS, MEMORY } from '@/lib/constants/appConstants'
+import type { ICacheMetricsCalculator } from '@/lib/api/ICacheMetricsCalculator';
 
 export interface CacheEntry<T> {
   data: T;
@@ -53,7 +54,7 @@ export interface FormattedMetrics {
   dependencyRegistrations: number;
 }
 
-export class CacheMetricsCalculator {
+export class CacheMetricsCalculator implements ICacheMetricsCalculator {
   calculateStatistics(
     stats: CacheTelemetry,
     cacheSize: number,

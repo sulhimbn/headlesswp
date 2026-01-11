@@ -1,5 +1,6 @@
 import { CACHE_TIMES } from '@/lib/api/config';
 import { CacheMetricsCalculator } from './cache/cacheMetricsCalculator';
+import type { ICacheManager } from '@/lib/api/ICacheManager';
 
 /**
  * Represents a cached data entry with metadata.
@@ -74,7 +75,7 @@ export interface CacheTelemetry {
  * // post:123 is automatically invalidated too!
  * ```
  */
-class CacheManager {
+class CacheManager implements ICacheManager {
   private cache = new Map<string, CacheEntry<unknown>>();
   private stats: CacheTelemetry = {
     hits: 0,
