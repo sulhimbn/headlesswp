@@ -1,4 +1,5 @@
 import { CACHE_TIMES } from '@/lib/api/config';
+import { CacheMetricsCalculator } from './cache/cacheMetricsCalculator';
 
 /**
  * Represents a cached data entry with metadata.
@@ -17,7 +18,7 @@ import { CACHE_TIMES } from '@/lib/api/config';
  * - category-5.dependents = ['post-123']
  * When category-5 is invalidated, post-123 is automatically invalidated too.
  */
-interface CacheEntry<T> {
+export interface CacheEntry<T> {
   data: T;
   timestamp: number;
   ttl: number;
@@ -25,16 +26,7 @@ interface CacheEntry<T> {
   dependents?: Set<string>;
 }
 
-/**
- * Cache telemetry metrics for monitoring and debugging.
- * 
- * @remarks
- * Track cache performance to identify bottlenecks and optimization opportunities:
- * - hitRate: Percentage of cache hits (higher is better)
- * - invalidationRate: Percentage of deletes that triggered cascade invalidation
- * - dependencyRegistrations: Number of dependency links created
- */
-interface CacheTelemetry {
+export interface CacheTelemetry {
   hits: number;
   misses: number;
   sets: number;
@@ -42,6 +34,9 @@ interface CacheTelemetry {
   cascadeInvalidations: number;
   dependencyRegistrations: number;
 }
+
+/**
+ * Advanced cache manager with dependency-aware cascade invalidation.
 
 /**
  * Advanced cache manager with dependency-aware cascade invalidation.
@@ -89,6 +84,7 @@ class CacheManager {
     cascadeInvalidations: 0,
     dependencyRegistrations: 0,
   };
+  private metricsCalculator = new CacheMetricsCalculator();
 
   /**
    * Get data from cache by key.
@@ -319,105 +315,67 @@ class CacheManager {
     keysToDelete.forEach(key => this.invalidate(key));
   }
 
-  /**
-   * Get comprehensive cache statistics with telemetry.
-   * 
-   * @returns Object containing cache metrics
-   * 
-   * @remarks
-   * Statistics include:
-   * - hits/misses: Raw counts
-   * - hitRate: Percentage of cache hits (0-100)
-   * - invalidationRate: Percentage of deletes that triggered cascade invalidation
-   * - size: Current number of cache entries
-   * - memoryUsageBytes: Estimated memory usage
-   * - avgTtl: Average time-to-live across all entries
-   * 
-   * Use these metrics to:
-   * - Monitor cache efficiency
-   * - Identify cache tuning opportunities
-   * - Debug cache-related issues
-   * 
-   * @example
-   * ```typescript
-   * const stats = cacheManager.getStats();
-   * console.log(`Hit rate: ${stats.hitRate}%`);
-   * console.log(`Memory: ${stats.memoryUsageBytes} bytes`);
-   * ```
-   */
+   /**
+    * Get comprehensive cache statistics with telemetry.
+    *
+    * @returns Object containing cache metrics
+    *
+    * @remarks
+    * Statistics include:
+    * - hits/misses: Raw counts
+    * - hitRate: Percentage of cache hits (0-100)
+    * - invalidationRate: Percentage of deletes that triggered cascade invalidation
+    * - size: Current number of cache entries
+    * - memoryUsageBytes: Estimated memory usage
+    * - avgTtl: Average time-to-live across all entries
+    *
+    * Use these metrics to:
+    * - Monitor cache efficiency
+    * - Identify cache tuning opportunities
+    * - Debug cache-related issues
+    *
+    * @example
+    * ```typescript
+    * const stats = cacheManager.getStats();
+    * console.log(`Hit rate: ${stats.hitRate}%`);
+    * console.log(`Memory: ${stats.memoryUsageBytes} bytes`);
+    * ```
+    */
   getStats() {
-    const total = this.stats.hits + this.stats.misses;
-    const hitRate = total > 0 ? (this.stats.hits / total) * 100 : 0;
-    const invalidationRate = total > 0 ? (this.stats.cascadeInvalidations / this.stats.deletes) * 100 : 0;
-    
-    return {
-      ...this.stats,
-      total,
-      hitRate: Math.round(hitRate * 100) / 100,
-      invalidationRate: Math.round(invalidationRate * 100) / 100,
-      size: this.cache.size,
-      memoryUsageBytes: this.getMemoryUsage(),
-      avgTtl: this.getAverageTtl(),
-    };
+    const memoryUsageBytes = this.metricsCalculator.calculateMemoryUsage(this.cache);
+    const avgTtl = this.metricsCalculator.calculateAverageTtl(this.cache);
+
+    return this.metricsCalculator.calculateStatistics(
+      this.stats,
+      this.cache.size,
+      memoryUsageBytes,
+      avgTtl
+    );
   }
 
   /**
-   * Calculate average TTL across all cached entries.
-   * 
-   * @private
-   * @returns Average TTL in milliseconds
-   * 
-   * @remarks
-   * This helps identify if TTL values are appropriate:
-   * - Very low avgTtl: Cache entries expiring too quickly
-   * - Very high avgTtl: Risk of stale data
-   * 
-   * Used internally by `getStats()` for telemetry.
-   */
-  private getAverageTtl(): number {
-    if (this.cache.size === 0) return 0;
-    
-    let totalTtl = 0;
-    this.cache.forEach(entry => {
-      totalTtl += entry.ttl;
-    });
-    
-    return Math.round(totalTtl / this.cache.size);
-  }
-
-  /**
-   * Get cache performance metrics for monitoring dashboards.
-   * 
-   * @returns Object with human-readable metrics
-   * 
-   * @remarks
-   * Returns metrics optimized for monitoring:
-   * - efficiencyScore: 'high' (>80%), 'medium' (50-80%), 'low' (<50%)
-   * - memoryUsageMB: Memory in megabytes (human-readable)
-   * - avgTtlSeconds: Average TTL in seconds
-   * 
-   * Use this for logging, dashboards, or alerting.
-   * 
-   * @example
-   * ```typescript
-   * const metrics = cacheManager.getPerformanceMetrics();
-   * console.log(`Cache efficiency: ${metrics.efficiencyScore}`);
-   * console.log(`Memory: ${metrics.memoryUsageMB} MB`);
-   * ```
-   */
+    * Get cache performance metrics for monitoring dashboards.
+    *
+    * @returns Object with human-readable metrics
+    *
+    * @remarks
+    * Returns metrics optimized for monitoring:
+    * - efficiencyScore: 'high' (>80%), 'medium' (50-80%), 'low' (<50%)
+    * - memoryUsageMB: Memory in megabytes (human-readable)
+    * - avgTtlSeconds: Average TTL in seconds
+    *
+    * Use this for logging, dashboards, or alerting.
+    *
+    * @example
+    * ```typescript
+    * const metrics = cacheManager.getPerformanceMetrics();
+    * console.log(`Cache efficiency: ${metrics.efficiencyScore}`);
+    * console.log(`Memory: ${metrics.memoryUsageMB} MB`);
+    * ```
+    */
   getPerformanceMetrics() {
     const stats = this.getStats();
-    const efficiencyScore = stats.hitRate > 80 ? 'high' : stats.hitRate > 50 ? 'medium' : 'low';
-    
-    return {
-      efficiencyScore,
-      hitRate: stats.hitRate,
-      size: stats.size,
-      memoryUsageMB: Math.round(stats.memoryUsageBytes / 1024 / 1024 * 100) / 100,
-      cascadeInvalidations: stats.cascadeInvalidations,
-      dependencyRegistrations: stats.dependencyRegistrations,
-      avgTtlSeconds: Math.round(stats.avgTtl / 1000),
-    };
+    return this.metricsCalculator.calculatePerformanceMetrics(stats);
   }
 
   /**
