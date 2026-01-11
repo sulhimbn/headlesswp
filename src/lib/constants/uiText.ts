@@ -51,6 +51,17 @@ export const UI_TEXT = {
     page: 'Halaman',
     of: 'dari'
   },
+  search: {
+    placeholder: 'Cari berita...',
+    label: 'Cari berita'
+  },
+  searchPage: {
+    heading: (query: string) => `Hasil pencarian: "${query}"`,
+    noResults: 'Tidak ada hasil',
+    noResultsDescription: (query: string) => `Tidak ada berita yang cocok dengan "${query}". Coba kata kunci lain.`,
+    emptySearch: 'Masukkan kata kunci',
+    emptySearchDescription: 'Silakan masukkan kata kunci untuk mencari berita.'
+  },
   footer: {
     about: 'Tentang Kami',
     aboutTitle: 'Mitra Banten News',

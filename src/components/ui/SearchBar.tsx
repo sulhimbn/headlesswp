@@ -83,6 +83,7 @@ function SearchBarComponent({
           ref={inputRef}
           id="search-input"
           type="text"
+          role="searchbox"
           value={query}
           onChange={handleInputChange}
           placeholder={placeholder}

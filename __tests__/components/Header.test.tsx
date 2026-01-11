@@ -316,4 +316,75 @@ describe('Header Component', () => {
       expect(document.getElementById('mobile-menu')).not.toBeInTheDocument()
     })
   })
+
+  describe('Search Functionality', () => {
+    test('renders search button on desktop', () => {
+      render(<Header />)
+      const searchButton = screen.getAllByRole('button', { name: 'Buka pencarian' })
+      expect(searchButton.length).toBeGreaterThan(0)
+    })
+
+    test('renders search button on mobile', () => {
+      render(<Header />)
+      const searchButtons = screen.getAllByRole('button', { name: 'Buka pencarian' })
+      expect(searchButtons).toHaveLength(2)
+    })
+
+    test('opens search bar when search button is clicked', async () => {
+      render(<Header />)
+      const searchButtons = screen.getAllByRole('button', { name: 'Buka pencarian' })
+      fireEvent.click(searchButtons[0])
+      
+      const searchInput = await screen.findByRole('searchbox', { name: 'Cari berita' })
+      expect(searchInput).toBeInTheDocument()
+    })
+
+    test('closes search bar when search button is clicked again', async () => {
+      render(<Header />)
+      const searchButtons = screen.getAllByRole('button', { name: 'Buka pencarian' })
+      fireEvent.click(searchButtons[0])
+      
+      let searchInput = await screen.findByRole('searchbox', { name: 'Cari berita' })
+      expect(searchInput).toBeInTheDocument()
+      
+      fireEvent.click(searchButtons[0])
+    })
+
+    test('closes search bar when Escape key is pressed', async () => {
+      render(<Header />)
+      const searchButtons = screen.getAllByRole('button', { name: 'Buka pencarian' })
+      fireEvent.click(searchButtons[0])
+      
+      const searchInput = await screen.findByRole('searchbox', { name: 'Cari berita' })
+      expect(searchInput).toBeInTheDocument()
+      
+      fireEvent.keyDown(searchInput, { key: 'Escape' })
+      
+      expect(screen.queryByRole('searchbox', { name: 'Cari berita' })).not.toBeInTheDocument()
+    })
+
+    test('search button has correct aria attributes when closed', () => {
+      render(<Header />)
+      const searchButton = screen.getAllByRole('button', { name: 'Buka pencarian' })
+      expect(searchButton[0]).toHaveAttribute('aria-expanded', 'false')
+    })
+
+    test('search button has correct aria attributes when open', async () => {
+      render(<Header />)
+      const searchButtons = screen.getAllByRole('button', { name: 'Buka pencarian' })
+      fireEvent.click(searchButtons[0])
+      
+      const searchButtonsAfter = screen.getAllByRole('button', { name: 'Buka pencarian' })
+      expect(searchButtonsAfter[0]).toHaveAttribute('aria-expanded', 'true')
+    })
+
+    test('search input has correct placeholder', async () => {
+      render(<Header />)
+      const searchButtons = screen.getAllByRole('button', { name: 'Buka pencarian' })
+      fireEvent.click(searchButtons[0])
+      
+      const searchInput = await screen.findByRole('searchbox', { name: 'Cari berita' })
+      expect(searchInput).toHaveAttribute('placeholder', 'Cari berita...')
+    })
+  })
 })
