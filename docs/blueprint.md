@@ -809,6 +809,7 @@ interface ApiListResult<T> extends ApiResult<T[]> {
 **See Also**: [Task DATA-ARCH-006: Cache Strategy Enhancement](./task.md#data-arch-006)
 **See Also**: [Task DATA-ARCH-008: Data Architecture Audit](./task.md#data-arch-008)
 **See Also**: [Task ARCH-001: Layer Separation](./task.md#arch-001)
+**See Also**: [API Specifications](./api-specs.md) - OpenAPI 3.0 specifications for API endpoints
 
 ### Service Layer Architecture
 
