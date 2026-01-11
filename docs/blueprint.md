@@ -1349,6 +1349,74 @@ curl http://localhost:3000/health
 
 **See Also**: [Task PERF-001: PostCard Component Rendering Optimization](./task.md#perf-001)
 
+**SearchBar Component** (Added: 2026-01-11):
+A searchable input component with debouncing, loading states, and full accessibility support.
+
+**Features**:
+- Debounced input (configurable delay, default 300ms) to reduce API calls
+- Loading state with spinner indicator
+- Clear button to reset search query
+- Full keyboard navigation support
+- Form submission with Enter key
+- ARIA attributes for screen readers
+- Semantic HTML with `role="search"` and proper labeling
+
+**Design Tokens**:
+- Uses `--color-surface`, `--color-text-primary`, `--color-text-muted`, `--color-primary` for colors
+- Uses `--color-border` for borders
+- Uses `--radius-md`, `--radius-sm` for border radius
+- Uses `--transition-fast` for transitions
+
+**Accessibility**:
+- `role="search"` on form for landmark identification
+- Associated label with `sr-only` class
+- Search icon and loading indicator hidden with `aria-hidden="true"`
+- Clear button has proper `aria-label`
+- Input has `aria-label` and `aria-busy` attributes
+- Full keyboard navigation (Tab, Enter)
+
+**Responsive Design**:
+- Mobile-first approach with responsive padding (`py-2 sm:py-3`)
+- Responsive font sizes (`text-sm sm:text-base`)
+- Full-width by default
+
+**Memoization**:
+- Uses `React.memo` with custom comparison function
+- Prevents unnecessary re-renders when props unchanged
+- Compares: `placeholder`, `isLoading`, `debounceMs`, `className`, `initialValue`, `ariaLabel`, `onSearch`
+
+**Usage Example**:
+```tsx
+import SearchBar from '@/components/ui/SearchBar'
+
+function SearchPage() {
+  const [query, setQuery] = useState('')
+  const [results, setResults] = useState([])
+  const [isLoading, setIsLoading] = useState(false)
+
+  const handleSearch = async (searchQuery: string) => {
+    setIsLoading(true)
+    const posts = await searchPosts(searchQuery)
+    setResults(posts)
+    setIsLoading(false)
+  }
+
+  return (
+    <div>
+      <SearchBar
+        onSearch={handleSearch}
+        placeholder="Search articles..."
+        isLoading={isLoading}
+        debounceMs={300}
+        ariaLabel="Search articles"
+      />
+    </div>
+  )
+}
+```
+
+**Tests**: 45 tests covering rendering, user input, clear button, loading state, form submission, accessibility, design tokens, responsive design, focus management, keyboard navigation, edge cases, and custom debounce
+
 ### Sanitization Standards
 
 - All user-generated content must be sanitized before rendering
