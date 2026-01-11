@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { ApiErrorType } from './errors'
 import { RATE_LIMIT } from '@/lib/constants/appConstants'
-import { TIME_CONSTANTS } from '@/lib/api/config'
 
 export interface ApiRouteRateLimitOptions {
   key: string
