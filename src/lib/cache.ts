@@ -87,26 +87,20 @@ class CacheManager {
   private metricsCalculator = new CacheMetricsCalculator();
 
   /**
-   * Get data from cache by key.
-   * 
-   * @template T - Expected type of cached data
-   * @param key - Cache key to retrieve
-   * @returns Cached data or null if not found/expired
-   * 
-   * @remarks
-   * This method:
-   * - Returns cached data if it exists and hasn't expired
-   * - Automatically removes expired entries
-   * - Updates telemetry (hit/miss counts)
-   * 
-   * @example
-   * ```typescript
-   * const posts = cacheManager.get<WordPressPost[]>('posts:default');
-   * if (posts) {
-   *   console.log('Cache hit!');
-   * }
-   * ```
-   */
+    * Get data from cache by key.
+    * 
+    * @template T - Type of data to cache
+    * @param key - Cache key
+    * @returns Cached data or null if not found/expired
+    * 
+    * @example
+    * ```typescript
+    * const posts = cacheManager.get<WordPressPost[]>('posts:default');
+    * if (posts) {
+    *   return posts;
+    * }
+    * ```
+    */
   get<T>(key: string): T | null {
     const entry = this.cache.get(key);
     
@@ -265,11 +259,10 @@ class CacheManager {
    * - Testing scenarios
    * - Emergency cache clearing
    * 
-   * @example
-   * ```typescript
-   * cacheManager.clearAll();
-   * console.log('Cache cleared');
-   * ```
+    * @example
+    * ```typescript
+    * cacheManager.clearAll();
+    * ```
    */
   clearAll(): void {
     const size = this.cache.size;
@@ -337,8 +330,7 @@ class CacheManager {
     * @example
     * ```typescript
     * const stats = cacheManager.getStats();
-    * console.log(`Hit rate: ${stats.hitRate}%`);
-    * console.log(`Memory: ${stats.memoryUsageBytes} bytes`);
+    * return stats.hitRate;
     * ```
     */
   getStats() {
@@ -369,8 +361,7 @@ class CacheManager {
     * @example
     * ```typescript
     * const metrics = cacheManager.getPerformanceMetrics();
-    * console.log(`Cache efficiency: ${metrics.efficiencyScore}`);
-    * console.log(`Memory: ${metrics.memoryUsageMB} MB`);
+    * return metrics.efficiencyScore;
     * ```
     */
   getPerformanceMetrics() {
@@ -396,14 +387,13 @@ class CacheManager {
    * Note: Entries are automatically invalidated on access if expired,
    * so this cleanup is optional for correctness but helpful for memory.
    * 
-   * @example
-   * ```typescript
-   * // Run cleanup every hour
-   * setInterval(() => {
-   *   const cleaned = cacheManager.cleanup();
-   *   console.log(`Cleaned ${cleaned} expired entries`);
-   * }, 3600000);
-   * ```
+    * @example
+    * ```typescript
+    * // Run cleanup every hour
+    * setInterval(() => {
+    *   const cleaned = cacheManager.cleanup();
+    * }, 3600000);
+    * ```
    */
   cleanup(): number {
     let cleaned = 0;
@@ -445,12 +435,11 @@ class CacheManager {
    * - Reduce memory usage
    * - Maintain data integrity
    * 
-   * @example
-   * ```typescript
-   * // Clean up orphaned dependencies periodically
-   * const cleaned = cacheManager.cleanupOrphanDependencies();
-   * console.log(`Removed ${cleaned} orphaned dependencies`);
-   * ```
+    * @example
+    * ```typescript
+    * // Clean up orphaned dependencies periodically
+    * const cleaned = cacheManager.cleanupOrphanDependencies();
+    * ```
    */
   cleanupOrphanDependencies(): number {
     let cleaned = 0;
@@ -519,11 +508,11 @@ class CacheManager {
    * Note: This is an approximation, not exact memory usage.
    * For accurate metrics, use Node.js memory profiling tools.
    * 
-   * @example
-   * ```typescript
-   * const usage = cacheManager.getMemoryUsage();
-   * console.log(`Cache using ~${usage / 1024 / 1024} MB`);
-   * ```
+    * @example
+    * ```typescript
+    * const usage = cacheManager.getMemoryUsage();
+    * const usageMB = usage / 1024 / 1024;
+    * ```
    */
   getMemoryUsage(): number {
     let totalSize = 0;
@@ -566,12 +555,11 @@ class CacheManager {
    * - Category/tag structure changes
    * - Media is uploaded or updated
    * 
-   * @example
-   * ```typescript
-   * // Invalidate all posts when new content is published
-   * const count = cacheManager.invalidateByEntityType('posts');
-   * console.log(`Invalidated ${count} post entries`);
-   * ```
+    * @example
+    * ```typescript
+    * // Invalidate all posts when new content is published
+    * const count = cacheManager.invalidateByEntityType('posts');
+    * ```
    */
   invalidateByEntityType(entityType: 'post' | 'posts' | 'category' | 'categories' | 'tag' | 'tags' | 'media' | 'author'): number {
     const pattern = new RegExp(`^${entityType}`);
@@ -601,12 +589,11 @@ class CacheManager {
    * 
    * This does NOT invalidate entries, just returns keys.
    * 
-   * @example
-   * ```typescript
-   * // Find all cached posts
-   * const postKeys = cacheManager.getKeysByPattern('^post:');
-   * console.log(`Found ${postKeys.length} cached posts`);
-   * ```
+    * @example
+    * ```typescript
+    * // Find all cached posts
+    * const postKeys = cacheManager.getKeysByPattern('^post:');
+    * ```
    */
   getKeysByPattern(pattern: string): string[] {
     const regex = new RegExp(pattern);
@@ -629,12 +616,11 @@ class CacheManager {
    * - Understanding cache relationships
    * - Identifying potential performance issues
    * 
-   * @example
-   * ```typescript
-   * const info = cacheManager.getDependencies('post:123');
-   * console.log('Dependencies:', info.dependencies);
-   * console.log('Dependents:', info.dependents);
-   * ```
+    * @example
+    * ```typescript
+    * const info = cacheManager.getDependencies('post:123');
+    * return info.dependencies;
+    * ```
    */
   getDependencies(key: string): { dependencies: string[]; dependents: string[] } {
     const entry = this.cache.get(key);
