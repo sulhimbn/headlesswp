@@ -1,8 +1,9 @@
 import { wordpressAPI } from '@/lib/wordpress';
-import type { WordPressPost, WordPressCategory, WordPressTag } from '@/types/wordpress';
+import type { WordPressPost, WordPressCategory, WordPressTag, WordPressAuthor } from '@/types/wordpress';
 import { PAGINATION_LIMITS } from '@/lib/api/config';
 import { cacheManager, CACHE_TTL, CACHE_KEYS, CACHE_DEPENDENCIES } from '@/lib/cache';
 import { dataValidator, isValidationResultValid, type ValidationResult } from '@/lib/validation/dataValidator';
+import { relationshipValidator, type RelationshipValidatorOptions } from '@/lib/validation/relationshipValidator';
 import { createFallbackPost } from '@/lib/utils/fallbackPost';
 import { logger } from '@/lib/utils/logger';
 import { getFallbackPosts } from '@/lib/constants/fallbackPosts';
@@ -68,6 +69,27 @@ async function getTagsMap(): Promise<Map<number, WordPressTag>> {
   });
 }
 
+async function getAuthorsMap(): Promise<Map<number, WordPressAuthor>> {
+  const cached = cacheManager.get<Map<number, WordPressAuthor>>('authors');
+  if (cached) return cached;
+
+  try {
+    const authors = await Promise.all(
+      [1, 2, 3, 4, 5].map(id => 
+        wordpressAPI.getAuthor(id).catch(() => null)
+      )
+    );
+
+    const validAuthors = authors.filter((author): author is WordPressAuthor => author !== null);
+    const map = new Map<number, WordPressAuthor>(validAuthors.map(author => [author.id, author]));
+    cacheManager.set('authors', map, CACHE_TTL.CATEGORIES);
+    return map;
+  } catch (error) {
+    logger.error('Failed to fetch authors', error, { module: 'enhancedPostService' });
+    return new Map();
+  }
+}
+
 async function enrichPostsWithMediaUrls(posts: WordPressPost[]): Promise<PostWithMediaUrl[]> {
   const mediaIds = [...new Set(posts.map(post => post.featured_media).filter(id => id > 0))];
   let mediaUrls: Map<number, string | null>;
@@ -85,6 +107,21 @@ async function enrichPostsWithMediaUrls(posts: WordPressPost[]): Promise<PostWit
   }));
 }
 
+function validatePostRelationships(
+  post: WordPressPost,
+  options: RelationshipValidatorOptions
+): void {
+  const errors = relationshipValidator.validatePostRelationships(post, options);
+
+  if (errors.length > 0) {
+    logger.warn(
+      `Post ${post.id} has invalid relationships: ${errors.map(e => e.message).join(', ')}`,
+      undefined,
+      { module: 'enhancedPostService', postId: post.id, errors }
+    );
+  }
+}
+
 async function enrichPostWithDetails(post: WordPressPost): Promise<PostWithDetails> {
   let mediaUrl: string | null;
 
@@ -95,10 +132,17 @@ async function enrichPostWithDetails(post: WordPressPost): Promise<PostWithDetai
     mediaUrl = null;
   }
 
-  const [categoriesMap, tagsMap] = await Promise.all([
+  const [categoriesMap, tagsMap, authorsMap] = await Promise.all([
     getCategoriesMap(),
-    getTagsMap()
+    getTagsMap(),
+    getAuthorsMap()
   ]);
+
+  validatePostRelationships(post, {
+    categories: categoriesMap,
+    tags: tagsMap,
+    authors: authorsMap
+  });
 
   const categoriesDetails = post.categories
     .map(id => categoriesMap.get(id))

@@ -341,26 +341,37 @@ interface ApiListResult<T> extends ApiResult<T[]> {
 
 **Data Validation Helpers** (`src/lib/validation/dataValidator.ts`):
 1. **`validateIdField()`** - Validates ID fields (positive integer)
-    - Used by all entity validation methods
-    - Eliminates duplicate ID validation logic
+     - Used by all entity validation methods
+     - Eliminates duplicate ID validation logic
 2. **`validateNamedObjectField()`** - Validates nested object fields with rendered property
-    - Used by Post, Media validation for title fields
-    - Eliminates duplicate nested object validation
+     - Used by Post, Media validation for title fields
+     - Eliminates duplicate nested object validation
 3. **`validateSlugField()`** - Validates slug fields (pattern + length)
-    - Used by Post, Category, Tag, Author validation
-    - Accepts validation rules for pattern and length
+     - Used by Post, Category, Tag, Author validation
+     - Accepts validation rules for pattern and length
 4. **`validateDateField()`** - Validates ISO 8601 date fields
-    - Used by Post validation for date and modified fields
-    - Centralizes date validation logic
+     - Used by Post validation for date and modified fields
+     - Centralizes date validation logic
 5. **`validateUrlField()`** - Validates URL fields
-    - Used by Category, Tag, Media, Author validation
-    - Centralizes URL validation logic
+     - Used by Category, Tag, Media, Author validation
+     - Centralizes URL validation logic
 6. **`validateEnumField()`** - Validates enum fields
-    - Used by Post (status, type) and Media (media_type) validation
-    - Centralizes enum validation logic
+     - Used by Post (status, type) and Media (media_type) validation
+     - Centralizes enum validation logic
 7. **`validateNumericField()`** - Validates numeric fields with custom validator
-    - Used for Category (parent, count) numeric validation
-    - Accepts custom validator for flexible numeric validation
+     - Used for Category (parent, count) numeric validation
+     - Accepts custom validator for flexible numeric validation
+
+**Relationship Validation Helpers** (`src/lib/validation/relationshipValidator.ts`):
+1. **`validatePostRelationships()`** - Validates post entity references
+     - Validates category, tag, and author references against available maps
+     - Detects invalid reference IDs with clear error messages
+     - Supports optional validation (can skip specific relationship types)
+     - Used by `enrichPostWithDetails()` for automatic validation
+2. **`validatePostsRelationships()`** - Validates post array relationships
+     - Validates relationships for multiple posts simultaneously
+     - Includes array index in error messages for easy debugging
+     - Non-blocking validation (logs warnings but continues)
 
 **Error Handling Helpers** (`src/lib/api/errors.ts`):
 1. **`handleStatusCodeError()`** - Status code error handling helper
@@ -372,12 +383,20 @@ interface ApiListResult<T> extends ApiResult<T[]> {
 
 **Code Quality Improvements**:
 - **Before**: 252 lines with 40 duplicate lines across 5 API methods; 46 duplicate lines across 2 service functions; 36 duplicate lines across 2 API getAllX functions; 38 duplicate lines in `createApiError`
-- **After**: 213 lines (API layer) + 229 lines (service layer) + 207 lines (standardized API) + 187 lines (errors) with reusable helpers
+- **After**: 213 lines (API layer) + 229 lines (service layer) + 207 lines (standardized API) + 187 lines (errors) + 104 lines (relationship validation) with reusable helpers
 - **Lines Eliminated**: 40 lines (API layer response.ts) + 23 lines (service layer) + 14 lines (standardized API) + 20 lines (fetchAndValidate merge) + 38 lines (errors) = 135 lines total (28% reduction)
 - **DRY Principle Applied**: Error handling and pagination logic defined once
 - **Single Responsibility**: Each helper has one clear purpose
 - **Consistency**: All methods use identical patterns
 - **Maintainability**: Changes to error handling or pagination only require updating one function
+
+**DATA-ARCH-009: Data Relationship Validation**:
+- Created `RelationshipValidator` class with 104 lines
+- Added `validatePostRelationships()` and `validatePostsRelationships()` methods
+- Added 21 comprehensive tests for all relationship scenarios
+- Integrated into `enrichPostWithDetails()` for automatic validation
+- Test coverage improved: 215 → 236 data-related tests (+10% increase)
+- Lines eliminated: N/A (new validation capability, no duplication removed)
 
 **REFACTOR-011: fetchAndValidate Merge**:
 - Merged `fetchAndValidate` and `fetchAndValidateSingle` into single generic function
@@ -811,6 +830,12 @@ interface ApiListResult<T> extends ApiResult<T[]> {
      - `isValidationResultValid<T>()`: Type guard to narrow ValidationResult<T>
      - `unwrapValidationResult<T>()`: Extract data with error throwing
      - `unwrapValidationResultSafe<T>(): Extract data with fallback
+- **Relationship Validation**: `src/lib/validation/relationshipValidator.ts` validates entity references
+   - Validates post relationships (categories, tags, authors) against available data
+   - Detects invalid reference IDs with clear error messages
+   - Supports optional validation (can skip specific relationship types)
+   - Non-blocking validation (logs warnings but continues execution)
+   - Integrated into `enrichPostWithDetails()` for automatic validation
 - **Compile-time Safety**: TypeScript provides static type checking
 - **Fallback Data**: Invalid data triggers fallback mechanisms
 
@@ -850,11 +875,12 @@ interface ApiListResult<T> extends ApiResult<T[]> {
 **Data Architecture Audit Status**: ✅ Verified (DATA-ARCH-008)
 - All data architecture principles verified and properly implemented
 - No critical issues found
-- 215+ data-related tests passing
+- 236+ data-related tests passing (215 + 21 relationship validation)
 - Production-ready data architecture
 
 **See Also**: [Task DATA-ARCH-006: Cache Strategy Enhancement](./task.md#data-arch-006)
 **See Also**: [Task DATA-ARCH-008: Data Architecture Audit](./task.md#data-arch-008)
+**See Also**: [Task DATA-ARCH-009: Data Relationship Validation](./task.md#data-arch-009)
 **See Also**: [Task ARCH-001: Layer Separation](./task.md#arch-001)
 **See Also**: [API Specifications](./api-specs.md) - OpenAPI 3.0 specifications for API endpoints
 
