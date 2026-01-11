@@ -38,7 +38,16 @@ cd headlesswp
 cp .env.example .env
 ```
 
-Edit `.env` with your WordPress credentials. For local development, the default configuration works with the WordPress container.
+**Edit `.env` with your values. For local development, update these required fields:**
+
+```env
+MYSQL_USER=wordpress
+MYSQL_PASSWORD=your_secure_password_here
+MYSQL_DATABASE=wordpress
+MYSQL_ROOT_PASSWORD=your_secure_root_password_here
+```
+
+**Note:** You must provide actual values for database credentials. Docker will fail to start if placeholder values remain.
 
 ### 3. Start WordPress Backend
 
@@ -87,6 +96,11 @@ npm run typecheck
 # Run linting
 npm run lint
 ```
+
+**Troubleshooting Docker Issues:**
+- If containers fail to start, check `.env` has valid database credentials
+- Use `docker-compose logs` to view startup errors
+- See [Troubleshooting Guide](docs/TROUBLESHOOTING.md) for common issues
 
 All commands should complete successfully.
 
@@ -189,12 +203,27 @@ See [Development Guide](docs/guides/development.md) for complete setup instructi
 
 Copy `.env.example` to `.env` and configure:
 
+**For local development:**
 ```env
-WORDPRESS_URL=https://mitrabantennews.com
-NEXT_PUBLIC_WORDPRESS_URL=https://mitrabantennews.com
-NEXT_PUBLIC_WORDPRESS_API_URL=https://mitrabantennews.com/wp-json
-SKIP_RETRIES=false
+WORDPRESS_URL=http://localhost:8080
+WORDPRESS_API_URL=http://localhost:8080/wp-json
+NEXT_PUBLIC_WORDPRESS_URL=http://localhost:8080
+NEXT_PUBLIC_WORDPRESS_API_URL=http://localhost:8080/wp-json
+NEXT_PUBLIC_SITE_URL=http://localhost:3000
+NODE_ENV=development
 ```
+
+**For production deployment:**
+```env
+WORDPRESS_URL=https://your-domain.com
+WORDPRESS_API_URL=https://your-domain.com/wp-json
+NEXT_PUBLIC_WORDPRESS_URL=https://your-domain.com
+NEXT_PUBLIC_WORDPRESS_API_URL=https://your-domain.com/wp-json
+NEXT_PUBLIC_SITE_URL=https://your-domain.com
+NODE_ENV=production
+```
+
+See `.env.example` for all available variables including database credentials and security settings.
 
 ## Testing
 
