@@ -1,7 +1,6 @@
 import { CACHE_TIMES } from '@/lib/api/config';
 import { CacheMetricsCalculator } from './cache/cacheMetricsCalculator';
 import type { ICacheManager } from '@/lib/api/ICacheManager';
-import type { ICacheMetricsCalculator } from '@/lib/api/ICacheMetricsCalculator';
 
 /**
  * Represents a cached data entry with metadata.

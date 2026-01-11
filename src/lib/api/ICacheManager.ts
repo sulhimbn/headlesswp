@@ -1,5 +1,4 @@
-import type { CacheEntry, CacheTelemetry } from '@/lib/cache';
-import type { CacheStatistics, PerformanceMetrics, FormattedMetrics } from '@/lib/cache/cacheMetricsCalculator';
+import type { CacheStatistics, PerformanceMetrics } from '@/lib/cache/cacheMetricsCalculator';
 
 export interface ICacheManager {
   get<T>(key: string): T | null;
