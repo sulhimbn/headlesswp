@@ -17,11 +17,13 @@ export class RateLimiter {
   private lastRefill: number
   private options: RateLimiterOptions
   private requestTimes: number[]
+  private checking: boolean
 
   constructor(options: RateLimiterOptions) {
     this.options = options
     this.lastRefill = Date.now()
     this.requestTimes = []
+    this.checking = false
   }
 
   private refillTokens(): void {
@@ -35,29 +37,47 @@ export class RateLimiter {
   }
 
   async checkLimit(): Promise<void> {
-    this.refillTokens()
-
-    const now = Date.now()
-    this.requestTimes = this.requestTimes.filter(
-      timestamp => now - timestamp < this.options.windowMs
-    )
-
-    if (this.requestTimes.length >= this.options.maxRequests) {
-      const oldestRequest = this.requestTimes[0]
-      const waitTime = oldestRequest + this.options.windowMs - now
-
-      throw new ApiErrorImpl(
-        ApiErrorType.RATE_LIMIT_ERROR,
-        `Rate limit exceeded. Too many requests. Please try again in ${Math.ceil(waitTime / TIME_CONSTANTS.SECOND_IN_MS)} seconds.`,
-        429,
-        true
-      )
+    while (this.checking) {
+      await new Promise(resolve => setTimeout(resolve, 10))
     }
+    this.checking = true
+    try {
+      this.refillTokens()
 
-    this.requestTimes.push(now)
+      const now = Date.now()
+      this.requestTimes = this.requestTimes.filter(
+        timestamp => now - timestamp < this.options.windowMs
+      )
+
+      if (this.requestTimes.length >= this.options.maxRequests) {
+        const oldestRequest = this.requestTimes[0]
+        const waitTime = oldestRequest + this.options.windowMs - now
+
+        throw new ApiErrorImpl(
+          ApiErrorType.RATE_LIMIT_ERROR,
+          `Rate limit exceeded. Too many requests. Please try again in ${Math.ceil(waitTime / TIME_CONSTANTS.SECOND_IN_MS)} seconds.`,
+          429,
+          true
+        )
+      }
+
+      this.requestTimes.push(now)
+    } finally {
+      this.checking = false
+    }
   }
 
   getInfo(): RateLimitInfo {
+    while (this.checking) {
+      const start = Date.now()
+      while (this.checking && Date.now() - start < 1000) {
+        if (!this.checking) break
+      }
+      if (this.checking) {
+        throw new Error('Timeout waiting for rate limiter check to complete')
+      }
+    }
+
     this.refillTokens()
     const now = Date.now()
     this.requestTimes = this.requestTimes.filter(
@@ -73,6 +93,15 @@ export class RateLimiter {
   }
 
   reset(): void {
+    while (this.checking) {
+      const start = Date.now()
+      while (this.checking && Date.now() - start < 1000) {
+        if (!this.checking) break
+      }
+      if (this.checking) {
+        throw new Error('Timeout waiting for rate limiter check to complete')
+      }
+    }
     this.lastRefill = Date.now()
     this.requestTimes = []
   }

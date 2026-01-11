@@ -335,4 +335,25 @@ describe('Rate Limiting Configuration', () => {
 
     await expect(limiter.checkLimit()).rejects.toThrow()
   })
+
+  it('should prevent race condition with concurrent requests', async () => {
+    const limiter = new RateLimiter({
+      maxRequests: 10,
+      windowMs: 1000,
+    })
+
+    const promises = []
+    for (let i = 0; i < 20; i++) {
+      promises.push(
+        limiter.checkLimit()
+          .then(() => ({ success: true }))
+          .catch(() => ({ success: false }))
+      )
+    }
+
+    const results = await Promise.all(promises)
+    const successCount = results.filter(r => r.success).length
+
+    expect(successCount).toBeLessThanOrEqual(10)
+  })
 })
