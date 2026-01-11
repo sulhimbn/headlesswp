@@ -1,6 +1,6 @@
 # Task Backlog
 
-**Last Updated**: 2026-01-11 (Senior Technical Writer - DOC-001: README Quick Start Optimization)
+**Last Updated**: 2026-01-11 (Code Reviewer - REFACTOR-025, REFACTOR-026, REFACTOR-027: New Tasks Added)
 
 ---
 
@@ -8141,3 +8141,384 @@ class DataValidator {
 
 - [Blueprint.md Data Validation](./blueprint.md#data-validation)
 - [Blueprint.md Type Safety](./blueprint.md#design-principles)
+
+---
+
+## [REFACTOR-025] Remove Telemetry Wrapper Functions
+
+**Status**: Pending
+**Priority**: Medium
+**Assigned**: Unassigned
+**Created**: 2026-01-11
+
+### Description
+
+Remove unnecessary telemetry wrapper functions that add no value and create an extra abstraction layer.
+
+### Problem Identified
+
+**Unnecessary Abstraction Layer** (`src/lib/api/telemetry.ts`):
+- 11 wrapper functions that only call `telemetryCollector.record()`:
+  - `recordCircuitBreakerStateChange` (11 lines)
+  - `recordCircuitBreakerFailure` (10 lines)
+  - `recordCircuitBreakerSuccess` (11 lines)
+  - `recordCircuitBreakerRequestBlocked` (11 lines)
+  - `recordRetry` (13 lines)
+  - `recordRetrySuccess` (9 lines)
+  - `recordRetryExhausted` (12 lines)
+  - `recordRateLimitExceeded` (13 lines)
+  - `recordRateLimitReset` (9 lines)
+  - `recordHealthCheck` (13 lines)
+  - `recordApiRequest` (15 lines)
+- ~130 lines of wrapper code
+- No additional logic, just data formatting and passing through
+- Unnecessary indirection makes code harder to follow
+
+**Impact**:
+- Additional abstraction layer adds no value
+- Consumers must learn wrapper function names instead of using telemetry collector directly
+- Any telemetry format changes require updating multiple wrapper functions
+- Increases maintenance burden without benefit
+
+### Implementation Summary
+
+1. **Remove telemetry wrapper functions**: Delete all 11 wrapper functions (lines 99-280)
+2. **Export telemetry types**: Keep telemetry type interfaces (CircuitBreakerTelemetry, RetryTelemetry, RateLimitTelemetry, HealthCheckTelemetry, ApiRequestTelemetry) for type safety
+3. **Update consumers**: Change all telemetry recording calls from wrapper functions to direct `telemetryCollector.record()` calls
+4. **Update imports**: Remove wrapper function imports across codebase
+
+### Files to Modify
+
+- `src/lib/api/telemetry.ts` - Remove 11 wrapper functions (~130 lines removed)
+- Files using telemetry wrappers (estimated 8-10 files):
+  - `src/lib/api/circuitBreaker.ts`
+  - `src/lib/api/retryStrategy.ts`
+  - `src/lib/api/rateLimiter.ts`
+  - `src/lib/api/healthCheck.ts`
+  - `src/lib/api/client.ts`
+  - `src/app/api/health/route.ts`
+  - `src/app/api/health/readiness/route.ts`
+  - `src/app/api/observability/metrics/route.ts`
+
+### Expected Results
+
+- ~130 lines of unnecessary wrapper code removed
+- telemetry.ts: 280 lines → ~150 lines (46% reduction)
+- Simpler API: `telemetryCollector.record()` instead of 11 different wrapper functions
+- Easier to understand telemetry flow (less indirection)
+- Type safety maintained through telemetry interfaces
+
+### Success Criteria
+
+- ✅ All 11 telemetry wrapper functions removed
+- ✅ All telemetry type interfaces preserved
+- ✅ All consumers updated to use `telemetryCollector.record()` directly
+- ✅ All tests passing (no behavioral changes)
+- ✅ telemetry.ts file significantly simplified
+
+### Anti-Patterns Avoided
+
+- ❌ No unnecessary abstraction layers
+- ❌ No indirection without value
+- ❌ No code that's harder to follow than necessary
+
+### Refactoring Principles Applied
+
+1. **KISS Principle**: Direct telemetry calls are simpler than wrapper functions
+2. **YAGNI**: We don't need wrapper functions that add no value
+3. **Minimal Abstraction**: Only create abstractions that provide clear benefits
+4. **Boy Scout Rule**: Leave code cleaner than found
+
+### See Also
+
+- [Blueprint.md Integration Resilience Patterns](./blueprint.md#integration-resilience-patterns)
+- [Blueprint.md DRY Principle and Code Quality](./blueprint.md#dry-principle-and-code-quality)
+
+---
+
+## [REFACTOR-026] Extract Complex Retry Delay Logic
+
+**Status**: Pending
+**Priority**: Medium
+**Assigned**: Unassigned
+**Created**: 2026-01-11
+
+### Description
+
+Extract complex Retry-After header parsing and backoff calculation logic from `getRetryDelay()` method into separate helper methods to reduce cyclomatic complexity.
+
+### Problem Identified
+
+**High Cyclomatic Complexity** (`src/lib/api/retryStrategy.ts` lines 64-100):
+The `getRetryDelay()` method has multiple responsibilities:
+1. Extract Retry-After header from error response (lines 65-91)
+2. Parse Retry-After as seconds (lines 79-83)
+3. Parse Retry-After as ISO date (lines 85-88)
+4. Calculate exponential backoff delay (lines 93-99)
+5. Apply jitter randomization (lines 95-97)
+
+- 4 nested if statements (6 levels of nesting)
+- 3 distinct code paths that don't share logic
+- Header parsing logic is complex and difficult to test in isolation
+- Method reads more like "what to do" than "what does it do"
+
+**Impact**:
+- High cyclomatic complexity (~8)
+- Difficult to test individual concerns in isolation
+- Bug fixes require understanding entire method
+- Code is harder to read and understand
+
+### Implementation Summary
+
+1. **Extract `extractRetryAfterHeader()` helper**:
+    - Takes error parameter
+    - Returns `number | null` for delay
+    - Handles both object and Headers types
+    - Parses seconds and ISO date formats
+    - Clamps to maxDelay
+
+2. **Extract `calculateBackoffDelay()` helper**:
+    - Takes retryCount parameter
+    - Calculates exponential backoff
+    - Applies jitter if enabled
+    - Clamps to maxDelay
+
+3. **Simplify `getRetryDelay()` main method**:
+    - Check Retry-After header first
+    - Fall back to exponential backoff
+    - Read like a story: "try header, else backoff"
+
+### Code Changes
+
+**Extract Header Parsing Helper**:
+```typescript
+private extractRetryAfterHeader(error?: unknown): number | null {
+  if (!error || typeof error !== 'object' || !('response' in error)) {
+    return null;
+  }
+
+  const axiosError = error as { response?: { headers?: unknown } };
+  const errorHeaders = axiosError.response?.headers;
+  
+  if (!errorHeaders) return null;
+
+  let retryAfterHeader: string | null | undefined;
+
+  if (typeof errorHeaders === 'object' && 'get' in errorHeaders && typeof errorHeaders.get === 'function') {
+    // Headers object with get method
+    const headersWithGet = errorHeaders as { get: (key: string) => string | null };
+    retryAfterHeader = headersWithGet.get('retry-after') || headersWithGet.get('Retry-After');
+  } else if (typeof errorHeaders === 'object') {
+    // Plain object with headers
+    const headersRecord = errorHeaders as Record<string, string | null>;
+    retryAfterHeader = headersRecord['retry-after'] || headersRecord['Retry-After'];
+  }
+
+  if (!retryAfterHeader) return null;
+
+  // Try parsing as seconds
+  const retryAfterSeconds = parseInt(retryAfterHeader, 10);
+  if (!isNaN(retryAfterSeconds)) {
+    return Math.min(retryAfterSeconds * TIME_CONSTANTS.SECOND_IN_MS, this.maxDelay);
+  }
+
+  // Try parsing as ISO date
+  const retryAfterDate = Date.parse(retryAfterHeader);
+  if (!isNaN(retryAfterDate)) {
+    return Math.min(retryAfterDate - Date.now(), this.maxDelay);
+  }
+
+  return null;
+}
+```
+
+**Extract Backoff Calculation**:
+```typescript
+private calculateBackoffDelay(retryCount: number): number {
+  let delay = this.initialDelay * Math.pow(this.backoffMultiplier, retryCount);
+  
+  if (this.jitter) {
+    delay = delay * (0.5 + Math.random());
+  }
+  
+  return Math.min(delay, this.maxDelay);
+}
+```
+
+**Simplified Main Method**:
+```typescript
+getRetryDelay(retryCount: number, error?: unknown): number {
+  // Check for Retry-After header first
+  const retryAfterDelay = this.extractRetryAfterHeader(error);
+  if (retryAfterDelay !== null) {
+    return retryAfterDelay;
+  }
+
+  // Fall back to exponential backoff
+  return this.calculateBackoffDelay(retryCount);
+}
+```
+
+### Files to Modify
+
+- `src/lib/api/retryStrategy.ts` - Extract 2 helper methods, simplify getRetryDelay (~10 lines added, ~25 lines simplified)
+- `__tests__/retryStrategy.test.ts` - Add tests for extracted methods (4-6 tests)
+
+### Expected Results
+
+- Cyclomatic complexity reduced from 8+ to ~2
+- Maximum indentation reduced from 6 levels to 2-3 levels
+- Header parsing logic isolated and testable
+- Backoff calculation logic isolated and testable
+- Main method reads like a story
+
+### Success Criteria
+
+- ✅ `extractRetryAfterHeader()` method created
+- ✅ `calculateBackoffDelay()` method created
+- ✅ `getRetryDelay()` simplified to call helpers
+- ✅ All behavior preserved (tests pass)
+- ✅ New tests for extracted methods added
+- ✅ All existing tests passing
+
+### See Also
+
+- [Blueprint.md Integration Resilience Patterns](./blueprint.md#integration-resilience-patterns)
+- [Blueprint.md DRY Principle and Code Quality](./blueprint.md#dry-principle-and-code-quality)
+
+---
+
+## [REFACTOR-027] Cache Key Factory Pattern
+
+**Status**: Pending
+**Priority**: Low
+**Assigned**: Unassigned
+**Created**: 2026-01-11
+
+### Description
+
+Refactor `CACHE_KEYS` and `CACHE_DEPENDENCIES` constants in `src/lib/cache.ts` to use a factory pattern for better extensibility and type safety.
+
+### Problem Identified
+
+**Hardcoded Cache Keys** (`src/lib/cache.ts` lines 719-836):
+- `CACHE_KEYS` object has 11 hardcoded key generator functions
+- `CACHE_DEPENDENCIES` object has 5 hardcoded dependency generator functions
+- Adding new cache keys requires modifying exported object
+- No validation for key format consistency
+- TypeScript `as const` assertion masks potential type issues
+
+**Impact**:
+- Adding new cache keys requires touching cache.ts file
+- No compile-time validation for key format consistency
+- Difficult to enforce naming conventions
+- Manual process to add new entity types
+
+### Implementation Summary
+
+1. **Create generic cache key factory**:
+    - Accept entity type and parameters
+    - Enforce naming convention: `entity:param`
+    - Type-safe key generation
+    - No manual object updates needed
+
+2. **Create cache key helper class**:
+    - Provide methods for all entity types
+    - Type-safe key generation
+    - Extensible without modifying cache.ts
+
+3. **Migrate consumers**:
+    - Update from `CACHE_KEYS.post(id)` to `cacheKeys.post(id)`
+    - Update from `CACHE_DEPENDENCIES.post(...)` to `cacheDependencies.post(...)`
+
+### Code Changes
+
+**Create Cache Key Factory**:
+```typescript
+class CacheKeyFactory {
+  private static SEPARATOR = ':'
+
+  static create(entity: 'post' | 'posts' | 'category' | 'categories' | 'tag' | 'tags' | 'media' | 'author' | 'search', params?: string | number): string {
+    return `${entity}${params ? this.SEPARATOR : ''}${params ?? ''}`
+  }
+
+  static createById(entity: 'post' | 'media' | 'author', id: number): string {
+    return this.create(entity, id.toString())
+  }
+
+  static createBySlug(entity: 'post' | 'category' | 'tag', slug: string): string {
+    return this.create(entity, slug)
+  }
+}
+
+export const cacheKeys = {
+  posts: (params?: string) => CacheKeyFactory.create('posts', params),
+  post: (slug: string) => CacheKeyFactory.createBySlug('post', slug),
+  postById: (id: number) => CacheKeyFactory.createById('post', id),
+  categories: () => CacheKeyFactory.create('categories'),
+  category: (slug: string) => CacheKeyFactory.createBySlug('category', slug),
+  tags: () => CacheKeyFactory.create('tags'),
+  tag: (slug: string) => CacheKeyFactory.createBySlug('tag', slug),
+  media: (id: number) => CacheKeyFactory.createById('media', id),
+  author: (id: number) => CacheKeyFactory.createById('author', id),
+  search: (query: string) => CacheKeyFactory.create('search', query),
+}
+```
+
+**Migrate CACHE_DEPENDENCIES to use cacheKeys**:
+```typescript
+export const cacheDependencies = {
+  post: (_postId: number | string, categories: number[], tags: number[], mediaId: number): string[] => {
+    const deps: string[] = [];
+    categories.forEach(catId => deps.push(cacheKeys.category(catId.toString())));
+    tags.forEach(tagId => deps.push(cacheKeys.tag(tagId.toString())));
+    if (mediaId > 0) deps.push(cacheKeys.media(mediaId));
+    return deps;
+  },
+  
+  postsList: (categories: number[] = [], tags: number[] = []): string[] => {
+    const deps: string[] = [];
+    categories.forEach(catId => deps.push(cacheKeys.category(catId.toString())));
+    tags.forEach(tagId => deps.push(cacheKeys.tag(tagId.toString())));
+    return deps;
+  },
+  
+  media: () => [],
+  author: () => [],
+  categories: () => [],
+  tags: () => [],
+}
+```
+
+### Files to Modify
+
+- `src/lib/cache.ts` - Refactor CACHE_KEYS and CACHE_DEPENDENCIES (~50 lines)
+- All files using cache keys and dependencies (estimated 5-10 files)
+
+### Expected Results
+
+- Type-safe cache key generation
+- Enforced naming convention through factory pattern
+- Easier to add new entity types
+- No need to modify cache.ts for new keys
+- Better code organization
+
+### Success Criteria
+
+- ✅ CacheKeyFactory class created
+- ✅ cacheKeys and cacheDependencies use factory pattern
+- ✅ All consumers migrated
+- ✅ Type-safe key generation
+- ✅ All tests passing (no behavioral changes)
+
+### Refactoring Principles Applied
+
+1. **DRY Principle**: Key generation logic defined once
+2. **Type Safety**: Compile-time validation of cache keys
+3. **Open/Closed**: Can extend without modifying existing code
+4. **Single Responsibility**: Factory handles key format, consumers handle specific keys
+
+### See Also
+
+- [Blueprint.md Data Architecture](./blueprint.md#data-architecture)
+- [Blueprint.md Cache Manager](./blueprint.md#cache-manager)
