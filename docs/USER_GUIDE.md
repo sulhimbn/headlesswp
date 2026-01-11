@@ -106,16 +106,29 @@ Currently, direct sharing buttons are not available. To share an article:
 
 ## Searching Content
 
-### Current Status
+### Using the Search Bar
 
-Search functionality is not currently available on the frontend. This feature is planned for future updates.
+Search for articles by keyword using the search bar on any page.
 
-### Alternative Browsing
+**Features**:
+- **Debounced search**: Automatically waits after you stop typing before searching (reduces unnecessary API calls)
+- **Loading indicator**: Shows spinner while searching
+- **Clear button**: Click to clear your search and start over
+- **Keyboard navigation**: Full keyboard support (Tab, Enter, Escape)
 
-To find specific content:
-- Browse by category using the navigation menu
-- Scroll through recent articles on the homepage
-- Check the "Berita" section for all articles
+**How to Search**:
+1. Click on the search bar (or press Tab to navigate to it)
+2. Type your search query
+3. Wait briefly (search is debounced for better performance)
+4. View search results as they appear
+5. Press Enter to submit your search immediately
+6. Click the X (clear) button to reset search
+
+**Search Tips**:
+- Use specific keywords for better results
+- Try different variations (e.g., "pemilihan" vs "pilpres")
+- Search works across all articles, categories, and tags
+- Search is not case-sensitive
 
 ---
 
@@ -321,7 +334,7 @@ Your privacy is important. The website:
 
 1. **Check multiple categories** for different perspectives
 2. **Visit regularly** for latest news updates
-3. **Use search** (when available) to find specific topics
+3. **Use search** to find specific topics
 4. **Follow links** to external sources for more information
 
 ### Mobile Usage
@@ -337,7 +350,6 @@ Your privacy is important. The website:
 
 The following features are planned for future updates:
 
-- **Search functionality**: Search for articles by keyword
 - **Tag browsing**: Browse articles by tags
 - **Comments section**: Discussion on articles
 - **Share buttons**: Easy sharing to social media
