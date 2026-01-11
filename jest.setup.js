@@ -22,6 +22,23 @@ jest.mock('next/server', () => ({
   }
 }))
 
+// Mock Next.js app router hooks
+const mockPush = jest.fn()
+const mockReplace = jest.fn()
+const mockBack = jest.fn()
+const mockForward = jest.fn()
+
+jest.mock('next/navigation', () => ({
+  useRouter: jest.fn(() => ({
+    push: mockPush,
+    replace: mockReplace,
+    back: mockBack,
+    forward: mockForward,
+  })),
+  useSearchParams: jest.fn(),
+  usePathname: jest.fn(),
+}))
+
 // Use Node.js webcrypto for getRandomValues API (same as browser)
 const nodeCrypto = require('crypto')
 
