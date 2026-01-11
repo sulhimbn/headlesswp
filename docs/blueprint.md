@@ -370,6 +370,14 @@ interface ApiListResult<T> extends ApiResult<T[]> {
 - Handles pagination metadata automatically
 - Lines eliminated: ~14
 
+**REFACTOR-018: CacheManager Metrics Extraction**:
+- Created `CacheMetricsCalculator` class (src/lib/cache/cacheMetricsCalculator.ts, 139 lines)
+- Extracted metrics methods: calculateStatistics, calculateAverageTtl, calculateEfficiencyLevel, calculatePerformanceMetrics, calculateMemoryUsage, formatMetricsForDisplay
+- Updated CacheManager to delegate metrics calls to CacheMetricsCalculator
+- Exported CacheEntry and CacheTelemetry interfaces from cache.ts for external use
+- Lines eliminated: ~43 (CacheManager reduced from 925 to 882 lines)
+- Clear separation of concerns: CacheMetricsCalculator handles metrics, CacheManager handles storage
+
 **Benefits**:
 1. **Reduced Maintenance**: Bug fixes or improvements to error handling/pagination only need to be made once
 2. **Consistency**: All resources (posts, categories, tags) have identical error handling and pagination
@@ -378,8 +386,9 @@ interface ApiListResult<T> extends ApiResult<T[]> {
 5. **Code Clarity**: Smaller, focused methods are easier to understand
 6. **Safer Defaults**: Service layer defaults to 'error' log level for better visibility
 7. **Extensibility**: New entity types can reuse generic patterns
+8. **Single Responsibility**: CacheMetricsCalculator focuses solely on metrics calculation
 
-**See Also**: [Task REFACTOR-010](./task.md#refactor-010), [Task REFACTOR-011](./task.md#refactor-011), [Task REFACTOR-012](./task.md#refactor-012), [Task REFACTOR-014](./task.md#refactor-014), [Task ARCH-ERROR-002](./task.md#arch-error-002)
+**See Also**: [Task REFACTOR-010](./task.md#refactor-010), [Task REFACTOR-011](./task.md#refactor-011), [Task REFACTOR-012](./task.md#refactor-012), [Task REFACTOR-014](./task.md#refactor-014), [Task REFACTOR-018](./task.md#refactor-018), [Task ARCH-ERROR-002](./task.md#arch-error-002)
 
 ## Integration Resilience Patterns
 
