@@ -234,6 +234,22 @@ export const enhancedPostService: IPostService = {
   getTags: async (): Promise<WordPressTag[]> => {
     const map = await getTagsMap();
     return Array.from(map.values());
+  },
+
+  searchPosts: async (query: string): Promise<PostWithMediaUrl[]> => {
+    const searchResults = await wordpressAPI.search(query);
+
+    if (!searchResults || searchResults.length === 0) {
+      return [];
+    }
+
+    const validation = dataValidator.validatePosts(searchResults);
+    if (!isValidationResultValid(validation)) {
+      logger.error(`Invalid search results for query: ${query}`, undefined, { module: 'enhancedPostService', errors: validation.errors });
+      return [];
+    }
+
+    return await enrichPostsWithMediaUrls(validation.data);
   }
 };
 

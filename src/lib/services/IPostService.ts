@@ -25,4 +25,5 @@ export interface IPostService {
   getPostById(id: number): Promise<PostWithDetails | null>;
   getCategories(): Promise<WordPressCategory[]>;
   getTags(): Promise<WordPressTag[]>;
+  searchPosts(query: string): Promise<PostWithMediaUrl[]>;
 }

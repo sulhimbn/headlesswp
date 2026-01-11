@@ -1390,6 +1390,30 @@ A searchable input component with debouncing, loading states, and full accessibi
 - Form submission with Enter key
 - ARIA attributes for screen readers
 - Semantic HTML with `role="search"` and proper labeling
+- Integrated into Header navigation with toggle button
+- Added `role="searchbox"` to input element for proper ARIA support
+
+**Header Integration** (Added: 2026-01-11):
+SearchBar is integrated into Header navigation for easy access across all pages.
+
+**Features**:
+- Search button in desktop navigation (next to navigation items)
+- Search button in mobile toolbar (next to menu button)
+- Toggle visibility: Click search button to open/close search bar
+- Escape key closes search bar when focused
+- Escape key also closes mobile menu
+- Search bar navigation to `/cari?q={query}` results page
+- Responsive design: Search bar adapts to all screen sizes
+
+**Usage**:
+```tsx
+import Header from '@/components/layout/Header'
+
+// Header automatically includes search button
+// Click search button to open search bar
+// Type query and press Enter or wait for debounce
+// Navigate to search results page (/cari?q=your-query)
+```
 
 **Design Tokens**:
 - Uses `--color-surface`, `--color-text-primary`, `--color-text-muted`, `--color-primary` for colors
