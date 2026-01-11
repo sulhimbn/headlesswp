@@ -287,18 +287,22 @@ interface ApiListResult<T> extends ApiResult<T[]> {
 - **Authors**: `getAuthorById()`
 
 **Implementation Status**:
- - ✅ **Phase 1 Complete**: Documentation and `ApiResult<T>` interface defined
-- ✅ **Phase 2 Complete**: Standardized methods implemented in `src/lib/api/standardized.ts`
-    - 31 methods (getById, getBySlug, getAll, search)
-    - All methods return `ApiResult<T>` or `ApiListResult<T>` with consistent error handling
-- ✅ **Phase 2 Complete**: Error result helper extracted for collection methods (REFACTOR-008)
-    - Created `createErrorListResult()` helper to eliminate 52 lines of duplicate error result structure
-    - Applied to `getAllPosts`, `searchPosts`, `getAllCategories`, `getAllTags`
-- ✅ **Phase 3 Complete**: Try-catch pattern extraction (REFACTOR-010)
-    - Created `fetchAndHandleNotFound()` helper to eliminate 40 lines of duplicate error handling
-    - Applied to `getPostBySlug`, `getCategoryById`, `getCategoryBySlug`, `getTagById`, `getTagBySlug`
-- ⏳ **Phase 4**: Migrate new code and critical paths to use standardized methods (future)
-- ⏳ **Phase 5**: Deprecate old methods in major version (future)
+  - ✅ **Phase 1 Complete**: Documentation and `ApiResult<T>` interface defined
+  - ✅ **Phase 2 Complete**: Standardized methods implemented in `src/lib/api/standardized.ts`
+     - 31 methods (getById, getBySlug, getAll, search)
+     - All methods return `ApiResult<T>` or `ApiListResult<T>` with consistent error handling
+  - ✅ **Phase 2 Complete**: Error result helper extracted for collection methods (REFACTOR-008)
+     - Created `createErrorListResult()` helper to eliminate 52 lines of duplicate error result structure
+     - Applied to `getAllPosts`, `searchPosts`, `getAllCategories`, `getAllTags`
+  - ✅ **Phase 3 Complete**: Try-catch pattern extraction (REFACTOR-010)
+     - Created `fetchAndHandleNotFound()` helper to eliminate 40 lines of duplicate error handling
+     - Applied to `getPostBySlug`, `getCategoryById`, `getCategoryBySlug`, `getTagById`, `getTagBySlug`
+  - ✅ **Phase 4 Complete**: Migrated service layer to use standardized API methods (INT-STD-004)
+     - Migrated `enhancedPostService` methods: getLatestPosts, getCategoryPosts, getAllPosts, getPaginatedPosts, getPostBySlug, getPostById
+     - All service methods now use `standardizedAPI` for consistent error handling and metadata tracking
+     - Resilience patterns (circuit breaker, retry strategy, rate limiting) now applied at service layer
+     - Preserved existing validation, enrichment, and caching behavior
+  - ⏳ **Phase 5**: Deprecate old methods in major version (future)
 
 **See Also**: [API Standardization Guidelines](./API_STANDARDIZATION.md)
 
@@ -1344,6 +1348,74 @@ curl http://localhost:3000/health
 - Example: PostCard compares post.id, post.title.rendered, etc.
 
 **See Also**: [Task PERF-001: PostCard Component Rendering Optimization](./task.md#perf-001)
+
+**SearchBar Component** (Added: 2026-01-11):
+A searchable input component with debouncing, loading states, and full accessibility support.
+
+**Features**:
+- Debounced input (configurable delay, default 300ms) to reduce API calls
+- Loading state with spinner indicator
+- Clear button to reset search query
+- Full keyboard navigation support
+- Form submission with Enter key
+- ARIA attributes for screen readers
+- Semantic HTML with `role="search"` and proper labeling
+
+**Design Tokens**:
+- Uses `--color-surface`, `--color-text-primary`, `--color-text-muted`, `--color-primary` for colors
+- Uses `--color-border` for borders
+- Uses `--radius-md`, `--radius-sm` for border radius
+- Uses `--transition-fast` for transitions
+
+**Accessibility**:
+- `role="search"` on form for landmark identification
+- Associated label with `sr-only` class
+- Search icon and loading indicator hidden with `aria-hidden="true"`
+- Clear button has proper `aria-label`
+- Input has `aria-label` and `aria-busy` attributes
+- Full keyboard navigation (Tab, Enter)
+
+**Responsive Design**:
+- Mobile-first approach with responsive padding (`py-2 sm:py-3`)
+- Responsive font sizes (`text-sm sm:text-base`)
+- Full-width by default
+
+**Memoization**:
+- Uses `React.memo` with custom comparison function
+- Prevents unnecessary re-renders when props unchanged
+- Compares: `placeholder`, `isLoading`, `debounceMs`, `className`, `initialValue`, `ariaLabel`, `onSearch`
+
+**Usage Example**:
+```tsx
+import SearchBar from '@/components/ui/SearchBar'
+
+function SearchPage() {
+  const [query, setQuery] = useState('')
+  const [results, setResults] = useState([])
+  const [isLoading, setIsLoading] = useState(false)
+
+  const handleSearch = async (searchQuery: string) => {
+    setIsLoading(true)
+    const posts = await searchPosts(searchQuery)
+    setResults(posts)
+    setIsLoading(false)
+  }
+
+  return (
+    <div>
+      <SearchBar
+        onSearch={handleSearch}
+        placeholder="Search articles..."
+        isLoading={isLoading}
+        debounceMs={300}
+        ariaLabel="Search articles"
+      />
+    </div>
+  )
+}
+```
+
+**Tests**: 45 tests covering rendering, user input, clear button, loading state, form submission, accessibility, design tokens, responsive design, focus management, keyboard navigation, edge cases, and custom debounce
 
 ### Sanitization Standards
 
