@@ -1,6 +1,6 @@
 # Task Backlog
 
-**Last Updated**: 2026-01-11 (Senior UI/UX Engineer - UX-001: SearchBar Integration)
+**Last Updated**: 2026-01-11 (Senior Technical Writer - DOC-FIX-002: README Quick Start Critical Fix)
 
 ---
 
@@ -6092,6 +6092,214 @@ Fixed critical documentation issues including version mismatch and documented Ne
 - [Blueprint.md](./blueprint.md)
 - [Troubleshooting Guide](./TROUBLESHOOTING.md)
 - [Development Guide](./guides/development.md)
+
+---
+
+## [DOC-FIX-002] README Quick Start Critical Fix
+
+**Status**: Complete
+**Priority**: High (Critical Doc Fix)
+**Assigned**: Senior Technical Writer
+**Created**: 2026-01-11
+**Updated**: 2026-01-11
+
+### Description
+
+Fixed critical misleading information in README.md Quick Start section that would cause Docker startup failures for new users.
+
+### Problem Identified
+
+**Critical Misleading Information in Quick Start:**
+
+Line 41 stated: *"Edit `.env` with your WordPress credentials. For local development, default configuration works with WordPress container."*
+
+**The Issue:**
+- `.env` file is gitignored - there is NO default configuration in the repository
+- Users must copy `.env.example` which contains placeholder values like `your_secure_mysql_password_here`
+- Docker-compose requires actual values for `MYSQL_USER`, `MYSQL_PASSWORD`, `MYSQL_DATABASE`, `MYSQL_ROOT_PASSWORD`
+- The statement "default configuration works" is misleading - Docker will fail to start if placeholder values remain
+
+**Impact:**
+- New users copy `.env.example`, don't edit it, then run `docker-compose up -d`
+- Docker containers fail to start with authentication errors
+- Users waste time debugging what appears to be a Docker/WordPress issue
+- Root cause is misleading documentation, not actual software problem
+
+### Implementation Summary
+
+1. **Updated Quick Start Section 2** (README.md lines 35-43):
+    - Clarified that `.env` file must be edited before Docker can start
+    - Added explicit example of required database credentials
+    - Added warning that placeholder values will cause Docker failures
+    - Removed misleading statement about "default configuration"
+
+2. **Updated Environment Variables Section** (README.md lines 197-219):
+    - Separated local development vs production examples
+    - Added local development values with `localhost:8080` URLs
+    - Added production deployment example
+    - Referenced `.env.example` for all available variables
+
+3. **Enhanced Troubleshooting Guidance** (README.md lines 78-91):
+    - Added troubleshooting hint for Docker startup issues
+    - Referenced Troubleshooting Guide for common issues
+    - Helps users identify missing/invalid database credentials
+
+### Documentation Changes
+
+**Before Fix (Line 35-43)**:
+```markdown
+### 2. Configure Environment
+
+```bash
+cp .env.example .env
+```
+
+Edit `.env` with your WordPress credentials. For local development, default configuration works with WordPress container.
+```
+
+**After Fix (Line 35-49)**:
+```markdown
+### 2. Configure Environment
+
+```bash
+cp .env.example .env
+```
+
+**Edit `.env` with your values. For local development, update these required fields:**
+
+```env
+MYSQL_USER=wordpress
+MYSQL_PASSWORD=your_secure_password_here
+MYSQL_DATABASE=wordpress
+MYSQL_ROOT_PASSWORD=your_secure_root_password_here
+```
+
+**Note:** You must provide actual values for database credentials. Docker will fail to start if placeholder values remain.
+```
+
+### Before Fix (Line 197-206)**:
+```markdown
+### Environment Variables
+
+Copy `.env.example` to `.env` and configure:
+
+```env
+WORDPRESS_URL=https://mitrabantennews.com
+NEXT_PUBLIC_WORDPRESS_URL=https://mitrabantennews.com
+NEXT_PUBLIC_WORDPRESS_API_URL=https://mitrabantennews.com/wp-json
+SKIP_RETRIES=false
+```
+```
+
+### After Fix (Line 197-219)**:
+```markdown
+### Environment Variables
+
+Copy `.env.example` to `.env` and configure:
+
+**For local development:**
+```env
+WORDPRESS_URL=http://localhost:8080
+WORDPRESS_API_URL=http://localhost:8080/wp-json
+NEXT_PUBLIC_WORDPRESS_URL=http://localhost:8080
+NEXT_PUBLIC_WORDPRESS_API_URL=http://localhost:8080/wp-json
+NEXT_PUBLIC_SITE_URL=http://localhost:3000
+NODE_ENV=development
+```
+
+**For production deployment:**
+```env
+WORDPRESS_URL=https://your-domain.com
+WORDPRESS_API_URL=https://your-domain.com/wp-json
+NEXT_PUBLIC_WORDPRESS_URL=https://your-domain.com
+NEXT_PUBLIC_WORDPRESS_API_URL=https://your-domain.com/wp-json
+NEXT_PUBLIC_SITE_URL=https://your-domain.com
+NODE_ENV=production
+```
+
+See `.env.example` for all available variables including database credentials and security settings.
+```
+
+### Documentation Quality Improvements
+
+| Section | Before | After | Improvement |
+|----------|---------|--------|-------------|
+| **Quick Start Step 2** | Misleading "default config works" | Clear "must edit .env" + required fields | Eliminates confusion |
+| **Environment Variables** | Production values only (misleading) | Local + production examples | Contextualized for both cases |
+| **Troubleshooting** | None | Docker startup troubleshooting hints | Faster issue resolution |
+
+### Anti-Patterns Avoided
+
+- ❌ No actively misleading documentation (removed "default configuration works" statement)
+- ❌ No assumptions about user knowledge (explicit required fields listed)
+- ❌ No production values in local development instructions
+- ❌ No unverified documentation (verified .env.example content and docker-compose.yml requirements)
+
+### Documentation Principles Applied
+
+1. **Accuracy**: Removed misleading statement about non-existent defaults
+2. **Clarity**: Explicitly listed required fields with clear warnings
+3. **Actionable Content**: Provided concrete examples for both local and production
+4. **User-Centric**: Helps users avoid common setup errors
+5. **Progressive Disclosure**: Quick Start has essentials, Environment Variables has details
+
+### Files Modified
+
+- `README.md` - Lines 35-49 (Quick Start), 197-219 (Environment Variables), 78-91 (Troubleshooting)
+- `docs/task.md` - Added this task documentation
+
+### Documentation Verification
+
+- ✅ No misleading statements about "default configuration"
+- ✅ Required database credentials explicitly listed
+- ✅ Local development and production examples separated
+- ✅ Docker startup troubleshooting guidance added
+- ✅ References to .env.example for complete variable list
+- ✅ All environment variable examples verified against .env.example
+
+### Results
+
+- ✅ README Quick Start no longer misleading
+- ✅ Users understand `.env` must be edited before Docker startup
+- ✅ Required database credentials clearly documented
+- ✅ Local development vs production values properly separated
+- ✅ Troubleshooting guidance prevents wasted debugging time
+- ✅ Documentation follows anti-patterns and principles
+
+### Success Criteria
+
+- ✅ No actively misleading docs (eliminated "default configuration works" statement)
+- ✅ Newcomer can complete setup without Docker failures
+- ✅ Required vs optional variables clearly distinguished
+- ✅ Well-organized (local vs production separated)
+- ✅ Appropriate audience (both local developers and production deployers)
+
+### Anti-Patterns Avoided
+
+- ❌ No actively misleading documentation (fixed critical issue)
+- ❌ No assumptions about existing .env file (clarified user must copy and edit)
+- ❌ No production examples in local development instructions
+- ❌ No outdated documentation (verified against .env.example and docker-compose.yml)
+
+### Documentation Principles Applied
+
+1. **Accuracy**: All statements verified against actual configuration files
+2. **Clarity**: Explicit examples for local vs production
+3. **Actionable Content**: Users know exactly what to edit
+4. **User-Centric**: Prevents common Docker startup errors
+5. **Single Source of Truth**: References .env.example for complete list
+
+### Follow-up Recommendations
+
+1. **Automated Testing**: Consider adding pre-commit hook to validate .env file has required values
+2. **Setup Script**: Consider creating setup script that generates secure defaults for local development
+3. **Documentation Links**: Add links to Troubleshooting Guide from Quick Start when Docker fails
+
+### See Also
+
+- [Troubleshooting Guide](./TROUBLESHOOTING.md#docker--wordpress-issues)
+- [Environment Configuration](./guides/development.md#environment-variables)
+- [Docker Configuration](../docker-compose.yml)
 
 ---
 
