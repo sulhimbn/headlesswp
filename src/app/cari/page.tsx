@@ -8,7 +8,8 @@ import { UI_TEXT } from '@/lib/constants/uiText'
 import Icon from '@/components/ui/Icon'
 import type { PostWithMediaUrl } from '@/lib/services/IPostService'
 
-export const revalidate = 300 // REVALIDATE_TIMES.HOMEPAGE (5 minutes)
+
+export const revalidate = 300 // 5 minutes
 
 interface SearchPageProps {
   searchParams: { q?: string }

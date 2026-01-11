@@ -166,6 +166,55 @@ describe('UI_TEXT constants', () => {
     });
   });
 
+  describe('search', () => {
+    it('should have placeholder text', () => {
+      expect(UI_TEXT.search.placeholder).toBe('Cari berita...');
+    });
+
+    it('should have label text', () => {
+      expect(UI_TEXT.search.label).toBe('Cari berita');
+    });
+  });
+
+  describe('searchPage', () => {
+    it('should have heading function that returns formatted string', () => {
+      const result = UI_TEXT.searchPage.heading('test query');
+      expect(result).toBe('Hasil pencarian: "test query"');
+    });
+
+    it('should have heading that handles empty query', () => {
+      const result = UI_TEXT.searchPage.heading('');
+      expect(result).toBe('Hasil pencarian: ""');
+    });
+
+    it('should have heading that handles special characters in query', () => {
+      const result = UI_TEXT.searchPage.heading('test & query <script>');
+      expect(result).toBe('Hasil pencarian: "test & query <script>"');
+    });
+
+    it('should have noResults text', () => {
+      expect(UI_TEXT.searchPage.noResults).toBe('Tidak ada hasil');
+    });
+
+    it('should have noResultsDescription function that returns formatted string', () => {
+      const result = UI_TEXT.searchPage.noResultsDescription('test query');
+      expect(result).toBe('Tidak ada berita yang cocok dengan "test query". Coba kata kunci lain.');
+    });
+
+    it('should have noResultsDescription that handles empty query', () => {
+      const result = UI_TEXT.searchPage.noResultsDescription('');
+      expect(result).toBe('Tidak ada berita yang cocok dengan "". Coba kata kunci lain.');
+    });
+
+    it('should have emptySearch text', () => {
+      expect(UI_TEXT.searchPage.emptySearch).toBe('Masukkan kata kunci');
+    });
+
+    it('should have emptySearchDescription text', () => {
+      expect(UI_TEXT.searchPage.emptySearchDescription).toBe('Silakan masukkan kata kunci untuk mencari berita.');
+    });
+  });
+
   describe('footer', () => {
     it('should have about text', () => {
       expect(UI_TEXT.footer.about).toBe('Tentang Kami');

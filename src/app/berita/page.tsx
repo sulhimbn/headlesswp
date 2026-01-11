@@ -9,7 +9,7 @@ import Footer from '@/components/layout/Footer'
 import { UI_TEXT } from '@/lib/constants/uiText'
 import { PARSING } from '@/lib/constants/appConstants'
 
-export const revalidate = 300 // REVALIDATE_TIMES.POST_LIST (5 minutes)
+export const revalidate = 300 // 5 minutes
 
 export default async function BeritaPage({
   searchParams,

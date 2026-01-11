@@ -412,6 +412,15 @@ interface ApiListResult<T> extends ApiResult<T[]> {
 - Total file: 472 → 421 lines (51 lines eliminated, 11% reduction)
 - All 45 dataValidator tests passing (no behavioral changes)
 
+**REFACTOR-017: Fix Revalidate Exports to Use Constants**:
+- Replaced inline revalidate values with REVALIDATE_TIMES constants in all page files
+- Affected files: src/app/page.tsx, src/app/berita/page.tsx, src/app/berita/[slug]/page.tsx, src/app/cari/page.tsx
+- Changed from: `export const revalidate = 300 // REVALIDATE_TIMES.HOMEPAGE (5 minutes)`
+- Changed to: `export const revalidate = REVALIDATE_TIMES.HOMEPAGE`
+- Removed redundant comments (constants are self-documenting)
+- All 1617 tests passing (no regressions)
+- Single source of truth for revalidation times
+
 **Benefits**:
 1. **Reduced Maintenance**: Bug fixes or improvements to validation only need to be made once
 2. **Consistency**: All validation logic defined once

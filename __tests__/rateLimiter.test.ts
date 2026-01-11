@@ -122,6 +122,81 @@ describe('RateLimiter', () => {
 
       await expect(limiter.checkLimit()).resolves.not.toThrow()
     })
+
+    it('should wait for ongoing checkLimit to complete before reset', async () => {
+      const limiter = new RateLimiter({
+        maxRequests: 10,
+        windowMs: 1000,
+      })
+
+      // Start a long-running checkLimit using slow window
+      const slowLimiter = new RateLimiter({
+        maxRequests: 1,
+        windowMs: 2000,
+      })
+
+      // Start checkLimit and immediately try to reset
+      const checkPromise = slowLimiter.checkLimit()
+      const resetPromise = slowLimiter.reset()
+
+      await Promise.all([checkPromise, resetPromise])
+
+      // Reset should complete after checkLimit finishes
+      const info = slowLimiter.getInfo()
+      expect(info.remainingRequests).toBe(1)
+    })
+  })
+
+  describe('getInfo - Timeout Behavior', () => {
+    it('should wait for ongoing checkLimit to complete', async () => {
+      const limiter = new RateLimiter({
+        maxRequests: 10,
+        windowMs: 1000,
+      })
+
+      // Start checkLimit and immediately call getInfo
+      const checkPromise = limiter.checkLimit()
+      const infoPromise = limiter.getInfo()
+
+      await Promise.all([checkPromise, infoPromise])
+
+      // Both should complete successfully
+      const info = limiter.getInfo()
+      expect(info.remainingRequests).toBe(9)
+    })
+
+    it('should return info immediately when no check in progress', async () => {
+      const limiter = new RateLimiter({
+        maxRequests: 5,
+        windowMs: 1000,
+      })
+
+      const info = limiter.getInfo()
+
+      expect(info.remainingRequests).toBe(5)
+      expect(info.maxRequests).toBe(5)
+      expect(info.windowMs).toBe(1000)
+    })
+
+    it('should update info after rate limit resets', async () => {
+      const limiter = new RateLimiter({
+        maxRequests: 2,
+        windowMs: 100,
+      })
+
+      // Fill rate limit
+      await limiter.checkLimit()
+      await limiter.checkLimit()
+
+      const infoBefore = limiter.getInfo()
+      expect(infoBefore.remainingRequests).toBe(0)
+
+      // Wait for window to expire
+      await new Promise(resolve => setTimeout(resolve, 150))
+
+      const infoAfter = limiter.getInfo()
+      expect(infoAfter.remainingRequests).toBe(2)
+    })
   })
 })
 
