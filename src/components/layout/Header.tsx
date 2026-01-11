@@ -2,10 +2,12 @@
 
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { useState, useEffect, useRef, memo } from 'react'
+import { useState, useEffect, useRef, memo, Suspense } from 'react'
+import dynamic from 'next/dynamic'
 import Icon from '@/components/ui/Icon'
-import SearchBar from '@/components/ui/SearchBar'
 import { UI_TEXT } from '@/lib/constants/uiText'
+
+const SearchBar = dynamic(() => import('@/components/ui/SearchBar'), { ssr: false })
 
 const NAVIGATION_ITEMS = [
   { href: '/', label: 'Beranda' },
@@ -149,11 +151,13 @@ export default memo(function Header() {
         >
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
             <div className="max-w-2xl mx-auto">
-              <SearchBar
-                onSearch={handleSearch}
-                placeholder={UI_TEXT.search.placeholder}
-                ariaLabel={UI_TEXT.search.label}
-              />
+              <Suspense fallback={<div className="h-10 sm:h-12 bg-[hsl(var(--color-secondary-dark))] rounded-[var(--radius-md)] animate-pulse" />}>
+                <SearchBar
+                  onSearch={handleSearch}
+                  placeholder={UI_TEXT.search.placeholder}
+                  ariaLabel={UI_TEXT.search.label}
+                />
+              </Suspense>
             </div>
           </div>
         </div>
