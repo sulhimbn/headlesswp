@@ -1,6 +1,132 @@
 # Task Backlog
 
-**Last Updated**: 2026-01-11 (Senior Technical Writer - DOC-FIX-002: README Quick Start Critical Fix)
+**Last Updated**: 2026-01-11 (Principal Software Architect - ARCH-CACHE-INTERFACE-001: Cache Manager Interface Definition)
+
+---
+
+## [ARCH-CACHE-INTERFACE-001] Cache Manager Interface Definition and Dependency Injection
+
+**Status**: Complete
+**Priority**: High
+**Assigned**: Principal Software Architect
+**Created**: 2026-01-11
+**Updated**: 2026-01-11
+
+### Description
+
+Created interfaces for cache manager and metrics calculator, applied Dependency Injection pattern to cache consumers (CacheWarmer, EnhancedPostService) to improve testability and follow Dependency Inversion Principle.
+
+### Problem Identified
+
+**Tight Coupling to Concrete Cache Implementation**:
+- Cache manager was a concrete class with no interface definition
+- Services (enhancedPostService, cacheWarmer) imported and used `cacheManager` directly
+- Created tight coupling to concrete implementation
+- Difficult to mock cache for unit tests
+- Not aligned with existing interface pattern (IWordPressAPI, IPostService)
+
+**Impact**:
+- Reduced testability for services that use cache
+- Tight coupling between services and concrete cache implementation
+- Difficult to swap cache implementations (e.g., Redis, Memcached)
+- Violates Dependency Inversion Principle
+
+### Implementation Summary
+
+1. **Created ICacheManager Interface** (`src/lib/api/ICacheManager.ts`):
+    - Defined all cache manager operations with TypeScript types
+    - Methods: `get()`, `set()`, `delete()`, `invalidate()`, `clearAll()`, `clearPattern()`, `getStats()`, `getPerformanceMetrics()`, `cleanup()`, `cleanupOrphanDependencies()`, `resetStats()`, `getMemoryUsage()`, `invalidateByEntityType()`, `getKeysByPattern()`, `getDependencies()`, `clear()`
+    - Provides explicit contract for cache operations
+
+2. **Created ICacheMetricsCalculator Interface** (`src/lib/api/ICacheMetricsCalculator.ts`):
+    - Defined all metrics calculation operations with TypeScript types
+    - Methods: `calculateStatistics()`, `calculateAverageTtl()`, `calculateEfficiencyLevel()`, `calculatePerformanceMetrics()`, `calculateMemoryUsage()`, `formatMetricsForDisplay()`
+    - Enables testing of cache metrics without concrete implementation
+
+3. **Updated CacheManager Class** (`src/lib/cache.ts`):
+    - Added `implements ICacheManager` to class declaration
+    - Ensures all interface methods are implemented
+
+4. **Updated CacheMetricsCalculator Class** (`src/lib/cache/cacheMetricsCalculator.ts`):
+    - Added `implements ICacheMetricsCalculator` to class declaration
+    - Ensures all interface methods are implemented
+
+5. **Applied Dependency Injection to CacheWarmer** (`src/lib/services/cacheWarmer.ts`):
+    - Added constructor parameter: `constructor(cache: ICacheManager = cacheManager)`
+    - Stores cache manager as private instance variable
+    - Updated all cache operations to use `this.cacheManager`
+    - Maintains backward compatibility with default parameter
+
+6. **Added Optional Cache Injection to EnhancedPostService** (`src/lib/services/enhancedPostService.ts`):
+    - Updated `getEntityMap()` function to accept optional `cacheManager?: ICacheManager` parameter
+    - Provides default value from global `cacheManager` for backward compatibility
+    - Allows tests to inject mock cache manager when needed
+
+### Code Changes
+
+**Files Created**:
+- `src/lib/api/ICacheManager.ts` (22 lines)
+- `src/lib/api/ICacheMetricsCalculator.ts` (10 lines)
+
+**Files Modified**:
+- `src/lib/cache.ts` (added import for ICacheManager, implements ICacheManager)
+- `src/lib/cache/cacheMetricsCalculator.ts` (added import for ICacheMetricsCalculator, implements ICacheMetricsCalculator)
+- `src/lib/services/cacheWarmer.ts` (added constructor parameter, updated 3 methods to use this.cacheManager)
+- `src/lib/services/enhancedPostService.ts` (added import for ICacheManager, updated EntityMapOptions to include optional cacheManager parameter, updated getEntityMap to use injected cache)
+
+**Files Modified for Documentation**:
+- `docs/blueprint.md` (added ARCH-CACHE-INTERFACE-001 section with implementation details)
+- `docs/task.md` (added this task entry)
+
+### Test Results
+
+- 1616 tests passing (no regressions)
+- 48 test suites passing
+- 1 test suite skipped (WORDPRESS_API_AVAILABLE)
+- ESLint passes with no errors
+- TypeScript compilation passes
+
+### Results
+
+- Cache manager interface defined (ICacheManager)
+- Metrics calculator interface defined (ICacheMetricsCalculator)
+- CacheManager class implements ICacheManager
+- CacheMetricsCalculator class implements ICacheMetricsCalculator
+- Dependency Injection applied to CacheWarmer
+- Optional cache injection added to EnhancedPostService
+- Improved testability for cache consumers
+- Better alignment with SOLID principles (Dependency Inversion)
+- Consistent with existing interface pattern (IWordPressAPI, IPostService)
+- Zero regressions (all tests passing)
+
+### Success Criteria
+
+- Interfaces defined for cache operations (ICacheManager, ICacheMetricsCalculator)
+- Dependency Injection applied (CacheWarmer accepts ICacheManager via constructor)
+- Testability improved (mocks can be injected for testing)
+- Zero regressions (all 1616 tests passing)
+- Documentation updated (blueprint.md, task.md)
+
+### Anti-Patterns Avoided
+
+- No tight coupling to concrete implementation
+- No breaking changes (default parameters maintain backward compatibility)
+- No test failures (all existing tests still pass)
+- No type errors (TypeScript compilation passes)
+
+### Architectural Principles Applied
+
+1. **Dependency Inversion**: High-level modules depend on abstractions (ICacheManager), not concrete implementations
+2. **Interface Segregation**: Small, focused interfaces with only relevant methods
+3. **Open/Closed**: Can extend with new implementations without modifying consumers
+4. **Single Responsibility**: Each interface has clear, focused purpose
+5. **Consistency**: Aligns with existing interface pattern (IWordPressAPI, IPostService)
+
+### See Also
+
+- [Blueprint.md Cache Manager Interface Documentation](./blueprint.md#cache-manager-interface-definition-arch-cache-interface-001)
+- [Interface Definition (ARCH-INTERFACE-001)](./blueprint.md#interface-definition-arch-interface-001)
+- [Dependency Management (ARCH-DEP-001)](./blueprint.md#dependency-management-arch-dep-001)
 
 ---
 

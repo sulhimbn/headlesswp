@@ -1000,6 +1000,85 @@ async function cacheFetch<T>(
 
 **See Also**: [Task ARCH-CACHE-FETCH-001: Cache Fetch Utility](./task.md#arch-cache-fetch-001)
 
+### Cache Manager Interface Definition (ARCH-CACHE-INTERFACE-001)
+
+**Principle**: Dependency Inversion - Define cache contract as abstraction to improve testability and flexibility.
+
+**Problem**: Cache manager was a concrete class with no interface definition, creating tight coupling to implementation and making it difficult to mock for unit tests.
+
+**Solution**: Created `ICacheManager` and `ICacheMetricsCalculator` interfaces to define cache contracts, and applied Dependency Injection to cache consumers.
+
+**Implementation Details**:
+
+1. **Created `ICacheManager` interface** (`src/lib/api/ICacheManager.ts`):
+   - Defines all cache manager operations: `get()`, `set()`, `delete()`, `invalidate()`, `clearAll()`, `clearPattern()`, `getStats()`, `getPerformanceMetrics()`, `cleanup()`, `cleanupOrphanDependencies()`, `resetStats()`, `getMemoryUsage()`, `invalidateByEntityType()`, `getKeysByPattern()`, `getDependencies()`, `clear()`
+   - Provides explicit contract for cache operations
+   - Enables easy mocking for unit tests
+
+2. **Created `ICacheMetricsCalculator` interface** (`src/lib/api/ICacheMetricsCalculator.ts`):
+   - Defines all metrics calculation operations: `calculateStatistics()`, `calculateAverageTtl()`, `calculateEfficiencyLevel()`, `calculatePerformanceMetrics()`, `calculateMemoryUsage()`, `formatMetricsForDisplay()`
+   - Enables testing of cache metrics without concrete implementation
+
+3. **Updated `CacheManager` class** (`src/lib/cache.ts`):
+   - Added `implements ICacheManager` to class declaration
+   - Ensures all interface methods are implemented
+
+4. **Updated `CacheMetricsCalculator` class** (`src/lib/cache/cacheMetricsCalculator.ts`):
+   - Added `implements ICacheMetricsCalculator` to class declaration
+   - Ensures all interface methods are implemented
+
+5. **Applied Dependency Injection to `CacheWarmer`** (`src/lib/services/cacheWarmer.ts`):
+   - Added constructor parameter: `constructor(cache: ICacheManager = cacheManager)`
+   - Stores cache manager as private instance variable
+   - Uses `this.cacheManager` for all cache operations
+   - Allows tests to inject mock cache manager
+
+6. **Added Optional Cache Injection to `EnhancedPostService`** (`src/lib/services/enhancedPostService.ts`):
+   - Updated `getEntityMap()` function to accept optional `cacheManager` parameter
+   - Provides default value from global `cacheManager` for backward compatibility
+   - Allows tests to inject mock cache manager when needed
+
+**Dependency Injection Applied**:
+
+```typescript
+// CacheWarmer accepts cache manager via constructor (Dependency Injection)
+class CacheWarmer {
+  private cacheManager: ICacheManager;
+
+  constructor(cache: ICacheManager = cacheManager) {
+    this.cacheManager = cache;
+  }
+
+  async warmCategories(): Promise<number> {
+    const categories = await wordpressAPI.getCategories();
+    this.cacheManager.set('categories', categories, CACHE_TTL.CATEGORIES);
+    return Date.now() - startTime;
+  }
+}
+
+// Default instance uses real cache manager
+export const cacheWarmer = new CacheWarmer();
+```
+
+**Benefits**:
+
+1. **Testability**: Easy to create mock cache manager for unit tests
+2. **Loose Coupling**: Services depend on `ICacheManager` abstraction, not concrete implementation
+3. **Flexibility**: Can swap cache implementations (e.g., Redis, Memcached) without changing consumers
+4. **Type Safety**: Explicit contract ensures all cache operations are available
+5. **SOLID Compliance**: Dependency Inversion Principle (DIP) applied
+6. **Consistency**: Aligns with existing interface pattern (IWordPressAPI, IPostService)
+7. **Backward Compatibility**: Default parameters maintain existing behavior
+
+**Test Results**:
+- 1616 tests passing (no regressions)
+- 48 test suites passing
+- 1 test suite skipped (WORDPRESS_API_AVAILABLE)
+- ESLint passes with no errors
+- TypeScript compilation passes
+
+**See Also**: [Task ARCH-CACHE-INTERFACE-001: Cache Manager Interface Definition](./task.md#arch-cache-interface-001)
+
 ### Error Handling Refactoring (ARCH-ERROR-001)
 
 **Principle**: Centralized error handling via apiClient resilience patterns instead of layer-specific error swallowing.

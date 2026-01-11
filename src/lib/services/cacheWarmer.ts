@@ -1,6 +1,7 @@
 import { wordpressAPI } from '../wordpress';
 import { cacheManager, CACHE_TTL } from '../cache';
 import { logger } from '@/lib/utils/logger';
+import type { ICacheManager } from '@/lib/api/ICacheManager';
 
 interface CacheWarmResult {
   name: string;
@@ -10,6 +11,11 @@ interface CacheWarmResult {
 }
 
 class CacheWarmer {
+  private cacheManager: ICacheManager;
+
+  constructor(cache: ICacheManager = cacheManager) {
+    this.cacheManager = cache;
+  }
   async warmAll(): Promise<{ total: number; success: number; failed: number; results: CacheWarmResult[] }> {
     const startTime = Date.now();
     const results: CacheWarmResult[] = [];
@@ -63,19 +69,19 @@ class CacheWarmer {
   private async warmCategories(): Promise<number> {
     const startTime = Date.now();
     const categories = await wordpressAPI.getCategories();
-    cacheManager.set('categories', categories, CACHE_TTL.CATEGORIES);
+    this.cacheManager.set('categories', categories, CACHE_TTL.CATEGORIES);
     return Date.now() - startTime;
   }
 
   private async warmTags(): Promise<number> {
     const startTime = Date.now();
     const tags = await wordpressAPI.getTags();
-    cacheManager.set('tags', tags, CACHE_TTL.TAGS);
+    this.cacheManager.set('tags', tags, CACHE_TTL.TAGS);
     return Date.now() - startTime;
   }
 
   getStats(): { hits: number; misses: number; hitsRate: number } {
-    const stats = cacheManager.getStats();
+    const stats = this.cacheManager.getStats();
     const hitsRate = stats.hits + stats.misses > 0
       ? (stats.hits / (stats.hits + stats.misses)) * 100
       : 0;
