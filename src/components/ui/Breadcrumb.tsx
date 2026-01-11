@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { UI_TEXT } from '@/lib/constants/uiText'
+import { memo } from 'react'
 
 interface BreadcrumbItem {
   label: string
@@ -10,7 +11,7 @@ interface BreadcrumbProps {
   items: BreadcrumbItem[]
 }
 
-export default function Breadcrumb({ items }: BreadcrumbProps) {
+function BreadcrumbComponent({ items }: BreadcrumbProps) {
   return (
     <nav className="flex" aria-label="Breadcrumb">
       <ol className="inline-flex items-center space-x-1 md:space-x-3">
@@ -57,3 +58,15 @@ export default function Breadcrumb({ items }: BreadcrumbProps) {
     </nav>
   )
 }
+
+function arePropsEqual(prevProps: BreadcrumbProps, nextProps: BreadcrumbProps): boolean {
+  if (prevProps.items.length !== nextProps.items.length) {
+    return false
+  }
+  return prevProps.items.every((item, index) => 
+    item.label === nextProps.items[index].label &&
+    item.href === nextProps.items[index].href
+  )
+}
+
+export default memo(BreadcrumbComponent, arePropsEqual)
