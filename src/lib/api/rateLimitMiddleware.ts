@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { ApiErrorType } from './errors'
+import { RATE_LIMIT } from '@/lib/constants/appConstants'
+import { TIME_CONSTANTS } from '@/lib/api/config'
 
 export interface ApiRouteRateLimitOptions {
   key: string
@@ -8,11 +10,11 @@ export interface ApiRouteRateLimitOptions {
 }
 
 const API_ROUTE_RATE_LIMITS: Record<string, ApiRouteRateLimitOptions> = {
-  health: { key: 'health', maxRequests: 300, windowMs: 60000 },
-  readiness: { key: 'readiness', maxRequests: 300, windowMs: 60000 },
-  metrics: { key: 'metrics', maxRequests: 60, windowMs: 60000 },
-  cache: { key: 'cache', maxRequests: 10, windowMs: 60000 },
-  cspReport: { key: 'csp-report', maxRequests: 30, windowMs: 60000 },
+  health: { key: 'health', maxRequests: RATE_LIMIT.HEALTH_MAX_REQUESTS, windowMs: RATE_LIMIT.DEFAULT_WINDOW_MS },
+  readiness: { key: 'readiness', maxRequests: RATE_LIMIT.READINESS_MAX_REQUESTS, windowMs: RATE_LIMIT.DEFAULT_WINDOW_MS },
+  metrics: { key: 'metrics', maxRequests: RATE_LIMIT.METRICS_MAX_REQUESTS, windowMs: RATE_LIMIT.DEFAULT_WINDOW_MS },
+  cache: { key: 'cache', maxRequests: RATE_LIMIT.CACHE_MAX_REQUESTS, windowMs: RATE_LIMIT.DEFAULT_WINDOW_MS },
+  cspReport: { key: 'csp-report', maxRequests: RATE_LIMIT.CSP_REPORT_MAX_REQUESTS, windowMs: RATE_LIMIT.DEFAULT_WINDOW_MS },
 }
 
 interface RateLimitState {
@@ -87,7 +89,7 @@ export function withApiRateLimit(
       const errorObj = error as { type?: string; statusCode?: number; message?: string; retryAfter?: number }
       
       if (errorObj.type === ApiErrorType.RATE_LIMIT_ERROR) {
-        const retryAfter = errorObj.retryAfter || 60
+        const retryAfter = errorObj.retryAfter || RATE_LIMIT.DEFAULT_RETRY_AFTER_SECONDS
         return NextResponse.json(
           {
             success: false,

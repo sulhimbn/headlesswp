@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { telemetryCollector } from '@/lib/api/telemetry'
 import { withApiRateLimit } from '@/lib/api/rateLimitMiddleware'
+import { TELEMETRY } from '@/lib/constants/appConstants'
 
 async function metricsHandler() {
   try {
@@ -19,7 +20,7 @@ async function metricsHandler() {
       successes: telemetryCollector.getEventsByType('success').length,
       requestsBlocked: telemetryCollector.getEventsByType('request-blocked').length,
       totalEvents: circuitBreakerEvents.length,
-      recentEvents: circuitBreakerEvents.slice(-10)
+      recentEvents: circuitBreakerEvents.slice(-TELEMETRY.RECENT_EVENT_COUNT)
     }
 
     const retryStats = {
@@ -27,21 +28,21 @@ async function metricsHandler() {
       retrySuccesses: telemetryCollector.getEventsByType('retry-success').length,
       retryExhausted: telemetryCollector.getEventsByType('retry-exhausted').length,
       totalEvents: retryEvents.length,
-      recentEvents: retryEvents.slice(-10)
+      recentEvents: retryEvents.slice(-TELEMETRY.RECENT_EVENT_COUNT)
     }
 
     const rateLimitStats = {
       exceeded: telemetryCollector.getEventsByType('exceeded').length,
       resets: telemetryCollector.getEventsByType('reset').length,
       totalEvents: rateLimitEvents.length,
-      recentEvents: rateLimitEvents.slice(-10)
+      recentEvents: rateLimitEvents.slice(-TELEMETRY.RECENT_EVENT_COUNT)
     }
 
     const healthCheckStats = {
       healthy: telemetryCollector.getEventsByType('healthy').length,
       unhealthy: telemetryCollector.getEventsByType('unhealthy').length,
       totalEvents: healthCheckEvents.length,
-      recentEvents: healthCheckEvents.slice(-10)
+      recentEvents: healthCheckEvents.slice(-TELEMETRY.RECENT_EVENT_COUNT)
     }
 
     const apiRequestStats = {
@@ -64,7 +65,7 @@ async function metricsHandler() {
       cacheHits: apiRequestEvents.filter((e) => (e.data as { cacheHit?: boolean }).cacheHit === true).length,
       cacheMisses: apiRequestEvents.filter((e) => (e.data as { cacheHit?: boolean }).cacheHit === false).length,
       totalEvents: apiRequestEvents.length,
-      recentEvents: apiRequestEvents.slice(-10)
+      recentEvents: apiRequestEvents.slice(-TELEMETRY.RECENT_EVENT_COUNT)
     }
 
     return NextResponse.json({
