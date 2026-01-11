@@ -4,12 +4,12 @@ import PostCard from '@/components/post/PostCard'
 import Pagination from '@/components/ui/Pagination'
 import EmptyState from '@/components/ui/EmptyState'
 import SectionHeading from '@/components/ui/SectionHeading'
-import { PAGINATION_LIMITS } from '@/lib/api/config'
+import { PAGINATION_LIMITS, REVALIDATE_TIMES } from '@/lib/api/config'
 import Footer from '@/components/layout/Footer'
 import { UI_TEXT } from '@/lib/constants/uiText'
 import { PARSING } from '@/lib/constants/appConstants'
 
-export const revalidate = 300 // REVALIDATE_TIMES.POST_LIST (5 minutes)
+export const revalidate = REVALIDATE_TIMES.POST_LIST
 
 export default async function BeritaPage({
   searchParams,

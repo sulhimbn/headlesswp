@@ -7,8 +7,9 @@ import Footer from '@/components/layout/Footer'
 import { UI_TEXT } from '@/lib/constants/uiText'
 import Icon from '@/components/ui/Icon'
 import type { PostWithMediaUrl } from '@/lib/services/IPostService'
+import { REVALIDATE_TIMES } from '@/lib/api/config'
 
-export const revalidate = 300 // REVALIDATE_TIMES.HOMEPAGE (5 minutes)
+export const revalidate = REVALIDATE_TIMES.HOMEPAGE
 
 interface SearchPageProps {
   searchParams: { q?: string }

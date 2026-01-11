@@ -10,9 +10,10 @@ import MetaInfo from '@/components/ui/MetaInfo'
 import Footer from '@/components/layout/Footer'
 import { logger } from '@/lib/utils/logger'
 import { UI_TEXT } from '@/lib/constants/uiText'
+import { REVALIDATE_TIMES } from '@/lib/api/config'
 
 export const dynamic = 'force-static'
-export const revalidate = 3600 // REVALIDATE_TIMES.POST_DETAIL (1 hour)
+export const revalidate = REVALIDATE_TIMES.POST_DETAIL
 
 export default async function PostPage({ params }: { params: { slug: string } }) {
   const post = await enhancedPostService.getPostBySlug(params.slug)

@@ -7096,22 +7096,23 @@ Extract magic numbers across the codebase into centralized constants to improve 
 
 ## [REFACTOR-017] Fix Revalidate Exports to Use Constants
 
-**Status**: Pending
+**Status**: Complete
 **Priority**: High
-**Assigned**: Unassigned
+**Assigned**: Principal Software Architect
 **Created**: 2026-01-10
+**Updated**: 2026-01-11
 
 ### Description
 
-Fix inconsistent revalidate export statements to use constants from `REVALIDATE_TIMES` instead of inline values and comments.
+Fixed inconsistent revalidate export statements to use constants from `REVALIDATE_TIMES` instead of inline values and comments.
 
 ### Problem Identified
 
 **Inconsistent Revalidate Exports**:
-- `src/app/berita/page.tsx` line 11: `export const revalidate = 300 // REVALIDATE_TIMES.POST_LIST`
-- `src/app/berita/[slug]/page.tsx` line 15: `export const revalidate = 300 // REVALIDATE_TIMES.POST_DETAIL`
-- `src/app/page.tsx` line 8: `export const revalidate = 300 // REVALIDATE_TIMES.HOME_PAGE`
-- `src/app/kategori/[slug]/page.tsx` line 11: Same pattern
+- `src/app/berita/page.tsx` line 12: `export const revalidate = 300 // REVALIDATE_TIMES.POST_LIST (5 minutes)`
+- `src/app/berita/[slug]/page.tsx` line 15: `export const revalidate = 3600 // REVALIDATE_TIMES.POST_DETAIL (1 hour)`
+- `src/app/page.tsx` line 8: `export const revalidate = 300 // REVALIDATE_TIMES.HOMEPAGE (5 minutes)`
+- `src/app/cari/page.tsx` line 11: `export const revalidate = 300 // REVALIDATE_TIMES.HOMEPAGE (5 minutes)`
 
 **Impact**:
 - Inline values defeat purpose of having constants
@@ -7121,30 +7122,188 @@ Fix inconsistent revalidate export statements to use constants from `REVALIDATE_
 
 ### Implementation Summary
 
-1. **Import REVALIDATE_TIMES**: Add import from `@/lib/api/config`
-2. **Replace inline values**: Use `REVALIDATE_TIMES.X` directly
+1. **Import REVALIDATE_TIMES**: Added import from `@/lib/api/config` to all affected files
+2. **Replace inline values**: Changed to use `REVALIDATE_TIMES.X` directly
 3. **Remove redundant comments**: Constants are self-documenting
 
 ### Code Changes
 
-**Before** (src/app/berita/page.tsx, line 11):
+**src/app/page.tsx** (lines 1-8):
 ```typescript
-export const revalidate = 300 // REVALIDATE_TIMES.POST_LIST
+// Before:
+import { enhancedPostService } from '@/lib/services/enhancedPostService'
+import Header from '@/components/layout/Header'
+import PostCard from '@/components/post/PostCard'
+import SectionHeading from '@/components/ui/SectionHeading'
+import Footer from '@/components/layout/Footer'
+import { UI_TEXT } from '@/lib/constants/uiText'
+
+export const revalidate = 300 // REVALIDATE_TIMES.HOMEPAGE (5 minutes)
+
+// After:
+import { enhancedPostService } from '@/lib/services/enhancedPostService'
+import Header from '@/components/layout/Header'
+import PostCard from '@/components/post/PostCard'
+import SectionHeading from '@/components/ui/SectionHeading'
+import Footer from '@/components/layout/Footer'
+import { UI_TEXT } from '@/lib/constants/uiText'
+import { REVALIDATE_TIMES } from '@/lib/api/config'
+
+export const revalidate = REVALIDATE_TIMES.HOMEPAGE
 ```
 
-**After**:
+**src/app/berita/page.tsx** (lines 1-12):
 ```typescript
-import { REVALIDATE_TIMES } from '@/lib/api/config'
+// Before:
+import { enhancedPostService } from '@/lib/services/enhancedPostService'
+import Header from '@/components/layout/Header'
+import PostCard from '@/components/post/PostCard'
+import Pagination from '@/components/ui/Pagination'
+import EmptyState from '@/components/ui/EmptyState'
+import SectionHeading from '@/components/ui/SectionHeading'
+import { PAGINATION_LIMITS } from '@/lib/api/config'
+import Footer from '@/components/layout/Footer'
+import { UI_TEXT } from '@/lib/constants/uiText'
+import { PARSING } from '@/lib/constants/appConstants'
+
+export const revalidate = 300 // REVALIDATE_TIMES.POST_LIST (5 minutes)
+
+// After:
+import { enhancedPostService } from '@/lib/services/enhancedPostService'
+import Header from '@/components/layout/Header'
+import PostCard from '@/components/post/PostCard'
+import Pagination from '@/components/ui/Pagination'
+import EmptyState from '@/components/ui/EmptyState'
+import SectionHeading from '@/components/ui/SectionHeading'
+import { PAGINATION_LIMITS, REVALIDATE_TIMES } from '@/lib/api/config'
+import Footer from '@/components/layout/Footer'
+import { UI_TEXT } from '@/lib/constants/uiText'
+import { PARSING } from '@/lib/constants/appConstants'
 
 export const revalidate = REVALIDATE_TIMES.POST_LIST
 ```
 
-### Files to Modify
+**src/app/berita/[slug]/page.tsx** (lines 1-15):
+```typescript
+// Before:
+import { enhancedPostService } from '@/lib/services/enhancedPostService'
+import { notFound } from 'next/navigation'
+import Image from 'next/image'
+import Link from 'next/link'
+import Header from '@/components/layout/Header'
+import { sanitizeHTML } from '@/lib/utils/sanitizeHTML'
+import Breadcrumb from '@/components/ui/Breadcrumb'
+import Badge from '@/components/ui/Badge'
+import MetaInfo from '@/components/ui/MetaInfo'
+import Footer from '@/components/layout/Footer'
+import { logger } from '@/lib/utils/logger'
+import { UI_TEXT } from '@/lib/constants/uiText'
 
-- `src/app/berita/page.tsx` - Use REVALIDATE_TIMES.POST_LIST
-- `src/app/berita/[slug]/page.tsx` - Use REVALIDATE_TIMES.POST_DETAIL
-- `src/app/page.tsx` - Use REVALIDATE_TIMES.HOME_PAGE
-- `src/app/kategori/[slug]/page.tsx` - Use appropriate constant
+export const dynamic = 'force-static'
+export const revalidate = 3600 // REVALIDATE_TIMES.POST_DETAIL (1 hour)
+
+// After:
+import { enhancedPostService } from '@/lib/services/enhancedPostService'
+import { notFound } from 'next/navigation'
+import Image from 'next/image'
+import Link from 'next/link'
+import Header from '@/components/layout/Header'
+import { sanitizeHTML } from '@/lib/utils/sanitizeHTML'
+import Breadcrumb from '@/components/ui/Breadcrumb'
+import Badge from '@/components/ui/Badge'
+import MetaInfo from '@/components/ui/MetaInfo'
+import Footer from '@/components/layout/Footer'
+import { logger } from '@/lib/utils/logger'
+import { UI_TEXT } from '@/lib/constants/uiText'
+import { REVALIDATE_TIMES } from '@/lib/api/config'
+
+export const dynamic = 'force-static'
+export const revalidate = REVALIDATE_TIMES.POST_DETAIL
+```
+
+**src/app/cari/page.tsx** (lines 1-11):
+```typescript
+// Before:
+import { enhancedPostService } from '@/lib/services/enhancedPostService'
+import Header from '@/components/layout/Header'
+import PostCard from '@/components/post/PostCard'
+import EmptyState from '@/components/ui/EmptyState'
+import SectionHeading from '@/components/ui/SectionHeading'
+import Footer from '@/components/layout/Footer'
+import { UI_TEXT } from '@/lib/constants/uiText'
+import Icon from '@/components/ui/Icon'
+import type { PostWithMediaUrl } from '@/lib/services/IPostService'
+
+export const revalidate = 300 // REVALIDATE_TIMES.HOMEPAGE (5 minutes)
+
+// After:
+import { enhancedPostService } from '@/lib/services/enhancedPostService'
+import Header from '@/components/layout/Header'
+import PostCard from '@/components/post/PostCard'
+import EmptyState from '@/components/ui/EmptyState'
+import SectionHeading from '@/components/ui/SectionHeading'
+import Footer from '@/components/layout/Footer'
+import { UI_TEXT } from '@/lib/constants/uiText'
+import Icon from '@/components/ui/Icon'
+import type { PostWithMediaUrl } from '@/lib/services/IPostService'
+import { REVALIDATE_TIMES } from '@/lib/api/config'
+
+export const revalidate = REVALIDATE_TIMES.HOMEPAGE
+```
+
+### Files Modified
+
+- `src/app/page.tsx` - Added REVALIDATE_TIMES import, replaced inline value (lines 1-8)
+- `src/app/berita/page.tsx` - Added REVALIDATE_TIMES import, replaced inline value (lines 1-12)
+- `src/app/berita/[slug]/page.tsx` - Added REVALIDATE_TIMES import, replaced inline value (lines 1-15)
+- `src/app/cari/page.tsx` - Added REVALIDATE_TIMES import, replaced inline value (lines 1-11)
+
+### Test Results
+
+- ✅ All 1617 tests passing (unchanged)
+- ✅ 48 test suites passing
+- ✅ 1 test suite skipped (WORDPRESS_API_AVAILABLE)
+- ✅ ESLint passes with no errors
+- ✅ TypeScript compilation passes
+- ✅ Zero regressions in existing tests
+
+### Results
+
+- ✅ All revalidate exports now use REVALIDATE_TIMES constants
+- ✅ Inline values replaced with named constants
+- ✅ Redundant comments removed (constants are self-documenting)
+- ✅ All files follow consistent pattern
+- ✅ DRY principle applied
+- ✅ All tests passing (no regressions)
+- ✅ Lint and typecheck passing
+
+### Success Criteria
+
+- ✅ Constants used (all revalidate exports use REVALIDATE_TIMES)
+- ✅ Comments removed (self-documenting constants)
+- ✅ Zero regressions (all 1617 tests passing)
+- ✅ Lint/typecheck passing
+
+### Anti-Patterns Avoided
+
+- ❌ No hardcoded values (all using constants)
+- ❌ No redundant comments (constants are self-documenting)
+- ❌ No breaking changes (behavior unchanged)
+- ❌ No test failures (all tests pass)
+- ❌ No type errors (TypeScript compilation passes)
+
+### Architectural Principles Applied
+
+1. **DRY Principle**: Revalidate times defined once in constants, reused across all pages
+2. **Single Source of Truth**: REVALIDATE_TIMES is the authoritative source for revalidation times
+3. **Self-Documenting Code**: Constants clearly indicate purpose without comments
+4. **Consistency**: All pages follow same pattern
+5. **Maintainability**: Change revalidate time in one place, applies everywhere
+
+### See Also
+
+- [Blueprint.md API Configuration](./blueprint.md#api-configuration)
+- [Task REFACTOR-016: Extract Magic Numbers to Constants](./task.md#refactor-016)
 - Any other pages with inline revalidate values
 
 ### Expected Results
