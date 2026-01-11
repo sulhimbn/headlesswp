@@ -88,6 +88,97 @@ class DataValidator {
     return { valid: true, data: validItems, errors: [] };
   }
 
+  private validateIdField(value: unknown, fieldName: string, errors: ValidationError[]): void {
+    if (!this.isNumber(value)) {
+      errors.push({ field: fieldName, rule: 'type', message: `${fieldName} must be a number`, value });
+    } else {
+      const error = validatePositiveInteger(value, fieldName);
+      if (error) errors.push(error);
+    }
+  }
+
+  private validateNamedObjectField(
+    value: unknown,
+    fieldName: string,
+    errors: ValidationError[],
+    nestedField: string,
+    requireNonEmpty: boolean
+  ): void {
+    const obj = value as Record<string, unknown>;
+    if (!this.isObject(value) || !this.isString(obj[nestedField])) {
+      errors.push({ field: `${fieldName}.${nestedField}`, rule: 'type', message: `${fieldName}.${nestedField} must be a string`, value });
+    } else if (requireNonEmpty) {
+      const error = validateNonEmptyString(obj[nestedField], `${fieldName}.${nestedField}`);
+      if (error) errors.push(error);
+    }
+  }
+
+  private validateSlugField(
+    value: unknown,
+    fieldName: string,
+    errors: ValidationError[],
+    rules: { pattern: RegExp; minLength: number; maxLength: number }
+  ): void {
+    if (!this.isString(value)) {
+      errors.push({ field: fieldName, rule: 'type', message: `${fieldName} must be a string`, value });
+    } else {
+      const emptyError = validateNonEmptyString(value, fieldName);
+      if (emptyError) errors.push(emptyError);
+
+      const patternError = validatePattern(value, rules.pattern, fieldName);
+      if (patternError) errors.push(patternError);
+
+      const lengthError = validateLength(value, rules.minLength, rules.maxLength, fieldName);
+      if (lengthError) errors.push(lengthError);
+    }
+  }
+
+  private validateDateField(value: unknown, fieldName: string, errors: ValidationError[]): void {
+    if (!this.isString(value)) {
+      errors.push({ field: fieldName, rule: 'type', message: `${fieldName} must be a string`, value });
+    } else {
+      const error = validateIso8601Date(value, fieldName);
+      if (error) errors.push(error);
+    }
+  }
+
+  private validateUrlField(value: unknown, fieldName: string, errors: ValidationError[]): void {
+    if (!this.isString(value)) {
+      errors.push({ field: fieldName, rule: 'type', message: `${fieldName} must be a string`, value });
+    } else {
+      const error = validateUrl(value, fieldName);
+      if (error) errors.push(error);
+    }
+  }
+
+  private validateEnumField(
+    value: unknown,
+    fieldName: string,
+    allowedValues: readonly string[],
+    errors: ValidationError[]
+  ): void {
+    if (!this.isString(value)) {
+      errors.push({ field: fieldName, rule: 'type', message: `${fieldName} must be a string`, value });
+    } else {
+      const error = validateEnum(value, allowedValues, fieldName);
+      if (error) errors.push(error);
+    }
+  }
+
+  private validateNumericField(
+    value: unknown,
+    fieldName: string,
+    errors: ValidationError[],
+    validator: (value: number, fieldName: string) => ValidationError | null
+  ): void {
+    if (!this.isNumber(value)) {
+      errors.push({ field: fieldName, rule: 'type', message: `${fieldName} must be a number`, value });
+    } else {
+      const error = validator(value, fieldName);
+      if (error) errors.push(error);
+    }
+  }
+
   validatePost(data: unknown): ValidationResult<WordPressPost> {
     const errors: ValidationError[] = [];
 
@@ -95,107 +186,44 @@ class DataValidator {
       return { valid: false, errors: [{ field: 'Post', rule: 'type', message: 'Post must be an object', value: data }] };
     }
 
-    if (!this.isNumber(data.id)) {
-      errors.push({ field: 'Post.id', rule: 'type', message: 'Post.id must be a number', value: data.id });
+    const record = data as Record<string, unknown>;
+    this.validateIdField(record.id, 'Post.id', errors);
+    this.validateNamedObjectField(record.title, 'Post.title', errors, 'rendered', true);
+    this.validateNamedObjectField(record.content, 'Post.content', errors, 'rendered', false);
+    this.validateNamedObjectField(record.excerpt, 'Post.excerpt', errors, 'rendered', false);
+    this.validateSlugField(record.slug, 'Post.slug', errors, POST_VALIDATION_RULES.slug);
+    this.validateDateField(record.date, 'Post.date', errors);
+    this.validateDateField(record.modified, 'Post.modified', errors);
+    this.validateIdField(record.author, 'Post.author', errors);
+
+    if (!this.isNumber(record.featured_media)) {
+      errors.push({ field: 'Post.featured_media', rule: 'type', message: 'Post.featured_media must be a number', value: record.featured_media });
+    } else if (record.featured_media < 0) {
+      errors.push({ field: 'Post.featured_media', rule: 'min', message: 'Post.featured_media must be non-negative', value: record.featured_media });
+    }
+
+    if (!this.isArray(record.categories)) {
+      errors.push({ field: 'Post.categories', rule: 'type', message: 'Post.categories must be an array', value: record.categories });
     } else {
-      const idError = validatePositiveInteger(data.id, 'Post.id');
-      if (idError) errors.push(idError);
-    }
-
-    if (!this.isObject(data.title) || !this.isString(data.title.rendered)) {
-      errors.push({ field: 'Post.title.rendered', rule: 'type', message: 'Post.title.rendered must be a string', value: data.title });
-    } else {
-      const titleError = validateNonEmptyString(data.title.rendered, 'Post.title.rendered');
-      if (titleError) errors.push(titleError);
-    }
-
-    if (!this.isObject(data.content) || !this.isString(data.content.rendered)) {
-      errors.push({ field: 'Post.content.rendered', rule: 'type', message: 'Post.content.rendered must be a string', value: data.content });
-    }
-
-    if (!this.isObject(data.excerpt) || !this.isString(data.excerpt.rendered)) {
-      errors.push({ field: 'Post.excerpt.rendered', rule: 'type', message: 'Post.excerpt.rendered must be a string', value: data.excerpt });
-    }
-
-    if (!this.isString(data.slug)) {
-      errors.push({ field: 'Post.slug', rule: 'type', message: 'Post.slug must be a string', value: data.slug });
-    } else {
-      const slugError = validateNonEmptyString(data.slug, 'Post.slug');
-      if (slugError) errors.push(slugError);
-
-      const patternError = validatePattern(data.slug, POST_VALIDATION_RULES.slug.pattern, 'Post.slug');
-      if (patternError) errors.push(patternError);
-
-      const lengthError = validateLength(data.slug, POST_VALIDATION_RULES.slug.minLength, POST_VALIDATION_RULES.slug.maxLength, 'Post.slug');
-      if (lengthError) errors.push(lengthError);
-    }
-
-    if (!this.isString(data.date)) {
-      errors.push({ field: 'Post.date', rule: 'type', message: 'Post.date must be a string', value: data.date });
-    } else {
-      const dateError = validateIso8601Date(data.date, 'Post.date');
-      if (dateError) errors.push(dateError);
-    }
-
-    if (!this.isString(data.modified)) {
-      errors.push({ field: 'Post.modified', rule: 'type', message: 'Post.modified must be a string', value: data.modified });
-    } else {
-      const modifiedError = validateIso8601Date(data.modified, 'Post.modified');
-      if (modifiedError) errors.push(modifiedError);
-    }
-
-    if (!this.isNumber(data.author)) {
-      errors.push({ field: 'Post.author', rule: 'type', message: 'Post.author must be a number', value: data.author });
-    } else {
-      const authorError = validatePositiveInteger(data.author, 'Post.author');
-      if (authorError) errors.push(authorError);
-    }
-
-    if (!this.isNumber(data.featured_media)) {
-      errors.push({ field: 'Post.featured_media', rule: 'type', message: 'Post.featured_media must be a number', value: data.featured_media });
-    } else if (data.featured_media < 0) {
-      errors.push({ field: 'Post.featured_media', rule: 'min', message: 'Post.featured_media must be non-negative', value: data.featured_media });
-    }
-
-    if (!this.isArray(data.categories)) {
-      errors.push({ field: 'Post.categories', rule: 'type', message: 'Post.categories must be an array', value: data.categories });
-    } else {
-      if (!data.categories.every((id: unknown) => this.isNumber(id))) {
-        errors.push({ field: 'Post.categories', rule: 'type', message: 'Post.categories must contain only numbers', value: data.categories });
+      if (!record.categories.every((id: unknown) => this.isNumber(id))) {
+        errors.push({ field: 'Post.categories', rule: 'type', message: 'Post.categories must contain only numbers', value: record.categories });
       }
-      if (data.categories.length === 0) {
-        errors.push({ field: 'Post.categories', rule: 'nonEmpty', message: 'Post.categories must contain at least one category', value: data.categories });
+      if (record.categories.length === 0) {
+        errors.push({ field: 'Post.categories', rule: 'nonEmpty', message: 'Post.categories must contain at least one category', value: record.categories });
       }
     }
 
-    if (!this.isArray(data.tags)) {
-      errors.push({ field: 'Post.tags', rule: 'type', message: 'Post.tags must be an array', value: data.tags });
+    if (!this.isArray(record.tags)) {
+      errors.push({ field: 'Post.tags', rule: 'type', message: 'Post.tags must be an array', value: record.tags });
     } else {
-      if (!data.tags.every((id: unknown) => this.isNumber(id))) {
-        errors.push({ field: 'Post.tags', rule: 'type', message: 'Post.tags must contain only numbers', value: data.tags });
+      if (!record.tags.every((id: unknown) => this.isNumber(id))) {
+        errors.push({ field: 'Post.tags', rule: 'type', message: 'Post.tags must contain only numbers', value: record.tags });
       }
     }
 
-    if (!this.isString(data.status)) {
-      errors.push({ field: 'Post.status', rule: 'type', message: 'Post.status must be a string', value: data.status });
-    } else {
-      const statusError = validateEnum(data.status, POST_VALIDATION_RULES.status.allowedValues, 'Post.status');
-      if (statusError) errors.push(statusError);
-    }
-
-    if (!this.isString(data.type)) {
-      errors.push({ field: 'Post.type', rule: 'type', message: 'Post.type must be a string', value: data.type });
-    } else {
-      const typeError = validateEnum(data.type, POST_VALIDATION_RULES.type.allowedValues, 'Post.type');
-      if (typeError) errors.push(typeError);
-    }
-
-    if (!this.isString(data.link)) {
-      errors.push({ field: 'Post.link', rule: 'type', message: 'Post.link must be a string', value: data.link });
-    } else {
-      const linkError = validateUrl(data.link, 'Post.link');
-      if (linkError) errors.push(linkError);
-    }
+    this.validateEnumField(record.status, 'Post.status', POST_VALIDATION_RULES.status.allowedValues, errors);
+    this.validateEnumField(record.type, 'Post.type', POST_VALIDATION_RULES.type.allowedValues, errors);
+    this.validateUrlField(record.link, 'Post.link', errors);
 
     if (errors.length > 0) {
       return { valid: false, errors };
@@ -215,57 +243,37 @@ class DataValidator {
       return { valid: false, errors: [{ field: 'Category', rule: 'type', message: 'Category must be an object', value: data }] };
     }
 
-    if (!this.isNumber(data.id)) {
-      errors.push({ field: 'Category.id', rule: 'type', message: 'Category.id must be a number', value: data.id });
-    } else {
-      const idError = validatePositiveInteger(data.id, 'Category.id');
-      if (idError) errors.push(idError);
-    }
+    const record = data as Record<string, unknown>;
+    this.validateIdField(record.id, 'Category.id', errors);
 
-    if (!this.isString(data.name)) {
-      errors.push({ field: 'Category.name', rule: 'type', message: 'Category.name must be a string', value: data.name });
+    if (!this.isString(record.name)) {
+      errors.push({ field: 'Category.name', rule: 'type', message: 'Category.name must be a string', value: record.name });
     } else {
-      const nameError = validateNonEmptyString(data.name, 'Category.name');
+      const nameError = validateNonEmptyString(record.name, 'Category.name');
       if (nameError) errors.push(nameError);
     }
 
-    if (!this.isString(data.slug)) {
-      errors.push({ field: 'Category.slug', rule: 'type', message: 'Category.slug must be a string', value: data.slug });
-    } else {
-      const slugError = validateNonEmptyString(data.slug, 'Category.slug');
-      if (slugError) errors.push(slugError);
+    this.validateSlugField(record.slug, 'Category.slug', errors, CATEGORY_VALIDATION_RULES.slug);
 
-      const patternError = validatePattern(data.slug, CATEGORY_VALIDATION_RULES.slug.pattern, 'Category.slug');
-      if (patternError) errors.push(patternError);
-
-      const lengthError = validateLength(data.slug, CATEGORY_VALIDATION_RULES.slug.minLength, CATEGORY_VALIDATION_RULES.slug.maxLength, 'Category.slug');
-      if (lengthError) errors.push(lengthError);
+    if (!this.isString(record.description)) {
+      errors.push({ field: 'Category.description', rule: 'type', message: 'Category.description must be a string', value: record.description });
     }
 
-    if (!this.isString(data.description)) {
-      errors.push({ field: 'Category.description', rule: 'type', message: 'Category.description must be a string', value: data.description });
-    }
-
-    if (!this.isNumber(data.parent)) {
-      errors.push({ field: 'Category.parent', rule: 'type', message: 'Category.parent must be a number', value: data.parent });
+    if (!this.isNumber(record.parent)) {
+      errors.push({ field: 'Category.parent', rule: 'type', message: 'Category.parent must be a number', value: record.parent });
     } else {
-      const parentError = validateMin(data.parent, CATEGORY_VALIDATION_RULES.parent.min, 'Category.parent');
+      const parentError = validateMin(record.parent, CATEGORY_VALIDATION_RULES.parent.min, 'Category.parent');
       if (parentError) errors.push(parentError);
     }
 
-    if (!this.isNumber(data.count)) {
-      errors.push({ field: 'Category.count', rule: 'type', message: 'Category.count must be a number', value: data.count });
+    if (!this.isNumber(record.count)) {
+      errors.push({ field: 'Category.count', rule: 'type', message: 'Category.count must be a number', value: record.count });
     } else {
-      const countError = validateNonNegativeInteger(data.count, 'Category.count');
+      const countError = validateNonNegativeInteger(record.count, 'Category.count');
       if (countError) errors.push(countError);
     }
 
-    if (!this.isString(data.link)) {
-      errors.push({ field: 'Category.link', rule: 'type', message: 'Category.link must be a string', value: data.link });
-    } else {
-      const linkError = validateUrl(data.link, 'Category.link');
-      if (linkError) errors.push(linkError);
-    }
+    this.validateUrlField(record.link, 'Category.link', errors);
 
     if (errors.length > 0) {
       return { valid: false, errors };
@@ -285,50 +293,30 @@ class DataValidator {
       return { valid: false, errors: [{ field: 'Tag', rule: 'type', message: 'Tag must be an object', value: data }] };
     }
 
-    if (!this.isNumber(data.id)) {
-      errors.push({ field: 'Tag.id', rule: 'type', message: 'Tag.id must be a number', value: data.id });
-    } else {
-      const idError = validatePositiveInteger(data.id, 'Tag.id');
-      if (idError) errors.push(idError);
-    }
+    const record = data as Record<string, unknown>;
+    this.validateIdField(record.id, 'Tag.id', errors);
 
-    if (!this.isString(data.name)) {
-      errors.push({ field: 'Tag.name', rule: 'type', message: 'Tag.name must be a string', value: data.name });
+    if (!this.isString(record.name)) {
+      errors.push({ field: 'Tag.name', rule: 'type', message: 'Tag.name must be a string', value: record.name });
     } else {
-      const nameError = validateNonEmptyString(data.name, 'Tag.name');
+      const nameError = validateNonEmptyString(record.name, 'Tag.name');
       if (nameError) errors.push(nameError);
     }
 
-    if (!this.isString(data.slug)) {
-      errors.push({ field: 'Tag.slug', rule: 'type', message: 'Tag.slug must be a string', value: data.slug });
-    } else {
-      const slugError = validateNonEmptyString(data.slug, 'Tag.slug');
-      if (slugError) errors.push(slugError);
+    this.validateSlugField(record.slug, 'Tag.slug', errors, TAG_VALIDATION_RULES.slug);
 
-      const patternError = validatePattern(data.slug, TAG_VALIDATION_RULES.slug.pattern, 'Tag.slug');
-      if (patternError) errors.push(patternError);
-
-      const lengthError = validateLength(data.slug, TAG_VALIDATION_RULES.slug.minLength, TAG_VALIDATION_RULES.slug.maxLength, 'Tag.slug');
-      if (lengthError) errors.push(lengthError);
+    if (!this.isString(record.description)) {
+      errors.push({ field: 'Tag.description', rule: 'type', message: 'Tag.description must be a string', value: record.description });
     }
 
-    if (!this.isString(data.description)) {
-      errors.push({ field: 'Tag.description', rule: 'type', message: 'Tag.description must be a string', value: data.description });
-    }
-
-    if (!this.isNumber(data.count)) {
-      errors.push({ field: 'Tag.count', rule: 'type', message: 'Tag.count must be a number', value: data.count });
+    if (!this.isNumber(record.count)) {
+      errors.push({ field: 'Tag.count', rule: 'type', message: 'Tag.count must be a number', value: record.count });
     } else {
-      const countError = validateNonNegativeInteger(data.count, 'Tag.count');
+      const countError = validateNonNegativeInteger(record.count, 'Tag.count');
       if (countError) errors.push(countError);
     }
 
-    if (!this.isString(data.link)) {
-      errors.push({ field: 'Tag.link', rule: 'type', message: 'Tag.link must be a string', value: data.link });
-    } else {
-      const linkError = validateUrl(data.link, 'Tag.link');
-      if (linkError) errors.push(linkError);
-    }
+    this.validateUrlField(record.link, 'Tag.link', errors);
 
     if (errors.length > 0) {
       return { valid: false, errors };
@@ -348,37 +336,19 @@ class DataValidator {
       return { valid: false, errors: [{ field: 'Media', rule: 'type', message: 'Media must be an object', value: data }] };
     }
 
-    if (!this.isNumber(data.id)) {
-      errors.push({ field: 'Media.id', rule: 'type', message: 'Media.id must be a number', value: data.id });
-    } else {
-      const idError = validatePositiveInteger(data.id, 'Media.id');
-      if (idError) errors.push(idError);
+    const record = data as Record<string, unknown>;
+    this.validateIdField(record.id, 'Media.id', errors);
+    this.validateUrlField(record.source_url, 'Media.source_url', errors);
+    this.validateNamedObjectField(record.title, 'Media.title', errors, 'rendered', false);
+
+    if (!this.isString(record.alt_text)) {
+      errors.push({ field: 'Media.alt_text', rule: 'type', message: 'Media.alt_text must be a string', value: record.alt_text });
     }
 
-    if (!this.isString(data.source_url)) {
-      errors.push({ field: 'Media.source_url', rule: 'type', message: 'Media.source_url must be a string', value: data.source_url });
-    } else {
-      const urlError = validateUrl(data.source_url, 'Media.source_url');
-      if (urlError) errors.push(urlError);
-    }
+    this.validateEnumField(record.media_type, 'Media.media_type', MEDIA_VALIDATION_RULES.media_type.allowedValues, errors);
 
-    if (!this.isObject(data.title) || !this.isString(data.title.rendered)) {
-      errors.push({ field: 'Media.title.rendered', rule: 'type', message: 'Media.title.rendered must be a string', value: data.title });
-    }
-
-    if (!this.isString(data.alt_text)) {
-      errors.push({ field: 'Media.alt_text', rule: 'type', message: 'Media.alt_text must be a string', value: data.alt_text });
-    }
-
-    if (!this.isString(data.media_type)) {
-      errors.push({ field: 'Media.media_type', rule: 'type', message: 'Media.media_type must be a string', value: data.media_type });
-    } else {
-      const mediaTypeError = validateEnum(data.media_type, MEDIA_VALIDATION_RULES.media_type.allowedValues, 'Media.media_type');
-      if (mediaTypeError) errors.push(mediaTypeError);
-    }
-
-    if (!this.isString(data.mime_type)) {
-      errors.push({ field: 'Media.mime_type', rule: 'type', message: 'Media.mime_type must be a string', value: data.mime_type });
+    if (!this.isString(record.mime_type)) {
+      errors.push({ field: 'Media.mime_type', rule: 'type', message: 'Media.mime_type must be a string', value: record.mime_type });
     }
 
     if (errors.length > 0) {
@@ -395,47 +365,27 @@ class DataValidator {
       return { valid: false, errors: [{ field: 'Author', rule: 'type', message: 'Author must be an object', value: data }] };
     }
 
-    if (!this.isNumber(data.id)) {
-      errors.push({ field: 'Author.id', rule: 'type', message: 'Author.id must be a number', value: data.id });
-    } else {
-      const idError = validatePositiveInteger(data.id, 'Author.id');
-      if (idError) errors.push(idError);
-    }
+    const record = data as Record<string, unknown>;
+    this.validateIdField(record.id, 'Author.id', errors);
 
-    if (!this.isString(data.name)) {
-      errors.push({ field: 'Author.name', rule: 'type', message: 'Author.name must be a string', value: data.name });
+    if (!this.isString(record.name)) {
+      errors.push({ field: 'Author.name', rule: 'type', message: 'Author.name must be a string', value: record.name });
     } else {
-      const nameError = validateNonEmptyString(data.name, 'Author.name');
+      const nameError = validateNonEmptyString(record.name, 'Author.name');
       if (nameError) errors.push(nameError);
     }
 
-    if (!this.isString(data.slug)) {
-      errors.push({ field: 'Author.slug', rule: 'type', message: 'Author.slug must be a string', value: data.slug });
-    } else {
-      const slugError = validateNonEmptyString(data.slug, 'Author.slug');
-      if (slugError) errors.push(slugError);
+    this.validateSlugField(record.slug, 'Author.slug', errors, AUTHOR_VALIDATION_RULES.slug);
 
-      const patternError = validatePattern(data.slug, AUTHOR_VALIDATION_RULES.slug.pattern, 'Author.slug');
-      if (patternError) errors.push(patternError);
-
-      const lengthError = validateLength(data.slug, AUTHOR_VALIDATION_RULES.slug.minLength, AUTHOR_VALIDATION_RULES.slug.maxLength, 'Author.slug');
-      if (lengthError) errors.push(lengthError);
+    if (!this.isString(record.description)) {
+      errors.push({ field: 'Author.description', rule: 'type', message: 'Author.description must be a string', value: record.description });
     }
 
-    if (!this.isString(data.description)) {
-      errors.push({ field: 'Author.description', rule: 'type', message: 'Author.description must be a string', value: data.description });
+    if (!this.isObject(record.avatar_urls)) {
+      errors.push({ field: 'Author.avatar_urls', rule: 'type', message: 'Author.avatar_urls must be an object', value: record.avatar_urls });
     }
 
-    if (!this.isObject(data.avatar_urls)) {
-      errors.push({ field: 'Author.avatar_urls', rule: 'type', message: 'Author.avatar_urls must be an object', value: data.avatar_urls });
-    }
-
-    if (!this.isString(data.link)) {
-      errors.push({ field: 'Author.link', rule: 'type', message: 'Author.link must be a string', value: data.link });
-    } else {
-      const linkError = validateUrl(data.link, 'Author.link');
-      if (linkError) errors.push(linkError);
-    }
+    this.validateUrlField(record.link, 'Author.link', errors);
 
     if (errors.length > 0) {
       return { valid: false, errors };

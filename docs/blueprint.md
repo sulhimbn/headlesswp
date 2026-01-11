@@ -339,6 +339,29 @@ interface ApiListResult<T> extends ApiResult<T[]> {
     - Handles pagination metadata creation (page: 1, perPage: entities.length, total: entities.length, totalPages: 1)
     - Applied to 2 API methods (getAllCategories, getAllTags)
 
+**Data Validation Helpers** (`src/lib/validation/dataValidator.ts`):
+1. **`validateIdField()`** - Validates ID fields (positive integer)
+    - Used by all entity validation methods
+    - Eliminates duplicate ID validation logic
+2. **`validateNamedObjectField()`** - Validates nested object fields with rendered property
+    - Used by Post, Media validation for title fields
+    - Eliminates duplicate nested object validation
+3. **`validateSlugField()`** - Validates slug fields (pattern + length)
+    - Used by Post, Category, Tag, Author validation
+    - Accepts validation rules for pattern and length
+4. **`validateDateField()`** - Validates ISO 8601 date fields
+    - Used by Post validation for date and modified fields
+    - Centralizes date validation logic
+5. **`validateUrlField()`** - Validates URL fields
+    - Used by Category, Tag, Media, Author validation
+    - Centralizes URL validation logic
+6. **`validateEnumField()`** - Validates enum fields
+    - Used by Post (status, type) and Media (media_type) validation
+    - Centralizes enum validation logic
+7. **`validateNumericField()`** - Validates numeric fields with custom validator
+    - Used for Category (parent, count) numeric validation
+    - Accepts custom validator for flexible numeric validation
+
 **Error Handling Helpers** (`src/lib/api/errors.ts`):
 1. **`handleStatusCodeError()`** - Status code error handling helper
     - Merged duplicate status code handling from AxiosError and generic Error blocks
@@ -382,9 +405,16 @@ interface ApiListResult<T> extends ApiResult<T[]> {
 - Lines eliminated: ~43 (CacheManager reduced from 925 to 882 lines)
 - Clear separation of concerns: CacheMetricsCalculator handles metrics, CacheManager handles storage
 
+**REFACTOR-024: Extract Duplicate Validation Logic**:
+- Created 7 helper methods in DataValidator class for common validation patterns
+- Refactored 5 validation methods (validatePost, validateCategory, validateTag, validateMedia, validateAuthor)
+- Lines eliminated: ~165 (49% reduction in validation methods)
+- Total file: 472 → 421 lines (51 lines eliminated, 11% reduction)
+- All 45 dataValidator tests passing (no behavioral changes)
+
 **Benefits**:
-1. **Reduced Maintenance**: Bug fixes or improvements to error handling/pagination only need to be made once
-2. **Consistency**: All resources (posts, categories, tags) have identical error handling and pagination
+1. **Reduced Maintenance**: Bug fixes or improvements to validation only need to be made once
+2. **Consistency**: All validation logic defined once
 3. **Type Safety**: Generic TypeScript types ensure compile-time type checking
 4. **Testability**: Helper functions can be tested independently
 5. **Code Clarity**: Smaller, focused methods are easier to understand
