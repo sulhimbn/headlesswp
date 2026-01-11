@@ -13,7 +13,7 @@ interface EmptyStateProps {
 
 export default function EmptyState({ title, description, icon, action, className = '' }: EmptyStateProps) {
   return (
-    <div className={`text-center py-12 px-4 ${className}`} role="status">
+    <div className={`text-center py-12 px-4 ${className}`} role="status" aria-live="polite" aria-atomic="true">
       {icon && (
         <div className="mx-auto h-12 w-12 text-[hsl(var(--color-text-muted))] mb-4" aria-hidden="true">
           {icon}
