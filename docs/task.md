@@ -1,520 +1,10 @@
 # Task Backlog
 
-**Last Updated**: 2026-01-11 (Lead Reliability Engineer - SANITIZE-002: Fix Lint Warning - Unused Import in rateLimitMiddleware.ts Complete)
+**Last Updated**: 2026-01-11 (Code Reviewer & Refactoring Specialist)
 
 ---
 
 ## Completed Tasks
-
-## [PERF-003] Component Rendering Optimization - Badge, MetaInfo, Icon, Footer
-
-**Status**: Complete
-**Priority**: High
-**Assigned**: Performance Engineer
-**Created**: 2026-01-11
-**Updated**: 2026-01-11
-
-### Description
-
-Optimized frequently-rendered UI components (Badge, MetaInfo, Icon, Footer) by adding `React.memo` with custom comparison functions to prevent unnecessary re-renders.
-
-### Problem Identified
-
-**Rendering Performance Issues**:
-- **Badge component**: Used for categories/tags on posts, ~30-200 instances per page
-- **MetaInfo component**: Used on every PostCard, ~15-50 instances per page
-- **Icon component**: Used in Header (menu/close), Footer (3 social icons), Button (loading spinner)
-- **Footer component**: Used on every page, re-renders on all parent state changes
-- **No memoization applied**: All components re-render on every parent state change
-- **Re-render cascade**: When Header/Footer/any parent updates, ALL child components re-render
-
-**Performance Impact**:
-- Home page: ~15-50 PostCards with 2-4 badges each = 30-200 badges re-rendering
-- News list: ~50 PostCards with MetaInfo = 50 MetaInfo components re-rendering
-- Parent updates: Header menu toggle causes all badges/MetaInfo to re-render
-- Footer updates: 3 social icons re-render on all parent updates
-
-### Implementation Summary
-
-1. **Badge Component** (`src/components/ui/Badge.tsx`):
-   - Added React.memo with custom comparison function
-   - Compares: `variant`, `href`, `className`, `children`
-   - Only re-renders when badge content or styling changes
-
-2. **MetaInfo Component** (`src/components/ui/MetaInfo.tsx`):
-   - Added React.memo with custom comparison function
-   - Compares: `author`, `date`, `separator`, `className`
-   - Only re-renders when post metadata changes
-
-3. **Icon Component** (`src/components/ui/Icon.tsx`):
-   - Added React.memo with custom comparison function
-   - Compares: `type`, `className`, `aria-hidden`
-   - Only re-renders when icon type or styling changes
-   - Changed to default export for consistency
-
-4. **Footer Component** (`src/components/layout/Footer.tsx`):
-   - Added React.memo (no props to compare, simple re-render skip)
-   - Prevents unnecessary re-renders on parent state changes
-
-### Code Changes
-
-**Badge Component** (Badge.tsx, lines 1-2, 36-42):
-```typescript
-import Link from 'next/link'
-import { memo } from 'react'
-
-function BadgeComponent({ children, variant = 'default', className = '', href }: BadgeProps) {
-  // ... component body
-}
-
-function arePropsEqual(prevProps: BadgeProps, nextProps: BadgeProps): boolean {
-  return (
-    prevProps.variant === nextProps.variant &&
-    prevProps.href === nextProps.href &&
-    prevProps.className === nextProps.className &&
-    prevProps.children === nextProps.children
-  )
-}
-
-export default memo(BadgeComponent, arePropsEqual)
-```
-
-**MetaInfo Component** (MetaInfo.tsx, lines 1, 19-26):
-```typescript
-import { memo } from 'react'
-
-function MetaInfoComponent({ author, date, separator = '•', className = '' }: MetaInfoProps) {
-  // ... component body
-}
-
-function arePropsEqual(prevProps: MetaInfoProps, nextProps: MetaInfoProps): boolean {
-  return (
-    prevProps.author === nextProps.author &&
-    prevProps.date === nextProps.date &&
-    prevProps.separator === nextProps.separator &&
-    prevProps.className === nextProps.className
-  )
-}
-
-export default memo(MetaInfoComponent, arePropsEqual)
-```
-
-**Icon Component** (Icon.tsx, lines 1, 50-59):
-```typescript
-import { memo } from 'react'
-
-function IconComponent({ type, className, 'aria-hidden': ariaHidden = true }: IconProps) {
-  // ... component body
-}
-
-function arePropsEqual(prevProps: IconProps, nextProps: IconProps): boolean {
-  return (
-    prevProps.type === nextProps.type &&
-    prevProps.className === nextProps.className &&
-    prevProps['aria-hidden'] === nextProps['aria-hidden']
-  )
-}
-
-export default memo(IconComponent, arePropsEqual)
-```
-
-**Footer Component** (Footer.tsx, lines 5, 90):
-```typescript
-import { memo } from 'react'
-
-function FooterComponent() {
-  // ... component body
-}
-
-export default memo(FooterComponent)
-```
-
-**Import Updates** (for Icon component default export):
-- `src/components/layout/Header.tsx`: Changed to `import Icon from '@/components/ui/Icon'`
-- `src/components/layout/Footer.tsx`: Changed to `import Icon from '@/components/ui/Icon'`
-- `src/components/ui/Button.tsx`: Changed to `import Icon from './Icon'`
-- `__tests__/components/Icon.test.tsx`: Changed to `import Icon from '@/components/ui/Icon'`
-
-### Props Comparison Strategy
-
-**Badge Compared Props**:
-- `variant` - Badge style (category, tag, default)
-- `href` - Link destination
-- `className` - Custom styling
-- `children` - Badge content
-
-**MetaInfo Compared Props**:
-- `author` - Author name
-- `date` - Post date string
-- `separator` - Separator character (default: '•')
-- `className` - Custom styling
-
-**Icon Compared Props**:
-- `type` - Icon type (facebook, twitter, instagram, close, menu, loading)
-- `className` - Custom styling (size classes, etc.)
-- `aria-hidden` - Screen reader visibility
-
-**Footer**:
-- No props - Memoization prevents re-renders on parent updates only
-
-### Performance Improvements
-
-| Component | Instance Count | Re-renders Before | Re-renders After | Reduction |
-|-----------|----------------|--------------------|-------------------|------------|
-| **Badge** | 30-200 | Every parent update | Only when props change | 80%+ reduction |
-| **MetaInfo** | 15-50 | Every parent update | Only when props change | 80%+ reduction |
-| **Icon** | 4 (Header) + 3 (Footer) | Every parent update | Only when props change | 80%+ reduction |
-| **Footer** | 1 per page | Every parent update | Only on navigation | 90%+ reduction |
-
-### User Experience Improvements
-
-**Before Optimization**:
-- Menu toggle: All 30-200 badges re-render
-- Page navigation: 15-50 MetaInfo components re-render
-- Parent updates: Footer and all Icons re-render
-- Scroll events: Trigger unnecessary re-renders
-- Network requests: Cause component re-renders cascade
-
-**After Optimization**:
-- Menu toggle: No badge/MetaInfo/Icon re-renders
-- Page navigation: Only changed components re-render
-- Parent updates: Memoized components skip re-renders
-- Scroll events: No re-render impact on memoized components
-- Faster FCP (First Contentful Paint): Reduced re-render time
-- Better TTI (Time to Interactive): Less CPU work on interactions
-
-### Files Modified
-
-- `src/components/ui/Badge.tsx` - Added React.memo with custom comparison (lines 1-2, 36-42)
-- `src/components/ui/MetaInfo.tsx` - Added React.memo with custom comparison (lines 1, 19-26)
-- `src/components/ui/Icon.tsx` - Added React.memo, changed to default export (lines 1, 50-59)
-- `src/components/layout/Footer.tsx` - Added React.memo (lines 5, 90)
-- `src/components/layout/Header.tsx` - Updated Icon import (line 5)
-- `src/components/ui/Button.tsx` - Updated Icon import (line 3)
-- `__tests__/components/Footer.test.tsx` - Updated test for memoization (line 341)
-- `__tests__/components/Icon.test.tsx` - Updated Icon import (line 2)
-
-### Test Results
-
-- ✅ 1560 tests passing (1559 → 1560, 1 new test)
-- ✅ 47 test suites passing
-- ✅ ESLint passes with no errors
-- ✅ TypeScript compilation passes
-- ✅ Zero regressions in existing tests
-- ✅ All optimized components tested
-
-### Results
-
-- ✅ Badge component now memoized with React.memo
-- ✅ MetaInfo component now memoized with React.memo
-- ✅ Icon component now memoized with React.memo
-- ✅ Footer component now memoized with React.memo
-- ✅ Custom comparison functions prevent unnecessary re-renders
-- ✅ 80%+ reduction in Badge, MetaInfo, Icon re-renders
-- ✅ 90%+ reduction in Footer re-renders
-- ✅ Smoother UI interactions (menu toggle, navigation)
-- ✅ Improved First Contentful Paint (FCP)
-- ✅ Improved Time to Interactive (TTI)
-- ✅ All tests passing (no regressions)
-- ✅ Lint and typecheck passing
-- ✅ Build successful
-
-### Success Criteria
-
-- ✅ Bottleneck measurably improved (re-renders reduced 80%+)
-- ✅ User experience faster (smoother interactions)
-- ✅ Improvement sustainable (memoization persists)
-- ✅ Code quality maintained (tests pass, lint/typecheck pass)
-- ✅ Zero regressions
-
-### Anti-Patterns Avoided
-
-- ❌ No optimization without measuring (profiled usage patterns)
-- ❌ No premature optimization (targeted actual re-render bottleneck)
-- ❌ No breaking changes (all tests pass)
-- ❌ No sacrifice clarity for marginal gains (clean comparison functions)
-- ❌ No over-optimization (only frequently-rendered components)
-
-### Performance Engineering Principles Applied
-
-1. **Measure First**: Analyzed component usage patterns across application
-2. **Target Actual Bottleneck**: Focused on frequently-rendered components
-3. **User-Centric**: Improved UI interactions and responsiveness
-4. **Algorithm Efficiency**: O(1) re-render check vs O(n) full re-render
-5. **Maintainability**: Clean, well-documented comparison functions
-6. **Sustainable**: Memoization pattern scales to all component instances
-7. **Cost-Benefit Analysis**: High-impact components (Badge, MetaInfo) prioritized over low-impact components
-
-### Follow-up Recommendations
-
-1. **Consider Memoization Tests**: Add memoization tests to verify re-render prevention
-2. **Performance Monitoring**: Track actual re-render counts in production
-3. **React DevTools**: Use Profiler to validate re-render reduction in production
-4. **Other Components**: Consider memoization for other frequently-rendered components (Breadcrumb, EmptyState)
-5. **useCallback/useMemo**: If components become interactive, add callback/memo optimization
-
-### See Also
-
-- [Task PERF-001: PostCard Rendering Optimization](./task.md#perf-001)
-- [Task PERF-002: Pagination Rendering Optimization](./task.md#perf-002)
-- [Blueprint.md Performance Standards](./blueprint.md#performance-standards)
-
----
-
-## [PERF-003] Component Rendering Optimization - Badge, MetaInfo, Icon, Footer
-
-**Status**: Complete
-**Priority**: High
-**Assigned**: Performance Engineer
-**Created**: 2026-01-11
-**Updated**: 2026-01-11
-
-### Description
-
-Optimized frequently-rendered UI components (Badge, MetaInfo, Icon, Footer) by adding `React.memo` with custom comparison functions to prevent unnecessary re-renders.
-
-### Problem Identified
-
-**Rendering Performance Issues**:
-- **Badge component**: Used for categories/tags on posts, ~30-200 instances per page
-- **MetaInfo component**: Used on every PostCard, ~15-50 instances per page
-- **Icon component**: Used in Header (menu/close), Footer (3 social icons), Button (loading spinner)
-- **Footer component**: Used on every page, re-renders on all parent state changes
-- **No memoization applied**: All components re-render on every parent state change
-- **Re-render cascade**: When Header/Footer/any parent updates, ALL child components re-render
-
-**Performance Impact**:
-- Home page: ~15-50 PostCards with 2-4 badges each = 30-200 badges re-rendering
-- News list: ~50 PostCards with MetaInfo = 50 MetaInfo components re-rendering
-- Parent updates: Header menu toggle causes all badges/MetaInfo to re-render
-- Footer updates: 3 social icons re-render on all parent updates
-
-### Implementation Summary
-
-1. **Badge Component** (`src/components/ui/Badge.tsx`):
-   - Added React.memo with custom comparison function
-   - Compares: `variant`, `href`, `className`, `children`
-   - Only re-renders when badge content or styling changes
-
-2. **MetaInfo Component** (`src/components/ui/MetaInfo.tsx`):
-   - Added React.memo with custom comparison function
-   - Compares: `author`, `date`, `separator`, `className`
-   - Only re-renders when post metadata changes
-
-3. **Icon Component** (`src/components/ui/Icon.tsx`):
-   - Added React.memo with custom comparison function
-   - Compares: `type`, `className`, `aria-hidden`
-   - Only re-renders when icon type or styling changes
-   - Changed to default export for consistency
-
-4. **Footer Component** (`src/components/layout/Footer.tsx`):
-   - Added React.memo (no props to compare, simple re-render skip)
-   - Prevents unnecessary re-renders on parent state changes
-
-### Code Changes
-
-**Badge Component** (Badge.tsx, lines 1-2, 36-42):
-```typescript
-import Link from 'next/link'
-import { memo } from 'react'
-
-function BadgeComponent({ children, variant = 'default', className = '', href }: BadgeProps) {
-  // ... component body
-}
-
-function arePropsEqual(prevProps: BadgeProps, nextProps: BadgeProps): boolean {
-  return (
-    prevProps.variant === nextProps.variant &&
-    prevProps.href === nextProps.href &&
-    prevProps.className === nextProps.className &&
-    prevProps.children === nextProps.children
-  )
-}
-
-export default memo(BadgeComponent, arePropsEqual)
-```
-
-**MetaInfo Component** (MetaInfo.tsx, lines 1, 19-26):
-```typescript
-import { memo } from 'react'
-
-function MetaInfoComponent({ author, date, separator = '•', className = '' }: MetaInfoProps) {
-  // ... component body
-}
-
-function arePropsEqual(prevProps: MetaInfoProps, nextProps: MetaInfoProps): boolean {
-  return (
-    prevProps.author === nextProps.author &&
-    prevProps.date === nextProps.date &&
-    prevProps.separator === nextProps.separator &&
-    prevProps.className === nextProps.className
-  )
-}
-
-export default memo(MetaInfoComponent, arePropsEqual)
-```
-
-**Icon Component** (Icon.tsx, lines 1, 50-59):
-```typescript
-import { memo } from 'react'
-
-function IconComponent({ type, className, 'aria-hidden': ariaHidden = true }: IconProps) {
-  // ... component body
-}
-
-function arePropsEqual(prevProps: IconProps, nextProps: IconProps): boolean {
-  return (
-    prevProps.type === nextProps.type &&
-    prevProps.className === nextProps.className &&
-    prevProps['aria-hidden'] === nextProps['aria-hidden']
-  )
-}
-
-export default memo(IconComponent, arePropsEqual)
-```
-
-**Footer Component** (Footer.tsx, lines 5, 90):
-```typescript
-import { memo } from 'react'
-
-function FooterComponent() {
-  // ... component body
-}
-
-export default memo(FooterComponent)
-```
-
-**Import Updates** (for Icon component default export):
-- `src/components/layout/Header.tsx`: Changed to `import Icon from '@/components/ui/Icon'`
-- `src/components/layout/Footer.tsx`: Changed to `import Icon from '@/components/ui/Icon'`
-- `src/components/ui/Button.tsx`: Changed to `import Icon from './Icon'`
-- `__tests__/components/Icon.test.tsx`: Changed to `import Icon from '@/components/ui/Icon'`
-
-### Props Comparison Strategy
-
-**Badge Compared Props**:
-- `variant` - Badge style (category, tag, default)
-- `href` - Link destination
-- `className` - Custom styling
-- `children` - Badge content
-
-**MetaInfo Compared Props**:
-- `author` - Author name
-- `date` - Post date string
-- `separator` - Separator character (default: '•')
-- `className` - Custom styling
-
-**Icon Compared Props**:
-- `type` - Icon type (facebook, twitter, instagram, close, menu, loading)
-- `className` - Custom styling (size classes, etc.)
-- `aria-hidden` - Screen reader visibility
-
-**Footer**:
-- No props - Memoization prevents re-renders on parent updates only
-
-### Performance Improvements
-
-| Component | Instance Count | Re-renders Before | Re-renders After | Reduction |
-|-----------|----------------|--------------------|-------------------|------------|
-| **Badge** | 30-200 | Every parent update | Only when props change | 80%+ reduction |
-| **MetaInfo** | 15-50 | Every parent update | Only when props change | 80%+ reduction |
-| **Icon** | 4 (Header) + 3 (Footer) | Every parent update | Only when props change | 80%+ reduction |
-| **Footer** | 1 per page | Every parent update | Only on navigation | 90%+ reduction |
-
-### User Experience Improvements
-
-**Before Optimization**:
-- Menu toggle: All 30-200 badges re-render
-- Page navigation: 15-50 MetaInfo components re-render
-- Parent updates: Footer and all Icons re-render
-- Scroll events: Trigger unnecessary re-renders
-- Network requests: Cause component re-renders cascade
-
-**After Optimization**:
-- Menu toggle: No badge/MetaInfo/Icon re-renders
-- Page navigation: Only changed components re-render
-- Parent updates: Memoized components skip re-renders
-- Scroll events: No re-render impact on memoized components
-- Faster FCP (First Contentful Paint): Reduced re-render time
-- Better TTI (Time to Interactive): Less CPU work on interactions
-
-### Files Modified
-
-- `src/components/ui/Badge.tsx` - Added React.memo with custom comparison (lines 1-2, 36-42)
-- `src/components/ui/MetaInfo.tsx` - Added React.memo with custom comparison (lines 1, 19-26)
-- `src/components/ui/Icon.tsx` - Added React.memo, changed to default export (lines 1, 50-59)
-- `src/components/layout/Footer.tsx` - Added React.memo (lines 5, 90)
-- `src/components/layout/Header.tsx` - Updated Icon import (line 5)
-- `src/components/ui/Button.tsx` - Updated Icon import (line 3)
-- `__tests__/components/Footer.test.tsx` - Updated test for memoization (line 341)
-- `__tests__/components/Icon.test.tsx` - Updated Icon import (line 2)
-
-### Test Results
-
-- ✅ 1560 tests passing (1559 → 1560, 1 new test)
-- ✅ 47 test suites passing
-- ✅ ESLint passes with no errors
-- ✅ TypeScript compilation passes
-- ✅ Zero regressions in existing tests
-- ✅ All optimized components tested
-
-### Results
-
-- ✅ Badge component now memoized with React.memo
-- ✅ MetaInfo component now memoized with React.memo
-- ✅ Icon component now memoized with React.memo
-- ✅ Footer component now memoized with React.memo
-- ✅ Custom comparison functions prevent unnecessary re-renders
-- ✅ 80%+ reduction in Badge, MetaInfo, Icon re-renders
-- ✅ 90%+ reduction in Footer re-renders
-- ✅ Smoother UI interactions (menu toggle, navigation)
-- ✅ Improved First Contentful Paint (FCP)
-- ✅ Improved Time to Interactive (TTI)
-- ✅ All tests passing (no regressions)
-- ✅ Lint and typecheck passing
-- ✅ Build successful
-
-### Success Criteria
-
-- ✅ Bottleneck measurably improved (re-renders reduced 80%+)
-- ✅ User experience faster (smoother interactions)
-- ✅ Improvement sustainable (memoization persists)
-- ✅ Code quality maintained (tests pass, lint/typecheck pass)
-- ✅ Zero regressions
-
-### Anti-Patterns Avoided
-
-- ❌ No optimization without measuring (profiled usage patterns)
-- ❌ No premature optimization (targeted actual re-render bottleneck)
-- ❌ No breaking changes (all tests pass)
-- ❌ No sacrifice clarity for marginal gains (clean comparison functions)
-- ❌ No over-optimization (only frequently-rendered components)
-
-### Performance Engineering Principles Applied
-
-1. **Measure First**: Analyzed component usage patterns across application
-2. **Target Actual Bottleneck**: Focused on frequently-rendered components
-3. **User-Centric**: Improved UI interactions and responsiveness
-4. **Algorithm Efficiency**: O(1) re-render check vs O(n) full re-render
-5. **Maintainability**: Clean, well-documented comparison functions
-6. **Sustainable**: Memoization pattern scales to all component instances
-7. **Cost-Benefit Analysis**: High-impact components (Badge, MetaInfo) prioritized over low-impact components
-
-### Follow-up Recommendations
-
-1. **Consider Memoization Tests**: Add memoization tests to verify re-render prevention
-2. **Performance Monitoring**: Track actual re-render counts in production
-3. **React DevTools**: Use Profiler to validate re-render reduction in production
-4. **Other Components**: Consider memoization for other frequently-rendered components (Breadcrumb, EmptyState)
-5. **useCallback/useMemo**: If components become interactive, add callback/memo optimization
-
-### See Also
-
-- [Task PERF-001: PostCard Rendering Optimization](./task.md#perf-001)
-- [Task PERF-002: Pagination Rendering Optimization](./task.md#perf-002)
-- [Blueprint.md Performance Standards](./blueprint.md#performance-standards)
-
----
 
 ## [UX-003] Component Accessibility Enhancements
 
@@ -1612,146 +1102,6 @@ Created comprehensive unit test file `__tests__/cacheMetricsCalculator.test.ts` 
 - [Pull Request #284](https://github.com/sulhimbn/headlesswp/pull/284)
 
 ---
-
-## [QA-002] Middleware Security Tests
-
-**Status**: Complete
-**Priority**: High (Critical Security Testing Gap)
-**Assigned**: Senior QA Engineer
-**Created**: 2026-01-11
-**Updated**: 2026-01-11
-
-### Description
-
-Added comprehensive unit tests for middleware.ts to ensure correctness of security headers, Content Security Policy (CSP) configuration, and nonce generation. This is critical because middleware.ts handles all security headers for the application.
-
-### Problem Identified
-
-**Testing Gap**: middleware.ts (67 lines, critical security code) had no dedicated tests. While csp-report.test.ts verified the file exists, it did not test the actual middleware functionality. This is a critical gap because:
-
-1. Middleware sets all security headers for the application
-2. CSP configuration prevents XSS attacks and is critical for security
-3. Nonce generation is required for inline script/style execution
-4. Security headers prevent various attack vectors (clickjacking, MIME sniffing, etc.)
-5. Development vs production CSP differences needed verification
-6. This is the first line of defense for application security
-
-### Implementation Summary
-
-Created comprehensive unit test file `__tests__/middleware.test.ts` with 33 tests covering:
-
-**Content Security Policy Tests** (13 tests):
-- CSP header is set correctly
-- default-src directive included
-- script-src with nonce included
-- style-src with nonce included
-- img-src with data: and blob: included
-- font-src directive included
-- connect-src directive included
-- media-src directive included
-- object-src 'none' directive included
-- base-uri directive included
-- form-action directive included
-- frame-ancestors 'none' directive included
-- upgrade-insecure-requests directive included
-
-**Nonce Generation Tests** (4 tests):
-- x-nonce header is set
-- Valid base64 nonce is generated
-- Same nonce used in CSP and x-nonce header
-- Unique nonces generated on each request
-
-**Security Headers Tests** (6 tests):
-- Strict-Transport-Security header set correctly
-- X-Frame-Options set to DENY
-- X-Content-Type-Options set to nosniff
-- X-XSS-Protection header set correctly
-- Referrer-Policy header set correctly
-- Permissions-Policy header set correctly
-
-**Development vs Production CSP Tests** (4 tests):
-- unsafe-inline and unsafe-eval included in development
-- unsafe-inline and unsafe-eval NOT included in production
-- report-uri included in development
-- report-uri NOT included in production
-
-**Integration Tests** (3 tests):
-- All required security headers set
-- Multiple consecutive requests handled correctly
-- CSP structure maintained across requests
-
-**Header Value Validation Tests** (3 tests):
-- Valid HSTS max-age value
-- Properly formatted Permissions-Policy
-- CSP with semicolon-separated directives
-
-### Testing Principles Applied
-
-1. **Test Behavior, Not Implementation**: Verified WHAT headers contain, not HOW they are generated
-2. **Test Pyramid**: Added unit tests to complement existing integration tests
-3. **Isolation**: Each test is independent with proper setup (mockHeaders reset)
-4. **Determinism**: All tests produce same result every time
-5. **Fast Feedback**: Tests execute in ~0.8 seconds
-6. **Meaningful Coverage**: Covered all security-critical middleware behavior
-7. **AAA Pattern**: Arrange → Act → Assert for all tests
-
-### Anti-Patterns Avoided
-
-- ❌ No tests depending on execution order
-- ❌ No tests for implementation details
-- ❌ No ignoring flaky tests (all tests pass consistently)
-- ❌ No tests requiring external services without mocking
-- ❌ No tests that pass when code is broken
-
-### Files Modified
-
-- `__tests__/middleware.test.ts` - New file (348 lines, 33 tests)
-
-### Test Results
-
-- ✅ 33 new tests added
-- ✅ 1560 total tests passing (1527 → 1560)
-- ✅ 47 test suites passing
-- ✅ No regressions in existing tests
-- ✅ ESLint passes with no errors
-- ✅ TypeScript compilation passes
-- ✅ All tests pass consistently (no flaky tests)
-
-### Results
-
-- ✅ Middleware now has comprehensive unit test coverage
-- ✅ All security headers tested (CSP, HSTS, X-Frame-Options, etc.)
-- ✅ Nonce generation behavior verified
-- ✅ Development vs production CSP differences tested
-- ✅ All tests pass consistently (no flaky tests)
-- ✅ Breaking code causes test failure (isolation ensures detection)
-- ✅ Zero regressions in existing tests
-- ✅ Code quality maintained (lint/typecheck pass)
-
-### Success Criteria
-
-- ✅ Critical paths covered (all security headers, CSP, nonce generation)
-- ✅ All tests pass consistently (33/33)
-- ✅ Edge cases tested (development vs production, multiple requests, header validation)
-- ✅ Tests readable and maintainable (descriptive names, AAA pattern)
-- ✅ Breaking code causes test failure (isolated unit tests)
-
-### Follow-up Recommendations
-
-1. **Security Testing**: Consider adding automated security testing in CI/CD pipeline
-2. **Header Monitoring**: Add alerts for missing security headers in production
-3. **CSP Violation Reporting**: Test csp-report route integration with CSP reports
-4. **Integration Tests**: Add E2E tests to verify security headers in browser
-
-### See Also
-
-- [Blueprint.md Testing Standards](./blueprint.md#testing-standards)
-- [Blueprint.md Security](./blueprint.md#security)
-- [Middleware Source](../src/middleware.ts)
-- [CSP Utilities Tests](../__tests__/cspUtils.test.ts)
-
----
-
 ## [SANITIZE-001] Code Sanitization - Comprehensive Code Quality Audit
 
 **Status**: Complete
@@ -1874,90 +1224,6 @@ Comprehensive code sanitization audit to identify and eliminate bugs, fix build/
 ### Follow-up Recommendations
 
 **None Required** - The codebase is in excellent condition. All code quality standards are met, and there are no critical issues to address. Continue following established patterns for future development.
-
----
-
-## [SANITIZE-002] Fix Lint Warning - Unused Import in rateLimitMiddleware.ts
-
-**Status**: Complete
-**Priority**: Medium (Lint Warning)
-**Assigned**: Lead Reliability Engineer
-**Created**: 2026-01-11
-**Updated**: 2026-01-11
-
-### Description
-
-Fixed lint warning by removing unused import of `TIME_CONSTANTS` from rateLimitMiddleware.ts file.
-
-### Problem Identified
-
-**Lint Warning**: `TIME_CONSTANTS` is defined but never used in `src/lib/api/rateLimitMiddleware.ts:4:10`
-
-The rate limiting middleware imported `TIME_CONSTANTS` from `@/lib/api/config` but never used it. The rate limiting functionality uses `RATE_LIMIT` constants from `@/lib/constants/appConstants` instead.
-
-### Implementation Summary
-
-**Change Made** (`src/lib/api/rateLimitMiddleware.ts`, line 4):
-- Removed unused import: `import { TIME_CONSTANTS } from '@/lib/api/config'`
-- Code now imports only what it uses: `RATE_LIMIT` from `@/lib/constants/appConstants`
-
-### Before
-
-```typescript
-import { NextRequest, NextResponse } from 'next/server'
-import { ApiErrorType } from './errors'
-import { RATE_LIMIT } from '@/lib/constants/appConstants'
-import { TIME_CONSTANTS } from '@/lib/api/config'  // Unused import
-```
-
-### After
-
-```typescript
-import { NextRequest, NextResponse } from 'next/server'
-import { ApiErrorType } from './errors'
-import { RATE_LIMIT } from '@/lib/constants/appConstants'
-```
-
-### Files Modified
-
-- `src/lib/api/rateLimitMiddleware.ts` - Removed unused import (1 line deleted)
-
-### Verification
-
-- ✅ ESLint passes with 0 errors, 0 warnings
-- ✅ TypeScript compilation passes
-- ✅ All 1560 tests passing
-- ✅ Build passes successfully
-- ✅ Zero regressions
-
-### Results
-
-- ✅ Lint warning resolved
-- ✅ Code quality improved (no unused imports)
-- ✅ All tests passing (no regressions)
-- ✅ Lint and typecheck passing
-- ✅ Build successful
-
-### Success Criteria
-
-- ✅ Zero lint warnings
-- ✅ No regressions in functionality
-- ✅ Code follows best practices (clean imports)
-- ✅ Tests pass
-- ✅ Build passes
-
-### Anti-Patterns Avoided
-
-- ❌ No unused imports remaining
-- ❌ No ignored linter warnings
-- ❌ No breaking changes
-
-### Code Quality Principles Applied
-
-1. **Clean Code**: Remove unused imports to keep code maintainable
-2. **Lint Compliance**: Follow linting rules strictly
-3. **Minimal Changes**: Only removed what was necessary
-4. **Verification**: Ran all checks to ensure no regressions
 
 ---
 
@@ -4598,11 +3864,10 @@ Fixed critical documentation issues including version mismatch and documented Ne
 
 ## [REFACTOR-016] Extract Magic Numbers to Constants
 
-**Status**: Complete
+**Status**: Pending
 **Priority**: High
-**Assigned**: Principal Software Architect
+**Assigned**: Unassigned
 **Created**: 2026-01-10
-**Updated**: 2026-01-11
 
 ### Description
 
@@ -4613,7 +3878,7 @@ Extract magic numbers across the codebase into centralized constants to improve 
 **Magic Numbers in Multiple Files**:
 - `src/lib/api/rateLimitMiddleware.ts` lines 11-15: `300, 60, 10, 30, 60000` - rate limits not centralized
 - `src/app/api/observability/metrics/route.ts` lines 22, 30, 37, 44, 67: `slice(-10)` - hardcoded slice count
-- `src/lib/cache/cacheMetricsCalculator.ts` lines 92, 104, 107, 116, 117, 118, 119, 120, 127, 128: `80, 50, 1000, 1024, 2, 50, 50, 24` - memory conversion and efficiency factors
+- `src/lib/cache.ts` lines 350, 356, 416, 419: `100, 50, 1024` - memory conversion factors
 - `src/app/berita/page.tsx` line 18: `parseInt(..., 10)` - radix magic number
 
 **Impact**:
@@ -4624,77 +3889,53 @@ Extract magic numbers across the codebase into centralized constants to improve 
 
 ### Implementation Summary
 
-1. **Created constants file**: `src/lib/constants/appConstants.ts` (39 lines)
-2. **Defined magic number constants**: Grouped by category (TELEMETRY, PARSING, MEMORY, CACHE_METRICS, RATE_LIMIT)
-3. **Replaced magic numbers**: Updated all references to use named constants
+1. **Create constants file**: `src/lib/constants/appConstants.ts`
+2. **Define magic number constants**: Group by category (telemetry, memory, parsing, etc.)
+3. **Replace magic numbers**: Update all references to use named constants
 
-### Constants Created
+### Suggested Constants
 
-**TELEMETRY**:
-- `RECENT_EVENT_COUNT: 10` - Number of recent events to include in metrics
+```typescript
+export const TELEMETRY = {
+  RECENT_EVENT_COUNT: 10,
+};
 
-**PARSING**:
-- `BASE64_RADIX: 10` - Radix for Base64 parsing
-- `DECIMAL_RADIX: 10` - Radix for decimal parsing
+export const PARSING = {
+  BASE64_RADIX: 10,
+  DECIMAL_RADIX: 10,
+};
 
-**MEMORY**:
-- `BYTES_TO_KB: 1024` - Bytes to kilobytes conversion
-- `BYTES_TO_MB: 1024 * 1024` - Bytes to megabytes conversion
-- `BYTES_TO_GB: 1024 * 1024 * 1024` - Bytes to gigabytes conversion
-- `BYTES_PER_CHARACTER_UTF16: 2` - Bytes per UTF-16 character
-- `PER_ENTRY_OVERHEAD_BYTES: 24` - Overhead per cache entry
-- `PER_DEPENDENCY_ENTRY_BYTES: 50` - Bytes per dependency entry
-- `PER_DEPENDENT_ENTRY_BYTES: 50` - Bytes per dependent entry
+export const MEMORY = {
+  BYTES_TO_KB: 1024,
+  BYTES_TO_MB: 1024 * 1024,
+  BYTES_TO_GB: 1024 * 1024 * 1024,
+};
 
-**CACHE_METRICS**:
-- `HIGH_EFFICIENCY_THRESHOLD: 80` - High efficiency threshold (%)
-- `MEDIUM_EFFICIENCY_THRESHOLD: 50` - Medium efficiency threshold (%)
-- `MEMORY_ROUNDING_FACTOR: 100` - Factor for memory rounding
-- `MILLISECONDS_TO_SECONDS: 1000` - Milliseconds to seconds conversion
+export const CACHE_METRICS = {
+  HIGH_EFFICIENCY_THRESHOLD: 100,
+  MEDIUM_EFFICIENCY_THRESHOLD: 50,
+};
 
-**RATE_LIMIT**:
-- `DEFAULT_WINDOW_MS: 60000` - Default rate limit window (60 seconds)
-- `HEALTH_MAX_REQUESTS: 300` - Max requests for health endpoint
-- `READINESS_MAX_REQUESTS: 300` - Max requests for readiness endpoint
-- `METRICS_MAX_REQUESTS: 60` - Max requests for metrics endpoint
-- `CACHE_MAX_REQUESTS: 10` - Max requests for cache endpoint
-- `CSP_REPORT_MAX_REQUESTS: 30` - Max requests for CSP report endpoint
-- `DEFAULT_RETRY_AFTER_SECONDS: 60` - Default retry-after value
+export const RATE_LIMIT = {
+  DEFAULT_WINDOW_MS: 60000,
+};
+```
 
-### Files Modified
+### Files to Modify
 
-- `src/lib/constants/appConstants.ts` - New file (39 lines)
-- `src/lib/api/rateLimitMiddleware.ts` - Added imports (2 lines), replaced magic numbers (9 lines)
-- `src/app/api/observability/metrics/route.ts` - Added import (1 line), replaced slice(-10) (5 lines)
-- `src/lib/cache/cacheMetricsCalculator.ts` - Added import (1 line), replaced magic numbers (9 lines)
-- `src/app/berita/page.tsx` - Added import (1 line), replaced parseInt radix (1 line)
+- `src/lib/constants/appConstants.ts` - New file (50 lines)
+- `src/lib/api/rateLimitMiddleware.ts` - Replace magic numbers (5 lines)
+- `src/app/api/observability/metrics/route.ts` - Replace slice(-10) (5 lines)
+- `src/lib/cache.ts` - Replace memory conversion numbers (4 lines)
+- `src/app/berita/page.tsx` - Replace parseInt radix (1 line)
 
-### Code Quality Improvements
+### Expected Results
 
-| File | Before | After | Lines Changed |
-|------|--------|-------|---------------|
-| **rateLimitMiddleware.ts** | Magic numbers | Named constants | 9 lines |
-| **metrics/route.ts** | slice(-10) | TELEMETRY.RECENT_EVENT_COUNT | 5 lines |
-| **cacheMetricsCalculator.ts** | Magic numbers | Named constants | 9 lines |
-| **berita/page.tsx** | parseInt(, 10) | PARSING.DECIMAL_RADIX | 1 line |
-| **Total** | Scattered | Centralized | 25 lines |
-
-### Test Results
-
-- ✅ **1560 tests passing** (no regressions)
-- ✅ **47 test suites passing**
-- ✅ **ESLint passes** (no new errors)
-- ✅ **TypeScript compilation** passes (no new errors)
-
-### Results
-
-- ✅ Single source of truth for magic numbers (appConstants.ts)
-- ✅ All magic numbers extracted to constants (25 lines replaced)
-- ✅ Constants organized logically by category (5 categories)
-- ✅ Code more readable and self-documenting
-- ✅ Easier maintenance (change in one place)
-- ✅ All tests passing (no behavior changes)
-- ✅ Zero regressions in existing functionality
+- Single source of truth for magic numbers
+- Improved code readability
+- Easier maintenance (change in one place)
+- Self-documenting code via constant names
+- Consistent values across codebase
 
 ### Success Criteria
 
@@ -4703,22 +3944,6 @@ Extract magic numbers across the codebase into centralized constants to improve 
 - ✅ Constants organized logically by category
 - ✅ All tests passing (no behavior changes)
 - ✅ Code more readable and maintainable
-
-### Anti-Patterns Avoided
-
-- ❌ No magic numbers scattered across codebase
-- ❌ No hardcoded values without context
-- ❌ No duplication of configuration values
-- ❌ No unclear code intent
-
-### Architectural Principles Applied
-
-1. **Single Source of Truth**: All magic numbers centralized in appConstants.ts
-2. **DRY Principle**: Each magic number defined once, used everywhere
-3. **Self-Documenting Code**: Constant names explain purpose (e.g., HIGH_EFFICIENCY_THRESHOLD)
-4. **Type Safety**: `as const` ensures type inference and prevents mutation
-5. **Maintainability**: Changes only need to be made in one place
-6. **Logical Organization**: Constants grouped by category (TELEMETRY, MEMORY, PARSING, etc.)
 
 ---
 
@@ -5688,3 +4913,4 @@ class DataValidator {
 
 - [Blueprint.md Data Validation](./blueprint.md#data-validation)
 - [Blueprint.md Type Safety](./blueprint.md#design-principles)
+
