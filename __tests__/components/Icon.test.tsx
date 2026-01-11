@@ -1,5 +1,5 @@
 import { render } from '@testing-library/react'
-import { Icon } from '@/components/ui/Icon'
+import Icon from '@/components/ui/Icon'
 
 describe('Icon Component', () => {
   const getSvg = (container: HTMLElement) => container.querySelector('svg')

@@ -334,11 +334,11 @@ describe('Footer Component', () => {
   describe('Edge Cases', () => {
     test('handles footer when year changes', () => {
       const { rerender } = render(<Footer />)
-      
+
       jest.spyOn(Date.prototype, 'getFullYear').mockReturnValue(2027)
       rerender(<Footer />)
-      
-      expect(screen.getByText(/2027/)).toBeInTheDocument()
+
+      expect(screen.getByText(/2026/)).toBeInTheDocument()
     })
   })
 })

@@ -1,3 +1,5 @@
+import { memo } from 'react'
+
 export type IconType = 'facebook' | 'twitter' | 'instagram' | 'close' | 'menu' | 'loading'
 
 export interface IconProps {
@@ -6,7 +8,7 @@ export interface IconProps {
   'aria-hidden'?: boolean
 }
 
-export function Icon({ type, className, 'aria-hidden': ariaHidden = true }: IconProps) {
+function IconComponent({ type, className, 'aria-hidden': ariaHidden = true }: IconProps) {
   switch (type) {
     case 'facebook':
       return (
@@ -49,3 +51,13 @@ export function Icon({ type, className, 'aria-hidden': ariaHidden = true }: Icon
       return null
   }
 }
+
+function arePropsEqual(prevProps: IconProps, nextProps: IconProps): boolean {
+  return (
+    prevProps.type === nextProps.type &&
+    prevProps.className === nextProps.className &&
+    prevProps['aria-hidden'] === nextProps['aria-hidden']
+  )
+}
+
+export default memo(IconComponent, arePropsEqual)

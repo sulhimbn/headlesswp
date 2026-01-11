@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { memo } from 'react'
 
 interface BadgeProps {
   children: React.ReactNode
@@ -15,7 +16,7 @@ const variantStyles = {
   default: 'bg-[hsl(var(--color-secondary-dark))] text-[hsl(var(--color-text-secondary))]'
 }
 
-export default function Badge({ children, variant = 'default', className = '', href }: BadgeProps) {
+function BadgeComponent({ children, variant = 'default', className = '', href }: BadgeProps) {
   const combinedClassName = `${baseStyles} ${variantStyles[variant]} ${className}`.trim()
 
   if (href) {
@@ -35,3 +36,14 @@ export default function Badge({ children, variant = 'default', className = '', h
     </span>
   )
 }
+
+function arePropsEqual(prevProps: BadgeProps, nextProps: BadgeProps): boolean {
+  return (
+    prevProps.variant === nextProps.variant &&
+    prevProps.href === nextProps.href &&
+    prevProps.className === nextProps.className &&
+    prevProps.children === nextProps.children
+  )
+}
+
+export default memo(BadgeComponent, arePropsEqual)

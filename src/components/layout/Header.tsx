@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useState, useEffect, useRef, memo } from 'react'
-import { Icon } from '@/components/ui/Icon'
+import Icon from '@/components/ui/Icon'
 
 const NAVIGATION_ITEMS = [
   { href: '/', label: 'Beranda' },

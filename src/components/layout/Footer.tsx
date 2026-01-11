@@ -1,6 +1,7 @@
 import Link from 'next/link'
-import { Icon } from '@/components/ui/Icon'
+import Icon from '@/components/ui/Icon'
 import { UI_TEXT } from '@/lib/constants/uiText'
+import { memo } from 'react'
 
 const footerLinks = [
   { href: '/', label: UI_TEXT.footer.links.home },
@@ -10,7 +11,7 @@ const footerLinks = [
   { href: '/berita', label: UI_TEXT.footer.links.sports },
 ]
 
-export default function Footer() {
+function FooterComponent() {
   const currentYear = new Date().getFullYear()
 
   return (
@@ -87,3 +88,5 @@ export default function Footer() {
     </footer>
   )
 }
+
+export default memo(FooterComponent)
