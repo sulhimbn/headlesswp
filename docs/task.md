@@ -242,6 +242,122 @@ Comprehensive audit of integration resilience patterns to verify production read
 
 ---
 
+## [UX-003] Loading Icon Screen Reader Support
+
+**Status**: Complete ✅
+**Priority**: High
+**Assigned**: Senior UI/UX Engineer
+**Created**: 2026-01-11
+**Updated**: 2026-01-11
+
+### Description
+
+Fixed loading icon accessibility by adding proper ARIA attributes for loading state to Icon component, ensuring screen readers can detect and announce loading status to users with assistive technology.
+
+### Problem Identified
+
+**Loading Icons Hidden From Screen Readers**:
+- Loading icons had `aria-hidden="true"` by default in Icon component
+- Screen readers could not detect loading state when content was being fetched
+- Users with assistive technology (AT) had no indication that content was loading
+- Button component's loading state was invisible to AT users
+- SearchBar component's loading state was invisible to AT users
+
+**Impact**:
+- Users with screen readers couldn't tell when content was loading
+- Poor accessibility for AT users during async operations
+- Violated WCAG 2.1 Level A success criterion 4.1.2 (Name, Role, Value)
+- No feedback for users who cannot see visual loading spinners
+
+### Implementation Summary
+
+1. **Updated Icon Component** (`src/components/ui/Icon.tsx`):
+    - Added `shouldHideFromScreenReader` variable to conditionally hide icons from screen readers
+    - Loading icons are NOT hidden from screen readers (`shouldHideFromScreenReader = false` for loading type)
+    - Added `role="status"` to loading icon SVG element
+    - Added `aria-label="Loading"` to loading icon SVG element
+    - All other icon types remain hidden from screen readers by default (decorative icons)
+
+2. **Updated Button Tests** (`__tests__/components/Button.test.tsx`):
+    - Updated loading state tests to check for loading icon with `role="status"` and `aria-label="Loading"`
+    - Fixed tests to find button element without name parameter when in loading state
+    - Added test to verify loading icon is accessible to screen readers
+    - All 32 Button tests passing
+
+### Code Changes
+
+**Icon Component** (lines 11, 49-55):
+```typescript
+function IconComponent({ type, className, 'aria-hidden': ariaHidden = true }: IconProps) {
+  const shouldHideFromScreenReader = type === 'loading' ? false : ariaHidden
+
+  // ... other icon types use shouldHideFromScreenReader ...
+
+  case 'loading':
+    return (
+      <svg
+        className={className}
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+        role="status"
+        aria-label="Loading"
+      >
+        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+      </svg>
+    )
+}
+```
+
+**Accessibility Impact**:
+- Loading icons now have `role="status"` - proper semantic role for status indicators
+- Loading icons now have `aria-label="Loading"` - descriptive label for screen readers
+- Loading icons are no longer `aria-hidden` - visible to assistive technology
+- All other icons remain `aria-hidden` by default - decorative icons properly hidden
+
+### Results
+
+- ✅ Loading icons now accessible to screen readers
+- ✅ Screen readers announce "Loading" when content is loading
+- ✅ Proper ARIA attributes (`role="status"`, `aria-label="Loading"`) applied
+- ✅ All 1652 tests passing (49 test suites, 1 skipped)
+- ✅ All Icon component tests passing (15 tests)
+- ✅ All Button component tests passing (32 tests)
+- ✅ ESLint passes with 0 errors
+- ✅ TypeScript compilation passes
+
+### Success Criteria
+
+- ✅ Loading icons accessible to screen readers (not aria-hidden)
+- ✅ Proper ARIA attributes applied (`role="status"`, `aria-label="Loading"`)
+- ✅ Screen readers announce loading state
+- ✅ All tests passing (no regressions)
+- ✅ Code quality maintained (lint/typecheck pass)
+
+### Anti-Patterns Avoided
+
+- ❌ No aria-hidden on informative icons (loading icons are not decorative)
+- ❌ No missing ARIA attributes (role and aria-label provided)
+- ❌ No breaking changes (all tests pass, existing functionality preserved)
+- ❌ No over-announcing (only loading state announced, not decorative icons)
+- ❌ No incorrect ARIA usage (role="status" is appropriate for loading indicators)
+
+### UI/UX Principles Applied
+
+1. **User-Centric**: AT users now know when content is loading
+2. **Accessibility First**: Proper ARIA attributes for screen readers
+3. **Semantic HTML**: `role="status"` communicates purpose
+4. **Progressive Enhancement**: Loading works visually and with AT
+5. **WCAG 2.1 Compliance**: Success criterion 4.1.2 (Name, Role, Value) satisfied
+
+### See Also
+
+- [Blueprint.md Accessibility Features](./blueprint.md#accessibility-features)
+- [Blueprint.md Accessibility Requirements](./blueprint.md#accessibility-requirements)
+
+---
+
 ## [DATA-ARCH-009] Data Relationship Validation
 
 **Status**: Complete ✅
