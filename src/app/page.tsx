@@ -4,9 +4,9 @@ import PostCard from '@/components/post/PostCard'
 import SectionHeading from '@/components/ui/SectionHeading'
 import Footer from '@/components/layout/Footer'
 import { UI_TEXT } from '@/lib/constants/uiText'
-import { REVALIDATE_TIMES } from '@/lib/api/config'
 
-export const revalidate = REVALIDATE_TIMES.HOMEPAGE
+
+export const revalidate = 300 // 5 minutes
 
 export default async function HomePage() {
   const [latestPosts, categoryPosts] = await Promise.all([
