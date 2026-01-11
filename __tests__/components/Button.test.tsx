@@ -73,19 +73,21 @@ describe('Button Component', () => {
   describe('Loading State', () => {
     test('shows loading spinner when isLoading is true', () => {
       render(<Button isLoading>Loading</Button>)
-      const button = screen.getByRole('button', { name: 'Loading' })
+      const button = screen.getByRole('button')
       expect(button.querySelector('.animate-spin')).toBeInTheDocument()
+      const loadingIcon = screen.getByRole('status', { name: 'Loading' })
+      expect(loadingIcon).toBeInTheDocument()
     })
 
     test('disables button when isLoading is true', () => {
       render(<Button isLoading>Loading</Button>)
-      const button = screen.getByRole('button', { name: 'Loading' })
+      const button = screen.getByRole('button')
       expect(button).toBeDisabled()
     })
 
     test('sets aria-busy when isLoading is true', () => {
       render(<Button isLoading>Loading</Button>)
-      const button = screen.getByRole('button', { name: 'Loading' })
+      const button = screen.getByRole('button')
       expect(button).toHaveAttribute('aria-busy', 'true')
     })
 
@@ -193,7 +195,7 @@ describe('Button Component', () => {
 
     test('handles disabled with isLoading simultaneously', () => {
       render(<Button disabled isLoading>Loading</Button>)
-      const button = screen.getByRole('button', { name: 'Loading' })
+      const button = screen.getByRole('button')
       expect(button).toBeDisabled()
       expect(button).toHaveAttribute('aria-busy', 'true')
     })
@@ -231,7 +233,7 @@ describe('Button Component', () => {
     test('does not trigger click when isLoading', () => {
       const handleClick = jest.fn()
       render(<Button isLoading onClick={handleClick}>Click me</Button>)
-      const button = screen.getByRole('button', { name: 'Click me' })
+      const button = screen.getByRole('button')
       button.click()
       expect(handleClick).not.toHaveBeenCalled()
     })
