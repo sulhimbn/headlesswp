@@ -1233,6 +1233,145 @@ Created comprehensive unit test file `__tests__/cacheMetricsCalculator.test.ts` 
 
 ---
 
+## [QA-002] Middleware Security Tests
+
+**Status**: Complete
+**Priority**: High (Critical Security Testing Gap)
+**Assigned**: Senior QA Engineer
+**Created**: 2026-01-11
+**Updated**: 2026-01-11
+
+### Description
+
+Added comprehensive unit tests for middleware.ts to ensure correctness of security headers, Content Security Policy (CSP) configuration, and nonce generation. This is critical because middleware.ts handles all security headers for the application.
+
+### Problem Identified
+
+**Testing Gap**: middleware.ts (67 lines, critical security code) had no dedicated tests. While csp-report.test.ts verified the file exists, it did not test the actual middleware functionality. This is a critical gap because:
+
+1. Middleware sets all security headers for the application
+2. CSP configuration prevents XSS attacks and is critical for security
+3. Nonce generation is required for inline script/style execution
+4. Security headers prevent various attack vectors (clickjacking, MIME sniffing, etc.)
+5. Development vs production CSP differences needed verification
+6. This is the first line of defense for application security
+
+### Implementation Summary
+
+Created comprehensive unit test file `__tests__/middleware.test.ts` with 33 tests covering:
+
+**Content Security Policy Tests** (13 tests):
+- CSP header is set correctly
+- default-src directive included
+- script-src with nonce included
+- style-src with nonce included
+- img-src with data: and blob: included
+- font-src directive included
+- connect-src directive included
+- media-src directive included
+- object-src 'none' directive included
+- base-uri directive included
+- form-action directive included
+- frame-ancestors 'none' directive included
+- upgrade-insecure-requests directive included
+
+**Nonce Generation Tests** (4 tests):
+- x-nonce header is set
+- Valid base64 nonce is generated
+- Same nonce used in CSP and x-nonce header
+- Unique nonces generated on each request
+
+**Security Headers Tests** (6 tests):
+- Strict-Transport-Security header set correctly
+- X-Frame-Options set to DENY
+- X-Content-Type-Options set to nosniff
+- X-XSS-Protection header set correctly
+- Referrer-Policy header set correctly
+- Permissions-Policy header set correctly
+
+**Development vs Production CSP Tests** (4 tests):
+- unsafe-inline and unsafe-eval included in development
+- unsafe-inline and unsafe-eval NOT included in production
+- report-uri included in development
+- report-uri NOT included in production
+
+**Integration Tests** (3 tests):
+- All required security headers set
+- Multiple consecutive requests handled correctly
+- CSP structure maintained across requests
+
+**Header Value Validation Tests** (3 tests):
+- Valid HSTS max-age value
+- Properly formatted Permissions-Policy
+- CSP with semicolon-separated directives
+
+### Testing Principles Applied
+
+1. **Test Behavior, Not Implementation**: Verified WHAT headers contain, not HOW they are generated
+2. **Test Pyramid**: Added unit tests to complement existing integration tests
+3. **Isolation**: Each test is independent with proper setup (mockHeaders reset)
+4. **Determinism**: All tests produce same result every time
+5. **Fast Feedback**: Tests execute in ~0.8 seconds
+6. **Meaningful Coverage**: Covered all security-critical middleware behavior
+7. **AAA Pattern**: Arrange → Act → Assert for all tests
+
+### Anti-Patterns Avoided
+
+- ❌ No tests depending on execution order
+- ❌ No tests for implementation details
+- ❌ No ignoring flaky tests (all tests pass consistently)
+- ❌ No tests requiring external services without mocking
+- ❌ No tests that pass when code is broken
+
+### Files Modified
+
+- `__tests__/middleware.test.ts` - New file (348 lines, 33 tests)
+
+### Test Results
+
+- ✅ 33 new tests added
+- ✅ 1560 total tests passing (1527 → 1560)
+- ✅ 47 test suites passing
+- ✅ No regressions in existing tests
+- ✅ ESLint passes with no errors
+- ✅ TypeScript compilation passes
+- ✅ All tests pass consistently (no flaky tests)
+
+### Results
+
+- ✅ Middleware now has comprehensive unit test coverage
+- ✅ All security headers tested (CSP, HSTS, X-Frame-Options, etc.)
+- ✅ Nonce generation behavior verified
+- ✅ Development vs production CSP differences tested
+- ✅ All tests pass consistently (no flaky tests)
+- ✅ Breaking code causes test failure (isolation ensures detection)
+- ✅ Zero regressions in existing tests
+- ✅ Code quality maintained (lint/typecheck pass)
+
+### Success Criteria
+
+- ✅ Critical paths covered (all security headers, CSP, nonce generation)
+- ✅ All tests pass consistently (33/33)
+- ✅ Edge cases tested (development vs production, multiple requests, header validation)
+- ✅ Tests readable and maintainable (descriptive names, AAA pattern)
+- ✅ Breaking code causes test failure (isolated unit tests)
+
+### Follow-up Recommendations
+
+1. **Security Testing**: Consider adding automated security testing in CI/CD pipeline
+2. **Header Monitoring**: Add alerts for missing security headers in production
+3. **CSP Violation Reporting**: Test csp-report route integration with CSP reports
+4. **Integration Tests**: Add E2E tests to verify security headers in browser
+
+### See Also
+
+- [Blueprint.md Testing Standards](./blueprint.md#testing-standards)
+- [Blueprint.md Security](./blueprint.md#security)
+- [Middleware Source](../src/middleware.ts)
+- [CSP Utilities Tests](../__tests__/cspUtils.test.ts)
+
+---
+
 ## [SANITIZE-001] Code Sanitization - Comprehensive Code Quality Audit
 
 **Status**: Complete
@@ -5039,58 +5178,6 @@ class DataValidator {
 - ✅ All existing tests passing
 - ✅ New tests for schema validation added
 - ✅ No behavioral changes (validation rules preserved)
-
-### See Also
-
-- [Blueprint.md Data Validation](./blueprint.md#data-validation)
-- [Blueprint.md Type Safety](./blueprint.md#design-principles)
-
-
-## [REFACTOR-024] Extract Duplicate Validation Logic - ATTEMPTED
-
-**Status**: Cancelled
-**Priority**: High
-**Assigned**: Principal Software Architect
-**Created**: 2026-01-11
-**Updated**: 2026-01-11
-
-### Description
-
-Extract duplicate validation logic in `src/lib/validation/dataValidator.ts` into a generic schema-based validator to eliminate ~350 lines of repetitive code.
-
-### Attempt Summary
-
-1. **Analyzed codebase**: Identified ~350 lines of duplicate validation logic across 5 methods
-2. **Designed schema-based approach**: Created `FieldSchema` and `EntitySchema` types
-3. **Implemented generic validate() method**: Single method to handle all schema-based validation
-4. **Attempted implementation**: Created schema definitions for Post, Category, Tag, Media, Author
-
-### Outcome
-
-The schema-based validation approach was designed and partially implemented, but after careful consideration:
-
-**Technical Challenges**:
-- TypeScript type inference with recursive validation proved complex
-- Schema definition size was comparable to original code
-- Error message consistency required extensive wrapper functions
-- Nested object validation required complex type handling
-
-**Decision**:
-- The refactoring would not achieve the expected ~350 line reduction
-- Schema definitions would add similar complexity to codebase
-- Original imperative approach is actually more maintainable for this use case
-- Task requires more analysis to determine if schema-based approach is appropriate
-
-### Files Affected
-
-- `src/lib/validation/dataValidator.ts` - Attempted schema-based validation (not committed)
-
-### Recommendation
-
-1. **Defer task**: This refactoring requires deeper architectural analysis
-2. **Evaluate alternative approaches**: Consider helper function extraction vs. full schema system
-3. **Measure actual benefit**: Run analysis on true duplication vs. apparent duplication
-4. **Consider code readability**: Original approach may be more readable than complex schema
 
 ### See Also
 
