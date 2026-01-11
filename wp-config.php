@@ -12,19 +12,22 @@ define('DB_CHARSET', 'utf8mb4');
 define('DB_COLLATE', '');
 
 // ** WordPress debugging ** //
-define('WP_DEBUG', true);
-define('WP_DEBUG_LOG', true);
-define('WP_DEBUG_DISPLAY', true);
+define('WP_DEBUG', (getenv('WP_DEBUG') ?: 'false') === 'true');
+define('WP_DEBUG_LOG', (getenv('WP_DEBUG_LOG') ?: 'false') === 'true');
+define('WP_DEBUG_DISPLAY', (getenv('WP_DEBUG_DISPLAY') ?: 'false') === 'true');
 
 // ** Authentication Unique Keys and Salts ** //
-define('AUTH_KEY',         getenv('WP_AUTH_KEY') ?: 'generate-secure-key-here');
-define('SECURE_AUTH_KEY',  getenv('WP_SECURE_AUTH_KEY') ?: 'generate-secure-key-here');
-define('LOGGED_IN_KEY',    getenv('WP_LOGGED_IN_KEY') ?: 'generate-secure-key-here');
-define('NONCE_KEY',        getenv('WP_NONCE_KEY') ?: 'generate-secure-key-here');
-define('AUTH_SALT',        getenv('WP_AUTH_SALT') ?: 'generate-secure-key-here');
-define('SECURE_AUTH_SALT', getenv('WP_SECURE_AUTH_SALT') ?: 'generate-secure-key-here');
-define('LOGGED_IN_SALT',   getenv('WP_LOGGED_IN_SALT') ?: 'generate-secure-key-here');
-define('NONCE_SALT',       getenv('WP_NONCE_SALT') ?: 'generate-secure-key-here');
+// WARNING: Generate secure keys for production!
+// Use: https://api.wordpress.org/secret-key/1.1/salt/
+// Set WP_AUTH_KEY, WP_SECURE_AUTH_KEY, etc. in .env file
+define('AUTH_KEY',         getenv('WP_AUTH_KEY') ?: 'development-only-do-not-use-in-production');
+define('SECURE_AUTH_KEY',  getenv('WP_SECURE_AUTH_KEY') ?: 'development-only-do-not-use-in-production');
+define('LOGGED_IN_KEY',    getenv('WP_LOGGED_IN_KEY') ?: 'development-only-do-not-use-in-production');
+define('NONCE_KEY',        getenv('WP_NONCE_KEY') ?: 'development-only-do-not-use-in-production');
+define('AUTH_SALT',        getenv('WP_AUTH_SALT') ?: 'development-only-do-not-use-in-production');
+define('SECURE_AUTH_SALT', getenv('WP_SECURE_AUTH_SALT') ?: 'development-only-do-not-use-in-production');
+define('LOGGED_IN_SALT',   getenv('WP_LOGGED_IN_SALT') ?: 'development-only-do-not-use-in-production');
+define('NONCE_SALT',       getenv('WP_NONCE_SALT') ?: 'development-only-do-not-use-in-production');
 
 // ** WordPress absolute path ** //
 if (!defined('ABSPATH')) {
