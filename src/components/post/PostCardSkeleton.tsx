@@ -1,4 +1,6 @@
-export default function PostCardSkeleton() {
+import { memo } from 'react'
+
+function PostCardSkeleton() {
   return (
     <article className="bg-[hsl(var(--color-surface))] rounded-[var(--radius-lg)] shadow-[var(--shadow-md)] overflow-hidden" aria-busy="true" aria-label="Memuat kartu artikel">
       <div className="h-48 sm:h-56 md:h-48 bg-[hsl(var(--color-secondary-dark))] animate-pulse" />
@@ -12,3 +14,5 @@ export default function PostCardSkeleton() {
     </article>
   )
 }
+
+export default memo(PostCardSkeleton)
