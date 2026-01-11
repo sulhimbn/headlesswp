@@ -7,6 +7,8 @@ import { createFallbackPost } from '@/lib/utils/fallbackPost';
 import { logger } from '@/lib/utils/logger';
 import { getFallbackPosts } from '@/lib/constants/fallbackPosts';
 import type { IPostService, PostWithMediaUrl, PostWithDetails, PaginatedPostsResult } from './IPostService';
+import { standardizedAPI } from '@/lib/api/standardized';
+import { isApiResultSuccessful } from '@/lib/api/response';
 
 interface EntityMapOptions<T> {
   cacheKey: string;
@@ -115,114 +117,113 @@ function createFallbackPostsWithMediaUrls(fallbacks: Array<{ id: string; title: 
   return fallbacks.map(({ id, title }) => ({ ...createFallbackPost(id, title), mediaUrl: null }));
 }
 
-async function fetchAndValidate<T, R>(
-  fetchFn: () => Promise<T>,
-  validateFn: (data: T) => ValidationResult<T>,
-  transformFn: (data: T) => R | Promise<R>,
-  fallback: R,
-  context: string,
-  logLevel: 'warn' | 'error' = 'error'
-): Promise<R> {
-  try {
-    const data = await fetchFn();
-    const validation = validateFn(data);
-
-    if (!isValidationResultValid(validation)) {
-      logger.error(`Invalid data for ${context}`, undefined, { module: 'enhancedPostService', errors: validation.errors });
-      return fallback;
-    }
-
-    return await transformFn(validation.data as T);
-  } catch (error) {
-    logger[logLevel](`Failed to fetch ${context}`, error, { module: 'enhancedPostService' });
-    return fallback;
-  }
-}
-
 export const enhancedPostService: IPostService = {
   getLatestPosts: async (): Promise<PostWithMediaUrl[]> => {
-    return fetchAndValidate(
-      () => wordpressAPI.getPosts({ per_page: PAGINATION_LIMITS.LATEST_POSTS }),
-      dataValidator.validatePosts.bind(dataValidator),
-      enrichPostsWithMediaUrls,
-      createFallbackPostsWithMediaUrls(getFallbackPosts('LATEST')),
-      'latest posts',
-      'warn'
-    );
+    const result = await standardizedAPI.getAllPosts({ per_page: PAGINATION_LIMITS.LATEST_POSTS });
+
+    if (!isApiResultSuccessful(result)) {
+      logger.warn(`Failed to fetch latest posts: ${result.error?.message}`, undefined, { module: 'enhancedPostService' });
+      return createFallbackPostsWithMediaUrls(getFallbackPosts('LATEST'));
+    }
+
+    const validation = dataValidator.validatePosts(result.data);
+    if (!isValidationResultValid(validation)) {
+      logger.error('Invalid latest posts data', undefined, { module: 'enhancedPostService', errors: validation.errors });
+      return createFallbackPostsWithMediaUrls(getFallbackPosts('LATEST'));
+    }
+
+    return await enrichPostsWithMediaUrls(validation.data);
   },
 
   getCategoryPosts: async (): Promise<PostWithMediaUrl[]> => {
-    return fetchAndValidate(
-      () => wordpressAPI.getPosts({ per_page: PAGINATION_LIMITS.CATEGORY_POSTS }),
-      dataValidator.validatePosts.bind(dataValidator),
-      enrichPostsWithMediaUrls,
-      createFallbackPostsWithMediaUrls(getFallbackPosts('CATEGORY')),
-      'category posts',
-      'warn'
-    );
+    const result = await standardizedAPI.getAllPosts({ per_page: PAGINATION_LIMITS.CATEGORY_POSTS });
+
+    if (!isApiResultSuccessful(result)) {
+      logger.warn(`Failed to fetch category posts: ${result.error?.message}`, undefined, { module: 'enhancedPostService' });
+      return createFallbackPostsWithMediaUrls(getFallbackPosts('CATEGORY'));
+    }
+
+    const validation = dataValidator.validatePosts(result.data);
+    if (!isValidationResultValid(validation)) {
+      logger.error('Invalid category posts data', undefined, { module: 'enhancedPostService', errors: validation.errors });
+      return createFallbackPostsWithMediaUrls(getFallbackPosts('CATEGORY'));
+    }
+
+    return await enrichPostsWithMediaUrls(validation.data);
   },
 
   getAllPosts: async (): Promise<PostWithMediaUrl[]> => {
-    return fetchAndValidate(
-      () => wordpressAPI.getPosts({ per_page: PAGINATION_LIMITS.ALL_POSTS }),
-      dataValidator.validatePosts.bind(dataValidator),
-      enrichPostsWithMediaUrls,
-      [],
-      'all posts',
-      'warn'
-    );
+    const result = await standardizedAPI.getAllPosts({ per_page: PAGINATION_LIMITS.ALL_POSTS });
+
+    if (!isApiResultSuccessful(result)) {
+      logger.warn(`Failed to fetch all posts: ${result.error?.message}`, undefined, { module: 'enhancedPostService' });
+      return [];
+    }
+
+    const validation = dataValidator.validatePosts(result.data);
+    if (!isValidationResultValid(validation)) {
+      logger.error('Invalid all posts data', undefined, { module: 'enhancedPostService', errors: validation.errors });
+      return [];
+    }
+
+    return await enrichPostsWithMediaUrls(validation.data);
   },
 
   getPaginatedPosts: async (page: number = 1, perPage: number = 10): Promise<PaginatedPostsResult> => {
-    try {
-      const { data, total, totalPages } = await wordpressAPI.getPostsWithHeaders({ page, per_page: perPage });
-      const validation = dataValidator.validatePosts(data);
+    const result = await standardizedAPI.getAllPosts({ page, per_page: perPage });
 
-      if (!isValidationResultValid(validation)) {
-        logger.error('Invalid posts data', undefined, { module: 'enhancedPostService', errors: validation.errors });
-        return { posts: [], totalPosts: 0, totalPages: 0 };
-      }
-
-      const enrichedPosts = await enrichPostsWithMediaUrls(validation.data);
-
-      return {
-        posts: enrichedPosts,
-        totalPosts: total,
-        totalPages
-      };
-    } catch (error) {
-      logger.warn('Failed to fetch paginated posts', error, { module: 'enhancedPostService' });
+    if (!isApiResultSuccessful(result)) {
+      logger.warn(`Failed to fetch paginated posts: ${result.error?.message}`, undefined, { module: 'enhancedPostService' });
       return { posts: [], totalPosts: 0, totalPages: 0 };
     }
+
+    const validation = dataValidator.validatePosts(result.data);
+    if (!isValidationResultValid(validation)) {
+      logger.error('Invalid paginated posts data', undefined, { module: 'enhancedPostService', errors: validation.errors });
+      return { posts: [], totalPosts: 0, totalPages: 0 };
+    }
+
+    const enrichedPosts = await enrichPostsWithMediaUrls(validation.data);
+
+    return {
+      posts: enrichedPosts,
+      totalPosts: result.pagination.total ?? 0,
+      totalPages: result.pagination.totalPages ?? 0
+    };
   },
 
   getPostBySlug: async (slug: string): Promise<PostWithDetails | null> => {
-    try {
-      const post = await wordpressAPI.getPost(slug);
-      if (!post) return null;
+    const result = await standardizedAPI.getPostBySlug(slug);
 
-      const validation = dataValidator.validatePost(post);
-
-      if (!isValidationResultValid(validation)) {
-        logger.error(`Invalid post data for slug ${slug}`, undefined, { module: 'enhancedPostService', errors: validation.errors });
-        return null;
-      }
-
-      return await enrichPostWithDetails(validation.data);
-    } catch (error) {
-      logger.error(`Failed to fetch or enrich post with slug ${slug}`, error, { module: 'enhancedPostService' });
+    if (!isApiResultSuccessful(result)) {
+      logger.warn(`Failed to fetch post by slug ${slug}: ${result.error?.message}`, undefined, { module: 'enhancedPostService' });
       return null;
     }
+
+    const validation = dataValidator.validatePost(result.data);
+    if (!isValidationResultValid(validation)) {
+      logger.error(`Invalid post data for slug ${slug}`, undefined, { module: 'enhancedPostService', errors: validation.errors });
+      return null;
+    }
+
+    return await enrichPostWithDetails(validation.data);
   },
 
   getPostById: async (id: number): Promise<PostWithDetails | null> => {
-    return fetchAndValidate(
-      () => wordpressAPI.getPostById(id),
-      dataValidator.validatePost.bind(dataValidator),
-      enrichPostWithDetails,
-      null,
-      `post with id ${id}`
-    );
+    const result = await standardizedAPI.getPostById(id);
+
+    if (!isApiResultSuccessful(result)) {
+      logger.warn(`Failed to fetch post by id ${id}: ${result.error?.message}`, undefined, { module: 'enhancedPostService' });
+      return null;
+    }
+
+    const validation = dataValidator.validatePost(result.data);
+    if (!isValidationResultValid(validation)) {
+      logger.error(`Invalid post data for id ${id}`, undefined, { module: 'enhancedPostService', errors: validation.errors });
+      return null;
+    }
+
+    return await enrichPostWithDetails(validation.data);
   },
 
   getCategories: async (): Promise<WordPressCategory[]> => {

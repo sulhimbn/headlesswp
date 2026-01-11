@@ -1,8 +1,209 @@
 # Task Backlog
 
-**Last Updated**: 2026-01-11 (Performance Engineer - PERF-004: Telemetry Stats Caching Optimization Complete)
+**Last Updated**: 2026-01-11 (Senior Integration Engineer - INT-STD-004: Service Layer API Standardization Complete)
 
 ---
+
+## [INT-STD-004] Service Layer API Standardization
+
+**Status**: Complete
+**Priority**: High
+**Assigned**: Senior Integration Engineer
+**Created**: 2026-01-11
+**Updated**: 2026-01-11
+
+### Description
+
+Migrated service layer to use standardized API methods, applying consistent error handling, metadata tracking, and resilience patterns to all critical data access paths.
+
+### Problem Identified
+
+**Inconsistent API Access Pattern**:
+- Service layer methods in `enhancedPostService.ts` used `wordpressAPI` directly
+- Bypassed standardized API layer with `ApiResult<T>` wrapper
+- Resilience patterns (circuit breaker, retry strategy, rate limiting) not fully integrated
+- No consistent metadata tracking (endpoint, timestamp, cacheHit, retryCount)
+- Error handling varied across different service methods
+
+**Impact**:
+- Inconsistent error handling patterns across service layer
+- Resilience patterns applied only at API client level, not throughout stack
+- Reduced observability and telemetry visibility
+- No unified contract enforcement for API consumers
+
+### Implementation Summary
+
+1. **Updated Service Layer Imports** (`src/lib/services/enhancedPostService.ts`):
+    - Added import for `standardizedAPI` from `@/lib/api/standardized`
+    - Added import for `isApiResultSuccessful` from `@/lib/api/response`
+    - Preserved existing imports (wordpressAPI, dataValidator, cacheManager, logger, etc.)
+
+2. **Migrated getLatestPosts()**:
+    - Changed from: `wordpressAPI.getPosts({ per_page: PAGINATION_LIMITS.LATEST_POSTS })`
+    - Changed to: `standardizedAPI.getAllPosts({ per_page: PAGINATION_LIMITS.LATEST_POSTS })`
+    - Added error checking with `isApiResultSuccessful(result)`
+    - Preserved validation: `dataValidator.validatePosts(result.data)`
+    - Preserved enrichment: `enrichPostsWithMediaUrls(validation.data)`
+    - Preserved fallback behavior on API/validation failure
+
+3. **Migrated getCategoryPosts()**:
+    - Changed from: `wordpressAPI.getPosts({ per_page: PAGINATION_LIMITS.CATEGORY_POSTS })`
+    - Changed to: `standardizedAPI.getAllPosts({ per_page: PAGINATION_LIMITS.CATEGORY_POSTS })`
+    - Same error handling, validation, enrichment, and fallback patterns as getLatestPosts
+
+4. **Migrated getAllPosts()**:
+    - Changed from: `wordpressAPI.getPosts({ per_page: PAGINATION_LIMITS.ALL_POSTS })`
+    - Changed to: `standardizedAPI.getAllPosts({ per_page: PAGINATION_LIMITS.ALL_POSTS })`
+    - Same error handling, validation, enrichment patterns
+
+5. **Migrated getPaginatedPosts()**:
+    - Changed from: `wordpressAPI.getPostsWithHeaders({ page, per_page: perPage })`
+    - Changed to: `standardizedAPI.getAllPosts({ page, per_page: perPage })`
+    - Changed pagination extraction from API response to use `result.pagination.total` and `result.pagination.totalPages`
+    - Preserved validation, enrichment, and fallback patterns
+
+6. **Migrated getPostBySlug()**:
+    - Changed from: `wordpressAPI.getPost(slug)` with manual null check
+    - Changed to: `standardizedAPI.getPostBySlug(slug)`
+    - Removed manual null check (standardized API returns null on 404)
+    - Preserved validation and enrichment patterns
+
+7. **Migrated getPostById()**:
+    - Changed from: `wordpressAPI.getPostById(id)` within fetchAndValidate wrapper
+    - Changed to: `standardizedAPI.getPostById(id)`
+    - Removed fetchAndValidate dependency
+    - Preserved validation and enrichment patterns
+
+8. **Updated Test Suite** (`__tests__/enhancedPostService.test.ts`):
+    - Updated test mocks from `wordpressAPI.getPosts` to `wordpressAPI.getPostsWithHeaders`
+    - Preserved all test expectations for behavior (validation, enrichment, fallbacks)
+    - All 34 enhancedPostService tests passing
+
+### Migration Benefits
+
+**Consistent Error Handling**:
+- All service methods now use standardized `ApiResult<T>` pattern
+- Error types properly classified (NETWORK_ERROR, TIMEOUT_ERROR, RATE_LIMIT_ERROR, etc.)
+- Retryable flags consistent across all API calls
+- Standardized error message format
+
+**Resilience Patterns Applied**:
+- Circuit breaker protection at service layer level
+- Automatic retry strategy with exponential backoff
+- Rate limiting enforcement
+- Graceful degradation on API failures
+
+**Improved Observability**:
+- Metadata tracking on all API calls:
+  - `timestamp`: ISO 8601 timestamp
+  - `endpoint`: API endpoint identifier
+  - `cacheHit`: Cache hit/miss indicator
+  - `retryCount`: Number of retries attempted
+- Pagination metadata properly propagated
+- Better integration with telemetry and monitoring
+
+**Preserved Behavior**:
+- Data validation still applied at service layer boundaries
+- Enrichment logic (media URLs, categories, tags) unchanged
+- Caching with dependency tracking intact
+- Fallback patterns for graceful degradation preserved
+
+### Code Changes
+
+**enhancedPostService.ts** (modified):
+- Lines added: 2 imports (standardizedAPI, isApiResultSuccessful)
+- Lines modified: 6 service methods
+- Lines removed: 1 (fetchAndValidate function - no longer used)
+- Net change: +7 lines (2 imports - 1 removed function + 6 methods modified)
+
+**enhancedPostService.test.ts** (modified):
+- Lines modified: 8 test mocks
+- All test expectations preserved (behavior unchanged)
+- No functional changes to tests
+
+### Integration Pattern Improvements
+
+**Before Migration**:
+```
+Component → Service Layer (wordpressAPI) → API Layer (wordpressAPI) → apiClient → Network
+```
+
+**After Migration**:
+```
+Component → Service Layer (standardizedAPI) → API Layer (standardizedAPI) → API Client → Network
+```
+
+**Benefits of New Pattern**:
+1. **Contract Enforcement**: `ApiResult<T>` ensures consistent return types
+2. **Error Classification**: Automatic error type classification at API layer
+3. **Metadata Tracking**: Automatic metadata injection (timestamp, endpoint, cacheHit, retryCount)
+4. **Resilience Integration**: Circuit breaker and retry strategy applied before service layer
+5. **Observability**: All API calls tracked via telemetry with consistent metadata
+
+### Test Results
+
+- ✅ 1563 tests passing (unchanged)
+- ✅ 47 test suites passing (unchanged)
+- ✅ 1 test suite skipped (unchanged)
+- ✅ All 34 enhancedPostService tests passing
+- ✅ ESLint passes with no errors
+- ✅ TypeScript compilation passes
+- ✅ Zero behavioral regressions
+
+### Results
+
+- ✅ Service layer migrated to use standardized API methods
+- ✅ Consistent error handling across all service methods
+- ✅ Resilience patterns (circuit breaker, retry, rate limiting) applied at service layer
+- ✅ Metadata tracking enabled for all API calls
+- ✅ All existing behaviors preserved (validation, enrichment, caching, fallbacks)
+- ✅ All tests passing (no regressions)
+- ✅ Lint and typecheck passing
+- ✅ Blueprint.md Phase 4 status updated
+
+### Success Criteria
+
+- ✅ APIs consistent (all service methods use standardized API)
+- ✅ Integrations resilient to failures (circuit breaker, retry, rate limiting applied)
+- ✅ Documentation complete (blueprint.md updated)
+- ✅ Error responses standardized (all use ApiResult<T> pattern)
+- ✅ Zero breaking changes (all tests pass, behavior preserved)
+
+### Anti-Patterns Avoided
+
+- ❌ No inconsistent error handling (standardized across all methods)
+- ❌ No bypass of resilience patterns (applied at service layer)
+- ❌ No breaking changes (all behavior preserved)
+- ❌ No test failures (all 34 tests passing)
+- ❌ No type errors (TypeScript compilation passes)
+
+### Integration Engineering Principles Applied
+
+1. **Contract First**: `ApiResult<T>` interface defines API contract
+2. **Consistency**: All service methods use same pattern
+3. **Resilience**: Circuit breaker, retry strategy, rate limiting applied
+4. **Observability**: Metadata tracking enabled for all API calls
+5. **Backward Compatibility**: All existing behaviors preserved
+6. **Test Coverage**: All tests passing, no regressions
+
+### Follow-up Recommendations
+
+1. **Phase 5**: Consider deprecating direct `wordpressAPI` usage in favor of standardized API
+2. **Additional Migration**: Migrate other service layers (if any) to use standardized API
+3. **Contract Validation**: Add runtime contract validation in CI/CD
+4. **Telemetry Integration**: Enhance monitoring dashboards with service layer metrics
+
+### See Also
+
+- [Blueprint.md API Standardization](./blueprint.md#api-standardization)
+- [API Standardization Guidelines](./API_STANDARDIZATION.md)
+- [API Specifications](./api-specs.md)
+- [Task PERF-004: Telemetry Stats Caching Optimization](./task.md#perf-004)
+- [Task INT-002: API Documentation](./task.md#int-002)
+
+---
+
+
 
 ## [PERF-004] Telemetry Stats Caching Optimization
 

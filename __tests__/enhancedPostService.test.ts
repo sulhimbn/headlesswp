@@ -68,7 +68,11 @@ describe('enhancedPostService', () => {
         }
       ];
 
-      (wordpressAPI.getPosts as jest.Mock).mockResolvedValue(mockPosts);
+      (wordpressAPI.getPostsWithHeaders as jest.Mock).mockResolvedValue({
+        data: mockPosts,
+        total: 2,
+        totalPages: 1
+      });
       (dataValidator.validatePosts as jest.Mock).mockReturnValue({ valid: true, data: mockPosts, errors: [] });
       (wordpressAPI.getMediaUrlsBatch as jest.Mock).mockResolvedValue(
         new Map([[10, 'https://example.com/media1.jpg'], [20, 'https://example.com/media2.jpg']])
@@ -76,7 +80,7 @@ describe('enhancedPostService', () => {
 
       const result = await enhancedPostService.getLatestPosts();
 
-      expect(wordpressAPI.getPosts).toHaveBeenCalledWith({ per_page: PAGINATION_LIMITS.LATEST_POSTS });
+      expect(wordpressAPI.getPostsWithHeaders).toHaveBeenCalledWith({ per_page: PAGINATION_LIMITS.LATEST_POSTS });
       expect(dataValidator.validatePosts).toHaveBeenCalledWith(mockPosts);
       expect(result).toHaveLength(2);
       expect(result[0].mediaUrl).toBe('https://example.com/media1.jpg');
@@ -85,7 +89,11 @@ describe('enhancedPostService', () => {
 
     it('should return fallback posts on validation failure', async () => {
       const mockPosts = [{ id: 1 }] as WordPressPost[];
-      (wordpressAPI.getPosts as jest.Mock).mockResolvedValue(mockPosts);
+      (wordpressAPI.getPostsWithHeaders as jest.Mock).mockResolvedValue({
+        data: mockPosts,
+        total: 1,
+        totalPages: 1
+      });
       (dataValidator.validatePosts as jest.Mock).mockReturnValue({
         valid: false,
         data: undefined,
@@ -102,7 +110,7 @@ describe('enhancedPostService', () => {
     });
 
     it('should return fallback posts on API error', async () => {
-      (wordpressAPI.getPosts as jest.Mock).mockRejectedValue(new Error('API Error'));
+      (wordpressAPI.getPostsWithHeaders as jest.Mock).mockRejectedValue(new Error('API Error'));
 
       const result = await enhancedPostService.getLatestPosts();
 
@@ -132,20 +140,28 @@ describe('enhancedPostService', () => {
         }
       ];
 
-      (wordpressAPI.getPosts as jest.Mock).mockResolvedValue(mockPosts);
+      (wordpressAPI.getPostsWithHeaders as jest.Mock).mockResolvedValue({
+        data: mockPosts,
+        total: 1,
+        totalPages: 1
+      });
       (dataValidator.validatePosts as jest.Mock).mockReturnValue({ valid: true, data: mockPosts, errors: [] });
       (wordpressAPI.getMediaUrlsBatch as jest.Mock).mockResolvedValue(new Map([[10, 'https://example.com/media.jpg']]));
 
       const result = await enhancedPostService.getCategoryPosts();
 
-      expect(wordpressAPI.getPosts).toHaveBeenCalledWith({ per_page: PAGINATION_LIMITS.CATEGORY_POSTS });
+      expect(wordpressAPI.getPostsWithHeaders).toHaveBeenCalledWith({ per_page: PAGINATION_LIMITS.CATEGORY_POSTS });
       expect(result).toHaveLength(1);
       expect(result[0].mediaUrl).toBe('https://example.com/media.jpg');
     });
 
     it('should return fallback posts on validation failure', async () => {
       const mockPosts = [{ id: 1 }] as WordPressPost[];
-      (wordpressAPI.getPosts as jest.Mock).mockResolvedValue(mockPosts);
+      (wordpressAPI.getPostsWithHeaders as jest.Mock).mockResolvedValue({
+        data: mockPosts,
+        total: 1,
+        totalPages: 1
+      });
       (dataValidator.validatePosts as jest.Mock).mockReturnValue({
         valid: false,
         data: undefined,
@@ -160,7 +176,7 @@ describe('enhancedPostService', () => {
     });
 
     it('should return fallback posts on API error', async () => {
-      (wordpressAPI.getPosts as jest.Mock).mockRejectedValue(new Error('API Error'));
+      (wordpressAPI.getPostsWithHeaders as jest.Mock).mockRejectedValue(new Error('API Error'));
 
       const result = await enhancedPostService.getCategoryPosts();
 
@@ -190,20 +206,28 @@ describe('enhancedPostService', () => {
         }
       ];
 
-      (wordpressAPI.getPosts as jest.Mock).mockResolvedValue(mockPosts);
+      (wordpressAPI.getPostsWithHeaders as jest.Mock).mockResolvedValue({
+        data: mockPosts,
+        total: 1,
+        totalPages: 1
+      });
       (dataValidator.validatePosts as jest.Mock).mockReturnValue({ valid: true, data: mockPosts, errors: [] });
       (wordpressAPI.getMediaUrlsBatch as jest.Mock).mockResolvedValue(new Map([[10, 'https://example.com/media.jpg']]));
 
       const result = await enhancedPostService.getAllPosts();
 
-      expect(wordpressAPI.getPosts).toHaveBeenCalledWith({ per_page: PAGINATION_LIMITS.ALL_POSTS });
+      expect(wordpressAPI.getPostsWithHeaders).toHaveBeenCalledWith({ per_page: PAGINATION_LIMITS.ALL_POSTS });
       expect(result).toHaveLength(1);
       expect(result[0].mediaUrl).toBe('https://example.com/media.jpg');
     });
 
     it('should return empty array on validation failure', async () => {
       const mockPosts = [{ id: 1 }] as WordPressPost[];
-      (wordpressAPI.getPosts as jest.Mock).mockResolvedValue(mockPosts);
+      (wordpressAPI.getPostsWithHeaders as jest.Mock).mockResolvedValue({
+        data: mockPosts,
+        total: 1,
+        totalPages: 1
+      });
       (dataValidator.validatePosts as jest.Mock).mockReturnValue({
         valid: false,
         data: undefined,
@@ -216,7 +240,7 @@ describe('enhancedPostService', () => {
     });
 
     it('should return empty array on API error', async () => {
-      (wordpressAPI.getPosts as jest.Mock).mockRejectedValue(new Error('API Error'));
+      (wordpressAPI.getPostsWithHeaders as jest.Mock).mockRejectedValue(new Error('API Error'));
 
       const result = await enhancedPostService.getAllPosts();
 
@@ -644,7 +668,11 @@ describe('enhancedPostService', () => {
         }
       ];
 
-      (wordpressAPI.getPosts as jest.Mock).mockResolvedValue(mockPosts);
+      (wordpressAPI.getPostsWithHeaders as jest.Mock).mockResolvedValue({
+        data: mockPosts,
+        total: 1,
+        totalPages: 1
+      });
       (dataValidator.validatePosts as jest.Mock).mockReturnValue({ valid: true, data: mockPosts, errors: [] });
       (wordpressAPI.getMediaUrlsBatch as jest.Mock).mockResolvedValue(new Map([[10, 'https://example.com/media.jpg']]));
 

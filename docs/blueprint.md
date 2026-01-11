@@ -287,18 +287,22 @@ interface ApiListResult<T> extends ApiResult<T[]> {
 - **Authors**: `getAuthorById()`
 
 **Implementation Status**:
- - ✅ **Phase 1 Complete**: Documentation and `ApiResult<T>` interface defined
-- ✅ **Phase 2 Complete**: Standardized methods implemented in `src/lib/api/standardized.ts`
-    - 31 methods (getById, getBySlug, getAll, search)
-    - All methods return `ApiResult<T>` or `ApiListResult<T>` with consistent error handling
-- ✅ **Phase 2 Complete**: Error result helper extracted for collection methods (REFACTOR-008)
-    - Created `createErrorListResult()` helper to eliminate 52 lines of duplicate error result structure
-    - Applied to `getAllPosts`, `searchPosts`, `getAllCategories`, `getAllTags`
-- ✅ **Phase 3 Complete**: Try-catch pattern extraction (REFACTOR-010)
-    - Created `fetchAndHandleNotFound()` helper to eliminate 40 lines of duplicate error handling
-    - Applied to `getPostBySlug`, `getCategoryById`, `getCategoryBySlug`, `getTagById`, `getTagBySlug`
-- ⏳ **Phase 4**: Migrate new code and critical paths to use standardized methods (future)
-- ⏳ **Phase 5**: Deprecate old methods in major version (future)
+  - ✅ **Phase 1 Complete**: Documentation and `ApiResult<T>` interface defined
+  - ✅ **Phase 2 Complete**: Standardized methods implemented in `src/lib/api/standardized.ts`
+     - 31 methods (getById, getBySlug, getAll, search)
+     - All methods return `ApiResult<T>` or `ApiListResult<T>` with consistent error handling
+  - ✅ **Phase 2 Complete**: Error result helper extracted for collection methods (REFACTOR-008)
+     - Created `createErrorListResult()` helper to eliminate 52 lines of duplicate error result structure
+     - Applied to `getAllPosts`, `searchPosts`, `getAllCategories`, `getAllTags`
+  - ✅ **Phase 3 Complete**: Try-catch pattern extraction (REFACTOR-010)
+     - Created `fetchAndHandleNotFound()` helper to eliminate 40 lines of duplicate error handling
+     - Applied to `getPostBySlug`, `getCategoryById`, `getCategoryBySlug`, `getTagById`, `getTagBySlug`
+  - ✅ **Phase 4 Complete**: Migrated service layer to use standardized API methods (INT-STD-004)
+     - Migrated `enhancedPostService` methods: getLatestPosts, getCategoryPosts, getAllPosts, getPaginatedPosts, getPostBySlug, getPostById
+     - All service methods now use `standardizedAPI` for consistent error handling and metadata tracking
+     - Resilience patterns (circuit breaker, retry strategy, rate limiting) now applied at service layer
+     - Preserved existing validation, enrichment, and caching behavior
+  - ⏳ **Phase 5**: Deprecate old methods in major version (future)
 
 **See Also**: [API Standardization Guidelines](./API_STANDARDIZATION.md)
 
