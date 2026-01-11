@@ -105,98 +105,12 @@ export interface CircuitBreakerTelemetry {
   endpoint?: string
 }
 
-export const recordCircuitBreakerStateChange = (data: CircuitBreakerTelemetry): void => {
-  telemetryCollector.record({
-    type: 'state-change',
-    category: 'circuit-breaker',
-    data: {
-      state: data.state,
-      failureCount: data.failureCount,
-      successCount: data.successCount,
-      endpoint: data.endpoint
-    }
-  })
-}
-
-export const recordCircuitBreakerFailure = (data: CircuitBreakerTelemetry): void => {
-  telemetryCollector.record({
-    type: 'failure',
-    category: 'circuit-breaker',
-    data: {
-      failureCount: data.failureCount,
-      endpoint: data.endpoint
-    }
-  })
-}
-
-export const recordCircuitBreakerSuccess = (data: CircuitBreakerTelemetry): void => {
-  telemetryCollector.record({
-    type: 'success',
-    category: 'circuit-breaker',
-    data: {
-      state: data.state,
-      successCount: data.successCount,
-      endpoint: data.endpoint
-    }
-  })
-}
-
-export const recordCircuitBreakerRequestBlocked = (data: CircuitBreakerTelemetry): void => {
-  telemetryCollector.record({
-    type: 'request-blocked',
-    category: 'circuit-breaker',
-    data: {
-      state: data.state,
-      nextAttemptTime: data.nextAttemptTime,
-      endpoint: data.endpoint
-    }
-  })
-}
-
 export interface RetryTelemetry {
   attempt: number
   maxRetries: number
   delay: number
   errorType: string
   endpoint?: string
-}
-
-export const recordRetry = (data: RetryTelemetry): void => {
-  telemetryCollector.record({
-    type: 'retry',
-    category: 'retry',
-    data: {
-      attempt: data.attempt,
-      maxRetries: data.maxRetries,
-      delay: data.delay,
-      errorType: data.errorType,
-      endpoint: data.endpoint
-    }
-  })
-}
-
-export const recordRetrySuccess = (data: RetryTelemetry): void => {
-  telemetryCollector.record({
-    type: 'retry-success',
-    category: 'retry',
-    data: {
-      attempt: data.attempt,
-      endpoint: data.endpoint
-    }
-  })
-}
-
-export const recordRetryExhausted = (data: RetryTelemetry): void => {
-  telemetryCollector.record({
-    type: 'retry-exhausted',
-    category: 'retry',
-    data: {
-      attempt: data.attempt,
-      maxRetries: data.maxRetries,
-      errorType: data.errorType,
-      endpoint: data.endpoint
-    }
-  })
 }
 
 export interface RateLimitTelemetry {
@@ -207,50 +121,12 @@ export interface RateLimitTelemetry {
   key?: string
 }
 
-export const recordRateLimitExceeded = (data: RateLimitTelemetry): void => {
-  telemetryCollector.record({
-    type: 'exceeded',
-    category: 'rate-limit',
-    data: {
-      limit: data.limit,
-      remaining: data.remaining,
-      resetTime: data.resetTime,
-      windowMs: data.windowMs,
-      key: data.key
-    }
-  })
-}
-
-export const recordRateLimitReset = (data: RateLimitTelemetry): void => {
-  telemetryCollector.record({
-    type: 'reset',
-    category: 'rate-limit',
-    data: {
-      key: data.key
-    }
-  })
-}
-
 export interface HealthCheckTelemetry {
   healthy: boolean
   latency: number
   endpoint?: string
   version?: string
   error?: string
-}
-
-export const recordHealthCheck = (data: HealthCheckTelemetry): void => {
-  telemetryCollector.record({
-    type: data.healthy ? 'healthy' : 'unhealthy',
-    category: 'health-check',
-    data: {
-      healthy: data.healthy,
-      latency: data.latency,
-      endpoint: data.endpoint,
-      version: data.version,
-      error: data.error
-    }
-  })
 }
 
 export interface ApiRequestTelemetry {
@@ -261,20 +137,4 @@ export interface ApiRequestTelemetry {
   cacheHit?: boolean
   retryCount?: number
   errorType?: string
-}
-
-export const recordApiRequest = (data: ApiRequestTelemetry): void => {
-  telemetryCollector.record({
-    type: 'request',
-    category: 'api-request',
-    data: {
-      method: data.method,
-      endpoint: data.endpoint,
-      statusCode: data.statusCode,
-      duration: data.duration,
-      cacheHit: data.cacheHit,
-      retryCount: data.retryCount,
-      errorType: data.errorType
-    }
-  })
 }

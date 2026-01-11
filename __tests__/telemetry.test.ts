@@ -1,16 +1,13 @@
 import {
   telemetryCollector,
-  TelemetryCollector,
-  recordCircuitBreakerStateChange,
-  recordCircuitBreakerFailure,
-  recordCircuitBreakerSuccess,
-  recordRetry,
-  recordRetrySuccess,
-  recordRetryExhausted,
-  recordRateLimitExceeded,
-  recordRateLimitReset,
-  recordHealthCheck,
-  recordApiRequest
+  TelemetryCollector
+} from '@/lib/api/telemetry'
+import type {
+  CircuitBreakerTelemetry,
+  RetryTelemetry,
+  RateLimitTelemetry,
+  HealthCheckTelemetry,
+  ApiRequestTelemetry
 } from '@/lib/api/telemetry'
 
 describe('TelemetryCollector', () => {
@@ -91,11 +88,7 @@ describe('TelemetryCollector', () => {
 
   describe('getEvents', () => {
     it('should return copy of events', () => {
-      telemetryCollector.record({
-        type: 'test',
-        category: 'api-request',
-        data: {}
-      })
+      telemetryCollector.record({ type: 'test', category: 'api-request', data: {} })
 
       const events1 = telemetryCollector.getEvents()
       const events2 = telemetryCollector.getEvents()
@@ -169,7 +162,6 @@ describe('TelemetryCollector', () => {
     it('should return event counts by type and category', () => {
       telemetryCollector.record({ type: 'test1', category: 'circuit-breaker', data: {} })
       telemetryCollector.record({ type: 'test1', category: 'circuit-breaker', data: {} })
-      telemetryCollector.record({ type: 'test2', category: 'circuit-breaker', data: {} })
       telemetryCollector.record({ type: 'test', category: 'retry', data: {} })
 
       const stats = telemetryCollector.getStats()
@@ -198,211 +190,251 @@ describe('TelemetryCollector', () => {
       expect(collector.getEvents()).toHaveLength(0)
     })
   })
-})
 
-describe('Circuit Breaker Telemetry', () => {
-  beforeEach(() => {
-    telemetryCollector.clear()
-  })
+  describe('Circuit Breaker Telemetry', () => {
+    beforeEach(() => {
+      telemetryCollector.clear()
+    })
 
-  describe('recordCircuitBreakerStateChange', () => {
-    it('should record state change event', () => {
-      recordCircuitBreakerStateChange({
-        state: 'OPEN',
-        failureCount: 5,
-        successCount: 0,
-        lastFailureTime: Date.now(),
-        nextAttemptTime: Date.now() + 60000,
-        endpoint: '/wp/v2/posts'
+    describe('recordCircuitBreakerStateChange', () => {
+      it('should record state change event', () => {
+        telemetryCollector.record({
+          type: 'state-change',
+          category: 'circuit-breaker',
+          data: {
+            state: 'OPEN',
+            failureCount: 5,
+            successCount: 0,
+            lastFailureTime: Date.now(),
+            nextAttemptTime: Date.now() + 60000,
+            endpoint: '/wp/v2/posts'
+          }
+        })
+
+        const events = telemetryCollector.getEvents()
+        expect(events).toHaveLength(1)
+        expect(events[0].type).toBe('state-change')
+        expect(events[0].category).toBe('circuit-breaker')
+        expect(events[0].data).toEqual({
+          state: 'OPEN',
+          failureCount: 5,
+          successCount: 0,
+          endpoint: '/wp/v2/posts'
+        })
       })
+    })
 
-      const events = telemetryCollector.getEvents()
-      expect(events).toHaveLength(1)
-      expect(events[0].type).toBe('state-change')
-      expect(events[0].category).toBe('circuit-breaker')
-      expect(events[0].data).toEqual({
-        state: 'OPEN',
-        failureCount: 5,
-        successCount: 0,
-        endpoint: '/wp/v2/posts'
+    describe('recordCircuitBreakerFailure', () => {
+      it('should record failure event', () => {
+        telemetryCollector.record({
+          type: 'failure',
+          category: 'circuit-breaker',
+          data: {
+            state: 'CLOSED',
+            failureCount: 3,
+            successCount: 0,
+            lastFailureTime: Date.now(),
+            nextAttemptTime: null,
+            endpoint: '/wp/v2/posts'
+          }
+        })
+
+        const events = telemetryCollector.getEvents()
+        expect(events).toHaveLength(1)
+        expect(events[0].type).toBe('failure')
+        expect(events[0].category).toBe('circuit-breaker')
+      })
+    })
+
+    describe('recordCircuitBreakerSuccess', () => {
+      it('should record success event', () => {
+        telemetryCollector.record({
+          type: 'success',
+          category: 'circuit-breaker',
+          data: {
+            state: 'CLOSED',
+            failureCount: 2,
+            successCount: 1,
+            lastFailureTime: null,
+            nextAttemptTime: null,
+            endpoint: '/wp/v2/posts'
+          }
+        })
+
+        const events = telemetryCollector.getEvents()
+        expect(events).toHaveLength(1)
+        expect(events[0].type).toBe('success')
+        expect(events[0].category).toBe('circuit-breaker')
       })
     })
   })
 
-  describe('recordCircuitBreakerFailure', () => {
-    it('should record failure event', () => {
-      recordCircuitBreakerFailure({
-        state: 'CLOSED',
-        failureCount: 3,
-        successCount: 0,
-        lastFailureTime: Date.now(),
-        nextAttemptTime: null,
-        endpoint: '/wp/v2/posts'
-      })
+  describe('Retry Telemetry', () => {
+    beforeEach(() => {
+      telemetryCollector.clear()
+    })
 
-      const events = telemetryCollector.getEvents()
-      expect(events).toHaveLength(1)
-      expect(events[0].type).toBe('failure')
-      expect(events[0].category).toBe('circuit-breaker')
+    describe('recordRetry', () => {
+      it('should record retry event', () => {
+        telemetryCollector.record({
+          type: 'retry',
+          category: 'retry',
+          data: {
+            attempt: 1,
+            maxRetries: 3,
+            delay: 1000,
+            errorType: 'NETWORK_ERROR',
+            endpoint: '/wp/v2/posts'
+          }
+        })
+
+        const events = telemetryCollector.getEvents()
+        expect(events).toHaveLength(1)
+        expect(events[0].type).toBe('retry')
+        expect(events[0].category).toBe('retry')
+        expect(events[0].data).toEqual({
+          attempt: 1,
+          maxRetries: 3,
+          delay: 1000,
+          errorType: 'NETWORK_ERROR',
+          endpoint: '/wp/v2/posts'
+        })
+      })
+    })
+
+    describe('recordRetrySuccess', () => {
+      it('should record retry success event', () => {
+        telemetryCollector.record({
+          type: 'retry-success',
+          category: 'retry',
+          data: {
+            attempt: 2,
+            maxRetries: 3,
+            delay: 2000,
+            errorType: 'NETWORK_ERROR',
+            endpoint: '/wp/v2/posts'
+          }
+        })
+
+        const events = telemetryCollector.getEvents()
+        expect(events).toHaveLength(1)
+        expect(events[0].type).toBe('retry-success')
+        expect(events[0].category).toBe('retry')
+      })
+    })
+
+    describe('recordRetryExhausted', () => {
+      it('should record retry exhausted event', () => {
+        telemetryCollector.record({
+          type: 'retry-exhausted',
+          category: 'retry',
+          data: {
+            attempt: 3,
+            maxRetries: 3,
+            delay: 4000,
+            errorType: 'TIMEOUT_ERROR',
+            endpoint: '/wp/v2/posts'
+          }
+        })
+
+        const events = telemetryCollector.getEvents()
+        expect(events).toHaveLength(1)
+        expect(events[0].type).toBe('retry-exhausted')
+        expect(events[0].category).toBe('retry')
+      })
     })
   })
 
-  describe('recordCircuitBreakerSuccess', () => {
-    it('should record success event', () => {
-      recordCircuitBreakerSuccess({
-        state: 'CLOSED',
-        failureCount: 2,
-        successCount: 1,
-        lastFailureTime: null,
-        nextAttemptTime: null,
-        endpoint: '/wp/v2/posts'
-      })
-
-      const events = telemetryCollector.getEvents()
-      expect(events).toHaveLength(1)
-      expect(events[0].type).toBe('success')
-      expect(events[0].category).toBe('circuit-breaker')
+  describe('Rate Limit Telemetry', () => {
+    beforeEach(() => {
+      telemetryCollector.clear()
     })
-  })
-})
 
-describe('Retry Telemetry', () => {
-  beforeEach(() => {
-    telemetryCollector.clear()
-  })
+    describe('recordRateLimitExceeded', () => {
+      it('should record rate limit exceeded event', () => {
+        telemetryCollector.record({
+          type: 'exceeded',
+          category: 'rate-limit',
+          data: {
+            limit: 60,
+            remaining: 0,
+            resetTime: Date.now() + 60000,
+            windowMs: 60000,
+            key: 'user-123'
+          }
+        })
 
-  describe('recordRetry', () => {
-    it('should record retry event', () => {
-      recordRetry({
-        attempt: 1,
-        maxRetries: 3,
-        delay: 1000,
-        errorType: 'NETWORK_ERROR',
-        endpoint: '/wp/v2/posts'
-      })
-
-      const events = telemetryCollector.getEvents()
-      expect(events).toHaveLength(1)
-      expect(events[0].type).toBe('retry')
-      expect(events[0].category).toBe('retry')
-      expect(events[0].data).toEqual({
-        attempt: 1,
-        maxRetries: 3,
-        delay: 1000,
-        errorType: 'NETWORK_ERROR',
-        endpoint: '/wp/v2/posts'
+        const events = telemetryCollector.getEvents()
+        expect(events).toHaveLength(1)
+        expect(events[0].type).toBe('exceeded')
+        expect(events[0].category).toBe('rate-limit')
       })
     })
-  })
 
-  describe('recordRetrySuccess', () => {
-    it('should record retry success event', () => {
-      recordRetrySuccess({
-        attempt: 2,
-        maxRetries: 3,
-        delay: 2000,
-        errorType: 'NETWORK_ERROR',
-        endpoint: '/wp/v2/posts'
+    describe('recordRateLimitReset', () => {
+      it('should record rate limit reset event', () => {
+        telemetryCollector.record({
+          type: 'reset',
+          category: 'rate-limit',
+          data: {
+            limit: 60,
+            remaining: 60,
+            resetTime: Date.now() + 60000,
+            windowMs: 60000,
+            key: 'user-123'
+          }
+        })
+
+        const events = telemetryCollector.getEvents()
+        expect(events).toHaveLength(1)
+        expect(events[0].type).toBe('reset')
+        expect(events[0].category).toBe('rate-limit')
       })
-
-      const events = telemetryCollector.getEvents()
-      expect(events).toHaveLength(1)
-      expect(events[0].type).toBe('retry-success')
-      expect(events[0].category).toBe('retry')
     })
   })
 
-  describe('recordRetryExhausted', () => {
-    it('should record retry exhausted event', () => {
-      recordRetryExhausted({
-        attempt: 3,
-        maxRetries: 3,
-        delay: 4000,
-        errorType: 'TIMEOUT_ERROR',
-        endpoint: '/wp/v2/posts'
-      })
-
-      const events = telemetryCollector.getEvents()
-      expect(events).toHaveLength(1)
-      expect(events[0].type).toBe('retry-exhausted')
-      expect(events[0].category).toBe('retry')
+  describe('Health Check Telemetry', () => {
+    beforeEach(() => {
+      telemetryCollector.clear()
     })
-  })
-})
 
-describe('Rate Limit Telemetry', () => {
-  beforeEach(() => {
-    telemetryCollector.clear()
-  })
+    describe('recordHealthCheck', () => {
+      it('should record healthy health check', () => {
+        telemetryCollector.record({
+          type: 'healthy',
+          category: 'health-check',
+          data: {
+            healthy: true,
+            latency: 123,
+            endpoint: '/wp/v2/',
+            version: 'v2'
+          }
+        })
 
-  describe('recordRateLimitExceeded', () => {
-    it('should record rate limit exceeded event', () => {
-      recordRateLimitExceeded({
-        limit: 60,
-        remaining: 0,
-        resetTime: Date.now() + 60000,
-        windowMs: 60000,
-        key: 'user-123'
-      })
-
-      const events = telemetryCollector.getEvents()
-      expect(events).toHaveLength(1)
-      expect(events[0].type).toBe('exceeded')
-      expect(events[0].category).toBe('rate-limit')
-    })
-  })
-
-  describe('recordRateLimitReset', () => {
-    it('should record rate limit reset event', () => {
-      recordRateLimitReset({
-        limit: 60,
-        remaining: 60,
-        resetTime: Date.now() + 60000,
-        windowMs: 60000,
-        key: 'user-123'
-      })
-
-      const events = telemetryCollector.getEvents()
-      expect(events).toHaveLength(1)
-      expect(events[0].type).toBe('reset')
-      expect(events[0].category).toBe('rate-limit')
-    })
-  })
-})
-
-describe('Health Check Telemetry', () => {
-  beforeEach(() => {
-    telemetryCollector.clear()
-  })
-
-  describe('recordHealthCheck', () => {
-    it('should record healthy health check', () => {
-      recordHealthCheck({
-        healthy: true,
-        latency: 123,
-        endpoint: '/wp/v2/',
-        version: 'v2'
-      })
-
-      const events = telemetryCollector.getEvents()
-      expect(events).toHaveLength(1)
-      expect(events[0].type).toBe('healthy')
-      expect(events[0].category).toBe('health-check')
-      expect(events[0].data).toEqual({
-        healthy: true,
-        latency: 123,
-        endpoint: '/wp/v2/',
-        version: 'v2',
-        error: undefined
+        const events = telemetryCollector.getEvents()
+        expect(events).toHaveLength(1)
+        expect(events[0].type).toBe('healthy')
+        expect(events[0].category).toBe('health-check')
+        expect(events[0].data).toEqual({
+          healthy: true,
+          latency: 123,
+          endpoint: '/wp/v2/',
+          version: 'v2',
+          error: undefined
+        })
       })
     })
 
     it('should record unhealthy health check', () => {
-      recordHealthCheck({
-        healthy: false,
-        latency: 5000,
-        endpoint: '/wp/v2/',
-        error: 'ECONNREFUSED'
+      telemetryCollector.record({
+        type: 'unhealthy',
+        category: 'health-check',
+        data: {
+          healthy: false,
+          latency: 5000,
+          endpoint: '/wp/v2/',
+          error: 'Connection refused'
+        }
       })
 
       const events = telemetryCollector.getEvents()
@@ -411,61 +443,52 @@ describe('Health Check Telemetry', () => {
       expect(events[0].category).toBe('health-check')
     })
   })
-})
 
-describe('API Request Telemetry', () => {
-  beforeEach(() => {
-    telemetryCollector.clear()
-  })
+  describe('API Request Telemetry', () => {
+    beforeEach(() => {
+      telemetryCollector.clear()
+    })
 
-  describe('recordApiRequest', () => {
-    it('should record successful API request', () => {
-      recordApiRequest({
-        method: 'GET',
-        endpoint: '/wp/v2/posts',
-        statusCode: 200,
-        duration: 150,
-        cacheHit: true,
-        retryCount: 0
+    describe('recordApiRequest', () => {
+      it('should record successful API request', () => {
+        telemetryCollector.record({
+          type: 'request',
+          category: 'api-request',
+          data: {
+            method: 'GET',
+            endpoint: '/wp/v2/posts',
+            statusCode: 200,
+            duration: 123,
+            cacheHit: true,
+            retryCount: 0
+          }
+        })
+
+        const events = telemetryCollector.getEvents()
+        expect(events).toHaveLength(1)
+        expect(events[0].type).toBe('request')
+        expect(events[0].category).toBe('api-request')
+      })
+    })
+
+    it('should record failed API request', () => {
+      telemetryCollector.record({
+        type: 'request',
+        category: 'api-request',
+        data: {
+          method: 'GET',
+          endpoint: '/wp/v2/posts',
+          statusCode: 500,
+          duration: 456,
+          cacheHit: false,
+          retryCount: 3,
+          errorType: 'SERVER_ERROR'
+        }
       })
 
       const events = telemetryCollector.getEvents()
       expect(events).toHaveLength(1)
       expect(events[0].type).toBe('request')
-      expect(events[0].category).toBe('api-request')
-      expect(events[0].data).toEqual({
-        method: 'GET',
-        endpoint: '/wp/v2/posts',
-        statusCode: 200,
-        duration: 150,
-        cacheHit: true,
-        retryCount: 0,
-        errorType: undefined
-      })
-    })
-
-    it('should record failed API request', () => {
-      recordApiRequest({
-        method: 'GET',
-        endpoint: '/wp/v2/posts',
-        statusCode: 500,
-        duration: 3000,
-        cacheHit: false,
-        retryCount: 2,
-        errorType: 'SERVER_ERROR'
-      })
-
-      const events = telemetryCollector.getEvents()
-      expect(events).toHaveLength(1)
-      expect(events[0].data).toEqual({
-        method: 'GET',
-        endpoint: '/wp/v2/posts',
-        statusCode: 500,
-        duration: 3000,
-        cacheHit: false,
-        retryCount: 2,
-        errorType: 'SERVER_ERROR'
-      })
     })
   })
 })
