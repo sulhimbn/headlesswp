@@ -19,7 +19,7 @@ import {
   validateNonNegativeInteger,
 } from './validationUtils';
 
-interface ValidationResult<T> {
+export interface ValidationResult<T> {
   valid: boolean;
   data?: T;
   errors: ValidationError[];
@@ -418,4 +418,4 @@ export function unwrapValidationResultSafe<T>(result: ValidationResult<T>, fallb
   return result.data!;
 }
 
-export type { ValidationError, ValidationResult };
+export type { ValidationError };
