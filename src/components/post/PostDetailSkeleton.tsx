@@ -1,4 +1,6 @@
-export default function PostDetailSkeleton() {
+import { memo } from 'react'
+
+function PostDetailSkeleton() {
   return (
     <div className="min-h-screen bg-[hsl(var(--color-background))]" aria-busy="true" aria-label="Memuat detail artikel">
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -47,3 +49,5 @@ export default function PostDetailSkeleton() {
     </div>
   )
 }
+
+export default memo(PostDetailSkeleton)
