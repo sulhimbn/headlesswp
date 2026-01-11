@@ -1,6 +1,6 @@
 # Task Backlog
 
-**Last Updated**: 2026-01-10 (Code Reviewer - Refactoring Tasks Added)
+**Last Updated**: 2026-01-11 (Senior QA Engineer - QA-001 Complete)
 
 ---
 
@@ -619,6 +619,154 @@ All resilience patterns are **PRODUCTION READY** and properly integrated:
 ---
 
 ## Active Tasks
+
+## [QA-001] CacheMetricsCalculator Unit Tests
+
+**Status**: Complete
+**Priority**: High (Critical Testing Gap)
+**Assigned**: Senior QA Engineer
+**Created**: 2026-01-11
+**Updated**: 2026-01-11
+
+### Description
+
+Added comprehensive unit tests for CacheMetricsCalculator class to ensure correctness of cache metrics calculation logic used by cacheManager for monitoring cache performance.
+
+### Problem Identified
+
+**Testing Gap**: CacheMetricsCalculator (139 lines, 6 methods) had no direct unit tests. While cache.test.ts tests cacheManager methods that use it internally, the calculator itself was not tested in isolation. This is a critical gap because:
+
+1. CacheMetricsCalculator is a utility class with pure functions that should be tested in isolation
+2. It performs critical calculations for cache monitoring (hit rate, efficiency, memory usage)
+3. Direct unit tests provide better coverage and easier debugging than integration-style tests
+4. Following testing principle of testing units in isolation
+
+### Implementation Summary
+
+Created comprehensive unit test file `__tests__/cacheMetricsCalculator.test.ts` with 49 tests covering all 6 methods:
+
+**calculateStatistics** (7 tests):
+- Hit rate calculation with hits and misses
+- Zero hit rate handling (empty cache)
+- Invalidation rate calculation
+- High hit rate (100%) handling
+- Rounding to 2 decimal places
+- All original telemetry fields preserved
+
+**calculateAverageTtl** (7 tests):
+- Average TTL calculation from cache entries
+- Empty cache handling (returns 0)
+- Single entry handling
+- Large TTL values (hours)
+- Small TTL values (milliseconds)
+- Varied TTL values
+- Entries with dependencies/dependents
+
+**calculateEfficiencyLevel** (7 tests):
+- High efficiency (>80%)
+- Medium efficiency (50-80%)
+- Low efficiency (<50%)
+- Boundary conditions (50%, 80%)
+- Decimal hit rates
+- Zero hit rate
+
+**calculatePerformanceMetrics** (6 tests):
+- Performance metrics calculation
+- Memory usage rounding (2 decimals)
+- TTL conversion to seconds
+- Efficiency score based on hit rate
+- Zero memory/avgTtl handling
+
+**calculateMemoryUsage** (9 tests):
+- Simple cache entries
+- Key length inclusion
+- Data length inclusion
+- Dependencies overhead
+- Dependents overhead
+- Per-entry overhead (24 bytes)
+- Complex data structures
+- Empty cache handling
+- Both dependencies and dependents
+
+**formatMetricsForDisplay** (11 tests):
+- Metrics formatting with high efficiency
+- Hit rate formatting (2 decimals)
+- Memory usage formatting (MB, 2 decimals)
+- AvgTTL formatting (seconds)
+- Medium/low efficiency handling
+- Memory < 1 MB handling
+- AvgTTL < 1 second handling
+- Large memory usage
+- Preserves cascadeInvalidations/dependencyRegistrations
+- Zero values handling
+
+**Integration Scenarios** (2 tests):
+- Full metrics calculation flow
+- Efficiency levels across ranges
+
+### Testing Principles Applied
+
+1. **Test Behavior, Not Implementation**: Verified WHAT methods return, not HOW they work
+2. **Test Pyramid**: Added unit tests to complement existing integration tests
+3. **Isolation**: Each test is independent with proper setup
+4. **Determinism**: All tests produce same result every time
+5. **Fast Feedback**: Tests execute in ~0.8 seconds
+6. **Meaningful Coverage**: Covered all methods, edge cases, boundary conditions
+7. **AAA Pattern**: Arrange → Act → Assert for all tests
+
+### Anti-Patterns Avoided
+
+- ❌ No tests depending on execution order
+- ❌ No tests for implementation details
+- ❌ No ignoring flaky tests (all tests pass consistently)
+- ❌ No tests requiring external services without mocking
+- ❌ No tests that pass when code is broken
+
+### Files Modified
+
+- `__tests__/cacheMetricsCalculator.test.ts` - New file (905 lines, 49 tests)
+
+### Test Results
+
+- ✅ 49 new tests added
+- ✅ 1527 total tests passing (1478 → 1527)
+- ✅ All 46 test suites passing
+- ✅ No regressions in existing tests
+- ✅ ESLint passes with no errors
+- ✅ TypeScript compilation passes
+- ✅ All tests pass consistently (no flaky tests)
+
+### Results
+
+- ✅ CacheMetricsCalculator now has comprehensive unit test coverage
+- ✅ All 6 methods tested with edge cases and boundary conditions
+- ✅ Direct unit tests provide better isolation and easier debugging
+- ✅ All tests pass consistently (no flaky tests)
+- ✅ Breaking code causes test failure (isolation ensures detection)
+- ✅ Zero regressions in existing tests
+- ✅ Code quality maintained (lint/typecheck pass)
+
+### Success Criteria
+
+- ✅ Critical paths covered (all 6 methods tested)
+- ✅ All tests pass consistently (49/49)
+- ✅ Edge cases tested (empty cache, zero values, boundary conditions)
+- ✅ Tests readable and maintainable (descriptive names, AAA pattern)
+- ✅ Breaking code causes test failure (direct unit tests ensure isolation)
+
+### Follow-up Recommendations
+
+1. **Test Coverage**: Consider adding tests for other untested utility modules if found
+2. **Integration Tests**: Ensure cache.test.ts integration tests still provide value for end-to-end scenarios
+3. **Documentation**: Update testing documentation to include CacheMetricsCalculator examples
+
+### See Also
+
+- [Blueprint.md Testing Standards](./blueprint.md#testing-standards)
+- [CacheMetricsCalculator Source](../src/lib/cache/cacheMetricsCalculator.ts)
+- [Pull Request #284](https://github.com/sulhimbn/headlesswp/pull/284)
+
+---
 
 ## [SANITIZE-001] Code Sanitization - Comprehensive Code Quality Audit
 
