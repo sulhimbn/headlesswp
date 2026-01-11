@@ -1,0 +1,530 @@
+openapi: 3.0.3
+info:
+  title: HeadlessWP API
+  description: |
+    HeadlessWP API specification for standardized WordPress REST API integration.
+    
+    This API provides resilient access to WordPress REST API with built-in:
+    - Circuit breaker pattern for fault tolerance
+    - Retry strategy with exponential backoff
+    - Rate limiting with token bucket algorithm
+    - Health check endpoints for monitoring
+    - Telemetry and observability support
+    
+    For more details, see [API Documentation](./api.md) and [Integration Resilience Patterns](./blueprint.md#integration-resilience-patterns).
+  version: 1.0.0
+  contact:
+    name: HeadlessWP Project
+    url: https://github.com/sulhimbn/headlesswp
+  license:
+    name: MIT
+
+servers:
+  - url: http://localhost:3000/api
+    description: Development server
+  - url: https://mitrabantennews.com/api
+    description: Production server
+
+tags:
+  - name: Health
+    description: Health check endpoints for monitoring
+  - name: Observability
+    description: Metrics and telemetry endpoints
+  - name: Cache
+    description: Cache management endpoints
+  - name: Security
+    description: Security-related endpoints
+
+paths:
+  /health:
+    get:
+      tags:
+        - Health
+      summary: WordPress API health check
+      description: |
+        Check WordPress API health and availability. Used for load balancer probes and uptime monitoring.
+        
+        Returns health status, API version, latency, and uptime information.
+      operationId: checkHealth
+      responses:
+        '200':
+          description: API is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+              examples:
+                healthy:
+                  $ref: '#/components/examples/HealthyResponse'
+        '503':
+          description: API is unhealthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnhealthyResponse'
+              examples:
+                unhealthy:
+                  $ref: '#/components/examples/UnhealthyResponse'
+      x-rate-limit: 300
+      x-rate-limit-window: 1m
+
+  /health/readiness:
+    get:
+      tags:
+        - Health
+      summary: Application readiness check
+      description: |
+        Kubernetes-style readiness probe to check if application is ready to receive traffic.
+        
+        Verifies cache manager initialization and memory usage.
+      operationId: checkReadiness
+      responses:
+        '200':
+          description: Application is ready
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReadinessResponse'
+              examples:
+                ready:
+                  $ref: '#/components/examples/ReadyResponse'
+        '503':
+          description: Application is not ready
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotReadyResponse'
+      x-rate-limit: 300
+      x-rate-limit-window: 1m
+
+  /observability/metrics:
+    get:
+      tags:
+        - Observability
+      summary: Export resilience pattern metrics
+      description: |
+        Export all resilience pattern metrics for monitoring dashboards and alerting.
+        
+        Includes metrics for circuit breaker, retry strategy, rate limiting, health checks, and API requests.
+      operationId: getMetrics
+      responses:
+        '200':
+          description: Metrics exported successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MetricsResponse'
+      x-rate-limit: 60
+      x-rate-limit-window: 1m
+
+  /cache/stats:
+    get:
+      tags:
+        - Cache
+      summary: Get cache performance statistics
+      description: |
+        Retrieve cache performance metrics including hits, misses, hit rate, size, and efficiency level.
+      operationId: getCacheStats
+      responses:
+        '200':
+          description: Cache statistics
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CacheStatsResponse'
+        '429':
+          description: Rate limit exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RateLimitError'
+      x-rate-limit: 10
+      x-rate-limit-window: 1m
+
+  /cache/warm:
+    post:
+      tags:
+        - Cache
+      summary: Trigger cache warming
+      description: |
+        Trigger cache warming for all endpoints to pre-warm cache with frequently accessed data.
+      operationId: warmCache
+      responses:
+        '200':
+          description: Cache warming started
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CacheWarmResponse'
+      x-rate-limit: 10
+      x-rate-limit-window: 1m
+
+  /cache/clear:
+    post:
+      tags:
+        - Cache
+      summary: Clear all cache entries
+      description: |
+        Clear all cache entries. Useful for manual cache invalidation or debugging.
+      operationId: clearCache
+      responses:
+        '200':
+          description: Cache cleared successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CacheClearResponse'
+      x-rate-limit: 10
+      x-rate-limit-window: 1m
+
+  /csp-report:
+    post:
+      tags:
+        - Security
+      summary: Receive Content Security Policy violation reports
+      description: |
+        Receive Content Security Policy violation reports from browsers.
+        
+        Only accepts reports in development mode. In production, CSP violations are reported to an external endpoint.
+      operationId: reportCSPViolation
+      requestBody:
+        required: true
+        content:
+          application/csp-report:
+            schema:
+              $ref: '#/components/schemas/CSPReport'
+      responses:
+        '204':
+          description: Report received (no content)
+      x-rate-limit: 30
+      x-rate-limit-window: 1m
+
+components:
+  schemas:
+    HealthResponse:
+      type: object
+      required:
+        - status
+        - timestamp
+        - latency
+        - version
+        - uptime
+      properties:
+        status:
+          type: string
+          enum: [healthy]
+          description: Health status
+        timestamp:
+          type: string
+          format: date-time
+          description: ISO 8601 timestamp
+        latency:
+          type: integer
+          format: int64
+          description: Response time in milliseconds
+        version:
+          type: string
+          description: WordPress API version
+        uptime:
+          type: integer
+          format: int64
+          description: Server uptime in seconds
+
+    UnhealthyResponse:
+      type: object
+      required:
+        - status
+        - timestamp
+        - error
+        - latency
+      properties:
+        status:
+          type: string
+          enum: [unhealthy]
+          description: Health status
+        timestamp:
+          type: string
+          format: date-time
+          description: ISO 8601 timestamp
+        error:
+          type: string
+          description: Error message
+        latency:
+          type: integer
+          format: int64
+          description: Response time in milliseconds
+
+    ReadinessResponse:
+      type: object
+      required:
+        - status
+        - timestamp
+        - uptime
+      properties:
+        status:
+          type: string
+          enum: [ready]
+          description: Readiness status
+        timestamp:
+          type: string
+          format: date-time
+          description: ISO 8601 timestamp
+        uptime:
+          type: integer
+          format: int64
+          description: Server uptime in seconds
+        checks:
+          type: object
+          properties:
+            cache:
+              type: object
+              properties:
+                status:
+                  type: string
+                  enum: [ok, error]
+                message:
+                  type: string
+            memory:
+              type: object
+              properties:
+                status:
+                  type: string
+                  enum: [ok, error]
+                message:
+                  type: string
+
+    NotReadyResponse:
+      type: object
+      required:
+        - status
+        - error
+      properties:
+        status:
+          type: string
+          enum: [not-ready]
+          description: Readiness status
+        error:
+          type: string
+          description: Error message
+
+    MetricsResponse:
+      type: object
+      required:
+        - summary
+        - circuitBreaker
+        - retry
+        - rateLimit
+        - healthCheck
+        - apiRequest
+      properties:
+        summary:
+          type: object
+          properties:
+            totalEvents:
+              type: integer
+              format: int64
+            eventTypes:
+              type: integer
+            timestamp:
+              type: string
+              format: date-time
+            uptime:
+              type: integer
+              format: int64
+        circuitBreaker:
+          type: object
+          properties:
+            stateChanges:
+              type: integer
+              format: int64
+            failures:
+              type: integer
+              format: int64
+            successes:
+              type: integer
+              format: int64
+            requestsBlocked:
+              type: integer
+              format: int64
+            totalEvents:
+              type: integer
+              format: int64
+        retry:
+          type: object
+          properties:
+            retries:
+              type: integer
+              format: int64
+            retrySuccesses:
+              type: integer
+              format: int64
+            retryExhausted:
+              type: integer
+              format: int64
+            totalEvents:
+              type: integer
+              format: int64
+        rateLimit:
+          type: object
+          properties:
+            exceeded:
+              type: integer
+              format: int64
+            resets:
+              type: integer
+              format: int64
+            totalEvents:
+              type: integer
+              format: int64
+        healthCheck:
+          type: object
+          properties:
+            healthy:
+              type: integer
+              format: int64
+            unhealthy:
+              type: integer
+              format: int64
+            totalEvents:
+              type: integer
+              format: int64
+        apiRequest:
+          type: object
+          properties:
+            totalRequests:
+              type: integer
+              format: int64
+            successful:
+              type: integer
+              format: int64
+            failed:
+              type: integer
+              format: int64
+            averageDuration:
+              type: number
+              format: double
+            cacheHits:
+              type: integer
+              format: int64
+            cacheMisses:
+              type: integer
+              format: int64
+            totalEvents:
+              type: integer
+              format: int64
+
+    CacheStatsResponse:
+      type: object
+      required:
+        - hits
+        - misses
+        - hitRate
+        - size
+        - efficiency
+      properties:
+        hits:
+          type: integer
+          format: int64
+          description: Number of cache hits
+        misses:
+          type: integer
+          format: int64
+          description: Number of cache misses
+        hitRate:
+          type: number
+          format: double
+          description: Cache hit rate (0-1)
+        size:
+          type: integer
+          format: int64
+          description: Number of entries in cache
+        efficiency:
+          type: string
+          enum: [high, medium, low]
+          description: Cache efficiency level
+
+    CacheWarmResponse:
+      type: object
+      required:
+        - status
+        - results
+      properties:
+        status:
+          type: string
+          enum: [warming]
+        results:
+          type: object
+          additionalProperties:
+            type: object
+            properties:
+              success:
+                type: boolean
+              latency:
+                type: integer
+                format: int64
+
+    CacheClearResponse:
+      type: object
+      required:
+        - status
+        - timestamp
+      properties:
+        status:
+          type: string
+          enum: [cleared]
+        timestamp:
+          type: string
+          format: date-time
+
+    RateLimitError:
+      type: object
+      required:
+        - error
+        - retryAfter
+      properties:
+        error:
+          type: string
+          description: Error message
+        retryAfter:
+          type: integer
+          format: int64
+          description: Seconds to wait before retry
+
+    CSPReport:
+      type: object
+      required:
+        - csp-report
+      properties:
+        csp-report:
+          type: object
+          description: CSP violation report
+          additionalProperties: true
+
+  examples:
+    HealthyResponse:
+      value:
+        status: healthy
+        timestamp: '2026-01-11T10:00:00Z'
+        latency: 123
+        version: v2
+        uptime: 3600
+
+    UnhealthyResponse:
+      value:
+        status: unhealthy
+        timestamp: '2026-01-11T10:00:00Z'
+        error: Connection timeout
+        latency: 5000
+
+    ReadyResponse:
+      value:
+        status: ready
+        timestamp: '2026-01-11T10:00:00Z'
+        uptime: 3600
+        checks:
+          cache:
+            status: ok
+            message: Cache manager initialized
+          memory:
+            status: ok
+            message: Memory usage within limits
