@@ -7,6 +7,7 @@ import SectionHeading from '@/components/ui/SectionHeading'
 import { PAGINATION_LIMITS } from '@/lib/api/config'
 import Footer from '@/components/layout/Footer'
 import { UI_TEXT } from '@/lib/constants/uiText'
+import { PARSING } from '@/lib/constants/appConstants'
 
 export const revalidate = 300 // REVALIDATE_TIMES.POST_LIST (5 minutes)
 
@@ -15,7 +16,7 @@ export default async function BeritaPage({
 }: {
   searchParams: { page?: string }
 }) {
-  const page = parseInt(searchParams.page || '1', 10)
+  const page = parseInt(searchParams.page || '1', PARSING.DECIMAL_RADIX)
   const postsPerPage = PAGINATION_LIMITS.ALL_POSTS
 
   const { posts, totalPages } = await enhancedPostService.getPaginatedPosts(page, postsPerPage)

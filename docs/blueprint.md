@@ -1309,8 +1309,10 @@ curl http://localhost:3000/health
    - `dateFormat.ts`: Date formatting utilities with locale support
 3. **Type Safety**: All utility functions properly typed
 4. **Configuration Management**: Centralize configuration constants
-   - `src/lib/constants/fallbackPosts.ts`: Fallback data constants
-   - `src/lib/constants/uiText.ts`: UI text constants for localization layer
+    - `src/lib/constants/appConstants.ts`: Magic number constants (TELEMETRY, PARSING, MEMORY, CACHE_METRICS, RATE_LIMIT)
+    - `src/lib/constants/fallbackPosts.ts`: Fallback data constants
+    - `src/lib/constants/uiText.ts`: UI text constants for localization layer
+    - `src/lib/constants/buttonStyles.ts`: Button variant styles with design tokens
  5. **Layer Separation**: Text and formatting separated from presentation
     - UI text in `src/lib/constants/uiText.ts`
     - Date formatting in `src/lib/utils/dateFormat.ts`

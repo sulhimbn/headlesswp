@@ -1,6 +1,6 @@
 import { ButtonHTMLAttributes, forwardRef } from 'react'
 import { BUTTON_VARIANT_STYLES, type ButtonVariant } from '@/lib/constants/buttonStyles'
-import { Icon } from './Icon'
+import Icon from './Icon'
 
 type ButtonSize = 'sm' | 'md' | 'lg'
 

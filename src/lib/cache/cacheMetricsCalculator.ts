@@ -1,3 +1,5 @@
+import { CACHE_METRICS, MEMORY } from '@/lib/constants/appConstants'
+
 export interface CacheEntry<T> {
   data: T;
   timestamp: number;
@@ -89,7 +91,7 @@ export class CacheMetricsCalculator {
   }
 
   calculateEfficiencyLevel(hitRate: number): EfficiencyLevel {
-    return hitRate > 80 ? 'high' : hitRate > 50 ? 'medium' : 'low';
+    return hitRate > CACHE_METRICS.HIGH_EFFICIENCY_THRESHOLD ? 'high' : hitRate > CACHE_METRICS.MEDIUM_EFFICIENCY_THRESHOLD ? 'medium' : 'low';
   }
 
   calculatePerformanceMetrics(
@@ -101,10 +103,10 @@ export class CacheMetricsCalculator {
       efficiencyScore,
       hitRate: stats.hitRate,
       size: stats.size,
-      memoryUsageMB: Math.round(stats.memoryUsageBytes / 1024 / 1024 * 100) / 100,
+      memoryUsageMB: Math.round(stats.memoryUsageBytes / MEMORY.BYTES_TO_MB * CACHE_METRICS.MEMORY_ROUNDING_FACTOR) / CACHE_METRICS.MEMORY_ROUNDING_FACTOR,
       cascadeInvalidations: stats.cascadeInvalidations,
       dependencyRegistrations: stats.dependencyRegistrations,
-      avgTtlSeconds: Math.round(stats.avgTtl / 1000),
+      avgTtlSeconds: Math.round(stats.avgTtl / CACHE_METRICS.MILLISECONDS_TO_SECONDS),
     };
   }
 
@@ -113,19 +115,19 @@ export class CacheMetricsCalculator {
   ): number {
     let totalSize = 0;
     cacheEntries.forEach((entry, key) => {
-      totalSize += key.length * 2;
-      totalSize += JSON.stringify(entry.data).length * 2;
-      totalSize += entry.dependencies ? entry.dependencies.size * 50 : 0;
-      totalSize += entry.dependents ? entry.dependents.size * 50 : 0;
-      totalSize += 24;
+      totalSize += key.length * MEMORY.BYTES_PER_CHARACTER_UTF16;
+      totalSize += JSON.stringify(entry.data).length * MEMORY.BYTES_PER_CHARACTER_UTF16;
+      totalSize += entry.dependencies ? entry.dependencies.size * MEMORY.PER_DEPENDENCY_ENTRY_BYTES : 0;
+      totalSize += entry.dependents ? entry.dependents.size * MEMORY.PER_DEPENDENT_ENTRY_BYTES : 0;
+      totalSize += MEMORY.PER_ENTRY_OVERHEAD_BYTES;
     });
     return totalSize;
   }
 
   formatMetricsForDisplay(stats: CacheStatistics): FormattedMetrics {
     const efficiency = this.calculateEfficiencyLevel(stats.hitRate);
-    const memoryUsageMB = Math.round(stats.memoryUsageBytes / 1024 / 1024 * 100) / 100;
-    const avgTtlSeconds = Math.round(stats.avgTtl / 1000);
+    const memoryUsageMB = Math.round(stats.memoryUsageBytes / MEMORY.BYTES_TO_MB * CACHE_METRICS.MEMORY_ROUNDING_FACTOR) / CACHE_METRICS.MEMORY_ROUNDING_FACTOR;
+    const avgTtlSeconds = Math.round(stats.avgTtl / CACHE_METRICS.MILLISECONDS_TO_SECONDS);
 
     return {
       efficiency,
