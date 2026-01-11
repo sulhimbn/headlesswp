@@ -19,6 +19,8 @@ export class TelemetryCollector {
   private config: TelemetryConfig
   private flushTimer?: NodeJS.Timeout
 
+  private statsCache: Record<string, number> = {}
+
   constructor(config: TelemetryConfig = { enabled: true }) {
     this.config = {
       ...config,
@@ -43,6 +45,9 @@ export class TelemetryCollector {
     this.events.push(telemetryEvent)
     this.config.onEvent?.(telemetryEvent)
 
+    const key = `${event.category}.${event.type}`
+    this.statsCache[key] = (this.statsCache[key] || 0) + 1
+
     if (this.events.length >= (this.config.maxEvents ?? 1000)) {
       logger.warn(`Telemetry buffer full (${this.events.length}/${this.config.maxEvents ?? 1000}), flushing...`)
       this.flush()
@@ -63,11 +68,13 @@ export class TelemetryCollector {
 
   clear(): void {
     this.events = []
+    this.statsCache = {}
   }
 
   flush(): TelemetryEvent[] {
     const flushed = [...this.events]
     this.events = []
+    this.statsCache = {}
     return flushed
   }
 
@@ -79,14 +86,7 @@ export class TelemetryCollector {
   }
 
   getStats(): Record<string, number> {
-    const stats: Record<string, number> = {}
-
-    this.events.forEach((event) => {
-      const key = `${event.category}.${event.type}`
-      stats[key] = (stats[key] || 0) + 1
-    })
-
-    return stats
+    return { ...this.statsCache }
   }
 }
 
