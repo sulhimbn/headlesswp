@@ -97,13 +97,25 @@ WordPress as a headless CMS with a Next.js 16 frontend. WordPress manages conten
 
 ## Documentation
 
+**Core Guides**
 - 📖 [Development Guide](docs/guides/development.md) - Setup, development, and deployment
 - 🏗️ [Architecture Blueprint](docs/blueprint.md) - System architecture and design patterns
 - 🔌 [API Documentation](docs/api.md) - Complete API reference and usage examples
+- 📋 [API Specifications](docs/api-specs.md) - OpenAPI 3.0 specifications and API contracts
+- 📊 [OpenAPI Specification](docs/openapi.yaml) - Machine-readable OpenAPI 3.0.3 YAML spec
+
+**Testing & Monitoring**
+- 🧪 [Integration Testing](docs/INTEGRATION_TESTING.md) - API resilience integration tests
+- 📈 [Monitoring Guide](docs/MONITORING.md) - Telemetry, health checks, and observability
+- 🔄 [API Standardization](docs/API_STANDARDIZATION.md) - API standardization guidelines
+
+**Security & Operations**
 - 🛡️ [Security Guide](docs/guides/SECURITY.md) - Security policies and best practices
-- 🤝 [Contributing Guide](docs/guides/CONTRIBUTING.md) - How to contribute
 - 🔧 [Troubleshooting Guide](docs/TROUBLESHOOTING.md) - Common issues and solutions
 - 👥 [User Guide](docs/USER_GUIDE.md) - End-user documentation
+
+**Community**
+- 🤝 [Contributing Guide](docs/guides/CONTRIBUTING.md) - How to contribute
 - 📋 [Task Backlog](docs/task.md) - Current development tasks
 
 ## Technology Stack

@@ -1,6 +1,86 @@
 # Task Backlog
 
-**Last Updated**: 2026-01-11 (Senior Integration Engineer - INT-AUDIT-001: Integration Resilience Audit)
+**Last Updated**: 2026-01-11 (Senior Technical Writer - DOC-002: README Documentation Hub Update)
+
+---
+
+## [DOC-002] README Documentation Hub Update
+
+**Status**: Complete ✅
+**Priority**: Critical
+**Assigned**: Senior Technical Writer
+**Created**: 2026-01-11
+**Updated**: 2026-01-11
+
+### Description
+
+Updated README.md Documentation section to include all important documentation links, ensuring users can easily find all available resources from the main project entry point.
+
+### Problem Identified
+
+**Missing Documentation Links in README**:
+- README.md Documentation section listed core docs but was missing several key resources
+- Users couldn't easily discover all available documentation from main entry point
+- Important guides and specifications existed but weren't linked from README
+
+**Impact**:
+- Reduced discoverability of comprehensive documentation
+- Users might miss critical resources (OpenAPI spec, Monitoring Guide, etc.)
+- Documentation not easily accessible from project landing page
+
+### Implementation Summary
+
+1. **Reorganized Documentation Section**:
+    - Grouped documentation into logical categories (Core Guides, Testing & Monitoring, Security & Operations, Community)
+    - Added clear emoji icons for visual scanning
+    - Improved structure for better readability
+
+2. **Added Missing Documentation Links**:
+    - `docs/api-specs.md` - OpenAPI 3.0 specifications and API contracts
+    - `docs/openapi.yaml` - Machine-readable OpenAPI 3.0.3 YAML specification
+    - `docs/MONITORING.md` - Telemetry, health checks, and observability guide (565 lines)
+    - `docs/INTEGRATION_TESTING.md` - API resilience integration tests (401 lines)
+    - `docs/API_STANDARDIZATION.md` - API standardization guidelines (720 lines)
+
+3. **Improved Documentation Structure**:
+    - Core Guides: Development, Architecture, API, API Specs, OpenAPI
+    - Testing & Monitoring: Integration Testing, Monitoring, API Standardization
+    - Security & Operations: Security, Troubleshooting, User Guide
+    - Community: Contributing, Task Backlog
+
+### Files Modified
+
+- `README.md` - Documentation section restructured and expanded (lines 98-119)
+
+### Results
+
+- ✅ All important documentation now accessible from README
+- ✅ Documentation organized into logical categories
+- ✅ Visual icons for easy scanning
+- ✅ Missing critical resources now discoverable (OpenAPI spec, Monitoring, Testing)
+- ✅ Zero broken links
+- ✅ Consistent formatting and structure
+
+### Documentation Standards Applied
+
+1. **Clarity Over Completeness**: Organized documentation for scanning, not comprehensive listing
+2. **Structure for Scanning**: Headings, lists, emoji icons for visual hierarchy
+3. **Link Strategically**: Connect users to right documentation for their needs
+4. **Progressive Disclosure**: Core guides first, specialized guides in separate sections
+5. **Audience Awareness**: Different sections for developers, ops, and users
+
+### Anti-Patterns Avoided
+
+- ❌ No walls of text (concise sections with clear structure)
+- ❌ No missing critical resources (all docs now linked)
+- ❌ No unorganized listing (logical grouping by category)
+- ❌ No broken links (all paths verified)
+
+### See Also
+
+- [DOC-001: README Quick Start Optimization](./task.md#doc-001)
+- [Architecture Blueprint](./blueprint.md)
+- [Development Guide](./guides/development.md)
 
 ---
 
