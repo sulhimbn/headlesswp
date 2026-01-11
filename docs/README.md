@@ -7,7 +7,8 @@ Welcome to the HeadlessWP documentation hub. This directory contains all project
 ### [Guides](./guides/)
 Getting started and development guides
 - [Development Guide](./guides/development.md) - Main README for development
-- [Contributing](./guides/CONTRIBUTING.md) - How to contribute to the project
+- [Design System Guide](./guides/DESIGN_SYSTEM.md) - Component library and design tokens
+- [Contributing](./guides/CONTRIBUTING.md) - How to contribute to project
 - [Security](./guides/SECURITY.md) - Security policies and best practices
 
 ### [Planning](./planning/)
@@ -60,5 +61,5 @@ Project governance, policies, and agent workflows
 
 ---
 
-**Last Updated**: 2026-01-07
+**Last Updated**: 2026-01-11
 **Maintained By**: HeadlessWP Team

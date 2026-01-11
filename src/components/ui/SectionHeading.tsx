@@ -1,3 +1,5 @@
+import { memo } from 'react'
+
 interface SectionHeadingProps {
   level?: 'h1' | 'h2' | 'h3'
   size?: 'lg' | 'md' | 'sm'
@@ -12,7 +14,7 @@ const sizeStyles = {
   sm: 'text-[var(--text-xl)] font-semibold'
 }
 
-export default function SectionHeading({ level = 'h2', size = 'lg', children, className = '', id }: SectionHeadingProps) {
+function SectionHeadingComponent({ level = 'h2', size = 'lg', children, className = '', id }: SectionHeadingProps) {
   const baseClassName = `text-[hsl(var(--color-text-primary))] ${sizeStyles[size]} ${className}`.trim()
 
   const HeadingTag = level
@@ -23,3 +25,15 @@ export default function SectionHeading({ level = 'h2', size = 'lg', children, cl
     </HeadingTag>
   )
 }
+
+function arePropsEqual(prevProps: SectionHeadingProps, nextProps: SectionHeadingProps): boolean {
+  return (
+    prevProps.level === nextProps.level &&
+    prevProps.size === nextProps.size &&
+    prevProps.children === nextProps.children &&
+    prevProps.className === nextProps.className &&
+    prevProps.id === nextProps.id
+  )
+}
+
+export default memo(SectionHeadingComponent, arePropsEqual)

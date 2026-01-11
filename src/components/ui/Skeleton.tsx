@@ -1,9 +1,11 @@
+import { memo } from 'react'
+
 interface SkeletonProps {
   className?: string
   variant?: 'text' | 'circular' | 'rectangular' | 'rounded'
 }
 
-export default function Skeleton({ 
+function SkeletonComponent({ 
   className = '', 
   variant = 'rectangular' 
 }: SkeletonProps) {
@@ -24,3 +26,12 @@ export default function Skeleton({
     />
   )
 }
+
+function arePropsEqual(prevProps: SkeletonProps, nextProps: SkeletonProps): boolean {
+  return (
+    prevProps.className === nextProps.className &&
+    prevProps.variant === nextProps.variant
+  )
+}
+
+export default memo(SkeletonComponent, arePropsEqual)
