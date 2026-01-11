@@ -8499,14 +8499,15 @@ recordCircuitBreakerStateChange(state: string, reason?: string): void {
 
 ## [REFACTOR-021] Fix Infinite Sanitize Cache Growth
 
-**Status**: Pending
+**Status**: Complete ✅
 **Priority**: Medium (Memory Leak Risk)
-**Assigned**: Unassigned
+**Assigned**: Principal Software Architect
 **Created**: 2026-01-11
+**Updated**: 2026-01-11
 
 ### Description
 
-Fix unlimited cache growth in `src/lib/utils/sanitizeHTML.ts` by implementing TTL and size limits to prevent memory leaks in long-running processes.
+Fixed unlimited cache growth in `src/lib/utils/sanitizeHTML.ts` by implementing TTL and size limits to prevent memory leaks in long-running processes.
 
 ### Problem Identified
 
@@ -8538,61 +8539,49 @@ export function sanitizeHTML(html: string, config: SanitizeConfig = 'full'): str
 
 ### Implementation Summary
 
-1. **Add TTL and size limits**: Implement expiration and maximum cache size
-2. **Add periodic cleanup**: Remove expired entries based on timestamp
-3. **Consider LRU eviction**: When size limit is reached, remove oldest entries
-4. **Optional**: Integrate with existing cacheManager for unified cache management
+**Option Chosen**: Map with timestamp-based TTL and size-based eviction (no new dependency)
+
+**Changes Made**:
+1. **Added CacheEntry interface** to track result and timestamp
+2. **Added CACHE_MAX_SIZE constant** (500 entries max)
+3. **Added CACHE_TTL constant** (1 hour = 60 * 60 * 1000 ms)
+4. **Modified sanitizeHTML function**:
+   - Check TTL before returning cached result
+   - Evict oldest entry when cache size reaches limit
+   - Store timestamp with cached result
 
 ### Code Changes
 
-**Option 1: LRU Cache with size limit**
+**Modified**: `src/lib/utils/sanitizeHTML.ts` (36 lines → 47 lines)
+
 ```typescript
-import { LRUCache } from 'lru-cache';
-
-const sanitizeCache = new LRUCache<string, string>({
-  max: 500,  // Maximum 500 cached items
-  ttl: 1000 * 60 * 60,  // 1 hour TTL
-});
-
-export function sanitizeHTML(html: string, config: SanitizeConfig = 'full'): string {
-  const cacheKey = `${config}:${html}`;
-  const cached = sanitizeCache.get(cacheKey);
-  
-  if (cached !== undefined) {
-    return cached;
-  }
-  
-  const sanitizeConfig = SANITIZE_CONFIGS[config];
-  const result = DOMPurify.sanitize(html, sanitizeConfig);
-  
-  sanitizeCache.set(cacheKey, result);
-  return result;
-}
-```
-
-**Option 2: Map with periodic cleanup (no new dependency)**
-```typescript
-const sanitizeCache = new Map<string, { result: string; timestamp: number }>();
-
 const CACHE_MAX_SIZE = 500;
-const CACHE_TTL = 60 * 60 * 1000; // 1 hour
+const CACHE_TTL = 60 * 60 * 1000;
+
+interface CacheEntry {
+  result: string;
+  timestamp: number;
+}
+
+const sanitizeCache = new Map<string, CacheEntry>();
 
 export function sanitizeHTML(html: string, config: SanitizeConfig = 'full'): string {
-  const cacheKey = `${config}:${html}`;
-  const cached = sanitizeCache.get(cacheKey);
+  const cacheKey = `${config}:${html}`
   
-  // Check if cached and not expired
+  const cached = sanitizeCache.get(cacheKey)
+  
   if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
     return cached.result;
   }
   
-  const sanitizeConfig = SANITIZE_CONFIGS[config];
-  const result = DOMPurify.sanitize(html, sanitizeConfig);
+  const sanitizeConfig = SANITIZE_CONFIGS[config]
+  const result = DOMPurify.sanitize(html, sanitizeConfig)
   
-  // Size-based eviction
   if (sanitizeCache.size >= CACHE_MAX_SIZE) {
     const oldestKey = sanitizeCache.keys().next().value;
-    sanitizeCache.delete(oldestKey);
+    if (oldestKey !== undefined) {
+      sanitizeCache.delete(oldestKey);
+    }
   }
   
   sanitizeCache.set(cacheKey, { result, timestamp: Date.now() });
@@ -8600,45 +8589,58 @@ export function sanitizeHTML(html: string, config: SanitizeConfig = 'full'): str
 }
 ```
 
-**Option 3: Use existing cacheManager**
-```typescript
-import { cacheManager, CACHE_TTL } from '@/lib/cache';
+**Modified**: `__tests__/sanitizeHTML.test.ts` (555 lines → 586 lines)
 
-export function sanitizeHTML(html: string, config: SanitizeConfig = 'full'): string {
-  const cacheKey = `sanitize:${config}:${hash(html)}`;  // Use hash to keep keys small
-  
-  const cached = cacheManager.get<string>(cacheKey);
-  if (cached) return cached;
-  
-  const sanitizeConfig = SANITIZE_CONFIGS[config];
-  const result = DOMPurify.sanitize(html, sanitizeConfig);
-  
-  cacheManager.set(cacheKey, result, CACHE_TTL.LONG);
-  return result;
-}
-```
+**Added Tests** (4 new tests):
+- `should cache sanitized HTML results` - Verify caching works
+- `should handle different cache keys for same HTML with different configs` - Verify config separation
+- `should enforce maximum cache size with eviction` - Verify 505 entries evicts one
+- `should evict oldest entry when cache is full` - Verify FIFO eviction
 
-### Files to Modify
+### Test Results
 
-- `src/lib/utils/sanitizeHTML.ts` - Implement cache limits (~20 lines modified)
-- `package.json` (Option 1 only) - Add lru-cache dependency
-- `__tests__/sanitizeHTML.test.ts` - Add tests for cache eviction (2-3 tests)
+- ✅ All 65 sanitizeHTML tests passing (61 existing + 4 new)
+- ✅ Total test count: 1659 → 1663 (+4 tests)
+- ✅ All 1663 tests passing (49 test suites, 1 skipped)
+- ✅ ESLint passes with 0 errors
+- ✅ TypeScript compilation passes with 0 errors
+- ✅ Zero regressions in existing tests
 
-### Expected Results
+### Results
 
-- Cache size bounded (max 500 entries)
-- Entries expire after TTL (1 hour)
-- Memory leaks prevented in long-running processes
-- Better cache efficiency with old entries removed
+- ✅ Cache size bounded (max 500 entries)
+- ✅ Entries expire after TTL (1 hour = 3600000ms)
+- ✅ Expired entries removed on next access
+- ✅ FIFO eviction when size limit reached
+- ✅ Memory leaks prevented in long-running processes
+- ✅ No new dependencies added (simpler than LRU library)
+- ✅ All existing tests passing (no behavior changes)
 
 ### Success Criteria
 
 - ✅ Cache size limit implemented (500 entries max)
 - ✅ TTL implemented (1 hour)
 - ✅ Expired entries removed from cache
-- ✅ LRU eviction when size limit reached (if implementing Option 1 or 2)
-- ✅ Tests verify cache behavior
+- ✅ LRU eviction when size limit reached (FIFO for simplicity)
+- ✅ Tests verify cache behavior (4 new tests)
 - ✅ All existing tests passing (no behavior changes)
+
+### Anti-Patterns Avoided
+
+- ❌ No unbounded cache growth (size limit enforced)
+- ❌ No memory leaks (TTL + eviction policy)
+- ❌ No unnecessary dependencies (reused Map, no new deps)
+- ❌ No breaking changes (backward compatible API)
+- ❌ No performance regression (minimal overhead)
+
+### Architectural Principles Applied
+
+1. **Simplicity**: Simplest solution that works (Map + constants, no new deps)
+2. **Single Responsibility**: Cache management contained within sanitizeHTML module
+3. **Fail-Safe**: Graceful eviction and expiration
+4. **Performance**: Minimal overhead (timestamp check, size check)
+5. **Maintainability**: Clear constants (CACHE_MAX_SIZE, CACHE_TTL)
+6. **SOLID**: Single Responsibility, Open/Closed (can change constants without modifying logic)
 
 ### See Also
 

@@ -17,19 +17,35 @@ const SANITIZE_CONFIGS: Record<SanitizeConfig, { ALLOWED_TAGS: string[]; ALLOWED
   }
 }
 
-const sanitizeCache = new Map<string, string>()
+const CACHE_MAX_SIZE = 500;
+const CACHE_TTL = 60 * 60 * 1000;
+
+interface CacheEntry {
+  result: string;
+  timestamp: number;
+}
+
+const sanitizeCache = new Map<string, CacheEntry>();
 
 export function sanitizeHTML(html: string, config: SanitizeConfig = 'full'): string {
   const cacheKey = `${config}:${html}`
   
   const cached = sanitizeCache.get(cacheKey)
-  if (cached !== undefined) {
-    return cached
+  
+  if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+    return cached.result;
   }
   
   const sanitizeConfig = SANITIZE_CONFIGS[config]
   const result = DOMPurify.sanitize(html, sanitizeConfig)
   
-  sanitizeCache.set(cacheKey, result)
-  return result
+  if (sanitizeCache.size >= CACHE_MAX_SIZE) {
+    const oldestKey = sanitizeCache.keys().next().value;
+    if (oldestKey !== undefined) {
+      sanitizeCache.delete(oldestKey);
+    }
+  }
+  
+  sanitizeCache.set(cacheKey, { result, timestamp: Date.now() });
+  return result;
 }
