@@ -5234,3 +5234,54 @@ class DataValidator {
 - [Blueprint.md Data Validation](./blueprint.md#data-validation)
 - [Blueprint.md Type Safety](./blueprint.md#design-principles)
 
+
+## [REFACTOR-024] Extract Duplicate Validation Logic - ATTEMPTED
+
+**Status**: Cancelled
+**Priority**: High
+**Assigned**: Principal Software Architect
+**Created**: 2026-01-11
+**Updated**: 2026-01-11
+
+### Description
+
+Extract duplicate validation logic in `src/lib/validation/dataValidator.ts` into a generic schema-based validator to eliminate ~350 lines of repetitive code.
+
+### Attempt Summary
+
+1. **Analyzed codebase**: Identified ~350 lines of duplicate validation logic across 5 methods
+2. **Designed schema-based approach**: Created `FieldSchema` and `EntitySchema` types
+3. **Implemented generic validate() method**: Single method to handle all schema-based validation
+4. **Attempted implementation**: Created schema definitions for Post, Category, Tag, Media, Author
+
+### Outcome
+
+The schema-based validation approach was designed and partially implemented, but after careful consideration:
+
+**Technical Challenges**:
+- TypeScript type inference with recursive validation proved complex
+- Schema definition size was comparable to original code
+- Error message consistency required extensive wrapper functions
+- Nested object validation required complex type handling
+
+**Decision**:
+- The refactoring would not achieve the expected ~350 line reduction
+- Schema definitions would add similar complexity to codebase
+- Original imperative approach is actually more maintainable for this use case
+- Task requires more analysis to determine if schema-based approach is appropriate
+
+### Files Affected
+
+- `src/lib/validation/dataValidator.ts` - Attempted schema-based validation (not committed)
+
+### Recommendation
+
+1. **Defer task**: This refactoring requires deeper architectural analysis
+2. **Evaluate alternative approaches**: Consider helper function extraction vs. full schema system
+3. **Measure actual benefit**: Run analysis on true duplication vs. apparent duplication
+4. **Consider code readability**: Original approach may be more readable than complex schema
+
+### See Also
+
+- [Blueprint.md Data Validation](./blueprint.md#data-validation)
+- [Blueprint.md Type Safety](./blueprint.md#design-principles)
