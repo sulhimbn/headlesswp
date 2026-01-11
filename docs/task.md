@@ -7076,10 +7076,11 @@ getRetryDelay(retryCount: number, error?: unknown): number {
 
 ## [REFACTOR-023] Remove Commented Debug Code
 
-**Status**: Pending
+**Status**: Complete
 **Priority**: Low
-**Assigned**: Unassigned
+**Assigned**: Code Reviewer
 **Created**: 2026-01-11
+**Updated**: 2026-01-11
 
 ### Description
 
@@ -7112,41 +7113,70 @@ Remove commented-out debug code and console.log statements from production code 
 
 ### Code Changes
 
-**Remove this from cache.ts** (various locations):
-```typescript
-// Remove all instances of:
-// console.log('...');
-```
+**JSDoc Examples Updated** (src/lib/cache.ts):
 
-**Add proper test** (if needed in cache.test.ts):
-```typescript
-describe('CacheManager', () => {
-  it('should provide cache hit feedback', () => {
-    cacheManager.set('test', { data: 'value' }, 60000);
-    const cached = cacheManager.get('test');
-    expect(cached).toEqual({ data: 'value' });
-    // Test verifies behavior, not debug output
-  });
-  
-  it('should clear all cache entries', () => {
-    cacheManager.set('test', { data: 'value' }, 60000);
-    cacheManager.clearAll();
-    const cached = cacheManager.get('test');
-    expect(cached).toBeNull();
-  });
-});
-```
+1. **get() method** (line 106):
+   - Removed: `console.log('Cache hit!');`
+   - Updated example to return posts directly
 
-### Files to Modify
+2. **clearAll() method** (line 265):
+   - Removed: `console.log('Cache cleared');`
+   - Simplified example to just call clearAll()
 
-- `src/lib/cache.ts` - Remove commented debug code (~10 lines removed)
-- `__tests__/cache.test.ts` - Add tests if needed (optional)
+3. **getStats() method** (lines 340-341):
+   - Removed: `console.log(\`Hit rate: ${stats.hitRate}%\`);`
+   - Removed: `console.log(\`Memory: ${stats.memoryUsageBytes} bytes\`);`
+   - Updated example to return stats.hitRate
 
-### Expected Results
+4. **getPerformanceMetrics() method** (lines 372-373):
+   - Removed: `console.log(\`Cache efficiency: ${metrics.efficiencyScore}\`);`
+   - Removed: `console.log(\`Memory: ${metrics.memoryUsageMB} MB\`);`
+   - Updated example to return metrics.efficiencyScore
 
-- Production code is clean (no commented debug statements)
-- Examples moved to tests where appropriate
-- Code is more readable without debug noise
+5. **cleanup() method** (line 398):
+   - Removed: `console.log(\`Cleaned ${cleaned} expired entries\`);`
+   - Simplified example to just call cleanup()
+
+6. **cleanupOrphanDependencies() method** (line 446):
+   - Removed: `console.log(\`Removed ${cleaned} orphaned dependencies\`);`
+   - Simplified example to just call cleanupOrphanDependencies()
+
+7. **getMemoryUsage() method** (line 519):
+   - Removed: `console.log(\`Cache using ~${usage / 1024 / 1024} MB\`);`
+   - Updated example to calculate usageMB without logging
+
+8. **invalidateByEntityType() method** (line 567):
+   - Removed: `console.log(\`Invalidated ${count} post entries\`);`
+   - Simplified example to just call invalidateByEntityType()
+
+9. **getKeysByPattern() method** (line 602):
+   - Removed: `console.log(\`Found ${postKeys.length} cached posts\`);`
+   - Simplified example to just call getKeysByPattern()
+
+10. **getDependencies() method** (lines 629-630):
+    - Removed: `console.log('Dependencies:', info.dependencies);`
+    - Removed: `console.log('Dependents:', info.dependents);`
+    - Updated example to return info.dependencies
+
+### Files Modified
+
+- `src/lib/cache.ts` - Removed 10 console.log statements from JSDoc examples (examples simplified and clarified)
+
+### Test Results
+
+- ✅ 53/53 cache tests passing
+- ✅ ESLint passes with no errors
+- ✅ TypeScript compilation passes
+- ✅ Zero regressions in existing tests
+
+### Results
+
+- ✅ All console.log statements removed from JSDoc examples
+- ✅ JSDoc examples cleaned up and simplified
+- ✅ No commented-out debug code in production files
+- ✅ Code is more readable without debug noise
+- ✅ All tests passing (no regressions)
+- ✅ Lint and typecheck passing
 
 ### Success Criteria
 
@@ -7156,10 +7186,24 @@ describe('CacheManager', () => {
 - ✅ All existing tests passing
 - ✅ No behavioral changes
 
+### Anti-Patterns Avoided
+
+- ❌ No commented debug code left in production files
+- ❌ No console.log statements in JSDoc examples
+- ❌ No code noise distracting from actual logic
+- ❌ No technical debt from incomplete cleanup
+
+### Refactoring Principles Applied
+
+1. **Clean Code**: Production code free of debug artifacts
+2. **Documentation Quality**: JSDoc examples focus on usage, not debugging
+3. **Maintainability**: Cleaner code easier to understand
+4. **Boy Scout Rule**: Left code cleaner than found
+
 ### See Also
 
 - [Blueprint.md Testing Standards](./blueprint.md#testing-standards)
-- [CONTRIBUTING.md Code Quality](./guides/CONTRIBUTING.md)
+- [Blueprint.md DRY Principle and Code Quality](./blueprint.md#dry-principle-and-code-quality)
 
 ---
 
