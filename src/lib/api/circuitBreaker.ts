@@ -4,11 +4,7 @@ import {
   CIRCUIT_BREAKER_RECOVERY_TIMEOUT,
   CIRCUIT_BREAKER_SUCCESS_THRESHOLD
 } from './config'
-import {
-  recordCircuitBreakerStateChange,
-  recordCircuitBreakerFailure,
-  recordCircuitBreakerSuccess
-} from './telemetry'
+import { telemetryCollector } from './telemetry'
 
 export enum CircuitState {
   CLOSED = 'CLOSED',
@@ -53,13 +49,17 @@ export class CircuitBreaker {
       this.state = newState
       this.onStateChange?.(newState)
 
-      recordCircuitBreakerStateChange({
-        state: newState,
-        failureCount: this.failureCount,
-        successCount: this.successCount,
-        lastFailureTime: this.lastFailureTime || null,
-        nextAttemptTime: this.nextAttemptTime || null,
-        endpoint: this.endpoint
+      telemetryCollector.record({
+        type: 'state-change',
+        category: 'circuit-breaker',
+        data: {
+          state: newState,
+          failureCount: this.failureCount,
+          successCount: this.successCount,
+          lastFailureTime: this.lastFailureTime || null,
+          nextAttemptTime: this.nextAttemptTime || null,
+          endpoint: this.endpoint
+        }
       })
     }
   }
@@ -87,13 +87,17 @@ export class CircuitBreaker {
       this.failureCount = Math.max(0, this.failureCount - 1)
     }
 
-    recordCircuitBreakerSuccess({
-      state: this.state,
-      failureCount: this.failureCount,
-      successCount: this.successCount,
-      lastFailureTime: this.lastFailureTime || null,
-      nextAttemptTime: this.nextAttemptTime || null,
-      endpoint: this.endpoint
+    telemetryCollector.record({
+      type: 'success',
+      category: 'circuit-breaker',
+      data: {
+        state: this.state,
+        failureCount: this.failureCount,
+        successCount: this.successCount,
+        lastFailureTime: this.lastFailureTime || null,
+        nextAttemptTime: this.nextAttemptTime || null,
+        endpoint: this.endpoint
+      }
     })
   }
 
@@ -101,13 +105,17 @@ export class CircuitBreaker {
     this.failureCount++
     this.lastFailureTime = Date.now()
 
-    recordCircuitBreakerFailure({
-      state: this.state,
-      failureCount: this.failureCount,
-      successCount: this.successCount,
-      lastFailureTime: this.lastFailureTime || null,
-      nextAttemptTime: this.nextAttemptTime || null,
-      endpoint: this.endpoint
+    telemetryCollector.record({
+      type: 'failure',
+      category: 'circuit-breaker',
+      data: {
+        state: this.state,
+        failureCount: this.failureCount,
+        successCount: this.successCount,
+        lastFailureTime: this.lastFailureTime || null,
+        nextAttemptTime: this.nextAttemptTime || null,
+        endpoint: this.endpoint
+      }
     })
 
     if (this.failureCount >= this.failureThreshold) {
