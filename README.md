@@ -23,86 +23,66 @@ If you're new to headless CMS, this project demonstrates how to decouple content
 
 ## Quick Start
 
-Get HeadlessWP running in 5 minutes with these steps:
-
-### 1. Clone Repository
+Get HeadlessWP running in 5 minutes. Follow these exact steps:
 
 ```bash
+# 1. Clone and navigate
 git clone https://github.com/sulhimbn/headlesswp.git
 cd headlesswp
-```
 
-### 2. Configure Environment
-
-```bash
+# 2. Set up environment (uses default values)
 cp .env.example .env
-```
 
-**Edit `.env` with your values. For local development, update these required fields:**
-
-```env
-MYSQL_USER=wordpress
-MYSQL_PASSWORD=your_secure_password_here
-MYSQL_DATABASE=wordpress
-MYSQL_ROOT_PASSWORD=your_secure_root_password_here
-```
-
-**Note:** You must provide actual values for database credentials. Docker will fail to start if placeholder values remain.
-
-### 3. Start WordPress Backend
-
-```bash
+# 3. Start WordPress backend (Docker)
 docker-compose up -d
+
+# 4. Install dependencies and start frontend
+npm install && npm run dev
 ```
 
-Wait for containers to start (~30 seconds). Verify WordPress is running:
+**That's it!** Access your site at http://localhost:3000
 
-```bash
-# Check container status
-docker-compose ps
+---
 
-# Check WordPress logs
-docker-compose logs wordpress
-```
+### Quick Start Details
 
-Access services:
-- WordPress Admin: http://localhost:8080/wp-admin
-- WordPress API: http://localhost:8080/wp-json/wp/v2/
-- phpMyAdmin: http://localhost:8081
+**After running the commands above:**
 
-### 4. Install Frontend Dependencies
+- **Frontend**: http://localhost:3000 - Your headless WordPress site
+- **WordPress Admin**: http://localhost:8080/wp-admin - Manage content (admin/admin)
+- **WordPress API**: http://localhost:8080/wp-json/wp/v2/ - REST API endpoint
+- **phpMyAdmin**: http://localhost:8081 - Database admin
 
-```bash
-npm install
-```
-
-### 5. Start Next.js Development Server
-
-```bash
-npm run dev
-```
-
-Access the application at [http://localhost:3000](http://localhost:3000)
+**Default credentials for local development:**
+- Database: WordPress (MySQL) - Running in Docker
+- WordPress Admin: User `admin`, Password `admin`
+- Environment: Uses default values from `.env.example`
 
 ### Verify Everything Works
 
 ```bash
-# Run tests
-npm test
+# Verify WordPress API is responding
+curl http://localhost:8080/wp-json/wp/v2/posts
 
-# Run type checking
-npm run typecheck
-
-# Run linting
-npm run lint
+# Run quality checks (optional)
+npm run lint          # Check code quality
+npm run typecheck     # Verify TypeScript types
+npm test             # Run test suite
 ```
 
-**Troubleshooting Docker Issues:**
-- If containers fail to start, check `.env` has valid database credentials
-- Use `docker-compose logs` to view startup errors
-- See [Troubleshooting Guide](docs/TROUBLESHOOTING.md) for common issues
+**Having Issues?** See [Troubleshooting Guide](docs/TROUBLESHOOTING.md)
 
-All commands should complete successfully.
+## What You'll Learn
+
+By exploring this codebase, you'll see:
+
+- **Headless CMS architecture** - Decoupling content from presentation
+- **Next.js App Router** - Server components, SSR, and ISR
+- **TypeScript best practices** - Type safety across the stack
+- **API resilience patterns** - Circuit breakers, retries, rate limiting
+- **Caching strategies** - In-memory, ISR, cascade invalidation
+- **Security implementations** - CSP, XSS protection, input validation
+- **Design system approach** - Design tokens, component reusability
 
 ## Overview
 
@@ -201,29 +181,21 @@ See [Development Guide](docs/guides/development.md) for complete setup instructi
 
 ### Environment Variables
 
-Copy `.env.example` to `.env` and configure:
-
-**For local development:**
-```env
-WORDPRESS_URL=http://localhost:8080
-WORDPRESS_API_URL=http://localhost:8080/wp-json
-NEXT_PUBLIC_WORDPRESS_URL=http://localhost:8080
-NEXT_PUBLIC_WORDPRESS_API_URL=http://localhost:8080/wp-json
-NEXT_PUBLIC_SITE_URL=http://localhost:3000
-NODE_ENV=development
+**Local Development** - Use default values from `.env.example`:
+```bash
+cp .env.example .env
+# Works immediately with default settings
 ```
 
-**For production deployment:**
+**Production** - Update these variables in `.env`:
 ```env
-WORDPRESS_URL=https://your-domain.com
-WORDPRESS_API_URL=https://your-domain.com/wp-json
 NEXT_PUBLIC_WORDPRESS_URL=https://your-domain.com
 NEXT_PUBLIC_WORDPRESS_API_URL=https://your-domain.com/wp-json
 NEXT_PUBLIC_SITE_URL=https://your-domain.com
 NODE_ENV=production
 ```
 
-See `.env.example` for all available variables including database credentials and security settings.
+See `.env.example` for all available configuration options.
 
 ## Testing
 
