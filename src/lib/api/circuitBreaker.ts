@@ -5,7 +5,6 @@ import {
   CIRCUIT_BREAKER_SUCCESS_THRESHOLD
 } from './config'
 import { telemetryCollector } from './telemetry'
-import type { CircuitBreakerTelemetry } from './telemetry'
 
 export enum CircuitState {
   CLOSED = 'CLOSED',

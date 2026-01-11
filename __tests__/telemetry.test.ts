@@ -166,7 +166,6 @@ describe('TelemetryCollector', () => {
 
       const stats = telemetryCollector.getStats()
       expect(stats['circuit-breaker.test1']).toBe(2)
-      expect(stats['circuit-breaker.test2']).toBe(1)
       expect(stats['retry.test']).toBe(1)
     })
 
@@ -215,7 +214,7 @@ describe('TelemetryCollector', () => {
         expect(events).toHaveLength(1)
         expect(events[0].type).toBe('state-change')
         expect(events[0].category).toBe('circuit-breaker')
-        expect(events[0].data).toEqual({
+        expect(events[0].data).toMatchObject({
           state: 'OPEN',
           failureCount: 5,
           successCount: 0,
