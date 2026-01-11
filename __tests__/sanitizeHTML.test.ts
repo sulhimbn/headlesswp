@@ -547,8 +547,59 @@ describe('sanitizeHTML - Security', () => {
   it('should prevent XSS via SVG script with full config', () => {
     const html = '<svg><script>alert(\'XSS\')</script></svg>'
     const result = sanitizeHTML(html, 'full')
-
+    
     expect(result).not.toContain('<script>')
     expect(result).not.toContain('alert')
+  })
+})
+
+describe('sanitizeHTML - Cache Behavior', () => {
+  it('should cache sanitized HTML results', () => {
+    const html = '<p>Test content</p>'
+    
+    const result1 = sanitizeHTML(html, 'full')
+    const result2 = sanitizeHTML(html, 'full')
+    
+    expect(result1).toBe(result2)
+    expect(result1).toBe('<p>Test content</p>')
+  })
+
+  it('should handle different cache keys for same HTML with different configs', () => {
+    const html = '<p>Test</p>'
+    
+    const excerptResult = sanitizeHTML(html, 'excerpt')
+    const fullResult = sanitizeHTML(html, 'full')
+    
+    expect(excerptResult).toBe('<p>Test</p>')
+    expect(fullResult).toBe('<p>Test</p>')
+  })
+
+  it('should enforce maximum cache size with eviction', () => {
+    const uniqueHtmls = Array.from({ length: 505 }, (_, i) => `<p>Test ${i}</p>`)
+    const results: string[] = []
+    
+    for (const html of uniqueHtmls) {
+      const result = sanitizeHTML(html, 'full')
+      results.push(result)
+    }
+    
+    expect(results.length).toBe(505)
+    expect(results[0]).toBe('<p>Test 0</p>')
+    expect(results[504]).toBe('<p>Test 504</p>')
+  })
+
+  it('should evict oldest entry when cache is full', () => {
+    const firstHtml = '<p>First entry</p>'
+    const middleHtml = '<p>Second entry</p>'
+    const lastHtml = '<p>Third entry</p>'
+    
+    sanitizeHTML(firstHtml, 'full')
+    
+    for (let i = 0; i < 499; i++) {
+      sanitizeHTML(`<p>Filler ${i}</p>`, 'full')
+    }
+    
+    const finalResult = sanitizeHTML(lastHtml, 'full')
+    expect(finalResult).toBe('<p>Third entry</p>')
   })
 })
