@@ -1,6 +1,52 @@
-import { formatDate, formatDateTime, formatTime, formatDateRelative } from '@/lib/utils/dateFormat'
+import { formatDate, formatDateTime, formatTime, formatDateRelative, parseAndValidateDate } from '@/lib/utils/dateFormat'
 
 describe('dateFormat utility', () => {
+  describe('parseAndValidateDate() - internal helper', () => {
+    it('should parse valid date string', () => {
+      const result = parseAndValidateDate('2024-01-15')
+      expect(result).toBeInstanceOf(Date)
+      expect(result.getFullYear()).toBe(2024)
+      expect(result.getMonth()).toBe(0)
+      expect(result.getDate()).toBe(15)
+    })
+
+    it('should return valid Date object as-is', () => {
+      const date = new Date('2024-01-15T10:30:00Z')
+      const result = parseAndValidateDate(date)
+      expect(result).toBe(date)
+    })
+
+    it('should throw error for invalid date string', () => {
+      expect(() => {
+        parseAndValidateDate('invalid-date')
+      }).toThrow('Invalid date: invalid-date')
+    })
+
+    it('should throw error for invalid Date object', () => {
+      expect(() => {
+        parseAndValidateDate(new Date('invalid'))
+      }).toThrow('Invalid date:')
+    })
+
+    it('should throw error for null input', () => {
+      expect(() => {
+        parseAndValidateDate(null as any)
+      }).toThrow()
+    })
+
+    it('should throw error for undefined input', () => {
+      expect(() => {
+        parseAndValidateDate(undefined as any)
+      }).toThrow()
+    })
+
+    it('should throw error for empty string', () => {
+      expect(() => {
+        parseAndValidateDate('')
+      }).toThrow('Invalid date:')
+    })
+  })
+
   describe('formatDate()', () => {
     describe('full format (default)', () => {
       it('should format Date object with full format', () => {

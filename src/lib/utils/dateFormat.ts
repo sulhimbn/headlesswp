@@ -29,6 +29,16 @@ const DATE_FORMAT_OPTIONS: Record<DateFormat, DateFormatOptions> = {
   }
 }
 
+export function parseAndValidateDate(date: string | Date): Date {
+  const dateObj = typeof date === 'string' ? new Date(date) : date
+  
+  if (isNaN(dateObj.getTime())) {
+    throw new Error(`Invalid date: ${date}`)
+  }
+  
+  return dateObj
+}
+
 const formatCache = new Map<string, string>()
 
 export function formatDate(
@@ -36,11 +46,7 @@ export function formatDate(
   format: DateFormat = 'full',
   locale: string = DEFAULT_LOCALE
 ): string {
-  const dateObj = typeof date === 'string' ? new Date(date) : date
-  
-  if (isNaN(dateObj.getTime())) {
-    throw new Error(`Invalid date: ${date}`)
-  }
+  const dateObj = parseAndValidateDate(date)
 
   const dateStr = typeof date === 'string' ? date : date.toISOString()
   const cacheKey = `${dateStr}:${format}:${locale}`
@@ -63,11 +69,7 @@ export function formatDateTime(
   date: string | Date,
   locale: string = DEFAULT_LOCALE
 ): string {
-  const dateObj = typeof date === 'string' ? new Date(date) : date
-  
-  if (isNaN(dateObj.getTime())) {
-    throw new Error(`Invalid date: ${date}`)
-  }
+  const dateObj = parseAndValidateDate(date)
 
   const dateStr = typeof date === 'string' ? date : date.toISOString()
   const cacheKey = `dt:${dateStr}:${locale}`
@@ -95,11 +97,7 @@ export function formatTime(
   date: string | Date,
   locale: string = DEFAULT_LOCALE
 ): string {
-  const dateObj = typeof date === 'string' ? new Date(date) : date
-  
-  if (isNaN(dateObj.getTime())) {
-    throw new Error(`Invalid date: ${date}`)
-  }
+  const dateObj = parseAndValidateDate(date)
 
   const dateStr = typeof date === 'string' ? date : date.toISOString()
   const cacheKey = `t:${dateStr}:${locale}`
@@ -122,11 +120,7 @@ export function formatDateRelative(
   date: string | Date,
   locale: string = DEFAULT_LOCALE
 ): string {
-  const dateObj = typeof date === 'string' ? new Date(date) : date
-
-  if (isNaN(dateObj.getTime())) {
-    throw new Error(`Invalid date: ${date}`)
-  }
+  const dateObj = parseAndValidateDate(date)
 
   const now = new Date()
   const diffMs = now.getTime() - dateObj.getTime()
