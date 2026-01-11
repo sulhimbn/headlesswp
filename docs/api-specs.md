@@ -6,13 +6,15 @@
 
 ## Purpose
 
-This document provides OpenAPI 3.0 specifications for the HeadlessWP standardized API endpoints. These specifications enable:
+This document provides OpenAPI 3.0 specifications for HeadlessWP standardized API endpoints. These specifications enable:
 
 1. Machine-readable API documentation
 2. Automatic API documentation generation (Swagger UI, Redoc)
 3. API client code generation
 4. API contract validation
 5. Integration with API management platforms
+
+**Note**: For the complete OpenAPI 3.0 YAML specification, see [docs/openapi.yaml](./openapi.yaml). This YAML file can be used directly with Swagger UI, Redoc, or API client generators.
 
 ## API Base URL
 
