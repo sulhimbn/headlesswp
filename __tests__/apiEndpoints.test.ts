@@ -169,6 +169,69 @@ describe('Health Check API Endpoints', () => {
       expect(response.headers.get('Cache-Control')).toBe('no-cache, no-store, must-revalidate')
       expect(response.headers.get('Content-Type')).toBe('application/json')
     })
+
+    it('should return 503 when readiness check fails', async () => {
+      let callCount = 0
+      const originalRecord = telemetryCollector.record.bind(telemetryCollector)
+      const spy = jest.spyOn(telemetryCollector, 'record').mockImplementation((event) => {
+        callCount++
+        if (callCount === 1) {
+          throw new Error('Readiness check failed')
+        }
+        return originalRecord(event)
+      })
+
+      const response = await ReadinessGET(mockRequest)
+      const data = await response.json()
+
+      expect(response.status).toBe(503)
+      expect(data.status).toBe('not-ready')
+      expect(data.error).toBe('Readiness check failed')
+
+      spy.mockRestore()
+    })
+
+    it('should record telemetry for unhealthy readiness check', async () => {
+      let callCount = 0
+      const originalRecord = telemetryCollector.record.bind(telemetryCollector)
+      const spy = jest.spyOn(telemetryCollector, 'record').mockImplementation((event) => {
+        callCount++
+        if (callCount === 1) {
+          throw new Error('System not ready')
+        }
+        return originalRecord(event)
+      })
+
+      await ReadinessGET(mockRequest)
+
+      const events = telemetryCollector.getEventsByCategory('health-check')
+
+      expect(events).toHaveLength(1)
+      expect(events[0].type).toBe('unhealthy')
+      expect(events[0].data.healthy).toBe(false)
+      expect(events[0].data.error).toBe('System not ready')
+
+      spy.mockRestore()
+    })
+
+    it('should set error response headers when readiness check fails', async () => {
+      let callCount = 0
+      const originalRecord = telemetryCollector.record.bind(telemetryCollector)
+      const spy = jest.spyOn(telemetryCollector, 'record').mockImplementation((event) => {
+        callCount++
+        if (callCount === 1) {
+          throw new Error('Readiness error')
+        }
+        return originalRecord(event)
+      })
+
+      const response = await ReadinessGET(mockRequest)
+
+      expect(response.headers.get('Cache-Control')).toBe('no-cache, no-store, must-revalidate')
+      expect(response.headers.get('Content-Type')).toBe('application/json')
+
+      spy.mockRestore()
+    })
   })
 
   describe('GET /api/observability/metrics', () => {
