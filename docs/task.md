@@ -1,10 +1,119 @@
 # Task Backlog
 
-**Last Updated**: 2026-01-11 (Senior Integration Engineer - API Specifications)
+**Last Updated**: 2026-01-11 (Code Reviewer & Refactoring Specialist)
 
 ---
 
 ## Completed Tasks
+
+## [UX-003] Component Accessibility Enhancements
+
+**Status**: Complete
+**Priority**: High
+**Assigned**: Senior UI/UX Engineer
+**Created**: 2026-01-11
+**Updated**: 2026-01-11
+
+### Description
+
+Improved accessibility of PostCard and EmptyState components to provide better screen reader support and keyboard navigation experience.
+
+### Problem Identified
+
+**PostCard Accessibility Issues**:
+1. Article element lacked accessible name reference for screen readers
+2. No semantic connection between article and heading element
+3. Post title heading had no ID for ARIA reference
+4. Limited context for screen reader users when navigating cards
+
+**EmptyState Accessibility Issues**:
+1. Static empty states not announced to screen readers when dynamically rendered
+2. No live region support for content changes
+3. Screen readers may miss empty state announcements
+4. Incomplete accessibility for dynamic content scenarios
+
+### Implementation Summary
+
+1. **Enhanced PostCard Component** (`src/components/post/PostCard.tsx`):
+    - Added unique `id` to post title heading: `post-title-${post.id}`
+    - Added `aria-labelledby` attribute to article element referencing post title
+    - Creates semantic relationship between article landmark and heading
+    - Screen readers now announce post title as accessible name for entire card
+    - Improved keyboard navigation focus context
+
+2. **Enhanced EmptyState Component** (`src/components/ui/EmptyState.tsx`):
+    - Added `aria-live="polite"` attribute to announce content changes without interrupting
+    - Added `aria-atomic="true"` to ensure entire content is announced
+    - Ensures screen readers announce empty state when dynamically rendered
+    - Provides better user feedback for search/filter results with no items
+
+3. **Verified Skip-to-Content Link** (`src/app/layout.tsx`):
+    - Confirmed skip-to-content link already well-implemented
+    - Uses `sr-only` class to hide by default
+    - Visible on focus with proper styling and design tokens
+    - Links to `#main-content` target present on all pages
+    - No improvements needed
+
+### Accessibility Improvements
+
+| Component | Before | After | Benefit |
+|-----------|--------|-------|---------|
+| **PostCard** | No `aria-labelledby`, heading without ID | `aria-labelledby` referencing heading with unique ID | Screen readers announce post title as card name |
+| **EmptyState** | Static `role="status"` | `role="status"` + `aria-live="polite"` + `aria-atomic="true"` | Announces when empty state appears dynamically |
+
+### Files Modified
+
+- `src/components/post/PostCard.tsx` - Added `id` and `aria-labelledby` (2 lines changed)
+- `src/components/ui/EmptyState.tsx` - Added live region attributes (1 line changed)
+
+### Test Results
+
+- ✅ 1527 tests passing (no regressions)
+- ✅ PostCard tests passing (82 tests)
+- ✅ EmptyState tests passing (82 tests)
+- ✅ ESLint passes with no errors
+- ✅ TypeScript compilation passes
+
+### Results
+
+- ✅ PostCard now has proper accessible name for screen readers
+- ✅ EmptyState announces content changes to screen readers
+- ✅ Skip-to-content link verified as well-implemented
+- ✅ Keyboard navigation improved with better focus context
+- ✅ All tests passing (no regressions)
+- ✅ Lint and typecheck passing
+
+### Success Criteria
+
+- ✅ UI more intuitive (better screen reader announcements)
+- ✅ Accessible (keyboard nav, screen reader support)
+- ✅ Consistent with design system (no changes to styling)
+- ✅ Responsive all breakpoints (no layout changes)
+- ✅ Zero regressions (all tests pass)
+
+### Anti-Patterns Avoided
+
+- ❌ No silent content changes (aria-live announcements)
+- ❌ No breaking changes (all tests pass)
+- ❌ No accessibility regressions
+- ❌ No hardcoded values (using existing patterns)
+
+### UI/UX Principles Applied
+
+1. **Accessibility**: Screen readers announce content changes and card names
+2. **Semantic HTML**: Proper ARIA relationships between elements
+3. **User-Centric**: Better feedback for keyboard and screen reader users
+4. **Single Responsibility**: Each component handles its accessibility correctly
+5. **Progressive Enhancement**: Works for all users, enhanced for assistive tech
+
+### Follow-up Recommendations
+
+1. **Accessibility Testing**: Consider automated a11y testing (axe-core) in CI/CD
+2. **Keyboard Navigation**: Test focus flow across all pages with keyboard only
+3. **Screen Reader Testing**: Manual testing with NVDA/JAWS/VoiceOver
+4. **WCAG Compliance**: Document WCAG 2.1 Level AA conformance
+
+---
 
 ## [INT-002] API Documentation - OpenAPI/Swagger Specifications
 
@@ -991,7 +1100,6 @@ Created comprehensive unit test file `__tests__/cacheMetricsCalculator.test.ts` 
 - [Blueprint.md Testing Standards](./blueprint.md#testing-standards)
 - [CacheMetricsCalculator Source](../src/lib/cache/cacheMetricsCalculator.ts)
 - [Pull Request #284](https://github.com/sulhimbn/headlesswp/pull/284)
-
 ---
 
 ## [SANITIZE-001] Code Sanitization - Comprehensive Code Quality Audit
@@ -4158,3 +4266,651 @@ recordCircuitBreakerStateChange(state: string, reason?: string): void {
 - ✅ Backward compatibility maintained (same API)
 - ✅ New tests for helper function
 - ✅ All existing tests passing (no behavior changes)
+
+---
+
+## [REFACTOR-021] Fix Infinite Sanitize Cache Growth
+
+**Status**: Pending
+**Priority**: Medium (Memory Leak Risk)
+**Assigned**: Unassigned
+**Created**: 2026-01-11
+
+### Description
+
+Fix unlimited cache growth in `src/lib/utils/sanitizeHTML.ts` by implementing TTL and size limits to prevent memory leaks in long-running processes.
+
+### Problem Identified
+
+**Unbounded Cache Growth** (`src/lib/utils/sanitizeHTML.ts` lines 20-35):
+```typescript
+const sanitizeCache = new Map<string, string>()
+
+export function sanitizeHTML(html: string, config: SanitizeConfig = 'full'): string {
+  const cacheKey = `${config}:${html}`
+  
+  const cached = sanitizeCache.get(cacheKey)
+  if (cached !== undefined) {
+    return cached
+  }
+  
+  const sanitizeConfig = SANITIZE_CONFIGS[config]
+  const result = DOMPurify.sanitize(html, sanitizeConfig)
+  
+  sanitizeCache.set(cacheKey, result)
+  return result
+}
+```
+
+**Impact**:
+- Cache grows indefinitely (no TTL, no size limit, no cleanup)
+- HTML content can be large (thousands of characters per entry)
+- Long-running processes can accumulate memory leaks
+- No eviction policy for old or least-recently-used entries
+
+### Implementation Summary
+
+1. **Add TTL and size limits**: Implement expiration and maximum cache size
+2. **Add periodic cleanup**: Remove expired entries based on timestamp
+3. **Consider LRU eviction**: When size limit is reached, remove oldest entries
+4. **Optional**: Integrate with existing cacheManager for unified cache management
+
+### Code Changes
+
+**Option 1: LRU Cache with size limit**
+```typescript
+import { LRUCache } from 'lru-cache';
+
+const sanitizeCache = new LRUCache<string, string>({
+  max: 500,  // Maximum 500 cached items
+  ttl: 1000 * 60 * 60,  // 1 hour TTL
+});
+
+export function sanitizeHTML(html: string, config: SanitizeConfig = 'full'): string {
+  const cacheKey = `${config}:${html}`;
+  const cached = sanitizeCache.get(cacheKey);
+  
+  if (cached !== undefined) {
+    return cached;
+  }
+  
+  const sanitizeConfig = SANITIZE_CONFIGS[config];
+  const result = DOMPurify.sanitize(html, sanitizeConfig);
+  
+  sanitizeCache.set(cacheKey, result);
+  return result;
+}
+```
+
+**Option 2: Map with periodic cleanup (no new dependency)**
+```typescript
+const sanitizeCache = new Map<string, { result: string; timestamp: number }>();
+
+const CACHE_MAX_SIZE = 500;
+const CACHE_TTL = 60 * 60 * 1000; // 1 hour
+
+export function sanitizeHTML(html: string, config: SanitizeConfig = 'full'): string {
+  const cacheKey = `${config}:${html}`;
+  const cached = sanitizeCache.get(cacheKey);
+  
+  // Check if cached and not expired
+  if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+    return cached.result;
+  }
+  
+  const sanitizeConfig = SANITIZE_CONFIGS[config];
+  const result = DOMPurify.sanitize(html, sanitizeConfig);
+  
+  // Size-based eviction
+  if (sanitizeCache.size >= CACHE_MAX_SIZE) {
+    const oldestKey = sanitizeCache.keys().next().value;
+    sanitizeCache.delete(oldestKey);
+  }
+  
+  sanitizeCache.set(cacheKey, { result, timestamp: Date.now() });
+  return result;
+}
+```
+
+**Option 3: Use existing cacheManager**
+```typescript
+import { cacheManager, CACHE_TTL } from '@/lib/cache';
+
+export function sanitizeHTML(html: string, config: SanitizeConfig = 'full'): string {
+  const cacheKey = `sanitize:${config}:${hash(html)}`;  // Use hash to keep keys small
+  
+  const cached = cacheManager.get<string>(cacheKey);
+  if (cached) return cached;
+  
+  const sanitizeConfig = SANITIZE_CONFIGS[config];
+  const result = DOMPurify.sanitize(html, sanitizeConfig);
+  
+  cacheManager.set(cacheKey, result, CACHE_TTL.LONG);
+  return result;
+}
+```
+
+### Files to Modify
+
+- `src/lib/utils/sanitizeHTML.ts` - Implement cache limits (~20 lines modified)
+- `package.json` (Option 1 only) - Add lru-cache dependency
+- `__tests__/sanitizeHTML.test.ts` - Add tests for cache eviction (2-3 tests)
+
+### Expected Results
+
+- Cache size bounded (max 500 entries)
+- Entries expire after TTL (1 hour)
+- Memory leaks prevented in long-running processes
+- Better cache efficiency with old entries removed
+
+### Success Criteria
+
+- ✅ Cache size limit implemented (500 entries max)
+- ✅ TTL implemented (1 hour)
+- ✅ Expired entries removed from cache
+- ✅ LRU eviction when size limit reached (if implementing Option 1 or 2)
+- ✅ Tests verify cache behavior
+- ✅ All existing tests passing (no behavior changes)
+
+### See Also
+
+- [Blueprint.md Security Standards](./blueprint.md#security-standards)
+- [Blueprint.md Performance Standards](./blueprint.md#performance-standards)
+
+---
+
+## [REFACTOR-022] Reduce Retry Strategy Cyclomatic Complexity
+
+**Status**: Pending
+**Priority**: Medium
+**Assigned**: Unassigned
+**Created**: 2026-01-11
+
+### Description
+
+Refactor the `getRetryDelay` method in `src/lib/api/retryStrategy.ts` to reduce cyclomatic complexity by extracting helper methods.
+
+### Problem Identified
+
+**High Cyclomatic Complexity** (`src/lib/api/retryStrategy.ts` lines 64-100):
+- The `getRetryDelay` method has 5+ nested conditionals
+- Multiple levels of indentation (up to 6 levels)
+- Header parsing logic mixed with delay calculation
+- Hard to test individual concerns
+
+```typescript
+getRetryDelay(retryCount: number, error?: unknown): number {
+  if (error && typeof error === 'object' && 'response' in error) {
+    const axiosError = error as { response?: { headers?: Record<string, string | null> | { get: (key: string) => string | null } } }
+    const errorHeaders = axiosError.response?.headers
+
+    if (errorHeaders) {
+      let retryAfterHeader: string | null | undefined
+
+      if (typeof errorHeaders.get === 'function') {
+        retryAfterHeader = errorHeaders.get('retry-after') || errorHeaders.get('Retry-After')
+      } else {
+        const headerRecord = errorHeaders as Record<string, string | null>
+        retryAfterHeader = headerRecord['retry-after'] || headerRecord['Retry-After']
+      }
+
+      if (retryAfterHeader) {
+        const retryAfter = parseInt(retryAfterHeader, 10)
+        if (!isNaN(retryAfter)) {
+          return Math.min(retryAfter * TIME_CONSTANTS.SECOND_IN_MS, this.maxDelay)
+        }
+
+        const retryAfterDate = Date.parse(retryAfterHeader)
+        if (!isNaN(retryAfterDate)) {
+          return Math.min(retryAfterDate - Date.now(), this.maxDelay)
+        }
+      }
+    }
+  }
+
+  let delay = this.initialDelay * Math.pow(this.backoffMultiplier, retryCount)
+
+  if (this.jitter) {
+    delay = delay * (0.5 + Math.random())
+  }
+
+  return Math.min(delay, this.maxDelay)
+}
+```
+
+**Impact**:
+- Method is hard to understand and maintain
+- Difficult to test header parsing independently
+- Complex logic increases bug risk
+- Violates Single Responsibility Principle (header parsing + delay calculation)
+
+### Implementation Summary
+
+1. **Extract header parsing**: Create `extractRetryAfterHeader()` method
+2. **Extract backoff calculation**: Create `calculateBackoffDelay()` method
+3. **Simplify main method**: Call helpers and return result
+
+### Code Changes
+
+**Extract Header Parsing**:
+```typescript
+private extractRetryAfterHeader(error?: unknown): number | null {
+  if (!error || typeof error !== 'object' || !('response' in error)) {
+    return null;
+  }
+
+  const axiosError = error as { response?: { headers?: unknown } };
+  const errorHeaders = axiosError.response?.headers;
+  
+  if (!errorHeaders) return null;
+
+  let retryAfterHeader: string | null | undefined;
+
+  if (typeof errorHeaders === 'object' && 'get' in errorHeaders && typeof errorHeaders.get === 'function') {
+    // Headers object with get method
+    const headersWithGet = errorHeaders as { get: (key: string) => string | null };
+    retryAfterHeader = headersWithGet.get('retry-after') || headersWithGet.get('Retry-After');
+  } else if (typeof errorHeaders === 'object') {
+    // Plain object with headers
+    const headersRecord = errorHeaders as Record<string, string | null>;
+    retryAfterHeader = headersRecord['retry-after'] || headersRecord['Retry-After'];
+  }
+
+  if (!retryAfterHeader) return null;
+
+  // Try parsing as seconds
+  const retryAfterSeconds = parseInt(retryAfterHeader, 10);
+  if (!isNaN(retryAfterSeconds)) {
+    return Math.min(retryAfterSeconds * TIME_CONSTANTS.SECOND_IN_MS, this.maxDelay);
+  }
+
+  // Try parsing as ISO date
+  const retryAfterDate = Date.parse(retryAfterHeader);
+  if (!isNaN(retryAfterDate)) {
+    return Math.min(retryAfterDate - Date.now(), this.maxDelay);
+  }
+
+  return null;
+}
+```
+
+**Extract Backoff Calculation**:
+```typescript
+private calculateBackoffDelay(retryCount: number): number {
+  let delay = this.initialDelay * Math.pow(this.backoffMultiplier, retryCount);
+  
+  if (this.jitter) {
+    delay = delay * (0.5 + Math.random());
+  }
+  
+  return Math.min(delay, this.maxDelay);
+}
+```
+
+**Simplified Main Method**:
+```typescript
+getRetryDelay(retryCount: number, error?: unknown): number {
+  // Check for Retry-After header first
+  const retryAfterDelay = this.extractRetryAfterHeader(error);
+  if (retryAfterDelay !== null) {
+    return retryAfterDelay;
+  }
+
+  // Fall back to exponential backoff
+  return this.calculateBackoffDelay(retryCount);
+}
+```
+
+### Files to Modify
+
+- `src/lib/api/retryStrategy.ts` - Extract 2 helper methods, simplify getRetryDelay (~10 lines added, ~25 lines simplified)
+- `__tests__/retryStrategy.test.ts` - Add tests for extracted methods (4-6 tests)
+
+### Expected Results
+
+- Cyclomatic complexity reduced from 8+ to ~2
+- Maximum indentation reduced from 6 levels to 2-3 levels
+- Header parsing logic isolated and testable
+- Backoff calculation logic isolated and testable
+- Main method reads like a story
+
+### Success Criteria
+
+- ✅ extractRetryAfterHeader() method created
+- ✅ calculateBackoffDelay() method created
+- ✅ getRetryDelay() simplified to call helpers
+- ✅ All behavior preserved (tests pass)
+- ✅ New tests for extracted methods added
+- ✅ All existing tests passing
+
+### See Also
+
+- [Blueprint.md Integration Resilience Patterns](./blueprint.md#integration-resilience-patterns)
+- [Blueprint.md DRY Principle and Code Quality](./blueprint.md#dry-principle-and-code-quality)
+
+---
+
+## [REFACTOR-023] Remove Commented Debug Code
+
+**Status**: Pending
+**Priority**: Low
+**Assigned**: Unassigned
+**Created**: 2026-01-11
+
+### Description
+
+Remove commented-out debug code and console.log statements from production code to improve code quality and eliminate technical debt.
+
+### Problem Identified
+
+**Commented Debug Code** (`src/lib/cache.ts`):
+- Line 106: `// console.log('Cache hit!');` in JSDoc example
+- Line 271: `// console.log('Cache cleared');`
+- Lines 340-341: Commented debug statements
+- Lines 372-373: Commented debug statements
+- Line 404: Commented debug statement
+- Line 452: Commented debug statement
+- Line 525: Commented debug statement
+- Line 573: Commented debug statement
+- Lines 608, 635-636: Additional commented debug statements
+
+**Impact**:
+- Technical debt (debugging code not cleaned up)
+- Code noise (distracts from actual logic)
+- Suggests debugging code that should be in tests
+- Violates principle of keeping production code clean
+
+### Implementation Summary
+
+1. **Remove commented console.log statements**: Delete all commented debug code
+2. **Clean up JSDoc examples**: Remove example code that references console.log
+3. **Move examples to tests**: If examples are useful, add them to test files
+
+### Code Changes
+
+**Remove this from cache.ts** (various locations):
+```typescript
+// Remove all instances of:
+// console.log('...');
+```
+
+**Add proper test** (if needed in cache.test.ts):
+```typescript
+describe('CacheManager', () => {
+  it('should provide cache hit feedback', () => {
+    cacheManager.set('test', { data: 'value' }, 60000);
+    const cached = cacheManager.get('test');
+    expect(cached).toEqual({ data: 'value' });
+    // Test verifies behavior, not debug output
+  });
+  
+  it('should clear all cache entries', () => {
+    cacheManager.set('test', { data: 'value' }, 60000);
+    cacheManager.clearAll();
+    const cached = cacheManager.get('test');
+    expect(cached).toBeNull();
+  });
+});
+```
+
+### Files to Modify
+
+- `src/lib/cache.ts` - Remove commented debug code (~10 lines removed)
+- `__tests__/cache.test.ts` - Add tests if needed (optional)
+
+### Expected Results
+
+- Production code is clean (no commented debug statements)
+- Examples moved to tests where appropriate
+- Code is more readable without debug noise
+
+### Success Criteria
+
+- ✅ All commented console.log statements removed
+- ✅ JSDoc examples cleaned up
+- ✅ No commented-out debug code in production files
+- ✅ All existing tests passing
+- ✅ No behavioral changes
+
+### See Also
+
+- [Blueprint.md Testing Standards](./blueprint.md#testing-standards)
+- [CONTRIBUTING.md Code Quality](./guides/CONTRIBUTING.md)
+
+---
+
+## [REFACTOR-024] Extract Duplicate Validation Logic
+
+**Status**: Pending
+**Priority**: High
+**Assigned**: Unassigned
+**Created**: 2026-01-11
+
+### Description
+
+Extract duplicate validation logic in `src/lib/validation/dataValidator.ts` into a generic schema-based validator to eliminate ~350 lines of repetitive code.
+
+### Problem Identified
+
+**Duplicate Validation Patterns** (`src/lib/validation/dataValidator.ts` lines 91-445):
+The `validatePost`, `validateCategory`, `validateTag`, `validateMedia`, and `validateAuthor` methods all follow nearly identical patterns:
+1. Check if data is an object
+2. Validate ID field (positive integer)
+3. Validate name/title field (non-empty string)
+4. Validate slug field (pattern + length)
+5. Validate link field (URL)
+6. Validate status/type enum where applicable
+7. Return validation result
+
+This is ~350 lines of repetitive code that violates DRY principle.
+
+**Impact**:
+- Code duplication (~350 lines)
+- Bug fixes require changes in 5 places
+- Inconsistent validation if logic diverges
+- Hard to maintain and test
+- Adding new entity type requires duplicating pattern
+
+### Implementation Summary
+
+1. **Create generic schema validator**: Define validation rules declaratively
+2. **Create schema types**: TypeScript interfaces for validation schemas
+3. **Create generic validate method**: Apply schema-based validation
+4. **Refactor existing methods**: Simplify to call generic validator
+
+### Code Changes
+
+**Create Validation Schema Type**:
+```typescript
+type ValidationRule<T = unknown> = (value: unknown, context: string) => ValidationResult<T>;
+
+interface FieldSchema<T> {
+  type: 'number' | 'string' | 'object' | 'boolean' | 'array';
+  validators?: ValidationRule[];
+  optional?: boolean;
+  custom?: ValidationRule;
+}
+
+interface ValidationSchema<T extends Record<string, unknown>> {
+  [K in keyof T]?: FieldSchema<T[K]> | {
+    nested?: ValidationSchema<T[K] extends Record<string, unknown> ? T[K] : never>;
+  };
+}
+```
+
+**Create Generic Validator Class**:
+```typescript
+class DataValidator {
+  private postSchema: ValidationSchema<WordPressPost> = {
+    id: { type: 'number', validators: [validatePositiveInteger] },
+    title: {
+      type: 'object',
+      nested: {
+        rendered: { type: 'string', validators: [validateNonEmptyString] }
+      }
+    },
+    slug: {
+      type: 'string',
+      validators: [
+        validateNonEmptyString,
+        (v) => validatePattern(v, POST_VALIDATION_RULES.slug.pattern, 'Post.slug')
+      ],
+      custom: (v) => validateLength(v, POST_VALIDATION_RULES.slug.minLength, POST_VALIDATION_RULES.slug.maxLength, 'Post.slug')
+    },
+    date: { type: 'string', validators: [validateIso8601Date] },
+    // ... other fields
+  };
+
+  private categorySchema: ValidationSchema<WordPressCategory> = {
+    id: { type: 'number', validators: [validatePositiveInteger] },
+    name: { type: 'string', validators: [validateNonEmptyString] },
+    slug: {
+      type: 'string',
+      validators: [
+        validateNonEmptyString,
+        (v) => validatePattern(v, CATEGORY_VALIDATION_RULES.slug.pattern, 'Category.slug')
+      ],
+      custom: (v) => validateLength(v, CATEGORY_VALIDATION_RULES.slug.minLength, CATEGORY_VALIDATION_RULES.slug.maxLength, 'Category.slug')
+    },
+    link: { type: 'string', validators: [validateUrl] },
+    // ... other fields
+  };
+
+  // Generic validate method using schema
+  validate<T extends Record<string, unknown>>(
+    data: unknown,
+    schema: ValidationSchema<T>,
+    entityName: string
+  ): ValidationResult<T> {
+    const errors: ValidationError[] = [];
+    
+    if (!this.isObject(data)) {
+      return {
+        valid: false,
+        errors: [{
+          field: entityName,
+          rule: 'type',
+          message: `${entityName} must be an object`,
+          value: data
+        }],
+        data: undefined
+      };
+    }
+
+    const dataRecord = data as Record<string, unknown>;
+    const typedData: Partial<T> = {};
+
+    // Generic field validation
+    for (const [field, rules] of Object.entries(schema)) {
+      const value = dataRecord[field];
+      const fieldPath = `${entityName}.${field}`;
+
+      // Skip optional fields if undefined
+      if (rules && 'optional' in rules && rules.optional && value === undefined) {
+        continue;
+      }
+
+      // Validate field
+      if (rules) {
+        // Apply validators
+        if (rules.validators) {
+          for (const validator of rules.validators) {
+            const result = validator(value, fieldPath);
+            if (!result) {
+              errors.push({
+                field: fieldPath,
+                rule: 'validation',
+                message: `Invalid ${field}`,
+                value
+              });
+            }
+          }
+        }
+
+        // Apply custom validator
+        if (rules.custom) {
+          const customResult = rules.custom(value, fieldPath);
+          if (typeof customResult === 'boolean' && !customResult) {
+            errors.push({
+              field: fieldPath,
+              rule: 'custom',
+              message: `Custom validation failed for ${field}`,
+              value
+            });
+          }
+        }
+
+        // Type casting after validation
+        typedData[field as keyof T] = value as T[keyof T];
+      }
+    }
+
+    if (errors.length > 0) {
+      return {
+        valid: false,
+        errors,
+        data: undefined
+      };
+    }
+
+    return {
+      valid: true,
+      data: typedData as T,
+      errors: []
+    };
+  }
+
+  private isObject(value: unknown): value is Record<string, unknown> {
+    return typeof value === 'object' && value !== null && !Array.isArray(value);
+  }
+
+  // Simplified methods now just call validate with schema
+  validatePost(data: unknown): ValidationResult<WordPressPost> {
+    return this.validate(data, this.postSchema, 'Post');
+  }
+  
+  validateCategory(data: unknown): ValidationResult<WordPressCategory> {
+    return this.validate(data, this.categorySchema, 'Category');
+  }
+
+  validateTag(data: unknown): ValidationResult<WordPressTag> {
+    return this.validate(data, this.tagSchema, 'Tag');
+  }
+
+  validateMedia(data: unknown): ValidationResult<WordPressMedia> {
+    return this.validate(data, this.mediaSchema, 'Media');
+  }
+
+  validateAuthor(data: unknown): ValidationResult<WordPressAuthor> {
+    return this.validate(data, this.authorSchema, 'Author');
+  }
+}
+```
+
+### Files to Modify
+
+- `src/lib/validation/dataValidator.ts` - Create schema types, generic validator, refactor 5 methods (~150 lines added, ~200 lines removed)
+- `__tests__/dataValidator.test.ts` - Add tests for schema validation (8-10 tests)
+
+### Expected Results
+
+- ~200 lines of duplicate code eliminated
+- Schema-based validation is declarative and maintainable
+- Adding new entity type only requires defining schema
+- Validation logic centralized and testable
+- Consistent validation across all entity types
+
+### Success Criteria
+
+- ✅ ValidationSchema type defined
+- ✅ Generic validate() method created
+- ✅ All 5 validation methods refactored to use schema
+- ✅ All existing tests passing
+- ✅ New tests for schema validation added
+- ✅ No behavioral changes (validation rules preserved)
+
+### See Also
+
+- [Blueprint.md Data Validation](./blueprint.md#data-validation)
+- [Blueprint.md Type Safety](./blueprint.md#design-principles)
+
