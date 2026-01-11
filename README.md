@@ -2,6 +2,25 @@
 
 Headless WordPress implementation for [mitrabantennews.com](https://mitrabantennews.com)
 
+## What is HeadlessWP?
+
+HeadlessWP is a **headless WordPress** implementation. This means:
+
+- **WordPress** manages your content (articles, images, categories)
+- **Next.js** displays that content to users with modern, fast technology
+- **REST API** connects WordPress and Next.js
+
+**Why Headless WordPress?**
+- 🚀 **Faster performance** - Static site generation (SSG) delivers content quickly
+- 🛡️ **Better security** - No WordPress vulnerabilities exposed to users
+- 🎨 **Modern UX** - React-based interface with smooth interactions
+- 📱 **Responsive** - Works perfectly on all devices
+- 🔧 **Flexible** - Easy to extend with new features
+
+If you're new to headless CMS, this project demonstrates how to decouple content management from frontend presentation.
+
+---
+
 ## Quick Start
 
 Get HeadlessWP running in 5 minutes with these steps:
