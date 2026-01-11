@@ -144,6 +144,7 @@ const SearchBar = dynamic(() => import('@/components/ui/SearchBar'), { ssr: fals
 - ✅ All tests passing (no regressions)
 - ✅ Lint and typecheck passing
 - ✅ Better user experience for non-search users
+- ✅ PR created: https://github.com/sulhimbn/headlesswp/pull/314
 
 ### Success Criteria
 
