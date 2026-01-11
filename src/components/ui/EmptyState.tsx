@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { memo } from 'react'
 
 interface EmptyStateProps {
   title: string
@@ -11,7 +12,7 @@ interface EmptyStateProps {
   className?: string
 }
 
-export default function EmptyState({ title, description, icon, action, className = '' }: EmptyStateProps) {
+function EmptyStateComponent({ title, description, icon, action, className = '' }: EmptyStateProps) {
   return (
     <div className={`text-center py-12 px-4 ${className}`} role="status" aria-live="polite" aria-atomic="true">
       {icon && (
@@ -38,3 +39,16 @@ export default function EmptyState({ title, description, icon, action, className
     </div>
   )
 }
+
+function arePropsEqual(prevProps: EmptyStateProps, nextProps: EmptyStateProps): boolean {
+  return (
+    prevProps.title === nextProps.title &&
+    prevProps.description === nextProps.description &&
+    prevProps.icon === nextProps.icon &&
+    prevProps.action?.label === nextProps.action?.label &&
+    prevProps.action?.href === nextProps.action?.href &&
+    prevProps.className === nextProps.className
+  )
+}
+
+export default memo(EmptyStateComponent, arePropsEqual)
