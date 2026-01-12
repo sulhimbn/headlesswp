@@ -1,7 +1,7 @@
 # Architecture Blueprint
 
 **Version**: 1.0.0
-**Last Updated**: 2026-01-12 (Principal Data Architect - DATA-ARCH-010: Media URL Extraction Optimization Complete)
+**Last Updated**: 2026-01-12 (Principal Software Architect - REFACTOR-026: Extract Complex Retry Delay Logic Complete)
 
 ## System Architecture
 
@@ -450,6 +450,32 @@ interface ApiListResult<T> extends ApiResult<T[]> {
 7. **Extensibility**: New entity types can reuse generic patterns
 8. **Single Responsibility**: CacheMetricsCalculator focuses solely on metrics calculation
 
+**REFACTOR-026: Extract Complex Retry Delay Logic**:
+- Created `extractRetryAfterHeader()` helper (src/lib/api/retryStrategy.ts, lines 64-101)
+- Created `calculateBackoffDelay()` helper (src/lib/api/retryStrategy.ts, lines 103-111)
+- Simplified `getRetryDelay()` main method (src/lib/api/retryStrategy.ts, lines 113-120)
+- Extracted Retry-After header parsing into dedicated method (38 lines)
+- Extracted exponential backoff calculation into dedicated method (9 lines)
+- Reduced main method from 37 lines to 8 lines
+- Reduced cyclomatic complexity from 8+ to 2
+- Reduced maximum nesting from 6 levels to 2-3 levels
+- Bug fix: Added `Math.max(..., 0)` to prevent negative delays
+- Test coverage: 1717 tests (1686 passed, 31 skipped, zero regressions)
+- All tests passing: 1686 passed, 31 skipped (zero regressions)
+- Lines added: +20 (38 + 9 + 8 = 55 lines total vs 37 lines before)
+- File size: 142 → 162 lines
+
+**Benefits**:
+1. **Single Responsibility**: Each helper has one clear purpose
+2. **Separation of Concerns**: Header parsing separate from backoff calculation
+3. **Testability**: Each concern can be tested independently
+4. **Readability**: Main method reads like a story ("try header, else backoff")
+5. **DRY Principle**: No duplicate code between header parsing and backoff
+6. **Maintainability**: Bug fixes or changes only require updating one helper
+7. **Bug Fix**: Negative delays prevented with Math.max(..., 0)
+
+**See Also**: [Task REFACTOR-026](./task.md#refactor-026)
+
 **REFACTOR-027: Cache Key Factory Pattern**:
 - Created `CacheKeyFactory` class (src/lib/cache.ts, lines 701-722)
 - Added three static methods: `create()`, `createById()`, `createBySlug()`
@@ -475,7 +501,7 @@ interface ApiListResult<T> extends ApiResult<T[]> {
 7. **Code Organization**: Factory pattern separates concerns cleanly
 8. **Testability**: Factory pattern easily testable (18 new tests)
 
-**See Also**: [Task REFACTOR-010](./task.md#refactor-010), [Task REFACTOR-011](./task.md#refactor-011), [Task REFACTOR-012](./task.md#refactor-012), [Task REFACTOR-014](./task.md#refactor-014), [Task REFACTOR-018](./task.md#refactor-018), [Task ARCH-ERROR-002](./task.md#arch-error-002), [Task REFACTOR-027](./task.md#refactor-027)
+**See Also**: [Task REFACTOR-010](./task.md#refactor-010), [Task REFACTOR-011](./task.md#refactor-011), [Task REFACTOR-012](./task.md#refactor-012), [Task REFACTOR-014](./task.md#refactor-014), [Task REFACTOR-018](./task.md#refactor-018), [Task ARCH-ERROR-002](./task.md#arch-error-002), [Task REFACTOR-026](./task.md#refactor-026), [Task REFACTOR-027](./task.md#refactor-027)
 
 ## Integration Resilience Patterns
 

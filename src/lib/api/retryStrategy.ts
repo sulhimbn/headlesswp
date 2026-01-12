@@ -61,42 +61,62 @@ export class RetryStrategy {
     return false
   }
 
-  getRetryDelay(retryCount: number, error?: unknown): number {
-    if (error && typeof error === 'object' && 'response' in error) {
-      const axiosError = error as { response?: { headers?: Record<string, string | null> | { get: (key: string) => string | null } } }
-      const errorHeaders = axiosError.response?.headers
-
-      if (errorHeaders) {
-        let retryAfterHeader: string | null | undefined
-
-        if (typeof errorHeaders.get === 'function') {
-          retryAfterHeader = errorHeaders.get('retry-after') || errorHeaders.get('Retry-After')
-        } else {
-          const headerRecord = errorHeaders as Record<string, string | null>
-          retryAfterHeader = headerRecord['retry-after'] || headerRecord['Retry-After']
-        }
-
-        if (retryAfterHeader) {
-          const retryAfter = parseInt(retryAfterHeader, 10)
-          if (!isNaN(retryAfter)) {
-            return Math.min(retryAfter * TIME_CONSTANTS.SECOND_IN_MS, this.maxDelay)
-          }
-
-          const retryAfterDate = Date.parse(retryAfterHeader)
-          if (!isNaN(retryAfterDate)) {
-            return Math.min(retryAfterDate - Date.now(), this.maxDelay)
-          }
-        }
-      }
+  private extractRetryAfterHeader(error?: unknown): number | null {
+    if (!error || typeof error !== 'object' || !('response' in error)) {
+      return null;
     }
 
-    let delay = this.initialDelay * Math.pow(this.backoffMultiplier, retryCount)
+    const axiosError = error as { response?: { headers?: Record<string, string | null> | { get: (key: string) => string | null } } }
+    const errorHeaders = axiosError.response?.headers;
+
+    if (!errorHeaders) {
+      return null;
+    }
+
+    let retryAfterHeader: string | null | undefined;
+
+    if (typeof errorHeaders.get === 'function') {
+      retryAfterHeader = errorHeaders.get('retry-after') || errorHeaders.get('Retry-After');
+    } else {
+      const headerRecord = errorHeaders as Record<string, string | null>;
+      retryAfterHeader = headerRecord['retry-after'] || headerRecord['Retry-After'];
+    }
+
+    if (!retryAfterHeader) {
+      return null;
+    }
+
+    const retryAfter = parseInt(retryAfterHeader, 10);
+    if (!isNaN(retryAfter)) {
+      return Math.min(retryAfter * TIME_CONSTANTS.SECOND_IN_MS, this.maxDelay);
+    }
+
+    const retryAfterDate = Date.parse(retryAfterHeader);
+    if (!isNaN(retryAfterDate)) {
+      const delay = retryAfterDate - Date.now();
+      return Math.max(Math.min(delay, this.maxDelay), 0);
+    }
+
+    return null;
+  }
+
+  private calculateBackoffDelay(retryCount: number): number {
+    let delay = this.initialDelay * Math.pow(this.backoffMultiplier, retryCount);
 
     if (this.jitter) {
-      delay = delay * (0.5 + Math.random())
+      delay = delay * (0.5 + Math.random());
     }
 
-    return Math.min(delay, this.maxDelay)
+    return Math.min(delay, this.maxDelay);
+  }
+
+  getRetryDelay(retryCount: number, error?: unknown): number {
+    const headerDelay = this.extractRetryAfterHeader(error);
+    if (headerDelay !== null) {
+      return headerDelay;
+    }
+
+    return this.calculateBackoffDelay(retryCount);
   }
 
   async execute<T>(
