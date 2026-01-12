@@ -77,3 +77,13 @@ export interface WordPressApiResponse<T> {
     'x-wp-totalpages': string;
   };
 }
+
+export interface WordPressSearchResult {
+  id: number;
+  title: {
+    rendered: string;
+  };
+  url: string;
+  type: string;
+  subtype: string;
+}

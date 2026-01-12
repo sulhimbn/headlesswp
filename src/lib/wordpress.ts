@@ -1,4 +1,4 @@
-import type { WordPressPost, WordPressCategory, WordPressTag, WordPressMedia, WordPressAuthor } from '@/types/wordpress';
+import type { WordPressPost, WordPressCategory, WordPressTag, WordPressMedia, WordPressAuthor, WordPressSearchResult } from '@/types/wordpress';
 import { apiClient, getApiUrl } from './api/client';
 import { cacheManager, CACHE_TTL, CACHE_KEYS } from './cache';
 import { logger } from '@/lib/utils/logger';
@@ -164,8 +164,20 @@ export const wordpressAPI: IWordPressAPI = {
     const cacheKey = CACHE_KEYS.search(query);
 
     const result = await cacheFetch(
-      () => {
-        return apiClient.get(getApiUrl('/wp/v2/search'), { params: { search: query }, signal }).then(res => res.data);
+      async () => {
+        const searchResponse = await apiClient.get<WordPressSearchResult[]>(
+          getApiUrl('/wp/v2/search'),
+          { params: { search: query }, signal }
+        );
+
+        const searchResults = searchResponse.data;
+        const postIds = searchResults.map((result) => result.id);
+
+        const posts = await Promise.all(
+          postIds.map((id) => wordpressAPI.getPostById(id, signal))
+        );
+
+        return posts.filter((post): post is WordPressPost => post !== null);
       },
       {
         key: cacheKey,
