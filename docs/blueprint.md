@@ -1,7 +1,7 @@
 # Architecture Blueprint
 
 **Version**: 1.0.0
-**Last Updated**: 2026-01-12 (Principal Software Architect - REFACTOR-026: Extract Complex Retry Delay Logic Complete)
+**Last Updated**: 2026-01-12 (Principal Software Architect - ARCH-UNUSED-001: Remove Unused Author Fetching Complete)
 
 ## System Architecture
 
@@ -501,7 +501,25 @@ interface ApiListResult<T> extends ApiResult<T[]> {
 7. **Code Organization**: Factory pattern separates concerns cleanly
 8. **Testability**: Factory pattern easily testable (18 new tests)
 
-**See Also**: [Task REFACTOR-010](./task.md#refactor-010), [Task REFACTOR-011](./task.md#refactor-011), [Task REFACTOR-012](./task.md#refactor-012), [Task REFACTOR-014](./task.md#refactor-014), [Task REFACTOR-018](./task.md#refactor-018), [Task ARCH-ERROR-002](./task.md#arch-error-002), [Task REFACTOR-026](./task.md#refactor-026), [Task REFACTOR-027](./task.md#refactor-027)
+**ARCH-UNUSED-001: Remove Unused Author Fetching**:
+- Removed `getAuthorsMap()` function from `enhancedPostService.ts` (19 lines eliminated)
+- Removed `WordPressAuthor` type import (no longer used in service layer)
+- Removed call to `getAuthorsMap()` from `enrichPostWithDetails()`
+- Eliminated 5 unnecessary API calls per post detail page
+- Author data was fetched but never returned in `PostWithDetails` interface
+- Performance improvement: Post detail pages no longer fetch unused author data
+- Test coverage: All 1716 tests passing (no regressions)
+- Lines eliminated: 19
+- File size: 304 → 285 lines (5.9% reduction)
+
+**Benefits**:
+1. **Performance**: Eliminates 5 unnecessary API calls per post detail page
+2. **Code Clarity**: Only fetches data that's actually used
+3. **Maintainability**: Less code to maintain, simpler data flow
+4. **Single Responsibility**: Service layer doesn't fetch unused data
+5. **Simplicity**: Removed complexity without affecting functionality
+
+**See Also**: [Task REFACTOR-010](./task.md#refactor-010), [Task REFACTOR-011](./task.md#refactor-011), [Task REFACTOR-012](./task.md#refactor-012), [Task REFACTOR-014](./task.md#refactor-014), [Task REFACTOR-018](./task.md#refactor-018), [Task ARCH-ERROR-002](./task.md#arch-error-002), [Task REFACTOR-026](./task.md#refactor-026), [Task REFACTOR-027](./task.md#refactor-027), [Task ARCH-UNUSED-001](./task.md#arch-unused-001)
 
 ## Integration Resilience Patterns
 
