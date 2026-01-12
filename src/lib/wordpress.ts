@@ -109,8 +109,11 @@ export const wordpressAPI: IWordPressAPI = {
     const cached = cacheManager.get<string>(cacheKey);
     if (cached) return cached;
 
-    const media = await wordpressAPI.getMedia(mediaId, signal);
-    const url = media.source_url;
+    const response = await apiClient.get(getApiUrl(`/wp/v2/media/${mediaId}`), {
+      params: { _fields: 'source_url' },
+      signal
+    });
+    const url = response.data.source_url;
     if (url) {
       cacheManager.set(cacheKey, url, CACHE_TTL.MEDIA);
     }
@@ -120,20 +123,30 @@ export const wordpressAPI: IWordPressAPI = {
   getMediaUrlsBatch: async (mediaIds: number[], signal?: AbortSignal): Promise<Map<number, string | null>> => {
     const urlMap = new Map<number, string | null>();
 
-    try {
-      const mediaBatch = await wordpressAPI.getMediaBatch(mediaIds, signal);
+    const idsToFetch = mediaIds.filter(id => id !== 0);
 
-      for (const [id, media] of mediaBatch) {
-        urlMap.set(id, media.source_url);
+    if (idsToFetch.length > 0) {
+      try {
+        const response = await apiClient.get(getApiUrl('/wp/v2/media'), {
+          params: {
+            include: idsToFetch.join(','),
+            _fields: 'id,source_url'
+          },
+          signal
+        });
+
+        const mediaList: Array<{ id: number; source_url: string }> = response.data;
+
+        for (const media of mediaList) {
+          urlMap.set(media.id, media.source_url);
+        }
+      } catch (error) {
+        logger.warn('Failed to fetch media batch for URLs', error, { module: 'wordpressAPI', mediaIds });
       }
-    } catch (error) {
-      logger.warn('Failed to fetch media batch for URLs', error, { module: 'wordpressAPI', mediaIds });
     }
 
     for (const id of mediaIds) {
-      if (id === 0) {
-        urlMap.set(id, null);
-      } else if (!urlMap.has(id)) {
+      if (!urlMap.has(id)) {
         urlMap.set(id, null);
       }
     }
