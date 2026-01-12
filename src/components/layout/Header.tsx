@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { useState, useEffect, useRef, memo, Suspense } from 'react'
+import { useState, useEffect, useRef, useCallback, memo, Suspense } from 'react'
 import dynamic from 'next/dynamic'
 import Icon from '@/components/ui/Icon'
 import { UI_TEXT } from '@/lib/constants/uiText'
@@ -63,18 +63,27 @@ export default memo(function Header() {
     }
   }
 
-  const handleSearch = (query: string) => {
+  const handleSearch = useCallback((query: string) => {
     if (query.trim()) {
       router.push(`/cari?q=${encodeURIComponent(query)}`)
     } else {
       router.push('/cari')
     }
-  }
+  }, [router])
 
-  const toggleSearch = () => {
+  const toggleSearch = useCallback(() => {
     setIsSearchOpen(!isSearchOpen)
     setIsMenuOpen(false)
-  }
+  }, [isSearchOpen])
+
+  const toggleMenu = useCallback(() => {
+    setIsMenuOpen(!isMenuOpen)
+    setIsSearchOpen(false)
+  }, [isMenuOpen])
+
+  const closeMenu = useCallback(() => {
+    setIsMenuOpen(false)
+  }, [])
 
   return (
     <header className="bg-[hsl(var(--color-surface))] shadow-[var(--shadow-sm)]">
@@ -131,10 +140,7 @@ export default memo(function Header() {
               aria-expanded={isMenuOpen}
               aria-controls="mobile-menu"
               aria-haspopup="true"
-              onClick={() => {
-                setIsMenuOpen(!isMenuOpen)
-                setIsSearchOpen(false)
-              }}
+              onClick={toggleMenu}
             >
               <span className="sr-only">{isMenuOpen ? 'Tutup menu' : 'Buka menu'}</span>
               {isMenuOpen ? <Icon type="close" className="h-6 w-6" /> : <Icon type="menu" className="h-6 w-6" />}
@@ -181,7 +187,7 @@ export default memo(function Header() {
                 }
                 href={item.href}
                 className="block px-3 py-2 rounded-[var(--radius-md)] text-base font-medium text-[hsl(var(--color-text-primary))] hover:text-[hsl(var(--color-primary))] hover:bg-[hsl(var(--color-secondary-dark))] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--color-primary))] focus:ring-offset-2"
-                onClick={() => setIsMenuOpen(false)}
+                onClick={closeMenu}
               >
                 {item.label}
               </Link>

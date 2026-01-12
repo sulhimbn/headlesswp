@@ -1,5 +1,5 @@
-import { RateLimiter, RateLimiterManager } from '../src/lib/api/rateLimiter'
-import { ApiErrorType } from '../src/lib/api/errors'
+import { RateLimiter, RateLimiterManager } from '@/lib/api/rateLimiter'
+import { ApiErrorType } from '@/lib/api/errors'
 
 describe('RateLimiter', () => {
   describe('checkLimit', () => {
@@ -430,5 +430,91 @@ describe('Rate Limiting Configuration', () => {
     const successCount = results.filter(r => r.success).length
 
     expect(successCount).toBeLessThanOrEqual(10)
+  })
+
+  describe('Concurrent Access - Critical Path Coverage', () => {
+    it('should wait for ongoing checkLimit to complete before reset', async () => {
+      const limiter = new RateLimiter({
+        maxRequests: 1,
+        windowMs: 1000,
+      })
+
+      const checkPromise = limiter.checkLimit()
+
+      const resetPromise = limiter.reset()
+
+      await Promise.all([checkPromise, resetPromise])
+
+      const info = limiter.getInfo()
+      expect(info.remainingRequests).toBe(1)
+    })
+
+    it('should wait for ongoing checkLimit to complete in getInfo', async () => {
+      const limiter = new RateLimiter({
+        maxRequests: 1,
+        windowMs: 1000,
+      })
+
+      const checkPromise = limiter.checkLimit()
+
+      const infoPromise = limiter.getInfo()
+
+      await Promise.all([checkPromise, infoPromise])
+
+      const info = limiter.getInfo()
+      expect(info.remainingRequests).toBe(0)
+    })
+
+    it('should handle concurrent checkLimit calls', async () => {
+      const limiter = new RateLimiter({
+        maxRequests: 10,
+        windowMs: 1000,
+      })
+
+      const promises = []
+      for (let i = 0; i < 5; i++) {
+        promises.push(limiter.checkLimit())
+      }
+
+      await expect(Promise.all(promises)).resolves.not.toThrow()
+
+      const info = limiter.getInfo()
+      expect(info.remainingRequests).toBe(5)
+    })
+
+    it('should handle concurrent reset calls', async () => {
+      const limiter = new RateLimiter({
+        maxRequests: 2,
+        windowMs: 1000,
+      })
+
+      const checkPromise = limiter.checkLimit()
+
+      const resetPromises = [limiter.reset(), limiter.reset(), limiter.reset()]
+
+      await Promise.all([checkPromise, ...resetPromises])
+
+      const info = limiter.getInfo()
+      expect(info.remainingRequests).toBe(2)
+    })
+
+    it('should handle concurrent getInfo and reset', async () => {
+      const limiter = new RateLimiter({
+        maxRequests: 3,
+        windowMs: 1000,
+      })
+
+      await limiter.checkLimit()
+      await limiter.checkLimit()
+
+      const checkPromise = limiter.checkLimit()
+
+      const concurrentOps = [limiter.getInfo(), limiter.reset()]
+
+      await Promise.all([checkPromise, ...concurrentOps])
+
+      const info = limiter.getInfo()
+      expect(info.remainingRequests).toBe(3)
+    })
   })
 })
