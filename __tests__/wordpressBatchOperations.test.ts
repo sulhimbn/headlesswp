@@ -286,18 +286,21 @@ describe('WordPress API - Batch Operations and Caching', () => {
       expect(apiClient.get).not.toHaveBeenCalled()
     })
 
-    it('fetches and caches media URL', async () => {
-      const mockMedia = { id: 1, source_url: 'https://example.com/image.jpg' }
-
+    it('fetches and caches media URL with _fields parameter', async () => {
+      const mockMedia = { source_url: 'https://example.com/image.jpg' }
+      
       ;(cacheManager.get as jest.Mock).mockReturnValue(null)
       ;(apiClient.get as jest.Mock).mockResolvedValue({
         data: mockMedia
       })
-
+      
       const result = await wordpressAPI.getMediaUrl(1)
-
+      
       expect(result).toBe('https://example.com/image.jpg')
-      expect(apiClient.get).toHaveBeenCalledWith(getApiUrl('/wp/v2/media/1'), { signal: undefined })
+      expect(apiClient.get).toHaveBeenCalledWith(
+        getApiUrl('/wp/v2/media/1'),
+        { params: { _fields: 'source_url' }, signal: undefined }
+      )
       expect(cacheManager.set).toHaveBeenCalled()
     })
 
@@ -324,22 +327,25 @@ describe('WordPress API - Batch Operations and Caching', () => {
     })
 
     it('supports optional signal parameter', async () => {
-      const mockMedia = { id: 1, source_url: 'https://example.com/image.jpg' }
+      const mockMedia = { source_url: 'https://example.com/image1.jpg' }
       const mockSignal = {} as AbortSignal
-
+      
       ;(cacheManager.get as jest.Mock).mockReturnValue(null)
       ;(apiClient.get as jest.Mock).mockResolvedValue({
         data: mockMedia
       })
-
+      
       await wordpressAPI.getMediaUrl(1, mockSignal)
-
-      expect(apiClient.get).toHaveBeenCalledWith(getApiUrl('/wp/v2/media/1'), { signal: mockSignal })
+      
+      expect(apiClient.get).toHaveBeenCalledWith(
+        getApiUrl('/wp/v2/media/1'),
+        { params: { _fields: 'source_url' }, signal: mockSignal }
+      )
     })
   })
 
   describe('getMediaUrlsBatch', () => {
-    it('returns map of media IDs to URLs', async () => {
+    it('returns map of media IDs to URLs with _fields parameter', async () => {
       const mockMedia = [
         { id: 1, source_url: 'https://example.com/image1.jpg' },
         { id: 2, source_url: 'https://example.com/image2.jpg' }
@@ -355,6 +361,10 @@ describe('WordPress API - Batch Operations and Caching', () => {
       expect(result.size).toBe(2)
       expect(result.get(1)).toBe('https://example.com/image1.jpg')
       expect(result.get(2)).toBe('https://example.com/image2.jpg')
+      expect(apiClient.get).toHaveBeenCalledWith(
+        getApiUrl('/wp/v2/media'),
+        { params: { include: '1,2', _fields: 'id,source_url' }, signal: undefined }
+      )
     })
 
     it('returns null for media ID 0', async () => {
@@ -400,17 +410,17 @@ describe('WordPress API - Batch Operations and Caching', () => {
     it('supports optional signal parameter', async () => {
       const mockMedia = [{ id: 1, source_url: 'https://example.com/image1.jpg' }]
       const mockSignal = {} as AbortSignal
-
+      
       ;(cacheManager.get as jest.Mock).mockReturnValue(null)
       ;(apiClient.get as jest.Mock).mockResolvedValue({
         data: mockMedia
       })
-
+      
       await wordpressAPI.getMediaUrlsBatch([1], mockSignal)
-
+      
       expect(apiClient.get).toHaveBeenCalledWith(
         getApiUrl('/wp/v2/media'),
-        { params: { include: '1' }, signal: mockSignal }
+        { params: { include: '1', _fields: 'id,source_url' }, signal: mockSignal }
       )
     })
 

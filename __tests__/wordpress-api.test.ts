@@ -225,26 +225,32 @@ describe('WordPress REST API', () => {
 
   describe('search', () => {
     it('should cache search results', async () => {
-      const mockResults = [
-        { id: 1, title: { rendered: 'React Tutorial' } },
-        { id: 2, title: { rendered: 'React Hooks Guide' } }
+      const mockSearchResults = [
+        { id: 1, title: { rendered: 'React Tutorial' }, url: '/post-1', type: 'post', subtype: 'post' },
+        { id: 2, title: { rendered: 'React Hooks Guide' }, url: '/post-2', type: 'post', subtype: 'post' }
+      ];
+
+      const mockPosts = [
+        { id: 1, title: { rendered: 'React Tutorial' }, content: { rendered: 'Content 1' }, excerpt: { rendered: 'Excerpt 1' }, slug: 'post-1', date: '2024-01-01', modified: '2024-01-01', author: 1, featured_media: 0, categories: [], tags: [], status: 'publish', type: 'post', link: 'https://example.com/post-1' },
+        { id: 2, title: { rendered: 'React Hooks Guide' }, content: { rendered: 'Content 2' }, excerpt: { rendered: 'Excerpt 2' }, slug: 'post-2', date: '2024-01-02', modified: '2024-01-02', author: 1, featured_media: 0, categories: [], tags: [], status: 'publish', type: 'post', link: 'https://example.com/post-2' }
       ];
 
       (cacheManager.get as jest.Mock).mockReturnValue(null);
-      (apiClient.get as jest.Mock).mockResolvedValue({
-        data: mockResults
-      });
+      (apiClient.get as jest.Mock)
+        .mockResolvedValueOnce({ data: mockSearchResults })
+        .mockResolvedValueOnce({ data: mockPosts[0] })
+        .mockResolvedValueOnce({ data: mockPosts[1] });
 
       const result = await wordpressAPI.search('react');
 
-      expect(result).toEqual(mockResults);
-      expect(apiClient.get).toHaveBeenCalled();
+      expect(result).toEqual(mockPosts);
+      expect(apiClient.get).toHaveBeenCalledTimes(3);
       expect(cacheManager.set).toHaveBeenCalled();
     });
 
     it('should return cached search results', async () => {
       const cachedResults = [
-        { id: 1, title: { rendered: 'Cached Result' } }
+        { id: 1, title: { rendered: 'Cached Result' }, content: { rendered: 'Content' }, excerpt: { rendered: 'Excerpt' }, slug: 'cached', date: '2024-01-01', modified: '2024-01-01', author: 1, featured_media: 0, categories: [], tags: [], status: 'publish', type: 'post', link: 'https://example.com/cached' }
       ];
 
       (cacheManager.get as jest.Mock).mockReturnValue(cachedResults);
@@ -265,16 +271,22 @@ describe('WordPress REST API', () => {
       const result = await wordpressAPI.search('nonexistent');
 
       expect(result).toEqual([]);
-      expect(apiClient.get).toHaveBeenCalled();
+      expect(apiClient.get).toHaveBeenCalledTimes(1);
     });
 
     it('should handle search query with spaces', async () => {
-      const mockResults = [{ id: 1, title: { rendered: 'Test' } }];
+      const mockSearchResults = [
+        { id: 1, title: { rendered: 'Test' }, url: '/test', type: 'post', subtype: 'post' }
+      ];
+
+      const mockPost = {
+        id: 1, title: { rendered: 'Test' }, content: { rendered: 'Content' }, excerpt: { rendered: 'Excerpt' }, slug: 'test', date: '2024-01-01', modified: '2024-01-01', author: 1, featured_media: 0, categories: [], tags: [], status: 'publish', type: 'post', link: 'https://example.com/test'
+      };
 
       (cacheManager.get as jest.Mock).mockReturnValue(null);
-      (apiClient.get as jest.Mock).mockResolvedValue({
-        data: mockResults
-      });
+      (apiClient.get as jest.Mock)
+        .mockResolvedValueOnce({ data: mockSearchResults })
+        .mockResolvedValueOnce({ data: mockPost });
 
       await wordpressAPI.search('react hooks');
 

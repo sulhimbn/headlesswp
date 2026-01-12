@@ -90,7 +90,7 @@ const post = await enhancedPostService.getPostBySlug('my-post-slug');
 - When building API endpoints or services
 - When you need metadata (timestamp, cache hit, retry count)
 - When you want type-safe error handling with `ApiResult<T>`
-- In middleware, server actions, or API routes
+- In proxy, server actions, or API routes
 
 **Characteristics**:
 - All methods return `ApiResult<T>` or `ApiListResult<T>`
@@ -122,7 +122,7 @@ if (isApiResultSuccessful(result)) {
 |-------------|-------------------|
 | Next.js page data fetching | enhancedPostService |
 | Build-time data with fallbacks | enhancedPostService |
-| API route/middleware | standardizedAPI |
+| API route/proxy | standardizedAPI |
 | Direct API with error metadata | standardizedAPI |
 | Raw WordPress data | wordpressAPI |
 | Maximum control over errors | wordpressAPI or standardizedAPI |
@@ -670,7 +670,7 @@ if (isApiResultSuccessful(result)) {
 | Use Case | Recommended API | Why |
 |----------|----------------|-----|
 | Next.js page data fetching | `enhancedPostService` | Validation, caching, enrichment, fallbacks |
-| API route / middleware | `standardizedAPI` | Consistent error format, metadata |
+| API route / proxy | `standardizedAPI` | Consistent error format, metadata |
 | Build-time data with fallbacks | `enhancedPostService` | Graceful degradation |
 | Raw WordPress data | `wordpressAPI` | Maximum control, no processing |
 | Direct API with error metadata | `standardizedAPI` | Type-safe error handling |

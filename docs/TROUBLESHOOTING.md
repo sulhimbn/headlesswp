@@ -204,29 +204,6 @@ npm run dev
 
 ---
 
-### Build shows middleware deprecation warning
-
-**Symptoms**:
-- `npm run build` shows warning: "The 'middleware' file convention is deprecated. Please use 'proxy' instead"
-- Build succeeds but shows deprecation warning
-
-**Diagnosis**:
-```bash
-# Run build to see warnings
-npm run build
-```
-
-**Solutions**:
-
-The middleware file is currently using the deprecated convention. The migration to `proxy` file is planned for a future update. For now:
-
-1. **Ignore the warning** - The middleware functionality works correctly despite the deprecation warning
-2. **Monitor for updates** - Check Next.js documentation and repository for proxy file implementation
-
-**Note**: The middleware provides security features (CSP headers, security headers) that are currently working. The deprecation warning does not affect functionality.
-
----
-
 ### Build fails with TypeScript errors
 
 **Symptoms**:
@@ -838,7 +815,7 @@ curl http://localhost:3000/api/csp-report
 
 3. **Verify CSP headers**:
 ```typescript
-// src/middleware.ts
+// src/proxy.ts
 // Check nonce is being generated and applied
 ```
 
@@ -860,7 +837,7 @@ curl http://localhost:3000/api/csp-report
 
 1. **Add missing sources to CSP**:
 ```typescript
-// src/middleware.ts
+// src/proxy.ts
 const scriptSrc = [
   "'self'",
   "'nonce-{nonce}'",
@@ -882,7 +859,7 @@ const scriptSrc = [
 
 3. **Development mode** - CSP allows 'unsafe-inline' in development:
 ```typescript
-// src/middleware.ts
+// src/proxy.ts
 const isDev = process.env.NODE_ENV === 'development'
 const scriptSrc = isDev
   ? "'self' 'unsafe-inline' 'unsafe-eval'"
