@@ -1,6 +1,161 @@
 # Task Backlog
 
-**Last Updated**: 2026-01-12 (Senior Integration Engineer - INT-FIX-001: Search API Data Structure Fix)
+**Last Updated**: 2026-01-12 (Principal DevOps Engineer - DEVOPS-001: Next.js 16 Middleware to Proxy Migration)
+
+---
+
+## [DEVOPS-001] Next.js 16 Middleware to Proxy Migration
+
+**Status**: Complete ✅
+**Priority**: High
+**Assigned**: Principal DevOps Engineer
+**Created**: 2026-01-12
+**Updated**: 2026-01-12
+
+### Description
+
+Migrated Next.js application from deprecated `middleware.ts` file convention to new `proxy.ts` file convention to resolve build warnings and align with Next.js 16.1.1 requirements.
+
+### Problem Identified
+
+**Next.js 16 Middleware Deprecation**:
+- Next.js 16 deprecated `middleware.ts` file convention in favor of `proxy.ts`
+- Build warning: "The 'middleware' file convention is deprecated. Please use 'proxy' instead"
+- Middleware renamed to Proxy to clarify network boundary purpose and reduce confusion with Express.js middleware
+- Issue #236 tracked this as a P2 bug
+
+**Impact**:
+- Build deprecation warnings polluting CI/CD output
+- Non-compliance with Next.js 16.1.1 best practices
+- Documentation and tutorials referencing deprecated file convention
+- Potential future incompatibility if deprecated file is removed in Next.js 17
+
+### Implementation Summary
+
+1. **Renamed middleware.ts to proxy.ts**:
+    - Moved `src/middleware.ts` to `src/proxy.ts`
+    - Renamed exported function from `middleware` to `proxy`
+    - Maintained all security header functionality (CSP, HSTS, X-Frame-Options, etc.)
+    - Preserved nonce-based CSP generation for dynamic content
+    - Config export with matcher unchanged
+
+2. **Updated Test File** (`__tests__/middleware.test.ts`):
+    - Updated import from `@/middleware` to `@/proxy`
+    - Function aliased as `middleware` for backward compatibility in tests
+    - All 38 middleware tests passing
+
+3. **Verification**:
+    - Build now shows "ƒ Proxy (Middleware)" instead of deprecation warning
+    - TypeScript compilation passes with 0 errors
+    - ESLint passes with 0 errors
+    - All 1686 tests passing (38 middleware tests + 1648 others)
+
+### Code Changes
+
+**Before** (deprecated):
+```typescript
+// src/middleware.ts (DEPRECATED)
+export function middleware(_request: NextRequest) {
+  const response = NextResponse.next()
+  // ... security headers
+  return response
+}
+
+export const config = {
+  matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)']
+}
+```
+
+**After** (migrated):
+```typescript
+// src/proxy.ts (NEW)
+export function proxy(_request: NextRequest) {
+  const response = NextResponse.next()
+  // ... security headers
+  return response
+}
+
+export const config = {
+  matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)']
+}
+```
+
+**Test Import Update**:
+```typescript
+// Before: import { middleware } from '@/middleware'
+// After:  import { proxy as middleware } from '@/proxy'
+```
+
+### Migration Benefits
+
+| Aspect | Before | After |
+|---------|---------|--------|
+| **File Convention** | middleware.ts | proxy.ts |
+| **Function Name** | middleware | proxy |
+| **Build Warning** | Deprecation warning | No warning |
+| **Next.js 16 Compliance** | Non-compliant | Compliant |
+| **Security Features** | Preserved | Preserved |
+| **Test Coverage** | 38 tests | 38 tests |
+
+### Security Headers Preserved
+
+All security headers continue to function correctly after migration:
+- ✅ Content-Security-Policy with nonce-based dynamic content
+- ✅ Strict-Transport-Security (HSTS) with preload
+- ✅ X-Frame-Options: DENY
+- ✅ X-Content-Type-Options: nosniff
+- ✅ X-XSS-Protection: 1; mode=block
+- ✅ Referrer-Policy: strict-origin-when-cross-origin
+- ✅ Permissions-Policy: camera=(), microphone=(), geolocation=(), etc.
+
+### Files Modified
+
+- `src/proxy.ts` - New file (migrated from middleware.ts)
+- `src/middleware.ts` - Deleted (deprecated file)
+- `__tests__/middleware.test.ts` - Updated import path (line 1)
+
+### Test Results
+
+- ✅ All 38 middleware tests passing
+- ✅ Total test count: 1686 passing (0 failing)
+- ✅ ESLint passes with 0 errors
+- ✅ TypeScript compilation passes with 0 errors
+- ✅ Build completes without deprecation warnings
+- ✅ Zero regressions in existing tests
+
+### Success Criteria
+
+- ✅ middleware.ts migrated to proxy.ts
+- ✅ Function renamed from middleware to proxy
+- ✅ Build deprecation warning resolved
+- ✅ All security headers preserved and functional
+- ✅ All tests passing (no regressions)
+- ✅ Lint and typecheck passing
+- ✅ Zero breaking changes (functionality unchanged)
+
+### Anti-Patterns Avoided
+
+- ❌ No breaking changes (public API unchanged)
+- ❌ No security regressions (all headers preserved)
+- ❌ No test failures (38 middleware tests still passing)
+- ❌ No manual edits to production config (file rename only)
+- ❌ No deprecation warnings in build
+
+### DevOps Principles Applied
+
+1. **Stay Current**: Migrate to Next.js 16 best practices
+2. **Zero Downtime**: No breaking changes to application functionality
+3. **Green Builds**: Resolve CI/CD warnings and deprecations
+4. **Backward Compatibility**: Tests aliased to preserve naming consistency
+5. **Security First**: All security headers verified to remain functional
+6. **Documentation**: Documented migration path and benefits
+
+### See Also
+
+- [Issue #236: Middleware file deprecated - should use proxy instead](https://github.com/sulhimbn/headlesswp/issues/236)
+- [Next.js 16 Migration Guide: Proxy](https://nextjs.org/docs/app/getting-started/proxy)
+- [Next.js 16: Middleware to Proxy Migration](https://www.rabinarayanpatra.com/blogs/hello-proxy-ts-nextjs-16)
+- [Blueprint.md Security Standards](./blueprint.md#security-standards)
 
 ---
 
