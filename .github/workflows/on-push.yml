@@ -29,7 +29,7 @@ jobs:
 
     steps:
       - name: Wait in Queue
-        uses: softprops/turnstyle@v2
+        uses: softprops/turnstyle@v3
         with:
           poll-interval-seconds: 30
           same-branch-only: false
