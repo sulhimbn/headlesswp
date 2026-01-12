@@ -709,6 +709,32 @@ describe('API Client Components', () => {
     })
   })
 
+  describe('API Client - Health Check Functions', () => {
+    it('should export checkApiHealth function', () => {
+      const { checkApiHealth } = require('@/lib/api/client')
+      
+      expect(typeof checkApiHealth).toBe('function')
+    })
+
+    it('should export checkApiHealthWithTimeout function', () => {
+      const { checkApiHealthWithTimeout } = require('@/lib/api/client')
+      
+      expect(typeof checkApiHealthWithTimeout).toBe('function')
+    })
+
+    it('should export checkApiHealthRetry function', () => {
+      const { checkApiHealthRetry } = require('@/lib/api/client')
+      
+      expect(typeof checkApiHealthRetry).toBe('function')
+    })
+
+    it('should export getLastHealthCheck function', () => {
+      const { getLastHealthCheck } = require('@/lib/api/client')
+      
+      expect(typeof getLastHealthCheck).toBe('function')
+    })
+  })
+
   describe('Edge Cases', () => {
     it('should handle zero initial delay in retry strategy', () => {
       const retryStrategy = new RetryStrategy({

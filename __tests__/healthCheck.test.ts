@@ -117,7 +117,7 @@ describe('HealthChecker', () => {
       expect(result.latency).toBe(100);
     });
 
-    it.skip('should return healthy result when check completes within timeout - requires WordPress API', async () => {
+    it('should return healthy result when check completes within timeout', async () => {
       const healthChecker = new HealthChecker(mockHttpClient);
       mockHttpClient.get.mockResolvedValue({});
 
@@ -126,7 +126,7 @@ describe('HealthChecker', () => {
       expect(result.healthy).toBe(true);
     });
 
-    it.skip('should use default timeout when not specified - requires WordPress API', async () => {
+    it('should use default timeout when not specified', async () => {
       const healthChecker = new HealthChecker(mockHttpClient);
       mockHttpClient.get.mockResolvedValue({});
 
@@ -137,7 +137,7 @@ describe('HealthChecker', () => {
   });
 
   describe('checkRetry()', () => {
-    it.skip('should return healthy result on first attempt - requires WordPress API', async () => {
+    it('should return healthy result on first attempt', async () => {
       const healthChecker = new HealthChecker(mockHttpClient);
       mockHttpClient.get.mockResolvedValue({});
 
@@ -147,7 +147,7 @@ describe('HealthChecker', () => {
       expect(mockHttpClient.get).toHaveBeenCalledTimes(1);
     });
 
-    it.skip('should retry and return healthy result on second attempt - requires WordPress API', async () => {
+    it('should retry and return healthy result on second attempt', async () => {
       const healthChecker = new HealthChecker(mockHttpClient);
       mockHttpClient.get
         .mockRejectedValueOnce(new Error('Network error'))
@@ -159,7 +159,7 @@ describe('HealthChecker', () => {
       expect(mockHttpClient.get).toHaveBeenCalledTimes(2);
     });
 
-    it.skip('should retry and return healthy result on third attempt - requires WordPress API', async () => {
+    it('should retry and return healthy result on third attempt', async () => {
       const healthChecker = new HealthChecker(mockHttpClient);
       mockHttpClient.get
         .mockRejectedValueOnce(new Error('Network error 1'))
@@ -196,7 +196,7 @@ describe('HealthChecker', () => {
       expect(endTime - startTime).toBeGreaterThanOrEqual(100);
     });
 
-    it.skip('should use default max attempts and delay when not specified - requires WordPress API', async () => {
+    it('should use default max attempts and delay when not specified', async () => {
       const healthChecker = new HealthChecker(mockHttpClient);
       mockHttpClient.get.mockResolvedValue({});
 
@@ -263,7 +263,7 @@ describe('HealthChecker', () => {
       expect(lastCheck).toBeNull();
     });
 
-    it.skip('should return last check result after successful check - requires WordPress API', async () => {
+    it('should return last check result after successful check', async () => {
       const healthChecker = new HealthChecker(mockHttpClient);
       mockHttpClient.get.mockResolvedValue({});
 
@@ -303,7 +303,7 @@ describe('HealthChecker', () => {
   });
 
   describe('Independent HealthChecker instances', () => {
-    it.skip('should create multiple independent health checker instances - requires WordPress API', async () => {
+    it('should create multiple independent health checker instances', async () => {
       const healthChecker1 = new HealthChecker(mockHttpClient);
       const healthChecker2 = new HealthChecker(mockHttpClient);
       mockHttpClient.get.mockResolvedValue({});

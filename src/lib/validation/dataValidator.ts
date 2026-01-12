@@ -165,20 +165,6 @@ class DataValidator {
     }
   }
 
-  private validateNumericField(
-    value: unknown,
-    fieldName: string,
-    errors: ValidationError[],
-    validator: (value: number, fieldName: string) => ValidationError | null
-  ): void {
-    if (!this.isNumber(value)) {
-      errors.push({ field: fieldName, rule: 'type', message: `${fieldName} must be a number`, value });
-    } else {
-      const error = validator(value, fieldName);
-      if (error) errors.push(error);
-    }
-  }
-
   validatePost(data: unknown): ValidationResult<WordPressPost> {
     const errors: ValidationError[] = [];
 
