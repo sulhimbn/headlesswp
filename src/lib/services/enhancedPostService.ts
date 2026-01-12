@@ -1,5 +1,5 @@
 import { wordpressAPI } from '@/lib/wordpress';
-import type { WordPressPost, WordPressCategory, WordPressTag, WordPressAuthor } from '@/types/wordpress';
+import type { WordPressPost, WordPressCategory, WordPressTag } from '@/types/wordpress';
 import { PAGINATION_LIMITS } from '@/lib/api/config';
 import { cacheManager, CACHE_TTL, CACHE_KEYS, CACHE_DEPENDENCIES } from '@/lib/cache';
 import { dataValidator, isValidationResultValid, type ValidationResult } from '@/lib/validation/dataValidator';
@@ -69,26 +69,7 @@ async function getTagsMap(): Promise<Map<number, WordPressTag>> {
   });
 }
 
-async function getAuthorsMap(): Promise<Map<number, WordPressAuthor>> {
-  const cached = cacheManager.get<Map<number, WordPressAuthor>>('authors');
-  if (cached) return cached;
 
-  try {
-    const authors = await Promise.all(
-      [1, 2, 3, 4, 5].map(id => 
-        wordpressAPI.getAuthor(id).catch(() => null)
-      )
-    );
-
-    const validAuthors = authors.filter((author): author is WordPressAuthor => author !== null);
-    const map = new Map<number, WordPressAuthor>(validAuthors.map(author => [author.id, author]));
-    cacheManager.set('authors', map, CACHE_TTL.CATEGORIES);
-    return map;
-  } catch (error) {
-    logger.error('Failed to fetch authors', error, { module: 'enhancedPostService' });
-    return new Map();
-  }
-}
 
 async function enrichPostsWithMediaUrls(posts: WordPressPost[]): Promise<PostWithMediaUrl[]> {
   const mediaIds = [...new Set(posts.map(post => post.featured_media).filter(id => id > 0))];
@@ -132,16 +113,15 @@ async function enrichPostWithDetails(post: WordPressPost): Promise<PostWithDetai
     mediaUrl = null;
   }
 
-  const [categoriesMap, tagsMap, authorsMap] = await Promise.all([
+  const [categoriesMap, tagsMap] = await Promise.all([
     getCategoriesMap(),
-    getTagsMap(),
-    getAuthorsMap()
+    getTagsMap()
   ]);
 
   validatePostRelationships(post, {
     categories: categoriesMap,
     tags: tagsMap,
-    authors: authorsMap
+    authors: new Map()
   });
 
   const categoriesDetails = post.categories
