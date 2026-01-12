@@ -1,4 +1,4 @@
-import { cacheManager, CACHE_TTL, CACHE_KEYS, CACHE_DEPENDENCIES } from '@/lib/cache';
+import { cacheManager, CACHE_TTL, CACHE_KEYS, CACHE_DEPENDENCIES, cacheKeys, cacheDependencies } from '@/lib/cache';
 
 // Mock axios for testing
 jest.mock('axios', () => ({
@@ -646,5 +646,123 @@ describe('CACHE_DEPENDENCIES Helpers', () => {
     expect(CACHE_DEPENDENCIES.author()).toEqual([]);
     expect(CACHE_DEPENDENCIES.categories()).toEqual([]);
     expect(CACHE_DEPENDENCIES.tags()).toEqual([]);
+  });
+});
+
+describe('Cache Key Factory Pattern', () => {
+  describe('cacheKeys (factory-based)', () => {
+    it('should generate posts key with default', () => {
+      expect(cacheKeys.posts()).toBe('posts:default');
+    });
+
+    it('should generate posts key with params', () => {
+      expect(cacheKeys.posts('{"page":1}')).toBe('posts:{"page":1}');
+    });
+
+    it('should generate post key by slug', () => {
+      expect(cacheKeys.post('test-slug')).toBe('post:test-slug');
+    });
+
+    it('should generate post key by id', () => {
+      expect(cacheKeys.postById(123)).toBe('post:123');
+    });
+
+    it('should generate categories key', () => {
+      expect(cacheKeys.categories()).toBe('categories');
+    });
+
+    it('should generate category key', () => {
+      expect(cacheKeys.category('technology')).toBe('category:technology');
+    });
+
+    it('should generate tags key', () => {
+      expect(cacheKeys.tags()).toBe('tags');
+    });
+
+    it('should generate tag key', () => {
+      expect(cacheKeys.tag('javascript')).toBe('tag:javascript');
+    });
+
+    it('should generate media key', () => {
+      expect(cacheKeys.media(123)).toBe('media:123');
+    });
+
+    it('should generate author key', () => {
+      expect(cacheKeys.author(456)).toBe('author:456');
+    });
+
+    it('should generate search key', () => {
+      expect(cacheKeys.search('react hooks')).toBe('search:react hooks');
+    });
+  });
+
+  describe('cacheDependencies (factory-based)', () => {
+    it('should generate post dependencies with categories, tags, and media', () => {
+      const deps = cacheDependencies.post(123, [5, 8], [12, 15], 456);
+      
+      expect(deps).toEqual([
+        'category:5',
+        'category:8',
+        'tag:12',
+        'tag:15',
+        'media:456'
+      ]);
+    });
+
+    it('should generate post dependencies without media', () => {
+      const deps = cacheDependencies.post(123, [5], [12], 0);
+      
+      expect(deps).toEqual([
+        'category:5',
+        'tag:12'
+      ]);
+    });
+
+    it('should generate posts list dependencies with categories and tags', () => {
+      const deps = cacheDependencies.postsList([5, 8], [12, 15]);
+      
+      expect(deps).toEqual([
+        'category:5',
+        'category:8',
+        'tag:12',
+        'tag:15'
+      ]);
+    });
+
+    it('should generate empty posts list dependencies', () => {
+      const deps = cacheDependencies.postsList();
+      
+      expect(deps).toEqual([]);
+    });
+
+    it('should return empty dependencies for leaf nodes', () => {
+      expect(cacheDependencies.media()).toEqual([]);
+      expect(cacheDependencies.author()).toEqual([]);
+      expect(cacheDependencies.categories()).toEqual([]);
+      expect(cacheDependencies.tags()).toEqual([]);
+    });
+  });
+
+  describe('Backward compatibility', () => {
+    it('should maintain CACHE_KEYS compatibility', () => {
+      expect(CACHE_KEYS.posts()).toBe('posts:default');
+      expect(CACHE_KEYS.posts('{"page":1}')).toBe('posts:{"page":1}');
+      expect(CACHE_KEYS.post('test-slug')).toBe('post:test-slug');
+      expect(CACHE_KEYS.postById(123)).toBe('post:123');
+      expect(CACHE_KEYS.categories()).toBe('categories');
+      expect(CACHE_KEYS.search('test query')).toBe('search:test query');
+    });
+
+    it('should maintain CACHE_DEPENDENCIES compatibility', () => {
+      const deps = CACHE_DEPENDENCIES.post(123, [5, 8], [12, 15], 456);
+      
+      expect(deps).toEqual([
+        'category:5',
+        'category:8',
+        'tag:12',
+        'tag:15',
+        'media:456'
+      ]);
+    });
   });
 });

@@ -696,13 +696,48 @@ export const CACHE_TTL = {
 } as const;
 
 /**
- * Cache key generators for consistent key naming.
+ * Cache key factory for type-safe cache key generation.
+ * 
+ * @remarks
+ * Factory pattern ensures consistent key format across the application.
+ * Enforces naming convention: `entity:param` or `entity` for no params.
+ * 
+ * @example
+ * ```typescript
+ * CacheKeyFactory.create('posts', 'default'); // 'posts:default'
+ * CacheKeyFactory.create('categories'); // 'categories'
+ * CacheKeyFactory.createById('post', 123); // 'post:123'
+ * CacheKeyFactory.createBySlug('category', 'news'); // 'category:news'
+ * ```
+ */
+class CacheKeyFactory {
+  private static readonly SEPARATOR = ':'
+
+  static create(
+    entity: 'posts' | 'post' | 'categories' | 'category' | 'tags' | 'tag' | 'media' | 'author' | 'search',
+    params?: string | number
+  ): string {
+    return params ? `${entity}${this.SEPARATOR}${params}` : entity
+  }
+
+  static createById(entity: 'post' | 'media' | 'author', id: number): string {
+    return this.create(entity, id)
+  }
+
+  static createBySlug(entity: 'post' | 'category' | 'tag', slug: string): string {
+    return this.create(entity, slug)
+  }
+}
+
+/**
+ * Cache key generators using factory pattern.
  * 
  * @remarks
  * Use these functions to generate cache keys consistently:
  * - Prevents key typos
  * - Ensures predictable cache structure
  * - Makes debugging easier
+ * - Type-safe key generation
  * 
  * Key format: `{entity}:{identifier}`
  * Examples: 'post:123', 'category:news', 'posts:default'
@@ -710,24 +745,30 @@ export const CACHE_TTL = {
  * @example
  * ```typescript
  * // Good - Use key generators
- * cacheManager.set(CACHE_KEYS.post(123), postData, CACHE_TTL.POST);
+ * cacheManager.set(cacheKeys.post(123), postData, CACHE_TTL.POST);
  * 
  * // Bad - String literals (prone to typos)
  * cacheManager.set('post-123', postData, 60000);
  * ```
  */
-export const CACHE_KEYS = {
-  posts: (params?: string) => `posts:${params || 'default'}`,
-  post: (slug: string) => `post:${slug}`,
-  postById: (id: number) => `post:${id}`,
-  categories: () => 'categories',
-  category: (slug: string) => `category:${slug}`,
-  tags: () => 'tags',
-  tag: (slug: string) => `tag:${slug}`,
-  media: (id: number) => `media:${id}`,
-  author: (id: number) => `author:${id}`,
-  search: (query: string) => `search:${query}`,
-} as const;
+export const cacheKeys = {
+  posts: (params?: string) => CacheKeyFactory.create('posts', params || 'default'),
+  post: (slug: string) => CacheKeyFactory.createBySlug('post', slug),
+  postById: (id: number) => CacheKeyFactory.createById('post', id),
+  categories: () => CacheKeyFactory.create('categories'),
+  category: (slug: string) => CacheKeyFactory.createBySlug('category', slug),
+  tags: () => CacheKeyFactory.create('tags'),
+  tag: (slug: string) => CacheKeyFactory.createBySlug('tag', slug),
+  media: (id: number) => CacheKeyFactory.createById('media', id),
+  author: (id: number) => CacheKeyFactory.createById('author', id),
+  search: (query: string) => CacheKeyFactory.create('search', query),
+}
+
+/**
+ * @deprecated Use cacheKeys instead. This will be removed in a future version.
+ * Cache key generators for consistent key naming (legacy implementation).
+ */
+export const CACHE_KEYS = cacheKeys
 
 /**
  * Dependency helpers for defining cache relationships.
@@ -739,19 +780,19 @@ export const CACHE_KEYS = {
  * Dependency Graph Structure:
  * 
  * ```
- * category-5 (leaf node)
+ * category:5 (leaf node)
  *     ↑
  *     | (dependency)
  *     |
- * post-123
+ * post:123
  *     ↑
  *     | (dependent)
  *     |
  * posts-list:cat5
  * ```
  * 
- * When `category-5` is invalidated, `post-123` is automatically invalidated.
- * When `post-123` is invalidated, `posts-list:cat5` is automatically invalidated.
+ * When `category:5` is invalidated, `post:123` is automatically invalidated.
+ * When `post:123` is invalidated, `posts-list:cat5` is automatically invalidated.
  * 
  * Leaf nodes (no dependencies):
  * - Media: Images/videos don't depend on other entities
@@ -761,20 +802,20 @@ export const CACHE_KEYS = {
  * @example
  * ```typescript
  * // Cache a post with dependencies
- * const dependencies = CACHE_DEPENDENCIES.post(
+ * const dependencies = cacheDependencies.post(
  *   123,                // Post ID
  *   [5, 8],            // Category IDs
  *   [12, 15],           // Tag IDs
  *   456                 // Media ID
  * );
- * cacheManager.set(CACHE_KEYS.post(123), postData, CACHE_TTL.POST, dependencies);
+ * cacheManager.set(cacheKeys.post(123), postData, CACHE_TTL.POST, dependencies);
  * 
  * // Later, when category 5 is updated...
- * cacheManager.invalidate(CACHE_KEYS.category(5));
+ * cacheManager.invalidate(cacheKeys.category('5'));
  * // post:123 is automatically invalidated!
  * ```
  */
-export const CACHE_DEPENDENCIES = {
+export const cacheDependencies = {
   /**
    * Post dependencies: categories, tags, and media.
    * 
@@ -790,15 +831,15 @@ export const CACHE_DEPENDENCIES = {
    * - Tags: Post has tags
    * - Media: Post has featured image
    * 
-   * When any of these change, the post should be invalidated.
+   * When any of these change, post should be invalidated.
    */
-   post: (_postId: number | string, categories: number[], tags: number[], mediaId: number): string[] => {
-     const deps: string[] = [];
-     categories.forEach(catId => deps.push(CACHE_KEYS.category(catId.toString())));
-     tags.forEach(tagId => deps.push(CACHE_KEYS.tag(tagId.toString())));
-     if (mediaId > 0) deps.push(CACHE_KEYS.media(mediaId));
-     return deps;
-   },
+  post: (_postId: number | string, categories: number[], tags: number[], mediaId: number): string[] => {
+    const deps: string[] = []
+    categories.forEach(catId => deps.push(cacheKeys.category(catId.toString())))
+    tags.forEach(tagId => deps.push(cacheKeys.tag(tagId.toString())))
+    if (mediaId > 0) deps.push(cacheKeys.media(mediaId))
+    return deps
+  },
 
   /**
    * Posts list dependencies: categories and tags.
@@ -812,13 +853,13 @@ export const CACHE_DEPENDENCIES = {
    * - Categories: Filtered by category
    * - Tags: Filtered by tag
    * 
-   * When category/tag metadata changes, the list should be invalidated.
+   * When category/tag metadata changes, list should be invalidated.
    */
   postsList: (categories: number[] = [], tags: number[] = []): string[] => {
-    const deps: string[] = [];
-    categories.forEach(catId => deps.push(CACHE_KEYS.category(catId.toString())));
-    tags.forEach(tagId => deps.push(CACHE_KEYS.tag(tagId.toString())));
-    return deps;
+    const deps: string[] = []
+    categories.forEach(catId => deps.push(cacheKeys.category(catId.toString())))
+    tags.forEach(tagId => deps.push(cacheKeys.tag(tagId.toString())))
+    return deps
   },
 
   /**
@@ -828,7 +869,7 @@ export const CACHE_DEPENDENCIES = {
    * 
    * @remarks
    * Media (images, videos) don't depend on other entities.
-   * They are leaf nodes in the dependency graph.
+   * They are leaf nodes in dependency graph.
    * 
    * Other entities depend on media, but media doesn't depend on anything.
    */
@@ -841,7 +882,7 @@ export const CACHE_DEPENDENCIES = {
    * 
    * @remarks
    * Author profiles don't depend on other entities.
-   * They are leaf nodes in the dependency graph.
+   * They are leaf nodes in dependency graph.
    */
   author: () => [],
 
@@ -866,4 +907,10 @@ export const CACHE_DEPENDENCIES = {
    * Posts depend on tags, but tags don't depend on posts.
    */
   tags: () => [],
-} as const;
+}
+
+/**
+ * @deprecated Use cacheDependencies instead. This will be removed in a future version.
+ * Dependency helpers for defining cache relationships (legacy implementation).
+ */
+export const CACHE_DEPENDENCIES = cacheDependencies

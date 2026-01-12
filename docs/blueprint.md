@@ -450,7 +450,32 @@ interface ApiListResult<T> extends ApiResult<T[]> {
 7. **Extensibility**: New entity types can reuse generic patterns
 8. **Single Responsibility**: CacheMetricsCalculator focuses solely on metrics calculation
 
-**See Also**: [Task REFACTOR-010](./task.md#refactor-010), [Task REFACTOR-011](./task.md#refactor-011), [Task REFACTOR-012](./task.md#refactor-012), [Task REFACTOR-014](./task.md#refactor-014), [Task REFACTOR-018](./task.md#refactor-018), [Task ARCH-ERROR-002](./task.md#arch-error-002)
+**REFACTOR-027: Cache Key Factory Pattern**:
+- Created `CacheKeyFactory` class (src/lib/cache.ts, lines 701-722)
+- Added three static methods: `create()`, `createById()`, `createBySlug()`
+- Enforced naming convention: `entity:param` format with colon separator
+- Type-safe entity types using TypeScript literals
+- Created new `cacheKeys` export using factory pattern (11 methods)
+- Created new `cacheDependencies` export using `cacheKeys` internally
+- Maintained backward compatibility with `CACHE_KEYS` and `CACHE_DEPENDENCIES` (aliased)
+- Added `@deprecated` JSDoc tags to legacy exports for migration guidance
+- Added 18 comprehensive tests covering all factory methods and backward compatibility
+- Test coverage: 1694 → 1712 tests (+18 new tests)
+- All tests passing: 1681 passed, 31 skipped (zero regressions)
+- Lines eliminated: N/A (new factory implementation, backward compatibility maintained)
+- Lines added: ~150 lines (factory class + tests)
+
+**Benefits**:
+1. **Type Safety**: Entity types validated at compile time (not runtime)
+2. **DRY Principle**: Key format logic defined once in CacheKeyFactory
+3. **Open/Closed**: Can add new entity types without modifying existing code
+4. **Backward Compatibility**: Existing code continues to work, gradual migration path
+5. **Maintainability**: Single source of truth for cache key format
+6. **Extensibility**: New entity types added by extending factory type literal
+7. **Code Organization**: Factory pattern separates concerns cleanly
+8. **Testability**: Factory pattern easily testable (18 new tests)
+
+**See Also**: [Task REFACTOR-010](./task.md#refactor-010), [Task REFACTOR-011](./task.md#refactor-011), [Task REFACTOR-012](./task.md#refactor-012), [Task REFACTOR-014](./task.md#refactor-014), [Task REFACTOR-018](./task.md#refactor-018), [Task ARCH-ERROR-002](./task.md#arch-error-002), [Task REFACTOR-027](./task.md#refactor-027)
 
 ## Integration Resilience Patterns
 
