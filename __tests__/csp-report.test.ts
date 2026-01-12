@@ -11,7 +11,7 @@ describe('CSP Report API Configuration', () => {
   it('should have middleware file for security headers', () => {
     const fs = require('fs')
     const path = require('path')
-    const middlewarePath = path.join(__dirname, '../src/middleware.ts')
+    const middlewarePath = path.join(__dirname, '../src/proxy.ts')
 
     expect(fs.existsSync(middlewarePath)).toBe(true)
   })
