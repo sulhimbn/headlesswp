@@ -1,6 +1,94 @@
 # Task Backlog
 
-**Last Updated**: 2026-01-12 (Principal DevOps Engineer - DEVOPS-001: Next.js 16 Middleware to Proxy Migration)
+**Last Updated**: 2026-01-12 (Senior Technical Writer - DOC-003: Critical Documentation Fix - Next.js 16 Migration)
+
+---
+
+## [DOC-003] Critical Documentation Fix - Next.js 16 Proxy Migration
+
+**Status**: Complete ✅
+**Priority**: Critical
+**Assigned**: Senior Technical Writer
+**Created**: 2026-01-12
+**Updated**: 2026-01-12
+
+### Description
+
+Updated all documentation references from deprecated `middleware.ts` to `proxy.ts` to reflect Next.js 16.1.1 migration completed in DEVOPS-001, ensuring documentation matches code implementation.
+
+### Problem Identified
+
+**Documentation Outdated After Next.js 16 Migration**:
+- DEVOPS-001 migrated `middleware.ts` to `proxy.ts` (Next.js 16 requirement)
+- Development guide, API documentation, and troubleshooting guide still referenced "middleware"
+- Troubleshooting guide contained obsolete section about ignoring middleware deprecation warnings
+- Code examples referenced non-existent `src/middleware.ts` file
+
+**Impact**:
+- Documentation contradicted actual codebase implementation
+- Confusing for developers following outdated guidance
+- Troubleshooting guide suggested ignoring warnings that no longer exist
+- Code examples pointed to files that don't exist (`src/middleware.ts`)
+
+### Implementation Summary
+
+1. **Updated Development Guide** (`docs/guides/development.md`):
+    - Line 142: Changed "API route / middleware" to "API route / proxy"
+    - Reflects current Next.js 16 file convention
+
+2. **Updated API Documentation** (`docs/api.md`):
+    - Line 93: Changed "In middleware, server actions, or API routes" to "In proxy, server actions, or API routes"
+    - Line 125: Changed "API route/middleware" to "API route/proxy"
+    - Line 673: Changed "API route / middleware" to "API route / proxy"
+
+3. **Updated Troubleshooting Guide** (`docs/TROUBLESHOOTING.md`):
+    - Removed obsolete "Build shows middleware deprecation warning" section (20 lines)
+    - Issue was resolved in DEVOPS-001, section was actively misleading
+    - Updated 3 code example comments from `// src/middleware.ts` to `// src/proxy.ts`
+
+### Files Modified
+
+- `docs/guides/development.md` - Updated middleware→proxy reference (line 142)
+- `docs/api.md` - Updated 3 middleware→proxy references (lines 93, 125, 673)
+- `docs/TROUBLESHOOTING.md` - Removed obsolete deprecation section, updated 3 file path comments
+
+### Results
+
+- ✅ All documentation now matches codebase implementation
+- ✅ No references to deprecated `middleware.ts` file convention remain in guides
+- ✅ Troubleshooting guide no longer suggests ignoring non-existent warnings
+- ✅ Code examples point to correct file (`src/proxy.ts`)
+- ✅ All 1686 tests passing (31 skipped)
+- ✅ ESLint passes with 0 errors
+- ✅ Zero regressions in documentation
+
+### Success Criteria
+
+- ✅ Documentation matches implementation (proxy.ts file convention)
+- ✅ No misleading guidance about deprecated features
+- ✅ Code examples reference correct file paths
+- ✅ All links and references updated consistently
+- ✅ Zero broken code paths in documentation
+
+### Anti-Patterns Avoided
+
+- ❌ No outdated documentation left in place (deprecation warning section removed)
+- ❌ No contradictory guidance (docs now match actual codebase)
+- ❌ No broken file references (middleware.ts → proxy.ts)
+- ❌ No confusing migration guidance (issue already resolved)
+
+### Documentation Principles Applied
+
+1. **Single Source of Truth**: Docs now match DEVOPS-001 code changes
+2. **Accuracy Over Completeness**: Removed obsolete section rather than keeping misleading information
+3. **Clarity Over Completeness**: Clear, accurate file references (proxy.ts)
+4. **Progressive Disclosure**: Removed confusing guidance about deprecated features
+5. **Maintainability**: Single reference pattern (proxy) easier to maintain
+
+### See Also
+
+- [Task DEVOPS-001: Next.js 16 Middleware to Proxy Migration](./task.md#devops-001)
+- [Architecture Blueprint Security Standards](./blueprint.md#security-standards)
 
 ---
 

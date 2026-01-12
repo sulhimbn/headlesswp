@@ -376,7 +376,7 @@ After comprehensive analysis of the codebase architecture, Phase 3 has been comp
 2. **standardizedAPI Serves Different Purpose**:
    - Provides consistent error handling and response format
    - Returns `ApiResult<T>` with metadata
-   - Ideal for API routes, middleware, server actions
+   - Ideal for API routes, proxy, server actions
    - Not a replacement for enhancedPostService business logic
 
 3. **Architecture is Intentional**:
@@ -424,7 +424,7 @@ Use **enhancedPostService** when:
 - Want automatic fallbacks on API failures
 
 Use **standardizedAPI** when:
-- Building API routes or middleware
+- Building API routes or proxy
 - Need consistent error handling
 - Need metadata (cache hit, retry count, timestamps)
 - Want type-safe error handling with `ApiResult<T>`
@@ -441,7 +441,7 @@ Use **wordpressAPI** when:
 | Requirement | Recommended Layer |
 |-------------|-------------------|
 | Next.js page data fetching | enhancedPostService |
-| API route / middleware | standardizedAPI |
+| API route / proxy | standardizedAPI |
 | Build-time data with fallbacks | enhancedPostService |
 | Direct API with error metadata | standardizedAPI |
 | Raw WordPress data | wordpressAPI |

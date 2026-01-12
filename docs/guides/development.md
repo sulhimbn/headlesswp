@@ -139,7 +139,7 @@ Choose the right API layer based on your use case:
 | Use Case | API Layer | Reason |
 |----------|-----------|---------|
 | Next.js page data fetching | `enhancedPostService` | Validation, caching, enrichment, fallbacks |
-| API route / middleware | `standardizedAPI` | Consistent error format, metadata |
+| API route / proxy | `standardizedAPI` | Consistent error format, metadata |
 | Raw WordPress data | `wordpressAPI` | Maximum control, no processing |
 
 ```typescript
