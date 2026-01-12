@@ -11,9 +11,9 @@ const footerLinks = [
   { href: '/berita', label: UI_TEXT.footer.links.sports },
 ]
 
-function FooterComponent() {
-  const currentYear = new Date().getFullYear()
+const currentYear = new Date().getFullYear()
 
+function FooterComponent() {
   return (
     <footer className="bg-[hsl(var(--color-background-dark))] text-[hsl(var(--color-text-muted-dark))] mt-12" role="contentinfo">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
