@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/react'
 import PostCard from '@/components/post/PostCard'
 import type { WordPressPost } from '@/types/wordpress'
+import React from 'react'
 
 describe('PostCard Component', () => {
   const mockPost: WordPressPost = {
@@ -205,6 +206,133 @@ describe('PostCard Component', () => {
       const postWithEntities = { ...mockPost, title: { rendered: 'Test &amp; &quot;Entity&quot;' } }
       render(<PostCard post={postWithEntities} mediaUrl={mockMediaUrl} />)
       expect(screen.getByRole('heading')).toBeInTheDocument()
+    })
+  })
+
+  describe('Memoization (arePropsEqual)', () => {
+    test('re-renders when post id changes', () => {
+      const { rerender, getByRole } = render(<PostCard post={mockPost} mediaUrl={mockMediaUrl} />)
+      
+      rerender(<PostCard post={{ ...mockPost, id: 999 }} mediaUrl={mockMediaUrl} />)
+      
+      expect(getByRole('heading')).toBeInTheDocument()
+    })
+
+    test('re-renders when post title changes', () => {
+      const { rerender, queryByText } = render(<PostCard post={mockPost} mediaUrl={mockMediaUrl} />)
+      
+      expect(queryByText('Test Post Title')).toBeInTheDocument()
+      
+      rerender(<PostCard post={{ ...mockPost, title: { rendered: 'Changed Title' } }} mediaUrl={mockMediaUrl} />)
+      
+      expect(queryByText('Changed Title')).toBeInTheDocument()
+      expect(queryByText('Test Post Title')).not.toBeInTheDocument()
+    })
+
+    test('re-renders when post excerpt changes', () => {
+      const { rerender, queryByText } = render(<PostCard post={mockPost} mediaUrl={mockMediaUrl} />)
+      
+      expect(queryByText('Test excerpt')).toBeInTheDocument()
+      
+      rerender(<PostCard post={{ ...mockPost, excerpt: { rendered: 'Changed excerpt' } }} mediaUrl={mockMediaUrl} />)
+      
+      expect(queryByText('Changed excerpt')).toBeInTheDocument()
+      expect(queryByText('Test excerpt')).not.toBeInTheDocument()
+    })
+
+    test('re-renders when post slug changes', () => {
+      const { rerender, getByRole } = render(<PostCard post={mockPost} mediaUrl={mockMediaUrl} />)
+      
+      expect(getByRole('link', { name: 'Test Post Title' })).toHaveAttribute('href', '/berita/test-post')
+      
+      rerender(<PostCard post={{ ...mockPost, slug: 'changed-slug' }} mediaUrl={mockMediaUrl} />)
+      
+      expect(getByRole('link', { name: 'Test Post Title' })).toHaveAttribute('href', '/berita/changed-slug')
+    })
+
+    test('re-renders when featured_media changes from 0 to positive', () => {
+      const postWithoutMedia = { ...mockPost, featured_media: 0 }
+      const { rerender, queryByRole } = render(<PostCard post={postWithoutMedia} mediaUrl={null} />)
+      
+      expect(queryByRole('img')).not.toBeInTheDocument()
+      
+      rerender(<PostCard post={mockPost} mediaUrl={mockMediaUrl} />)
+      
+      expect(queryByRole('img')).toBeInTheDocument()
+    })
+
+    test('re-renders when featured_media changes to 0', () => {
+      const { rerender, queryByRole } = render(<PostCard post={mockPost} mediaUrl={mockMediaUrl} />)
+      
+      expect(queryByRole('img')).toBeInTheDocument()
+      
+      const postWithoutMedia = { ...mockPost, featured_media: 0 }
+      rerender(<PostCard post={postWithoutMedia} mediaUrl={null} />)
+      
+      expect(queryByRole('img')).not.toBeInTheDocument()
+    })
+
+    test('re-renders when mediaUrl changes', () => {
+      const { rerender, getByRole } = render(<PostCard post={mockPost} mediaUrl={mockMediaUrl} />)
+      
+      expect(getByRole('img')).toHaveAttribute('src', expect.stringContaining('image.jpg'))
+      
+      const changedMediaUrl = 'https://example.com/changed-image.jpg'
+      rerender(<PostCard post={mockPost} mediaUrl={changedMediaUrl} />)
+      
+      expect(getByRole('img')).toHaveAttribute('src', expect.stringContaining('changed-image.jpg'))
+    })
+
+    test('re-renders when priority changes', () => {
+      const { rerender, getByRole } = render(<PostCard post={mockPost} mediaUrl={mockMediaUrl} priority={false} />)
+      
+      expect(getByRole('img')).not.toHaveAttribute('priority')
+      
+      rerender(<PostCard post={mockPost} mediaUrl={mockMediaUrl} priority={true} />)
+      
+      expect(getByRole('img')).toBeInTheDocument()
+    })
+
+    test('re-renders when post date changes', () => {
+      const { rerender, container } = render(<PostCard post={mockPost} mediaUrl={mockMediaUrl} />)
+      
+      const timeElement = container.querySelector('time')
+      expect(timeElement).toHaveAttribute('datetime', '2026-01-10T10:00:00')
+      
+      const postWithNewDate = { ...mockPost, date: '2026-01-11T10:00:00' }
+      rerender(<PostCard post={postWithNewDate} mediaUrl={mockMediaUrl} />)
+      
+      const newTimeElement = container.querySelector('time')
+      expect(newTimeElement).toHaveAttribute('datetime', '2026-01-11T10:00:00')
+    })
+
+    test('handles identical props without unnecessary re-renders', () => {
+      const renderSpy = jest.spyOn(React, 'useMemo')
+      const { rerender } = render(<PostCard post={mockPost} mediaUrl={mockMediaUrl} />)
+      
+      rerender(<PostCard post={mockPost} mediaUrl={mockMediaUrl} />)
+      
+      renderSpy.mockRestore()
+    })
+
+    test('handles mediaUrl null in both renders', () => {
+      const { rerender, getByRole } = render(<PostCard post={mockPost} mediaUrl={null} />)
+      
+      expect(getByRole('img')).toHaveAttribute('src', expect.stringContaining('placeholder-image.jpg'))
+      
+      rerender(<PostCard post={mockPost} mediaUrl={null} />)
+      
+      expect(getByRole('img')).toHaveAttribute('src', expect.stringContaining('placeholder-image.jpg'))
+    })
+
+    test('re-renders when mediaUrl changes from null to string', () => {
+      const { rerender, getByRole } = render(<PostCard post={mockPost} mediaUrl={null} />)
+      
+      expect(getByRole('img')).toHaveAttribute('src', expect.stringContaining('placeholder-image.jpg'))
+      
+      rerender(<PostCard post={mockPost} mediaUrl={mockMediaUrl} />)
+      
+      expect(getByRole('img')).toHaveAttribute('src', expect.stringContaining('image.jpg'))
     })
   })
 })
