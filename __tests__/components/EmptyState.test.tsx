@@ -1,5 +1,6 @@
 import { render, screen } from '@testing-library/react'
 import EmptyState from '@/components/ui/EmptyState'
+import React from 'react'
 
 describe('EmptyState Component', () => {
   describe('Rendering - Basic Cases', () => {
@@ -222,6 +223,151 @@ describe('EmptyState Component', () => {
     test('handles action with special characters in label', () => {
       render(<EmptyState title="No results" action={{ label: 'Go & Explore', href: '/' }} />)
       expect(screen.getByRole('link', { name: 'Go & Explore' })).toBeInTheDocument()
+    })
+  })
+
+  describe('Memoization (arePropsEqual)', () => {
+    test('re-renders when title changes', () => {
+      const { rerender, queryByText } = render(<EmptyState title="Test" />)
+      
+      expect(queryByText('Test')).toBeInTheDocument()
+      
+      rerender(<EmptyState title="Changed" />)
+      
+      expect(queryByText('Changed')).toBeInTheDocument()
+      expect(queryByText('Test')).not.toBeInTheDocument()
+    })
+
+    test('re-renders when description changes', () => {
+      const TestIcon = () => <svg data-testid="test-icon" />
+      const { rerender, queryByText } = render(<EmptyState title="Test" description="Desc 1" />)
+      
+      expect(queryByText('Desc 1')).toBeInTheDocument()
+      
+      rerender(<EmptyState title="Test" description="Desc 2" />)
+      
+      expect(queryByText('Desc 2')).toBeInTheDocument()
+      expect(queryByText('Desc 1')).not.toBeInTheDocument()
+    })
+
+    test('re-renders when icon changes', () => {
+      const Icon1 = () => <svg data-testid="icon1" />
+      const Icon2 = () => <svg data-testid="icon2" />
+      const { rerender, queryByTestId } = render(<EmptyState title="Test" icon={<Icon1 />} />)
+      
+      expect(queryByTestId('icon1')).toBeInTheDocument()
+      
+      rerender(<EmptyState title="Test" icon={<Icon2 />} />)
+      
+      expect(queryByTestId('icon2')).toBeInTheDocument()
+      expect(queryByTestId('icon1')).not.toBeInTheDocument()
+    })
+
+    test('re-renders when action label changes', () => {
+      const { rerender, queryByRole } = render(<EmptyState title="Test" action={{ label: 'Go', href: '/' }} />)
+      
+      expect(queryByRole('link', { name: 'Go' })).toBeInTheDocument()
+      
+      rerender(<EmptyState title="Test" action={{ label: 'Stay', href: '/' }} />)
+      
+      expect(queryByRole('link', { name: 'Stay' })).toBeInTheDocument()
+      expect(queryByRole('link', { name: 'Go' })).not.toBeInTheDocument()
+    })
+
+    test('re-renders when action href changes', () => {
+      const { rerender, queryByRole } = render(<EmptyState title="Test" action={{ label: 'Go', href: '/home' }} />)
+      
+      expect(queryByRole('link', { name: 'Go' })).toHaveAttribute('href', '/home')
+      
+      rerender(<EmptyState title="Test" action={{ label: 'Go', href: '/away' }} />)
+      
+      expect(queryByRole('link', { name: 'Go' })).toHaveAttribute('href', '/away')
+    })
+
+    test('re-renders when className changes', () => {
+      const { rerender, container } = render(<EmptyState title="Test" className="class1" />)
+      
+      const statusElement = container.querySelector('[role="status"]')
+      expect(statusElement).toHaveClass('class1')
+      
+      rerender(<EmptyState title="Test" className="class2" />)
+      
+      expect(statusElement).toHaveClass('class2')
+      expect(statusElement).not.toHaveClass('class1')
+    })
+
+    test('handles minimal props without description', () => {
+      const { rerender, queryByText } = render(<EmptyState title="Test" />)
+      
+      expect(queryByText('Test')).toBeInTheDocument()
+      
+      rerender(<EmptyState title="Test" />)
+      
+      expect(queryByText('Test')).toBeInTheDocument()
+    })
+
+    test('re-renders when action is removed', () => {
+      const { rerender, queryByRole } = render(<EmptyState title="Test" action={{ label: 'Go', href: '/' }} />)
+      
+      expect(queryByRole('link')).toBeInTheDocument()
+      
+      rerender(<EmptyState title="Test" />)
+      
+      expect(queryByRole('link')).not.toBeInTheDocument()
+    })
+
+    test('re-renders when action is added', () => {
+      const { rerender, queryByRole } = render(<EmptyState title="Test" />)
+      
+      expect(queryByRole('link')).not.toBeInTheDocument()
+      
+      rerender(<EmptyState title="Test" action={{ label: 'Go', href: '/' }} />)
+      
+      expect(queryByRole('link')).toBeInTheDocument()
+    })
+
+    test('re-renders when icon is removed', () => {
+      const TestIcon = () => <svg data-testid="test-icon" />
+      const { rerender, container, queryByTestId } = render(<EmptyState title="Test" icon={<TestIcon />} />)
+      
+      expect(queryByTestId('test-icon')).toBeInTheDocument()
+      expect(container.querySelector('[aria-hidden="true"]')).toBeInTheDocument()
+      
+      rerender(<EmptyState title="Test" />)
+      
+      expect(queryByTestId('test-icon')).not.toBeInTheDocument()
+      expect(container.querySelector('[aria-hidden="true"]')).not.toBeInTheDocument()
+    })
+
+    test('re-renders when icon is added', () => {
+      const TestIcon = () => <svg data-testid="test-icon" />
+      const { rerender, container, queryByTestId } = render(<EmptyState title="Test" />)
+      
+      expect(queryByTestId('test-icon')).not.toBeInTheDocument()
+      expect(container.querySelector('[aria-hidden="true"]')).not.toBeInTheDocument()
+      
+      rerender(<EmptyState title="Test" icon={<TestIcon />} />)
+      
+      expect(queryByTestId('test-icon')).toBeInTheDocument()
+      expect(container.querySelector('[aria-hidden="true"]')).toBeInTheDocument()
+    })
+
+    test('handles all props identical without unnecessary re-renders', () => {
+      const TestIcon = () => <svg />
+      const props = { 
+        title: 'No results', 
+        description: 'Try again', 
+        icon: <TestIcon />, 
+        action: { label: 'Go Home', href: '/' },
+        className: 'test-class'
+      }
+      const { rerender } = render(<EmptyState {...props} />)
+      
+      rerender(<EmptyState {...props} />)
+      
+      expect(screen.getByText('No results')).toBeInTheDocument()
+      expect(screen.getByText('Try again')).toBeInTheDocument()
+      expect(screen.getByRole('link', { name: 'Go Home' })).toBeInTheDocument()
     })
   })
 })

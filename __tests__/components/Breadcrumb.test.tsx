@@ -1,5 +1,6 @@
 import { render, screen } from '@testing-library/react'
 import Breadcrumb from '@/components/ui/Breadcrumb'
+import { renderHook } from '@testing-library/react'
 
 describe('Breadcrumb Component', () => {
   describe('Rendering - Basic Cases', () => {
@@ -269,6 +270,93 @@ describe('Breadcrumb Component', () => {
       render(<Breadcrumb items={[]} />)
       const homeLink = screen.getByRole('link', { name: 'Beranda' })
       expect(homeLink).toHaveClass('text-sm')
+    })
+  })
+
+  describe('Memoization (arePropsEqual)', () => {
+    test('re-renders when items length changes', () => {
+      const { rerender, container } = render(<Breadcrumb items={[{ label: 'Test', href: '/test' }]} />)
+      const initialLinks = container.querySelectorAll('li')
+      
+      rerender(<Breadcrumb items={[]} />)
+      
+      const newLinks = container.querySelectorAll('li')
+      expect(newLinks.length).not.toBe(initialLinks.length)
+    })
+
+    test('re-renders when item label changes', () => {
+      const { rerender, queryByText } = render(<Breadcrumb items={[{ label: 'Test', href: '/test' }]} />)
+      
+      expect(queryByText('Test')).toBeInTheDocument()
+      
+      rerender(<Breadcrumb items={[{ label: 'Changed', href: '/test' }]} />)
+      
+      expect(queryByText('Changed')).toBeInTheDocument()
+      expect(queryByText('Test')).not.toBeInTheDocument()
+    })
+
+    test('re-renders when item href changes', () => {
+      const { rerender, getByRole } = render(<Breadcrumb items={[{ label: 'Test', href: '/test' }, { label: 'Test 2', href: '/test2' }]} />)
+      
+      expect(getByRole('link', { name: 'Test' })).toHaveAttribute('href', '/test')
+      
+      rerender(<Breadcrumb items={[{ label: 'Test', href: '/changed' }, { label: 'Test 2', href: '/test2' }]} />)
+      
+      expect(getByRole('link', { name: 'Test' })).toHaveAttribute('href', '/changed')
+    })
+
+    test('re-renders when multiple items change', () => {
+      const { rerender, queryByText, queryAllByRole } = render(
+        <Breadcrumb
+          items={[
+            { label: 'Test 1', href: '/test1' },
+            { label: 'Test 2', href: '/test2' }
+          ]}
+        />
+      )
+      
+      expect(queryByText('Test 1')).toBeInTheDocument()
+      expect(queryByText('Test 2')).toBeInTheDocument()
+      
+      rerender(
+        <Breadcrumb
+          items={[
+            { label: 'Changed 1', href: '/changed1' },
+            { label: 'Changed 2', href: '/changed2' }
+          ]}
+        />
+      )
+      
+      expect(queryByText('Changed 1')).toBeInTheDocument()
+      expect(queryByText('Changed 2')).toBeInTheDocument()
+      expect(queryByText('Test 1')).not.toBeInTheDocument()
+      expect(queryByText('Test 2')).not.toBeInTheDocument()
+    })
+
+    test('handles many identical items without unnecessary re-renders', () => {
+      const items = [
+        { label: 'Level 1', href: '/l1' },
+        { label: 'Level 2', href: '/l1/l2' },
+        { label: 'Level 3', href: '/l1/l2/l3' },
+        { label: 'Level 4', href: '/l1/l2/l3/l4' }
+      ]
+      const { rerender, getAllByRole } = render(<Breadcrumb items={items} />)
+      const initialLinks = getAllByRole('link')
+      
+      rerender(<Breadcrumb items={items} />)
+      
+      const newLinks = getAllByRole('link')
+      expect(newLinks.length).toBe(initialLinks.length)
+    })
+
+    test('handles empty items array', () => {
+      const { rerender, getAllByRole } = render(<Breadcrumb items={[]} />)
+      const initialLinks = getAllByRole('link')
+      
+      rerender(<Breadcrumb items={[]} />)
+      
+      const newLinks = getAllByRole('link')
+      expect(newLinks.length).toBe(initialLinks.length)
     })
   })
 })
