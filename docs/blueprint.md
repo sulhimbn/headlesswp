@@ -1,7 +1,7 @@
 # Architecture Blueprint
 
 **Version**: 1.0.0
-**Last Updated**: 2026-01-12 (Principal Software Architect - ARCH-UNUSED-001: Remove Unused Author Fetching Complete)
+**Last Updated**: 2026-01-13 (Principal Software Architect - REFACTOR-028: CacheManager Cleanup Extraction Complete)
 
 ## System Architecture
 
@@ -424,6 +424,17 @@ interface ApiListResult<T> extends ApiResult<T[]> {
 - Lines eliminated: ~43 (CacheManager reduced from 925 to 882 lines)
 - Clear separation of concerns: CacheMetricsCalculator handles metrics, CacheManager handles storage
 
+**REFACTOR-028: CacheManager Cleanup Extraction**:
+- Created `CacheCleanup` class (src/lib/cache/cacheCleanup.ts, 90 lines)
+- Extracted cleanup methods: cleanup(), cleanupOrphanDependencies(), cleanupAll()
+- Added `cleanupAll()` method for optimized single-pass combined cleanup (O(n) vs O(2n))
+- Updated CacheManager to delegate cleanup operations to CacheCleanup
+- Exported CacheCleanup class and CleanupResult type for external use
+- Lines eliminated: 32 (CacheManager reduced from 916 to 884 lines)
+- Added 325 comprehensive tests for cleanup operations (18 tests)
+- Clear separation of concerns: CacheCleanup handles maintenance, CacheManager handles storage
+- Performance improvement: Combined cleanup in single iteration
+
 **REFACTOR-024: Extract Duplicate Validation Logic**:
 - Created 7 helper methods in DataValidator class for common validation patterns
 - Refactored 5 validation methods (validatePost, validateCategory, validateTag, validateMedia, validateAuthor)
@@ -519,7 +530,7 @@ interface ApiListResult<T> extends ApiResult<T[]> {
 4. **Single Responsibility**: Service layer doesn't fetch unused data
 5. **Simplicity**: Removed complexity without affecting functionality
 
-**See Also**: [Task REFACTOR-010](./task.md#refactor-010), [Task REFACTOR-011](./task.md#refactor-011), [Task REFACTOR-012](./task.md#refactor-012), [Task REFACTOR-014](./task.md#refactor-014), [Task REFACTOR-018](./task.md#refactor-018), [Task ARCH-ERROR-002](./task.md#arch-error-002), [Task REFACTOR-026](./task.md#refactor-026), [Task REFACTOR-027](./task.md#refactor-027), [Task ARCH-UNUSED-001](./task.md#arch-unused-001)
+**See Also**: [Task REFACTOR-010](./task.md#refactor-010), [Task REFACTOR-011](./task.md#refactor-011), [Task REFACTOR-012](./task.md#refactor-012), [Task REFACTOR-014](./task.md#refactor-014), [Task REFACTOR-018](./task.md#refactor-018), [Task ARCH-ERROR-002](./task.md#arch-error-002), [Task REFACTOR-026](./task.md#refactor-026), [Task REFACTOR-027](./task.md#refactor-027), [Task ARCH-UNUSED-001](./task.md#arch-unused-001), [Task REFACTOR-028](./task.md#refactor-028)
 
 ## Integration Resilience Patterns
 
