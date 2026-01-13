@@ -412,7 +412,7 @@ API_TIMEOUT = 30000ms (30s)  ✅ Reasonable for WordPress API
 ## 8. Security Integration
 
 ### Security Headers
-**Implementation**: `src/middleware.ts`
+**Implementation**: `src/proxy.ts`
 
 **Security Headers**:
 - ✅ Strict-Transport-Security (HSTS): max-age=31536000; includeSubDomains; preload
