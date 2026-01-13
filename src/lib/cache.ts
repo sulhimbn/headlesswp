@@ -1,5 +1,6 @@
 import { CACHE_TIMES } from '@/lib/api/config';
 import { CacheMetricsCalculator } from './cache/cacheMetricsCalculator';
+import { CacheCleanup } from './cache/cacheCleanup';
 import type { ICacheManager } from '@/lib/api/ICacheManager';
 
 /**
@@ -86,6 +87,7 @@ class CacheManager implements ICacheManager {
     dependencyRegistrations: 0,
   };
   private metricsCalculator = new CacheMetricsCalculator();
+  private cacheCleanup = new CacheCleanup(this.cache);
 
   /**
     * Get data from cache by key.
@@ -394,25 +396,10 @@ class CacheManager implements ICacheManager {
     * setInterval(() => {
     *   const cleaned = cacheManager.cleanup();
     * }, 3600000);
-    * ```
-   */
+     * ```
+    */
   cleanup(): number {
-    let cleaned = 0;
-    const now = Date.now();
-
-    const expiredKeys: string[] = [];
-    this.cache.forEach((entry, key) => {
-      if (now - entry.timestamp > entry.ttl) {
-        expiredKeys.push(key);
-      }
-    });
-
-    expiredKeys.forEach(key => {
-      this.invalidate(key);
-      cleaned++;
-    });
-
-    return cleaned;
+    return this.cacheCleanup.cleanup();
   }
 
   /**
@@ -440,31 +427,10 @@ class CacheManager implements ICacheManager {
     * ```typescript
     * // Clean up orphaned dependencies periodically
     * const cleaned = cacheManager.cleanupOrphanDependencies();
-    * ```
-   */
+     * ```
+    */
   cleanupOrphanDependencies(): number {
-    let cleaned = 0;
-
-    this.cache.forEach((entry, _key) => {
-      if (entry.dependencies) {
-        const validDeps: string[] = [];
-        entry.dependencies.forEach(depKey => {
-          // Check if dependency still exists in cache
-          if (!this.cache.has(depKey)) {
-            cleaned++;
-          } else {
-            validDeps.push(depKey);
-          }
-        });
-        
-        // Update dependencies to only valid ones
-        if (validDeps.length !== entry.dependencies.size) {
-          entry.dependencies = new Set(validDeps);
-        }
-      }
-    });
-
-    return cleaned;
+    return this.cacheCleanup.cleanupOrphanDependencies();
   }
 
   /**
@@ -913,4 +879,6 @@ export const cacheDependencies = {
  * @deprecated Use cacheDependencies instead. This will be removed in a future version.
  * Dependency helpers for defining cache relationships (legacy implementation).
  */
-export const CACHE_DEPENDENCIES = cacheDependencies
+export const CACHE_DEPENDENCIES = cacheDependencies;
+
+export { CacheCleanup };
