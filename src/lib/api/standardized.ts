@@ -121,7 +121,7 @@ export async function searchPosts(query: string): Promise<ApiListResult<WordPres
 
 export async function getCategoryById(id: number): Promise<ApiResult<WordPressCategory>> {
   return fetchAndHandleNotFound(
-    () => wordpressAPI.getCategory(id.toString()),
+    () => wordpressAPI.getCategoryById(id),
     'Category',
     id,
     `/wp/v2/categories/${id}`
@@ -148,7 +148,7 @@ export async function getAllCategories(): Promise<ApiListResult<WordPressCategor
 
 export async function getTagById(id: number): Promise<ApiResult<WordPressTag>> {
   return fetchAndHandleNotFound(
-    () => wordpressAPI.getTag(id.toString()),
+    () => wordpressAPI.getTagById(id),
     'Tag',
     id,
     `/wp/v2/tags/${id}`

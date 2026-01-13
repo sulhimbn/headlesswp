@@ -24,9 +24,11 @@ export interface IWordPressAPI {
   search(query: string, signal?: AbortSignal): Promise<WordPressPost[]>;
   
   getCategory(slug: string, signal?: AbortSignal): Promise<WordPressCategory | null>;
+  getCategoryById(id: number, signal?: AbortSignal): Promise<WordPressCategory | null>;
   getCategories(signal?: AbortSignal): Promise<WordPressCategory[]>;
 
   getTag(slug: string, signal?: AbortSignal): Promise<WordPressTag | null>;
+  getTagById(id: number, signal?: AbortSignal): Promise<WordPressTag | null>;
   getTags(signal?: AbortSignal): Promise<WordPressTag[]>;
   
   getMedia(id: number, signal?: AbortSignal): Promise<WordPressMedia>;

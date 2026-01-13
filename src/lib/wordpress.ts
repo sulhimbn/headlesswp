@@ -57,14 +57,29 @@ export const wordpressAPI: IWordPressAPI = {
   },
 
   getCategory: async (slug: string, signal?: AbortSignal): Promise<WordPressCategory | null> => {
-    const response = await apiClient.get(getApiUrl('/wp/v2/categories'), { 
-      params: { 
-        slug, 
-        _fields: 'id,name,slug' 
-      }, 
-      signal 
+    const response = await apiClient.get(getApiUrl('/wp/v2/categories'), {
+      params: {
+        slug,
+        _fields: 'id,name,slug'
+      },
+      signal
     });
     return response.data[0] || null;
+  },
+
+  getCategoryById: async (id: number, signal?: AbortSignal): Promise<WordPressCategory | null> => {
+    try {
+      const response = await apiClient.get(getApiUrl(`/wp/v2/categories/${id}`), {
+        params: {
+          _fields: 'id,name,slug'
+        },
+        signal
+      });
+      return response.data;
+    } catch (error) {
+      logger.warn('Failed to fetch category by ID', error, { module: 'wordpressAPI', categoryId: id });
+      return null;
+    }
   },
 
   // Tags
@@ -77,14 +92,29 @@ export const wordpressAPI: IWordPressAPI = {
   },
 
   getTag: async (slug: string, signal?: AbortSignal): Promise<WordPressTag | null> => {
-    const response = await apiClient.get(getApiUrl('/wp/v2/tags'), { 
-      params: { 
-        slug, 
-        _fields: 'id,name' 
-      }, 
-      signal 
+    const response = await apiClient.get(getApiUrl('/wp/v2/tags'), {
+      params: {
+        slug,
+        _fields: 'id,name'
+      },
+      signal
     });
     return response.data[0] || null;
+  },
+
+  getTagById: async (id: number, signal?: AbortSignal): Promise<WordPressTag | null> => {
+    try {
+      const response = await apiClient.get(getApiUrl(`/wp/v2/tags/${id}`), {
+        params: {
+          _fields: 'id,name'
+        },
+        signal
+      });
+      return response.data;
+    } catch (error) {
+      logger.warn('Failed to fetch tag by ID', error, { module: 'wordpressAPI', tagId: id });
+      return null;
+    }
   },
 
   // Media
