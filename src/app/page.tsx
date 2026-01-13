@@ -18,8 +18,11 @@ export default async function HomePage() {
     <div className="min-h-screen bg-[hsl(var(--color-background))]">
       <Header />
 
-      <main id="main-content" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <section className="mb-12">
+      <main id="main-content" aria-labelledby="page-heading" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <h1 id="page-heading" className="sr-only">
+          {UI_TEXT.homePage.featuredHeading}
+        </h1>
+        <section className="mb-12" aria-labelledby="featured">
           <SectionHeading id="featured" className="mb-6">
             {UI_TEXT.homePage.featuredHeading}
           </SectionHeading>
@@ -30,7 +33,7 @@ export default async function HomePage() {
           </div>
         </section>
 
-        <section>
+        <section aria-labelledby="latest">
           <SectionHeading id="latest" className="mb-6">
             {UI_TEXT.homePage.latestHeading}
           </SectionHeading>

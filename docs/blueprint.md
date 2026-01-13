@@ -894,7 +894,7 @@ swagger-cli validate openapi.yaml
 ## Security Standards
 
 1. **XSS Protection**: DOMPurify on all user-generated content with centralized `sanitizeHTML()` utility
-2. **CSP**: Nonce-based Content Security Policy headers configured in middleware.ts
+2. **CSP**: Nonce-based Content Security Policy headers configured in proxy.ts
    - Development: Allows `'unsafe-inline'` and `'unsafe-eval'` for hot reload
    - Production: Removes `'unsafe-inline'` and `'unsafe-eval'` for maximum security
    - Report-uri endpoint for violation monitoring in development
@@ -914,7 +914,7 @@ swagger-cli validate openapi.yaml
 ### Security Configuration Details
 
 **Content Security Policy (CSP)**:
-- Configuration location: `src/middleware.ts`
+- Configuration location: `src/proxy.ts`
 - Implementation: Nonce-based CSP generated per request
 - Script sources: Self, nonce, WordPress domains (mitrabantennews.com, www.mitrabantennews.com)
 - Style sources: Self, nonce, WordPress domains
@@ -1459,8 +1459,8 @@ src/
 │   │   └── fallbackPosts.ts  # Fallback post data
 │   ├── wordpress.ts  # WordPress API wrapper with batch operations
 │   ├── cache.ts      # In-memory cache manager with TTL & dependency tracking
+│   ├── proxy.ts      # Next.js proxy for CSP & security
 │   └── csp-utils.ts  # CSP utility functions
-├── middleware.ts     # Next.js middleware for CSP & security
 └── types/            # TypeScript definitions
     └── wordpress.ts  # WordPress type definitions
 ```

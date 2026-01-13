@@ -28,7 +28,10 @@ export default async function CariPage({ searchParams }: SearchPageProps) {
     <div className="min-h-screen bg-[hsl(var(--color-background))]">
       <Header />
 
-      <main id="main-content" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main id="main-content" aria-labelledby="page-heading" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <h1 id="page-heading" className="sr-only">
+          {query ? UI_TEXT.searchPage.heading(query) : UI_TEXT.searchPage.emptySearch}
+        </h1>
         {!query ? (
           <EmptyState
             title={UI_TEXT.searchPage.emptySearch}
@@ -37,7 +40,7 @@ export default async function CariPage({ searchParams }: SearchPageProps) {
           />
         ) : searchResults.length > 0 ? (
           <>
-            <SectionHeading className="mb-6">
+            <SectionHeading id="search-results" className="mb-6">
               {UI_TEXT.searchPage.heading(query)}
             </SectionHeading>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

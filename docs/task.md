@@ -1,6 +1,94 @@
 # Task Backlog
 
-**Last Updated**: 2026-01-13 (Senior Integration Engineer - INT-FIX-002: Category/Tag By ID API Fix Complete)
+**Last Updated**: 2026-01-13 (Senior Technical Writer - DOC-004: Fix Remaining middleware.ts References)
+
+---
+
+## [DOC-004] Fix Remaining middleware.ts References in Documentation
+
+**Status**: Complete ✅
+**Priority**: Critical
+**Assigned**: Senior Technical Writer
+**Created**: 2026-01-13
+**Updated**: 2026-01-13
+
+### Description
+
+Fixed outdated documentation references to deprecated `middleware.ts` file that should reference `proxy.ts` per Next.js 16 migration completed in DEVOPS-001.
+
+### Problem Identified
+
+**Remaining middleware.ts References After DOC-003**:
+- `docs/blueprint.md` line 897: "CSP headers configured in middleware.ts"
+- `docs/blueprint.md` line 917: "Configuration location: `src/middleware.ts`"
+- `docs/blueprint.md` line 1463: Directory structure shows "middleware.ts"
+- `docs/INTEGRATION_VALIDATION.md` line 415: "Implementation: `src/middleware.ts`"
+
+**Impact**:
+- Documentation contradicts actual codebase implementation (proxy.ts exists, not middleware.ts)
+- Confusing for developers following outdated guidance
+- Directory structure documentation shows non-existent file
+- Security configuration documentation points to wrong file
+
+### Implementation Summary
+
+1. **Updated `docs/blueprint.md`**:
+    - Line 897: Changed "CSP headers configured in middleware.ts" to "CSP headers configured in proxy.ts"
+    - Line 917: Changed "Configuration location: `src/middleware.ts`" to "Configuration location: `src/proxy.ts`"
+    - Line 1463: Updated directory structure to show `proxy.ts` instead of `middleware.ts`
+
+2. **Updated `docs/INTEGRATION_VALIDATION.md`**:
+    - Line 415: Changed "Implementation: `src/middleware.ts`" to "Implementation: `src/proxy.ts`"
+
+### Files Modified
+
+- `docs/blueprint.md` - Updated 3 middleware.ts references to proxy.ts
+- `docs/INTEGRATION_VALIDATION.md` - Updated 1 middleware.ts reference to proxy.ts
+
+### Verification
+
+- ✅ All `middleware.ts` references removed from `docs/blueprint.md`
+- ✅ All `middleware.ts` references removed from `docs/INTEGRATION_VALIDATION.md`
+- ✅ ESLint passes with 0 errors
+- ✅ TypeScript compilation passes with 0 errors
+- ✅ proxy.ts file confirmed to exist at `src/proxy.ts`
+
+### Results
+
+- ✅ All documentation now matches codebase implementation
+- ✅ Security configuration documentation points to correct file (proxy.ts)
+- ✅ Directory structure documentation shows correct file name
+- ✅ Zero remaining middleware.ts references in documentation files
+- ✅ Documentation is consistent with Next.js 16 proxy.ts file convention
+
+### Success Criteria
+
+- ✅ No middleware.ts references in blueprint.md
+- ✅ No middleware.ts references in INTEGRATION_VALIDATION.md
+- ✅ Documentation matches codebase (proxy.ts file convention)
+- ✅ Directory structure documentation accurate
+- ✅ Security configuration documentation accurate
+- ✅ All references updated consistently
+
+### Anti-Patterns Avoided
+
+- ❌ No outdated documentation left in place
+- ❌ No contradictory guidance (docs now match actual codebase)
+- ❌ No broken file references (middleware.ts → proxy.ts)
+- ❌ No confusing migration guidance (issue already resolved)
+
+### Documentation Principles Applied
+
+1. **Single Source of Truth**: Docs now match DEVOPS-001 code changes
+2. **Accuracy Over Completeness**: All references updated consistently
+3. **Clarity Over Completeness**: Clear, accurate file references (proxy.ts)
+4. **Maintainability**: Single reference pattern (proxy) easier to maintain
+
+### See Also
+
+- [Task DEVOPS-001: Next.js 16 Middleware to Proxy Migration](#devops-001)
+- [Task DOC-003: Critical Documentation Fix - Next.js 16 Proxy Migration](#doc-003)
+- [Architecture Blueprint Security Standards](./blueprint.md#security-standards)
 
 ---
 
