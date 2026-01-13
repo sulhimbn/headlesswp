@@ -399,7 +399,9 @@ class CacheManager implements ICacheManager {
      * ```
     */
   cleanup(): number {
-    return this.cacheCleanup.cleanup();
+    const cleaned = this.cacheCleanup.cleanup();
+    this.stats.deletes += cleaned;
+    return cleaned;
   }
 
   /**
