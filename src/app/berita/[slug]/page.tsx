@@ -38,9 +38,12 @@ export default async function PostPage({ params }: { params: { slug: string } })
     <div className="min-h-screen bg-[hsl(var(--color-background))]">
       <Header />
 
-<main id="main-content" className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+<main id="main-content" aria-labelledby="page-heading" className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <h1 id="page-heading" className="sr-only">
+          {post.title.rendered}
+        </h1>
         <Breadcrumb items={breadcrumbItems} />
-        <article className="bg-[hsl(var(--color-surface))] rounded-[var(--radius-lg)] shadow-[var(--shadow-lg)] overflow-hidden mt-4">
+        <article aria-labelledby="article-heading" className="bg-[hsl(var(--color-surface))] rounded-[var(--radius-lg)] shadow-[var(--shadow-lg)] overflow-hidden mt-4">
           {post.featured_media > 0 && (
             <div className="relative h-64 sm:h-80 md:h-96 lg:h-[450px]">
               <Image
@@ -51,7 +54,7 @@ export default async function PostPage({ params }: { params: { slug: string } })
                 priority
                 sizes="(max-width: 640px) 100vw, (max-width: 1024px) 90vw, 100vw"
                 placeholder="blur"
-                blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwC9A//2Q=="
+                blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwC9A//2Q=="
               />
             </div>
           )}
@@ -71,7 +74,7 @@ export default async function PostPage({ params }: { params: { slug: string } })
               )}
             </div>
 
-            <h1 className="text-4xl font-bold text-[hsl(var(--color-text-primary))] mb-6">
+            <h1 id="article-heading" className="text-4xl font-bold text-[hsl(var(--color-text-primary))] mb-6">
               {post.title.rendered}
             </h1>
 
