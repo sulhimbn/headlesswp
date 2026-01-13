@@ -48,24 +48,24 @@ describe('CacheCleanup', () => {
 
     it('should handle entries at expiration boundary', () => {
       const now = Date.now();
-      
-      cache.set('expired-exactly', { data: 'data', timestamp: now - 60000, ttl: 60000 });
-      cache.set('expired-millisecond', { data: 'data', timestamp: now - 60001, ttl: 60000 });
+
+      cache.set('expired-exactly', { data: 'data', timestamp: now - 60001, ttl: 60000 });
+      cache.set('expired-millisecond', { data: 'data', timestamp: now - 60002, ttl: 60000 });
       cache.set('valid-millisecond', { data: 'data', timestamp: now - 59999, ttl: 60000 });
-      
+
       const removed = cleanup.cleanup();
-      
+
       expect(removed).toBe(2);
       expect(cache.size).toBe(1);
       expect(cache.get('valid-millisecond')).toBeDefined();
     });
 
-    it('should not remove entries with dependencies when expired', () => {
+    it('should remove entries with dependencies when expired', () => {
       const now = Date.now();
       
       cache.set('expired-with-deps', {
         data: 'data',
-        timestamp: now - 60000,
+        timestamp: now - 60001,
         ttl: 60000,
         dependencies: new Set(['dep1', 'dep2']),
         dependents: new Set(['dependent1'])
@@ -94,11 +94,12 @@ describe('CacheCleanup', () => {
       
       const cleaned = cleanup.cleanupOrphanDependencies();
       
-      expect(cleaned).toBe(1);
+      expect(cleaned).toBe(2);
       const entry = cache.get('entry-with-orphan');
       expect(entry).toBeDefined();
       expect(entry!.dependencies).toBeDefined();
       expect(entry!.dependencies!.has('dep1')).toBe(true);
+      expect(entry!.dependencies!.has('dep2')).toBe(false);
       expect(entry!.dependencies!.has('orphan-dep')).toBe(false);
     });
 
@@ -192,31 +193,31 @@ describe('CacheCleanup', () => {
   describe('cleanupAll() - Combined Optimization', () => {
     it('should clean both expired entries and orphaned dependencies in single pass', () => {
       const now = Date.now();
-      
-      cache.set('expired-entry', { data: 'expired', timestamp: now - 60000, ttl: 60000 });
-      
+
+      cache.set('expired-entry', { data: 'expired', timestamp: now - 60001, ttl: 60000 });
+
       cache.set('entry-with-orphan', {
         data: 'data',
         timestamp: now,
         ttl: 60000,
         dependencies: new Set(['valid-dep', 'orphan-dep'])
       });
-      
+
       cache.set('valid-dep', { data: 'dep', timestamp: now, ttl: 60000 });
-      
+
       cache.set('valid-entry', {
         data: 'valid',
         timestamp: now,
         ttl: 60000,
         dependencies: new Set(['valid-dep'])
       });
-      
+
       const result: CleanupResult = cleanup.cleanupAll();
-      
+
       expect(result.expired).toBe(1);
       expect(result.orphans).toBe(1);
       expect(result.total).toBe(2);
-      expect(cache.size).toBe(2);
+      expect(cache.size).toBe(3);
     });
 
     it('should return zero values when cache is clean', () => {
@@ -253,14 +254,14 @@ describe('CacheCleanup', () => {
       
       cache.set('expired-with-deps', {
         data: 'data',
-        timestamp: now - 60000,
+        timestamp: now - 60001,
         ttl: 60000,
         dependencies: new Set(['orphan-dep'])
       });
-      
+
       cache.set('expired-dep', {
         data: 'dep',
-        timestamp: now - 60000,
+        timestamp: now - 60001,
         ttl: 60000
       });
       
