@@ -256,7 +256,7 @@ describe('Standardized API - getCategoryById', () => {
       link: 'https://example.com/category/politics'
     };
 
-    mockedWordpressAPI.getCategory.mockResolvedValue(mockCategory);
+    mockedWordpressAPI.getCategoryById.mockResolvedValue(mockCategory);
 
     const result = await standardizedAPI.getCategoryById(5);
 
@@ -266,10 +266,10 @@ describe('Standardized API - getCategoryById', () => {
   });
 
   test('returns ApiResult with error when category not found', async () => {
-    mockedWordpressAPI.getCategory.mockResolvedValue(null as any);
- 
+    mockedWordpressAPI.getCategoryById.mockResolvedValue(null as any);
+
     const result = await standardizedAPI.getCategoryById(999);
- 
+
     expect(isApiResultSuccessful(result)).toBe(false);
     expect(result.error?.message).toBe('Category not found: 999');
     expect(result.error?.type).toBeDefined();
@@ -277,10 +277,10 @@ describe('Standardized API - getCategoryById', () => {
 
   test('returns ApiResult with error when getCategory throws exception', async () => {
     const networkError = new Error('Network error: Connection refused');
-    mockedWordpressAPI.getCategory.mockRejectedValue(networkError);
- 
+    mockedWordpressAPI.getCategoryById.mockRejectedValue(networkError);
+
     const result = await standardizedAPI.getCategoryById(5);
- 
+
     expect(isApiResultSuccessful(result)).toBe(false);
     expect(result.error?.message).toContain('Network error');
     expect(result.error?.type).toBeDefined();
@@ -390,7 +390,7 @@ describe('Standardized API - getTagById', () => {
       link: 'https://example.com/tag/elections'
     };
 
-    mockedWordpressAPI.getTag.mockResolvedValue(mockTag);
+    mockedWordpressAPI.getTagById.mockResolvedValue(mockTag);
 
     const result = await standardizedAPI.getTagById(12);
 
@@ -400,10 +400,10 @@ describe('Standardized API - getTagById', () => {
   });
 
   test('returns ApiResult with error when tag not found', async () => {
-    mockedWordpressAPI.getTag.mockResolvedValue(null as any);
- 
+    mockedWordpressAPI.getTagById.mockResolvedValue(null as any);
+
     const result = await standardizedAPI.getTagById(999);
- 
+
     expect(isApiResultSuccessful(result)).toBe(false);
     expect(result.error?.message).toBe('Tag not found: 999');
     expect(result.error?.type).toBeDefined();
@@ -411,10 +411,10 @@ describe('Standardized API - getTagById', () => {
 
   test('returns ApiResult with error when getTag throws exception', async () => {
     const timeoutError = new Error('Request timeout after 30s');
-    mockedWordpressAPI.getTag.mockRejectedValue(timeoutError);
- 
+    mockedWordpressAPI.getTagById.mockRejectedValue(timeoutError);
+
     const result = await standardizedAPI.getTagById(12);
- 
+
     expect(isApiResultSuccessful(result)).toBe(false);
     expect(result.error?.message).toContain('Request timeout');
     expect(result.error?.type).toBeDefined();
