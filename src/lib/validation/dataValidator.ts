@@ -2,7 +2,6 @@ import type { WordPressPost, WordPressCategory, WordPressTag, WordPressMedia, Wo
 import {
   POST_VALIDATION_RULES,
   CATEGORY_VALIDATION_RULES,
-  TAG_VALIDATION_RULES,
   MEDIA_VALIDATION_RULES,
   AUTHOR_VALIDATION_RULES,
 } from './validationRules';
@@ -11,12 +10,10 @@ import {
   validateEnum,
   validatePattern,
   validateLength,
-  validateMin,
   validatePositiveInteger,
   validateNonEmptyString,
   validateIso8601Date,
   validateUrl,
-  validateNonNegativeInteger,
 } from './validationUtils';
 
 export interface ValidationResult<T> {
@@ -224,14 +221,14 @@ class DataValidator {
 
   validateCategory(data: unknown): ValidationResult<WordPressCategory> {
     const errors: ValidationError[] = [];
-
+    
     if (!this.isObject(data)) {
       return { valid: false, errors: [{ field: 'Category', rule: 'type', message: 'Category must be an object', value: data }] };
     }
 
     const record = data as Record<string, unknown>;
     this.validateIdField(record.id, 'Category.id', errors);
-
+    
     if (!this.isString(record.name)) {
       errors.push({ field: 'Category.name', rule: 'type', message: 'Category.name must be a string', value: record.name });
     } else {
@@ -240,27 +237,7 @@ class DataValidator {
     }
 
     this.validateSlugField(record.slug, 'Category.slug', errors, CATEGORY_VALIDATION_RULES.slug);
-
-    if (!this.isString(record.description)) {
-      errors.push({ field: 'Category.description', rule: 'type', message: 'Category.description must be a string', value: record.description });
-    }
-
-    if (!this.isNumber(record.parent)) {
-      errors.push({ field: 'Category.parent', rule: 'type', message: 'Category.parent must be a number', value: record.parent });
-    } else {
-      const parentError = validateMin(record.parent, CATEGORY_VALIDATION_RULES.parent.min, 'Category.parent');
-      if (parentError) errors.push(parentError);
-    }
-
-    if (!this.isNumber(record.count)) {
-      errors.push({ field: 'Category.count', rule: 'type', message: 'Category.count must be a number', value: record.count });
-    } else {
-      const countError = validateNonNegativeInteger(record.count, 'Category.count');
-      if (countError) errors.push(countError);
-    }
-
-    this.validateUrlField(record.link, 'Category.link', errors);
-
+    
     if (errors.length > 0) {
       return { valid: false, errors };
     }
@@ -274,35 +251,20 @@ class DataValidator {
 
   validateTag(data: unknown): ValidationResult<WordPressTag> {
     const errors: ValidationError[] = [];
-
+    
     if (!this.isObject(data)) {
       return { valid: false, errors: [{ field: 'Tag', rule: 'type', message: 'Tag must be an object', value: data }] };
     }
 
     const record = data as Record<string, unknown>;
     this.validateIdField(record.id, 'Tag.id', errors);
-
+    
     if (!this.isString(record.name)) {
       errors.push({ field: 'Tag.name', rule: 'type', message: 'Tag.name must be a string', value: record.name });
     } else {
       const nameError = validateNonEmptyString(record.name, 'Tag.name');
       if (nameError) errors.push(nameError);
     }
-
-    this.validateSlugField(record.slug, 'Tag.slug', errors, TAG_VALIDATION_RULES.slug);
-
-    if (!this.isString(record.description)) {
-      errors.push({ field: 'Tag.description', rule: 'type', message: 'Tag.description must be a string', value: record.description });
-    }
-
-    if (!this.isNumber(record.count)) {
-      errors.push({ field: 'Tag.count', rule: 'type', message: 'Tag.count must be a number', value: record.count });
-    } else {
-      const countError = validateNonNegativeInteger(record.count, 'Tag.count');
-      if (countError) errors.push(countError);
-    }
-
-    this.validateUrlField(record.link, 'Tag.link', errors);
 
     if (errors.length > 0) {
       return { valid: false, errors };
