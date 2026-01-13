@@ -14,7 +14,13 @@ export const wordpressAPI: IWordPressAPI = {
     tag?: number;
     search?: string;
   }, signal?: AbortSignal): Promise<{ data: WordPressPost[]; total: number; totalPages: number }> => {
-    const response = await apiClient.get(getApiUrl('/wp/v2/posts'), { params, signal });
+    const response = await apiClient.get(getApiUrl('/wp/v2/posts'), { 
+      params: { 
+        ...params, 
+        _fields: 'id,title,excerpt,slug,date,modified,featured_media,categories,tags,status,type,link' 
+      }, 
+      signal 
+    });
     const total = parseInt(response.headers['x-wp-total'] || '0', 10);
     const totalPages = parseInt(response.headers['x-wp-totalpages'] || '1', 10);
     return { data: response.data, total, totalPages };
@@ -43,23 +49,41 @@ export const wordpressAPI: IWordPressAPI = {
 
   // Categories
   getCategories: async (signal?: AbortSignal): Promise<WordPressCategory[]> => {
-    const response = await apiClient.get(getApiUrl('/wp/v2/categories'), { signal });
+    const response = await apiClient.get(getApiUrl('/wp/v2/categories'), { 
+      params: { _fields: 'id,name,slug' },
+      signal 
+    });
     return response.data;
   },
 
   getCategory: async (slug: string, signal?: AbortSignal): Promise<WordPressCategory | null> => {
-    const response = await apiClient.get(getApiUrl('/wp/v2/categories'), { params: { slug }, signal });
+    const response = await apiClient.get(getApiUrl('/wp/v2/categories'), { 
+      params: { 
+        slug, 
+        _fields: 'id,name,slug' 
+      }, 
+      signal 
+    });
     return response.data[0] || null;
   },
 
   // Tags
   getTags: async (signal?: AbortSignal): Promise<WordPressTag[]> => {
-    const response = await apiClient.get(getApiUrl('/wp/v2/tags'), { signal });
+    const response = await apiClient.get(getApiUrl('/wp/v2/tags'), { 
+      params: { _fields: 'id,name' },
+      signal 
+    });
     return response.data;
   },
 
   getTag: async (slug: string, signal?: AbortSignal): Promise<WordPressTag | null> => {
-    const response = await apiClient.get(getApiUrl('/wp/v2/tags'), { params: { slug }, signal });
+    const response = await apiClient.get(getApiUrl('/wp/v2/tags'), { 
+      params: { 
+        slug, 
+        _fields: 'id,name' 
+      }, 
+      signal 
+    });
     return response.data[0] || null;
   },
 

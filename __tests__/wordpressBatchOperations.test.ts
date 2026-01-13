@@ -32,7 +32,7 @@ describe('WordPress API - Batch Operations and Caching', () => {
         { id: 1, title: { rendered: 'Post 1' } },
         { id: 2, title: { rendered: 'Post 2' } }
       ]
-
+      
       ;(apiClient.get as jest.Mock).mockResolvedValue({
         data: mockPosts,
         headers: {
@@ -40,15 +40,15 @@ describe('WordPress API - Batch Operations and Caching', () => {
           'x-wp-totalpages': '15'
         }
       })
-
+      
       const result = await wordpressAPI.getPostsWithHeaders({ page: 1, per_page: 10 })
-
+      
       expect(result.data).toEqual(mockPosts)
       expect(result.total).toBe(150)
       expect(result.totalPages).toBe(15)
       expect(apiClient.get).toHaveBeenCalledWith(
         getApiUrl('/wp/v2/posts'),
-        { params: { page: 1, per_page: 10 }, signal: undefined }
+        { params: { page: 1, per_page: 10, _fields: 'id,title,excerpt,slug,date,modified,featured_media,categories,tags,status,type,link' }, signal: undefined }
       )
     })
 
@@ -69,65 +69,65 @@ describe('WordPress API - Batch Operations and Caching', () => {
     it('supports optional signal parameter', async () => {
       const mockPosts = [{ id: 1, title: { rendered: 'Post 1' } }]
       const mockSignal = {} as AbortSignal
-
+      
       ;(apiClient.get as jest.Mock).mockResolvedValue({
         data: mockPosts,
         headers: { 'x-wp-total': '10', 'x-wp-totalpages': '1' }
       })
-
+      
       await wordpressAPI.getPostsWithHeaders({ page: 1 }, mockSignal)
-
+      
       expect(apiClient.get).toHaveBeenCalledWith(
         getApiUrl('/wp/v2/posts'),
-        { params: { page: 1 }, signal: mockSignal }
+        { params: { page: 1, _fields: 'id,title,excerpt,slug,date,modified,featured_media,categories,tags,status,type,link' }, signal: mockSignal }
       )
     })
 
     it('handles category filter', async () => {
       const mockPosts = [{ id: 1, title: { rendered: 'Category Post' } }]
-
+      
       ;(apiClient.get as jest.Mock).mockResolvedValue({
         data: mockPosts,
         headers: { 'x-wp-total': '5', 'x-wp-totalpages': '1' }
       })
-
+      
       await wordpressAPI.getPostsWithHeaders({ category: 123 })
-
+      
       expect(apiClient.get).toHaveBeenCalledWith(
         getApiUrl('/wp/v2/posts'),
-        { params: { category: 123 }, signal: undefined }
+        { params: { category: 123, _fields: 'id,title,excerpt,slug,date,modified,featured_media,categories,tags,status,type,link' }, signal: undefined }
       )
     })
 
     it('handles tag filter', async () => {
       const mockPosts = [{ id: 1, title: { rendered: 'Tag Post' } }]
-
+      
       ;(apiClient.get as jest.Mock).mockResolvedValue({
         data: mockPosts,
         headers: { 'x-wp-total': '3', 'x-wp-totalpages': '1' }
       })
-
+      
       await wordpressAPI.getPostsWithHeaders({ tag: 456 })
-
+      
       expect(apiClient.get).toHaveBeenCalledWith(
         getApiUrl('/wp/v2/posts'),
-        { params: { tag: 456 }, signal: undefined }
+        { params: { tag: 456, _fields: 'id,title,excerpt,slug,date,modified,featured_media,categories,tags,status,type,link' }, signal: undefined }
       )
     })
 
     it('handles search query', async () => {
       const mockPosts = [{ id: 1, title: { rendered: 'Search Result' } }]
-
+      
       ;(apiClient.get as jest.Mock).mockResolvedValue({
         data: mockPosts,
         headers: { 'x-wp-total': '1', 'x-wp-totalpages': '1' }
       })
-
+      
       await wordpressAPI.getPostsWithHeaders({ search: 'test' })
-
+      
       expect(apiClient.get).toHaveBeenCalledWith(
         getApiUrl('/wp/v2/posts'),
-        { params: { search: 'test' }, signal: undefined }
+        { params: { search: 'test', _fields: 'id,title,excerpt,slug,date,modified,featured_media,categories,tags,status,type,link' }, signal: undefined }
       )
     })
   })
