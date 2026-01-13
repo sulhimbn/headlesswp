@@ -1,6 +1,341 @@
 # Task Backlog
 
-**Last Updated**: 2026-01-13 (Senior Technical Writer - DOC-004: Fix Remaining middleware.ts References)
+**Last Updated**: 2026-01-13 (Code Reviewer - Added REFACTOR-028, REFACTOR-029, REFACTOR-030)
+
+---
+
+## [REFACTOR-028] Extract CacheManager Cleanup Operations
+
+**Status**: Pending
+**Priority**: Medium
+**Effort**: Small
+**Assigned**: Code Reviewer
+**Created**: 2026-01-13
+
+### Description
+
+Extract cleanup operations from CacheManager into a separate CacheCleanup class to improve separation of concerns and reduce CacheManager file size (currently 916 lines).
+
+### Problem Identified
+
+**CacheManager Has Too Many Responsibilities**:
+- CacheManager.ts is 916 lines with multiple responsibilities:
+  - Cache CRUD operations (get, set, delete, invalidate)
+  - Dependency tracking (dependencies, dependents)
+  - Cascade invalidation logic
+  - Cleanup operations (cleanupExpired, cleanupOrphanDependencies)
+  - Telemetry and statistics management
+  - Metrics calculation (already extracted to CacheMetricsCalculator)
+- Single Responsibility Principle violation
+- Difficult to test individual concerns in isolation
+- Large file harder to maintain and understand
+
+**Cleanup Logic Scattered**:
+- `cleanup()` method (lines 399-416): Removes expired entries
+- `cleanupOrphanDependencies()` method (lines 445-468): Cleans up broken dependency references
+- Cleanup logic mixed with core cache operations
+- Both cleanup methods iterate over entire cache independently
+- Opportunity to optimize cleanup performance
+
+### Suggested Refactoring
+
+1. **Create CacheCleanup Class** (`src/lib/cache/cacheCleanup.ts`):
+    ```typescript
+    import type { ICacheManager } from '@/lib/api/ICacheManager';
+    import type { CacheEntry } from '../cache';
+
+    export class CacheCleanup {
+      constructor(private cacheManager: ICacheManager) {}
+
+      cleanup(): number {
+        // Expired cleanup logic from CacheManager
+      }
+
+      cleanupOrphanDependencies(): number {
+        // Orphan dependency cleanup logic from CacheManager
+      }
+
+      cleanupAll(): { expired: number; orphans: number } {
+        // Combined cleanup operation (single cache iteration)
+      }
+    }
+    ```
+
+2. **Update CacheManager**:
+    - Import CacheCleanup class
+    - Delegate cleanup methods to CacheCleanup instance
+    - Remove cleanup logic from CacheManager
+    - Export CacheCleanup for external use (cache warming, scheduled cleanup)
+
+3. **Add Tests** (`__tests__/cacheCleanup.test.ts`):
+    - Test expired cleanup
+    - Test orphan dependency cleanup
+    - Test combined cleanup operation
+    - Verify CacheManager cleanup methods delegate correctly
+
+### Benefits
+
+- **Separation of Concerns**: CacheManager focuses on cache operations, CacheCleanup handles cleanup
+- **Testability**: Cleanup logic can be tested independently
+- **Performance**: Combined cleanup operation reduces cache iterations
+- **Maintainability**: Smaller CacheManager file (~850 lines)
+- **Reusability**: CacheCleanup can be used independently (scheduled jobs, cron tasks)
+
+### Success Criteria
+
+- CacheCleanup class created with all cleanup methods
+- CacheManager delegates cleanup to CacheCleanup
+- All cleanup tests passing (including new tests)
+- CacheManager file reduced by ~50-70 lines
+- No behavioral changes (all existing tests pass)
+- ESLint and TypeScript compilation pass
+
+### See Also
+
+- [Blueprint.md Cache Architecture](./blueprint.md#cache-architecture)
+- [REFACTOR-018: CacheManager Metrics Extraction](#refactor-018)
+
+---
+
+## [REFACTOR-029] Consolidate Component Memoization Pattern
+
+**Status**: Pending
+**Priority**: Medium
+**Effort**: Small
+**Assigned**: Code Reviewer
+**Created**: 2026-01-13
+
+### Description
+
+Extract common `arePropsEqual` memoization pattern into a reusable utility to reduce code duplication across components (Button, Badge, Breadcrumb, PostCard, EmptyState).
+
+### Problem Identified
+
+**Duplicate Memoization Logic**:
+- Multiple components implement identical `arePropsEqual` functions:
+  - `Button.tsx` (lines 55-67): Compares variant, size, isLoading, fullWidth, disabled, className, children, onClick, type
+  - `Badge.tsx` (lines 40-47): Compares variant, href, className, children
+  - `Breadcrumb.tsx` (lines 62-70): Compares items, className
+  - `PostCard.tsx` (lines 58-69): Compares post, priority, onClick, className
+  - `EmptyState.tsx` (lines 43-52): Compares title, description, icon, action, className
+- Same pattern repeated 5 times with different prop keys
+- Violates DRY principle
+- Manual property comparison is error-prone
+
+**Potential for Bugs**:
+- Missing prop comparisons lead to unnecessary re-renders
+- New props added to components require updating arePropsEqual
+- No compile-time validation that all props are compared
+
+### Suggested Refactoring
+
+1. **Create Memoization Utility** (`src/lib/utils/memoization.ts`):
+    ```typescript
+    import type { ReactElement } from 'react';
+
+    export interface MemoProps<P> {
+      prevProps: P;
+      nextProps: P;
+    }
+
+    export function createArePropsEqual<P>(
+      propKeys: (keyof P)[]
+    ): (prevProps: P, nextProps: P) => boolean {
+      return (prevProps, nextProps) => {
+        return propKeys.every(key => prevProps[key] === nextProps[key]);
+      };
+    }
+
+    // Alternative: Deep equality for complex objects
+    export function createDeepPropsEqual<P>(
+      propKeys: (keyof P)[]
+    ): (prevProps: P, nextProps: P) => boolean {
+      return (prevProps, nextProps) => {
+        return propKeys.every(key =>
+          JSON.stringify(prevProps[key]) === JSON.stringify(nextProps[key])
+        );
+      };
+    }
+    ```
+
+2. **Update Components**:
+    - Replace manual arePropsEqual with utility function
+    - Define prop keys array for each component
+    ```typescript
+    // Button.tsx
+    const BUTTON_PROPS: (keyof ButtonProps)[] = [
+      'variant', 'size', 'isLoading', 'fullWidth', 'disabled',
+      'className', 'children', 'onClick', 'type'
+    ];
+    const arePropsEqual = createArePropsEqual<ButtonProps>(BUTTON_PROPS);
+    ```
+
+3. **Add Tests** (`__tests__/memoization.test.ts`):
+    - Test createArePropsEqual with various prop types
+    - Test shallow vs deep comparison
+    - Test edge cases (undefined, null, nested objects)
+    - Verify memoization works correctly
+
+### Benefits
+
+- **DRY Principle**: Memoization logic defined once
+- **Type Safety**: Prop keys validated at compile time
+- **Maintainability**: Single source of truth for memoization
+- **Less Code**: ~40 lines eliminated across 5 components
+- **Fewer Bugs**: Missing prop comparisons caught by TypeScript
+
+### Success Criteria
+
+- Memoization utility created with createArePropsEqual function
+- All 5 components use utility instead of manual arePropsEqual
+- All component tests passing (no behavioral changes)
+- New memoization utility tests passing
+- Code reduced by ~30-40 lines across components
+- ESLint and TypeScript compilation pass
+
+### See Also
+
+- [TEST-001: Component Memoization Test Coverage](#test-001)
+
+---
+
+## [REFACTOR-030] Extract WordPress API Method Factory
+
+**Status**: Pending
+**Priority**: Medium
+**Effort**: Medium
+**Assigned**: Code Reviewer
+**Created**: 2026-01-13
+
+### Description
+
+Extract common WordPress REST API method patterns into a factory function to reduce duplication in `wordpress.ts` (15 similar async arrow functions).
+
+### Problem Identified
+
+**Duplicate API Method Patterns**:
+- `wordpress.ts` has 15 async arrow functions with similar structure:
+  - `getCategories()`, `getTags()`, `getMedia()`, `getAuthors()`
+  - `getCategory(slug)`, `getTag(slug)`, `getMediaUrl(mediaId)`
+  - All follow same pattern: apiClient.get → params → return data
+- `_fields` parameter repeated 10+ times
+- Cache logic repeated (cacheFetch, cacheManager)
+- Error handling duplicated (try-catch with logger.warn)
+
+**Code Duplication Example**:
+```typescript
+// getCategories (lines 51-57)
+getCategories: async (signal?: AbortSignal): Promise<WordPressCategory[]> => {
+  const response = await apiClient.get(getApiUrl('/wp/v2/categories'), {
+    params: { _fields: 'id,name,slug' },
+    signal
+  });
+  return response.data;
+},
+
+// getTags (lines 86-92)
+getTags: async (signal?: AbortSignal): Promise<WordPressTag[]> => {
+  const response = await apiClient.get(getApiUrl('/wp/v2/tags'), {
+    params: { _fields: 'id,name' },
+    signal
+  });
+  return response.data;
+},
+```
+
+### Suggested Refactoring
+
+1. **Create API Method Factory** (`src/lib/api/wpMethodFactory.ts`):
+    ```typescript
+    import { apiClient, getApiUrl } from './client';
+
+    interface FactoryOptions<T> {
+      endpoint: string;
+      fields?: string;
+      cacheKey?: (params?: any) => string;
+      ttl?: number;
+      transform?: (data: any) => T;
+    }
+
+    export function createCollectionMethod<T>(
+      options: FactoryOptions<T[]>
+    ): (signal?: AbortSignal) => Promise<T[]> {
+      return async (signal?: AbortSignal) => {
+        const response = await apiClient.get(getApiUrl(options.endpoint), {
+          params: options.fields ? { _fields: options.fields } : {},
+          signal
+        });
+        return response.data;
+      };
+    }
+
+    export function createItemMethod<T>(
+      options: FactoryOptions<T>
+    ): (id: string | number, signal?: AbortSignal) => Promise<T | null> {
+      return async (id: string | number, signal?: AbortSignal) => {
+        const response = await apiClient.get(
+          getApiUrl(`${options.endpoint}/${id}`),
+          {
+            params: options.fields ? { _fields: options.fields } : {},
+            signal
+          }
+        );
+        return response.data[0] ?? response.data ?? null;
+      };
+    }
+    ```
+
+2. **Refactor wordpress.ts**:
+    ```typescript
+    import { createCollectionMethod, createItemMethod } from './api/wpMethodFactory';
+
+    export const wordpressAPI: IWordPressAPI = {
+      getCategories: createCollectionMethod<WordPressCategory>({
+        endpoint: '/wp/v2/categories',
+        fields: 'id,name,slug'
+      }),
+
+      getTags: createCollectionMethod<WordPressTag>({
+        endpoint: '/wp/v2/tags',
+        fields: 'id,name'
+      }),
+
+      getCategory: createItemMethod<WordPressCategory>({
+        endpoint: '/wp/v2/categories',
+        fields: 'id,name,slug'
+      }),
+      // ... other methods refactored
+    };
+    ```
+
+3. **Add Tests** (`__tests__/wpMethodFactory.test.ts`):
+    - Test createCollectionMethod with various configs
+    - Test createItemMethod with ID/slug variants
+    - Verify API calls are made correctly
+    - Test field filtering works
+    - Test signal parameter is passed through
+
+### Benefits
+
+- **DRY Principle**: Common API method pattern defined once
+- **Consistency**: All API methods follow same structure
+- **Maintainability**: Changes to API pattern only need one update
+- **Type Safety**: Factory methods enforce consistent types
+- **Less Code**: ~100 lines eliminated from wordpress.ts (246 → ~146 lines)
+- **Easier Testing**: Factory logic tested once, not per method
+
+### Success Criteria
+
+- wpMethodFactory created with createCollectionMethod and createItemMethod
+- At least 10 WordPress API methods refactored to use factory
+- All existing tests passing (no behavioral changes)
+- New factory tests passing
+- wordpress.ts reduced by ~80-100 lines
+- ESLint and TypeScript compilation pass
+
+### See Also
+
+- [Blueprint.md API Standards](./blueprint.md#api-standards)
 
 ---
 
