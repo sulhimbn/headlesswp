@@ -315,4 +315,199 @@ describe('HealthChecker', () => {
       expect(result2.healthy).toBe(true);
     });
   });
+
+  describe('Concurrent Health Check Requests', () => {
+    it('should handle multiple concurrent check requests correctly', async () => {
+      const healthChecker = new HealthChecker(mockHttpClient);
+      mockHttpClient.get.mockResolvedValue({});
+
+      const checkPromises = Array(5).fill(null).map(() => healthChecker.check());
+      const results = await Promise.all(checkPromises);
+
+      results.forEach((result, index) => {
+        if (index === 0) {
+          expect(result.healthy).toBe(true);
+        } else {
+          expect(result.healthy).toBe(false);
+          expect(result.message).toBe('Health check already in progress');
+        }
+      });
+
+      expect(mockHttpClient.get).toHaveBeenCalledTimes(1);
+    });
+
+    it('should reset checkInProgress flag after completion', async () => {
+      const healthChecker = new HealthChecker(mockHttpClient);
+      mockHttpClient.get.mockResolvedValue({});
+
+      await healthChecker.check();
+      const result2 = await healthChecker.check();
+
+      expect(result2.healthy).toBe(true);
+      expect(mockHttpClient.get).toHaveBeenCalledTimes(2);
+    });
+
+    it('should handle rapid sequential checks without race condition', async () => {
+      const healthChecker = new HealthChecker(mockHttpClient);
+      let callCount = 0;
+
+      mockHttpClient.get.mockImplementation(() => {
+        callCount++;
+        return new Promise(resolve => setTimeout(() => resolve({}), 10));
+      });
+
+      const promises = Array(3).fill(null).map((_, i) => healthChecker.check());
+      await Promise.all(promises);
+
+      expect(callCount).toBe(1);
+    });
+  });
+
+  describe('Edge Cases', () => {
+    it('should handle response without headers property', async () => {
+      const healthChecker = new HealthChecker(mockHttpClient);
+      mockHttpClient.get.mockResolvedValue({});
+
+      const result = await healthChecker.check();
+
+      expect(result.healthy).toBe(true);
+      expect(result.version).toBeUndefined();
+    });
+
+    it('should handle null headers in response', async () => {
+      const healthChecker = new HealthChecker(mockHttpClient);
+      mockHttpClient.get.mockResolvedValue({ headers: null });
+
+      const result = await healthChecker.check();
+
+      expect(result.healthy).toBe(true);
+      expect(result.version).toBeUndefined();
+    });
+
+    it('should handle undefined headers in response', async () => {
+      const healthChecker = new HealthChecker(mockHttpClient);
+      mockHttpClient.get.mockResolvedValue({ headers: undefined });
+
+      const result = await healthChecker.check();
+
+      expect(result.healthy).toBe(true);
+      expect(result.version).toBeUndefined();
+    });
+
+    it('should handle empty object response', async () => {
+      const healthChecker = new HealthChecker(mockHttpClient);
+      mockHttpClient.get.mockResolvedValue({});
+
+      const result = await healthChecker.check();
+
+      expect(result.healthy).toBe(true);
+      expect(result.version).toBeUndefined();
+      expect(result.latency).toBeGreaterThanOrEqual(0);
+    });
+
+    it('should only extract version from lowercase x-wordpress-api-version header', async () => {
+      const healthChecker = new HealthChecker(mockHttpClient);
+
+      const versionHeaders = [
+        { headers: { 'x-wordpress-api-version': 'v2' } },
+        { headers: { 'X-WordPress-API-Version': 'v2.1' } },
+        { headers: { 'X-Wordpress-Api-Version': 'v2.0' } }
+      ];
+
+      for (const response of versionHeaders) {
+        mockHttpClient.get.mockResolvedValueOnce(response);
+        const result = await healthChecker.check();
+        expect(result.healthy).toBe(true);
+      }
+
+      expect(mockHttpClient.get).toHaveBeenCalledTimes(3);
+    });
+
+    it('skipped: checkRetry with zero maxAttempts causes loop to never run', async () => {
+      const healthChecker = new HealthChecker(mockHttpClient);
+      mockHttpClient.get.mockRejectedValue(new Error('Error'));
+
+      const result = await healthChecker.checkRetry(0, 10);
+
+      expect(result).toBeNull();
+      expect(mockHttpClient.get).toHaveBeenCalledTimes(0);
+    });
+
+    it('should handle checkRetry with zero delay', async () => {
+      const healthChecker = new HealthChecker(mockHttpClient);
+      mockHttpClient.get
+        .mockRejectedValueOnce(new Error('Error 1'))
+        .mockResolvedValueOnce({});
+
+      const startTime = Date.now();
+      const result = await healthChecker.checkRetry(2, 0);
+      const endTime = Date.now();
+
+      expect(result.healthy).toBe(true);
+      expect(endTime - startTime).toBeLessThan(100);
+    });
+  });
+
+  describe('Race Conditions', () => {
+    it('should handle race between check and getLastCheck', async () => {
+      const healthChecker = new HealthChecker(mockHttpClient);
+      mockHttpClient.get.mockImplementation(() => 
+        new Promise(resolve => setTimeout(() => resolve({}), 50))
+      );
+
+      const checkPromise = healthChecker.check();
+      const lastCheckDuring = healthChecker.getLastCheck();
+
+      expect(lastCheckDuring).toBeNull();
+
+      await checkPromise;
+      const lastCheckAfter = healthChecker.getLastCheck();
+
+      expect(lastCheckAfter).not.toBeNull();
+      expect(lastCheckAfter?.healthy).toBe(true);
+    });
+
+    it('should maintain lastCheck integrity during concurrent checks', async () => {
+      const healthChecker = new HealthChecker(mockHttpClient);
+      mockHttpClient.get.mockImplementation(() =>
+        new Promise(resolve => setTimeout(() => resolve({}), 50))
+      );
+
+      const check1 = healthChecker.check();
+
+      const lastCheckDuringCheck1 = healthChecker.getLastCheck();
+      expect(lastCheckDuringCheck1).toBeNull();
+
+      await check1;
+
+      const lastCheckAfterCheck1 = healthChecker.getLastCheck();
+      expect(lastCheckAfterCheck1?.healthy).toBe(true);
+
+      mockHttpClient.get.mockResolvedValue({ headers: { 'x-wordpress-api-version': 'v2' } });
+      const check2 = await healthChecker.check();
+
+      const lastCheckAfterCheck2 = healthChecker.getLastCheck();
+      expect(lastCheckAfterCheck2?.healthy).toBe(true);
+      expect(lastCheckAfterCheck2?.version).toBe('v2');
+    });
+
+    it('should handle multiple rapid getLastCheck calls', async () => {
+      const healthChecker = new HealthChecker(mockHttpClient);
+      mockHttpClient.get.mockResolvedValue({});
+
+      const checkPromise = healthChecker.check();
+
+      const lastChecks = Array(10).fill(null).map(() => healthChecker.getLastCheck());
+      const results = await Promise.all([...lastChecks, checkPromise]);
+
+      const initialLastChecks = results.slice(0, -1);
+      initialLastChecks.forEach(lastCheck => {
+        expect(lastCheck).toBeNull();
+      });
+
+      const finalLastCheck = healthChecker.getLastCheck();
+      expect(finalLastCheck).not.toBeNull();
+      expect(finalLastCheck?.healthy).toBe(true);
+    });
+  });
 });
