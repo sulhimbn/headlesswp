@@ -1,7 +1,7 @@
 # Architecture Blueprint
 
 **Version**: 1.0.0
-**Last Updated**: 2026-01-19 (Principal Software Architect - REFACTOR-029: Component Memoization Pattern Consolidation Complete)
+**Last Updated**: 2026-01-19 (Principal Software Architect - REFACTOR-030: WordPress API Method Factory Complete)
 
 ## System Architecture
 
@@ -549,7 +549,30 @@ interface ApiListResult<T> extends ApiResult<T[]> {
 5. **Testability**: Factory logic tested once, not per component
 6. **Code Clarity**: Smaller, focused component files
 
-**See Also**: [Task REFACTOR-010](./task.md#refactor-010), [Task REFACTOR-011](./task.md#refactor-011), [Task REFACTOR-012](./task.md#refactor-012), [Task REFACTOR-014](./task.md#refactor-014), [Task REFACTOR-018](./task.md#refactor-018), [Task ARCH-ERROR-002](./task.md#arch-error-002), [Task REFACTOR-026](./task.md#refactor-026), [Task REFACTOR-027](./task.md#refactor-027), [Task ARCH-UNUSED-001](./task.md#arch-unused-001), [Task REFACTOR-028](./task.md#refactor-028), [Task REFACTOR-029](./task.md#refactor-029)
+**See Also**: [Task REFACTOR-010](./task.md#refactor-010), [Task REFACTOR-011](./task.md#refactor-011), [Task REFACTOR-012](./task.md#refactor-012), [Task REFACTOR-014](./task.md#refactor-014), [Task REFACTOR-018](./task.md#refactor-018), [Task ARCH-ERROR-002](./task.md#arch-error-002), [Task REFACTOR-026](./task.md#refactor-026), [Task REFACTOR-027](./task.md#refactor-027), [Task ARCH-UNUSED-001](./task.md#arch-unused-001), [Task REFACTOR-028](./task.md#refactor-028), [Task REFACTOR-029](./task.md#refactor-029), [Task REFACTOR-030](./task.md#refactor-030)
+
+**REFACTOR-030: WordPress API Method Factory**:
+- Created `wpMethodFactory.ts` (src/lib/api/wpMethodFactory.ts, 111 lines)
+- Added 5 factory methods: createCollectionMethod, createItemMethod, createIdMethod, createPostsMethod, createPostsWithHeadersMethod
+- Refactored 9 WordPress API methods to use factory patterns
+- Eliminated 15 duplicate async arrow functions from wordpress.ts
+- Fixed N+1 query in search function (sequential API calls → batch API call with include parameter)
+- Performance improvement: 82% API call reduction for 10 search results
+- Added comprehensive tests (17 tests covering all factory methods and edge cases)
+- wordpress.ts: 247 → 167 lines (-80 lines, 32% reduction)
+- Test coverage: 1821 tests passing (23 skipped)
+- All tests passing, ESLint and TypeScript compilation pass with 0 errors
+
+**Benefits**:
+1. **DRY Principle**: Common API method pattern defined once in factory
+2. **Consistency**: All API methods follow same structure and patterns
+3. **Type Safety**: Factory methods enforce consistent types with generics
+4. **Maintainability**: Single source of truth for API method patterns
+5. **Testability**: Factory logic tested once, not per method
+6. **Performance**: N+1 query fix eliminates sequential API calls in search
+7. **Code Clarity**: Smaller, focused wordpress.ts file with less duplication
+
+**See Also**: [Task REFACTOR-030](./task.md#refactor-030)
 
 ## Integration Resilience Patterns
 
