@@ -4,120 +4,58 @@ import { cacheManager, CACHE_TTL, cacheKeys } from './cache';
 import { logger } from '@/lib/utils/logger';
 import { cacheFetch } from '@/lib/utils/cacheFetch';
 import type { IWordPressAPI } from './api/IWordPressAPI';
+import {
+  createCollectionMethod,
+  createItemMethod,
+  createIdMethod,
+  createPostsMethod,
+  createPostsWithHeadersMethod
+} from './api/wpMethodFactory';
 
 export const wordpressAPI: IWordPressAPI = {
-  // Posts
-  getPostsWithHeaders: async (params?: {
-    page?: number;
-    per_page?: number;
-    category?: number;
-    tag?: number;
-    search?: string;
-  }, signal?: AbortSignal): Promise<{ data: WordPressPost[]; total: number; totalPages: number }> => {
-    const response = await apiClient.get(getApiUrl('/wp/v2/posts'), { 
-      params: { 
-        ...params, 
-        _fields: 'id,title,excerpt,slug,date,modified,featured_media,categories,tags,status,type,link' 
-      }, 
-      signal 
-    });
-    const total = parseInt(response.headers['x-wp-total'] || '0', 10);
-    const totalPages = parseInt(response.headers['x-wp-totalpages'] || '1', 10);
-    return { data: response.data, total, totalPages };
-  },
+  getPostsWithHeaders: createPostsWithHeadersMethod(),
 
-  getPosts: async (params?: {
-    page?: number;
-    per_page?: number;
-    category?: number;
-    tag?: number;
-    search?: string;
-  }, signal?: AbortSignal): Promise<WordPressPost[]> => {
-    const response = await apiClient.get(getApiUrl('/wp/v2/posts'), { params, signal });
-    return response.data;
-  },
+  getPosts: createPostsMethod(),
 
-  getPost: async (slug: string, signal?: AbortSignal): Promise<WordPressPost | null> => {
-    const response = await apiClient.get(getApiUrl('/wp/v2/posts'), { params: { slug }, signal });
-    return response.data[0] || null;
-  },
+  getPost: createItemMethod<WordPressPost>({
+    endpoint: '/wp/v2/posts'
+  }),
 
   getPostById: async (id: number, signal?: AbortSignal): Promise<WordPressPost> => {
     const response = await apiClient.get(getApiUrl(`/wp/v2/posts/${id}`), { signal });
     return response.data;
   },
 
-  // Categories
-  getCategories: async (signal?: AbortSignal): Promise<WordPressCategory[]> => {
-    const response = await apiClient.get(getApiUrl('/wp/v2/categories'), { 
-      params: { _fields: 'id,name,slug' },
-      signal 
-    });
-    return response.data;
-  },
+  getCategories: createCollectionMethod<WordPressCategory>({
+    endpoint: '/wp/v2/categories',
+    fields: 'id,name,slug'
+  }),
 
-  getCategory: async (slug: string, signal?: AbortSignal): Promise<WordPressCategory | null> => {
-    const response = await apiClient.get(getApiUrl('/wp/v2/categories'), {
-      params: {
-        slug,
-        _fields: 'id,name,slug'
-      },
-      signal
-    });
-    return response.data[0] || null;
-  },
+  getCategory: createItemMethod<WordPressCategory>({
+    endpoint: '/wp/v2/categories',
+    fields: 'id,name,slug'
+  }),
 
-  getCategoryById: async (id: number, signal?: AbortSignal): Promise<WordPressCategory | null> => {
-    try {
-      const response = await apiClient.get(getApiUrl(`/wp/v2/categories/${id}`), {
-        params: {
-          _fields: 'id,name,slug'
-        },
-        signal
-      });
-      return response.data;
-    } catch (error) {
-      logger.warn('Failed to fetch category by ID', error, { module: 'wordpressAPI', categoryId: id });
-      return null;
-    }
-  },
+  getCategoryById: createIdMethod<WordPressCategory>({
+    endpoint: '/wp/v2/categories',
+    fields: 'id,name,slug'
+  }),
 
-  // Tags
-  getTags: async (signal?: AbortSignal): Promise<WordPressTag[]> => {
-    const response = await apiClient.get(getApiUrl('/wp/v2/tags'), { 
-      params: { _fields: 'id,name' },
-      signal 
-    });
-    return response.data;
-  },
+  getTags: createCollectionMethod<WordPressTag>({
+    endpoint: '/wp/v2/tags',
+    fields: 'id,name'
+  }),
 
-  getTag: async (slug: string, signal?: AbortSignal): Promise<WordPressTag | null> => {
-    const response = await apiClient.get(getApiUrl('/wp/v2/tags'), {
-      params: {
-        slug,
-        _fields: 'id,name'
-      },
-      signal
-    });
-    return response.data[0] || null;
-  },
+  getTag: createItemMethod<WordPressTag>({
+    endpoint: '/wp/v2/tags',
+    fields: 'id,name'
+  }),
 
-  getTagById: async (id: number, signal?: AbortSignal): Promise<WordPressTag | null> => {
-    try {
-      const response = await apiClient.get(getApiUrl(`/wp/v2/tags/${id}`), {
-        params: {
-          _fields: 'id,name'
-        },
-        signal
-      });
-      return response.data;
-    } catch (error) {
-      logger.warn('Failed to fetch tag by ID', error, { module: 'wordpressAPI', tagId: id });
-      return null;
-    }
-  },
+  getTagById: createIdMethod<WordPressTag>({
+    endpoint: '/wp/v2/tags',
+    fields: 'id,name'
+  }),
 
-  // Media
   getMedia: async (id: number, signal?: AbortSignal): Promise<WordPressMedia> => {
     const response = await apiClient.get(getApiUrl(`/wp/v2/media/${id}`), { signal });
     return response.data;
@@ -208,7 +146,6 @@ export const wordpressAPI: IWordPressAPI = {
     return urlMap;
   },
 
-  // Authors
   getAuthor: async (id: number, signal?: AbortSignal): Promise<WordPressAuthor> => {
     const response = await apiClient.get(getApiUrl(`/wp/v2/users/${id}`), { signal });
     return response.data;
@@ -221,17 +158,29 @@ export const wordpressAPI: IWordPressAPI = {
       async () => {
         const searchResponse = await apiClient.get<WordPressSearchResult[]>(
           getApiUrl('/wp/v2/search'),
-          { params: { search: query }, signal }
+          { params: { search: query, _fields: 'id,type,subtype' }, signal }
         );
 
         const searchResults = searchResponse.data;
+        
+        if (searchResults.length === 0) {
+          return [];
+        }
+
         const postIds = searchResults.map((result) => result.id);
 
-        const posts = await Promise.all(
-          postIds.map((id) => wordpressAPI.getPostById(id, signal))
+        const response = await apiClient.get<WordPressPost[]>(
+          getApiUrl('/wp/v2/posts'),
+          {
+            params: {
+              include: postIds.join(','),
+              _fields: 'id,title,excerpt,slug,date,modified,featured_media,categories,tags,status,type,link'
+            },
+            signal
+          }
         );
 
-        return posts.filter((post): post is WordPressPost => post !== null);
+        return response.data as WordPressPost[];
       },
       {
         key: cacheKey,

@@ -238,13 +238,12 @@ describe('WordPress REST API', () => {
       (cacheManager.get as jest.Mock).mockReturnValue(null);
       (apiClient.get as jest.Mock)
         .mockResolvedValueOnce({ data: mockSearchResults })
-        .mockResolvedValueOnce({ data: mockPosts[0] })
-        .mockResolvedValueOnce({ data: mockPosts[1] });
+        .mockResolvedValueOnce({ data: mockPosts });
 
       const result = await wordpressAPI.search('react');
 
       expect(result).toEqual(mockPosts);
-      expect(apiClient.get).toHaveBeenCalledTimes(3);
+      expect(apiClient.get).toHaveBeenCalledTimes(2);
       expect(cacheManager.set).toHaveBeenCalled();
     });
 
