@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { memo } from 'react'
+import { createArePropsEqual } from '@/lib/utils/memoization'
 
 interface EmptyStateProps {
   title: string
@@ -11,6 +12,16 @@ interface EmptyStateProps {
   }
   className?: string
 }
+
+const EMPTYSTATE_PROPS: (keyof EmptyStateProps)[] = [
+  'title',
+  'description',
+  'icon',
+  'action',
+  'className',
+];
+
+const arePropsEqual = createArePropsEqual<EmptyStateProps>(EMPTYSTATE_PROPS);
 
 function EmptyStateComponent({ title, description, icon, action, className = '' }: EmptyStateProps) {
   return (
@@ -37,17 +48,6 @@ function EmptyStateComponent({ title, description, icon, action, className = '' 
         </Link>
       )}
     </div>
-  )
-}
-
-function arePropsEqual(prevProps: EmptyStateProps, nextProps: EmptyStateProps): boolean {
-  return (
-    prevProps.title === nextProps.title &&
-    prevProps.description === nextProps.description &&
-    prevProps.icon === nextProps.icon &&
-    prevProps.action?.label === nextProps.action?.label &&
-    prevProps.action?.href === nextProps.action?.href &&
-    prevProps.className === nextProps.className
   )
 }
 

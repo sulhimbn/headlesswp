@@ -5,12 +5,21 @@ import { sanitizeHTML } from '@/lib/utils/sanitizeHTML'
 import { UI_TEXT } from '@/lib/constants/uiText'
 import { formatDate } from '@/lib/utils/dateFormat'
 import { memo } from 'react'
+import { createArePropsEqual } from '@/lib/utils/memoization'
 
 interface PostCardProps {
   post: WordPressPost
   mediaUrl?: string | null
   priority?: boolean
 }
+
+const POSTCARD_PROPS: (keyof PostCardProps)[] = [
+  'post',
+  'mediaUrl',
+  'priority',
+];
+
+const arePropsEqual = createArePropsEqual<PostCardProps>(POSTCARD_PROPS);
 
 function PostCardComponent({ post, mediaUrl, priority = false }: PostCardProps) {
   const postTitleId = `post-title-${post.id}`
@@ -54,19 +63,6 @@ function PostCardComponent({ post, mediaUrl, priority = false }: PostCardProps) 
         </div>
       </div>
     </article>
-  )
-}
-
-function arePropsEqual(prevProps: PostCardProps, nextProps: PostCardProps): boolean {
-  return (
-    prevProps.post.id === nextProps.post.id &&
-    prevProps.post.title.rendered === nextProps.post.title.rendered &&
-    prevProps.post.excerpt.rendered === nextProps.post.excerpt.rendered &&
-    prevProps.post.slug === nextProps.post.slug &&
-    prevProps.post.featured_media === nextProps.post.featured_media &&
-    prevProps.mediaUrl === nextProps.mediaUrl &&
-    prevProps.priority === nextProps.priority &&
-    prevProps.post.date === nextProps.post.date
   )
 }
 

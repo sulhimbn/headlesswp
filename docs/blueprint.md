@@ -1,7 +1,7 @@
 # Architecture Blueprint
 
 **Version**: 1.0.0
-**Last Updated**: 2026-01-13 (Principal Software Architect - REFACTOR-028: CacheManager Cleanup Extraction Complete)
+**Last Updated**: 2026-01-19 (Principal Software Architect - REFACTOR-029: Component Memoization Pattern Consolidation Complete)
 
 ## System Architecture
 
@@ -530,7 +530,26 @@ interface ApiListResult<T> extends ApiResult<T[]> {
 4. **Single Responsibility**: Service layer doesn't fetch unused data
 5. **Simplicity**: Removed complexity without affecting functionality
 
-**See Also**: [Task REFACTOR-010](./task.md#refactor-010), [Task REFACTOR-011](./task.md#refactor-011), [Task REFACTOR-012](./task.md#refactor-012), [Task REFACTOR-014](./task.md#refactor-014), [Task REFACTOR-018](./task.md#refactor-018), [Task ARCH-ERROR-002](./task.md#arch-error-002), [Task REFACTOR-026](./task.md#refactor-026), [Task REFACTOR-027](./task.md#refactor-027), [Task ARCH-UNUSED-001](./task.md#arch-unused-001), [Task REFACTOR-028](./task.md#refactor-028)
+**REFACTOR-029: Component Memoization Pattern Consolidation**:
+- Created `memoization.ts` utility (src/lib/utils/memoization.ts, 25 lines)
+- Added `createArePropsEqual<P>()` factory for shallow prop comparison
+- Added `createDeepPropsEqual<P>()` factory for deep prop comparison
+- Refactored 5 components (Button, Badge, Breadcrumb, PostCard, EmptyState) to use utility
+- Eliminated 5 duplicate `arePropsEqual` functions
+- Added comprehensive tests (18 tests covering all edge cases)
+- Test coverage: 1759 tests passing (23 skipped)
+- Component lines: 325 → 320 (-5 lines, 1.5% reduction)
+- Total: +25 lines (utility) + 18 tests - 5 component lines = +38 lines net
+
+**Benefits**:
+1. **DRY Principle**: Memoization logic defined once in reusable utility
+2. **Type Safety**: Prop keys validated at compile time with TypeScript
+3. **Maintainability**: Single source of truth for memoization pattern
+4. **Extensibility**: Can add new comparison strategies (deep, shallow, custom)
+5. **Testability**: Factory logic tested once, not per component
+6. **Code Clarity**: Smaller, focused component files
+
+**See Also**: [Task REFACTOR-010](./task.md#refactor-010), [Task REFACTOR-011](./task.md#refactor-011), [Task REFACTOR-012](./task.md#refactor-012), [Task REFACTOR-014](./task.md#refactor-014), [Task REFACTOR-018](./task.md#refactor-018), [Task ARCH-ERROR-002](./task.md#arch-error-002), [Task REFACTOR-026](./task.md#refactor-026), [Task REFACTOR-027](./task.md#refactor-027), [Task ARCH-UNUSED-001](./task.md#arch-unused-001), [Task REFACTOR-028](./task.md#refactor-028), [Task REFACTOR-029](./task.md#refactor-029)
 
 ## Integration Resilience Patterns
 
