@@ -243,6 +243,402 @@ describe('RetryStrategy', () => {
   })
 })
 
+describe('RetryStrategy Edge Cases', () => {
+  let retryStrategy: RetryStrategy
+
+  beforeEach(() => {
+    retryStrategy = new RetryStrategy({
+      maxRetries: 3,
+      initialDelay: 100,
+      maxDelay: 10000,
+      backoffMultiplier: 2,
+      jitter: false
+    })
+  })
+
+  describe('Retry-After Header Parsing', () => {
+    it('parses numeric Retry-After header correctly (capped at maxDelay)', () => {
+      const error = {
+        response: {
+          status: 429,
+          headers: {
+            'retry-after': '60',
+            get: (key: string) => {
+              if (key === 'retry-after' || key === 'Retry-After') {
+                return '60'
+              }
+              return null
+            }
+          }
+        }
+      }
+
+      const delay = retryStrategy.getRetryDelay(0, error)
+
+      expect(delay).toBe(10000)
+    })
+
+    it('respects max delay when Retry-After exceeds it', () => {
+      const error = {
+        response: {
+          status: 429,
+          headers: {
+            'retry-after': '3600',
+            get: (key: string) => '3600'
+          }
+        }
+      }
+
+      const delay = retryStrategy.getRetryDelay(0, error)
+
+      expect(delay).toBe(10000)
+    })
+
+    it('parses HTTP-date Retry-After header correctly (capped at maxDelay)', () => {
+      const futureTime = new Date(Date.now() + 60000).toUTCString()
+      const error = {
+        response: {
+          status: 429,
+          headers: {
+            'retry-after': futureTime,
+            get: (key: string) => futureTime
+          }
+        }
+      }
+
+      const delay = retryStrategy.getRetryDelay(0, error)
+
+      expect(delay).toBe(10000)
+    })
+
+    it('prevents negative delays when Retry-After is in the past', () => {
+      const pastTime = new Date(Date.now() - 1000).toUTCString()
+      const error = {
+        response: {
+          status: 429,
+          headers: {
+            'retry-after': pastTime,
+            get: (key: string) => pastTime
+          }
+        }
+      }
+
+      const delay = retryStrategy.getRetryDelay(0, error)
+
+      expect(delay).toBe(0)
+    })
+
+    it('uses backoff when Retry-After header is missing', () => {
+      const error = {
+        response: {
+          status: 500,
+          headers: {}
+        }
+      }
+
+      const delay = retryStrategy.getRetryDelay(1, error)
+
+      expect(delay).toBe(200)
+    })
+
+    it('uses backoff when Retry-After header is invalid', () => {
+      const error = {
+        response: {
+          status: 429,
+          headers: {
+            'retry-after': 'invalid',
+            get: (key: string) => 'invalid'
+          }
+        }
+      }
+
+      const delay = retryStrategy.getRetryDelay(0, error)
+
+      expect(delay).toBe(100)
+    })
+  })
+
+  describe('Network Error Variants', () => {
+    it('should NOT retry on ECONNRESET (not in retry list)', () => {
+      const error = new Error('ECONNRESET')
+
+      expect(retryStrategy.shouldRetry(error, 0)).toBe(false)
+      expect(retryStrategy.shouldRetry(error, 1)).toBe(false)
+    })
+
+    it('should NOT retry on ENOTFOUND (not in retry list)', () => {
+      const error = new Error('ENOTFOUND')
+
+      expect(retryStrategy.shouldRetry(error, 0)).toBe(false)
+      expect(retryStrategy.shouldRetry(error, 1)).toBe(false)
+    })
+
+    it('should NOT retry on ENETUNREACH (not in retry list)', () => {
+      const error = new Error('ENETUNREACH')
+
+      expect(retryStrategy.shouldRetry(error, 0)).toBe(false)
+      expect(retryStrategy.shouldRetry(error, 1)).toBe(false)
+    })
+
+    it('should NOT retry on ECONNABORTED (not in retry list)', () => {
+      const error = new Error('ECONNABORTED')
+
+      expect(retryStrategy.shouldRetry(error, 0)).toBe(false)
+      expect(retryStrategy.shouldRetry(error, 1)).toBe(false)
+    })
+
+    it('should retry on various timeout error messages (only those containing timeout)', () => {
+      const timeoutErrors = [
+        new Error('timeout of 30000ms exceeded'),
+        new Error('ETIMEDOUT'),
+        new Error('etimedout')
+      ]
+
+      timeoutErrors.forEach(error => {
+        expect(retryStrategy.shouldRetry(error, 0)).toBe(true)
+        expect(retryStrategy.shouldRetry(error, 1)).toBe(false)
+      })
+    })
+
+    it('should retry on messages containing timeout keyword', () => {
+      const timeoutErrors = [
+        new Error('Connection timeout'),
+        new Error('timeout of 30000ms exceeded'),
+        new Error('Request timeout'),
+        new Error('ETIMEDOUT')
+      ]
+
+      timeoutErrors.forEach(error => {
+        expect(retryStrategy.shouldRetry(error, 0)).toBe(true)
+        expect(retryStrategy.shouldRetry(error, 1)).toBe(false)
+      })
+    })
+
+    it('should NOT retry on messages without actual timeout keyword', () => {
+      const timeoutErrors = [
+        new Error('Request timed out'),
+        new Error('Timed out'),
+        new Error('Connection lost'),
+        new Error('Request failed'),
+        new Error('Time exceeded')
+      ]
+
+      timeoutErrors.forEach(error => {
+        expect(retryStrategy.shouldRetry(error, 0)).toBe(false)
+        expect(retryStrategy.shouldRetry(error, 1)).toBe(false)
+      })
+    })
+
+    it('should retry on ECONNREFUSED (network error)', () => {
+      const error = new Error('ECONNREFUSED')
+
+      expect(retryStrategy.shouldRetry(error, 0)).toBe(true)
+      expect(retryStrategy.shouldRetry(error, 1)).toBe(false)
+    })
+
+    it('should retry on network error message', () => {
+      const error = new Error('network error')
+
+      expect(retryStrategy.shouldRetry(error, 0)).toBe(true)
+      expect(retryStrategy.shouldRetry(error, 1)).toBe(false)
+    })
+
+    it('should retry on econnrefused (lowercase)', () => {
+      const error = new Error('econnrefused')
+
+      expect(retryStrategy.shouldRetry(error, 0)).toBe(true)
+      expect(retryStrategy.shouldRetry(error, 1)).toBe(false)
+    })
+  })
+
+  describe('Mixed Error Scenarios in Execute', () => {
+    it('handles network error followed by success', async () => {
+      const fn = jest.fn()
+        .mockImplementationOnce(() => Promise.reject(new Error('ECONNREFUSED')))
+        .mockImplementationOnce(() => Promise.resolve('success'))
+
+      const result = await retryStrategy.execute(fn)
+
+      expect(result).toBe('success')
+      expect(fn).toHaveBeenCalledTimes(2)
+    })
+
+    it('handles 429 error followed by success', async () => {
+      const fn = jest.fn()
+        .mockImplementationOnce(() => Promise.reject({ response: { status: 429 } }))
+        .mockImplementationOnce(() => Promise.resolve('success'))
+
+      const result = await retryStrategy.execute(fn)
+
+      expect(result).toBe('success')
+      expect(fn).toHaveBeenCalledTimes(2)
+    })
+
+    it('handles server error followed by success', async () => {
+      const fn = jest.fn()
+        .mockImplementationOnce(() => Promise.reject({ response: { status: 503 } }))
+        .mockImplementationOnce(() => Promise.resolve('success'))
+
+      const result = await retryStrategy.execute(fn)
+
+      expect(result).toBe('success')
+      expect(fn).toHaveBeenCalledTimes(2)
+    })
+
+    it('handles multiple different error types before success', async () => {
+      const fn = jest.fn()
+        .mockImplementationOnce(() => Promise.reject(new Error('ECONNREFUSED')))
+        .mockImplementationOnce(() => Promise.reject({ response: { status: 429 } }))
+        .mockImplementationOnce(() => Promise.resolve('success'))
+
+      const result = await retryStrategy.execute(fn)
+
+      expect(result).toBe('success')
+      expect(fn).toHaveBeenCalledTimes(3)
+    })
+
+    it('throws after exhausting retries with mixed errors', async () => {
+      const fn = jest.fn()
+        .mockImplementationOnce(() => Promise.reject(new Error('ECONNREFUSED')))
+        .mockImplementationOnce(() => Promise.reject({ response: { status: 500 } }))
+        .mockImplementationOnce(() => Promise.reject({ response: { status: 429 } }))
+        .mockImplementationOnce(() => Promise.reject(new Error('final error')))
+
+      await expect(retryStrategy.execute(fn)).rejects.toEqual(new Error('final error'))
+      expect(fn).toHaveBeenCalledTimes(4)
+    })
+  })
+
+  describe('Exponential Backoff Edge Cases', () => {
+    it('handles zero retry count correctly', () => {
+      const delay = retryStrategy.getRetryDelay(0)
+
+      expect(delay).toBe(100)
+    })
+
+    it('calculates increasing delays with backoff multiplier', () => {
+      const delay0 = retryStrategy.getRetryDelay(0)
+      const delay1 = retryStrategy.getRetryDelay(1)
+      const delay2 = retryStrategy.getRetryDelay(2)
+      const delay3 = retryStrategy.getRetryDelay(3)
+
+      expect(delay0).toBe(100)
+      expect(delay1).toBe(200)
+      expect(delay2).toBe(400)
+      expect(delay3).toBe(800)
+    })
+
+    it('caps delay at maxDelay value', () => {
+      const highRetryCount = 20
+      const delay = retryStrategy.getRetryDelay(highRetryCount)
+
+      expect(delay).toBe(10000)
+    })
+
+    it('produces different delays with jitter enabled', () => {
+      const retryWithJitter = new RetryStrategy({
+        maxRetries: 3,
+        initialDelay: 100,
+        maxDelay: 1000,
+        backoffMultiplier: 2,
+        jitter: true
+      })
+
+      const delays = Array(10).fill(null).map(() =>
+        retryWithJitter.getRetryDelay(1)
+      )
+
+      const uniqueDelays = new Set(delays)
+      expect(uniqueDelays.size).toBeGreaterThan(1)
+
+      delays.forEach(delay => {
+        expect(delay).toBeGreaterThanOrEqual(100)
+        expect(delay).toBeLessThanOrEqual(300)
+      })
+    })
+
+    it('jitter range is 50-150% of base delay', () => {
+      const retryWithJitter = new RetryStrategy({
+        jitter: true,
+        maxRetries: 3,
+        initialDelay: 1000,
+        maxDelay: 10000,
+        backoffMultiplier: 1
+      })
+
+      const delays = Array(100).fill(null).map(() =>
+        retryWithJitter.getRetryDelay(0)
+      )
+
+      delays.forEach(delay => {
+        expect(delay).toBeGreaterThanOrEqual(500)
+        expect(delay).toBeLessThanOrEqual(1500)
+      })
+    })
+  })
+
+  describe('Max Retries Boundary Conditions', () => {
+    it('stops retrying exactly at maxRetries', () => {
+      const retryWithMax2 = new RetryStrategy({ maxRetries: 2 })
+
+      for (let i = 0; i < 5; i++) {
+        const shouldRetry = retryWithMax2.shouldRetry({ response: { status: 500 } }, i)
+        if (i < 2) {
+          expect(shouldRetry).toBe(true)
+        } else {
+          expect(shouldRetry).toBe(false)
+        }
+      }
+    })
+
+    it('handles zero maxRetries', () => {
+      const noRetryStrategy = new RetryStrategy({ maxRetries: 0 })
+
+      expect(noRetryStrategy.shouldRetry({ response: { status: 500 } }, 0)).toBe(false)
+    })
+
+    it('handles very high maxRetries', () => {
+      const highRetryStrategy = new RetryStrategy({ maxRetries: 100 })
+
+      expect(highRetryStrategy.shouldRetry({ response: { status: 500 } }, 50)).toBe(true)
+      expect(highRetryStrategy.shouldRetry({ response: { status: 500 } }, 99)).toBe(true)
+      expect(highRetryStrategy.shouldRetry({ response: { status: 500 } }, 100)).toBe(false)
+    })
+  })
+
+  describe('Error Object Shape Variations', () => {
+    it('handles error without response property', () => {
+      const error = new Error('Generic error')
+
+      expect(retryStrategy.shouldRetry(error, 0)).toBe(false)
+    })
+
+    it('handles error with null response', () => {
+      const error = { response: null }
+
+      expect(retryStrategy.shouldRetry(error, 0)).toBe(false)
+    })
+
+    it('handles error with undefined status', () => {
+      const error = { response: {} }
+
+      expect(retryStrategy.shouldRetry(error, 0)).toBe(false)
+    })
+
+    it('handles error with status 0 (network error)', () => {
+      const error = { response: { status: 0 } }
+
+      expect(retryStrategy.shouldRetry(error, 0)).toBe(false)
+    })
+
+    it('handles error object that is not instance of Error', () => {
+      const error = 'string error'
+
+      expect(retryStrategy.shouldRetry(error, 0)).toBe(false)
+    })
+  })
+})
+
 describe('Error Handling', () => {
   describe('createApiError', () => {
     it('creates timeout error from timeout message', () => {
