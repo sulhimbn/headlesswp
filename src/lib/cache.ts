@@ -733,12 +733,6 @@ export const cacheKeys = {
 }
 
 /**
- * @deprecated Use cacheKeys instead. This will be removed in a future version.
- * Cache key generators for consistent key naming (legacy implementation).
- */
-export const CACHE_KEYS = cacheKeys
-
-/**
  * Dependency helpers for defining cache relationships.
  * 
  * @remarks
@@ -876,11 +870,5 @@ export const cacheDependencies = {
    */
   tags: () => [],
 }
-
-/**
- * @deprecated Use cacheDependencies instead. This will be removed in a future version.
- * Dependency helpers for defining cache relationships (legacy implementation).
- */
-export const CACHE_DEPENDENCIES = cacheDependencies;
 
 export { CacheCleanup };

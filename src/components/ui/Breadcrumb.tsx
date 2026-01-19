@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { UI_TEXT } from '@/lib/constants/uiText'
 import { memo } from 'react'
+import { createArePropsEqual } from '@/lib/utils/memoization'
 
 interface BreadcrumbItem {
   label: string
@@ -10,6 +11,12 @@ interface BreadcrumbItem {
 interface BreadcrumbProps {
   items: BreadcrumbItem[]
 }
+
+const BREADCRUMB_PROPS: (keyof BreadcrumbProps)[] = [
+  'items',
+];
+
+const arePropsEqual = createArePropsEqual<BreadcrumbProps>(BREADCRUMB_PROPS);
 
 function BreadcrumbComponent({ items }: BreadcrumbProps) {
   return (
@@ -56,16 +63,6 @@ function BreadcrumbComponent({ items }: BreadcrumbProps) {
         ))}
       </ol>
     </nav>
-  )
-}
-
-function arePropsEqual(prevProps: BreadcrumbProps, nextProps: BreadcrumbProps): boolean {
-  if (prevProps.items.length !== nextProps.items.length) {
-    return false
-  }
-  return prevProps.items.every((item, index) => 
-    item.label === nextProps.items[index].label &&
-    item.href === nextProps.items[index].href
   )
 }
 

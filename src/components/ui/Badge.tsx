@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { memo } from 'react'
+import { createArePropsEqual } from '@/lib/utils/memoization'
 
 interface BadgeProps {
   children: React.ReactNode
@@ -7,6 +8,15 @@ interface BadgeProps {
   className?: string
   href?: string
 }
+
+const BADGE_PROPS: (keyof BadgeProps)[] = [
+  'variant',
+  'href',
+  'className',
+  'children',
+];
+
+const arePropsEqual = createArePropsEqual<BadgeProps>(BADGE_PROPS);
 
 const baseStyles = 'inline-flex items-center text-xs px-2 py-1 rounded-full'
 
@@ -34,15 +44,6 @@ function BadgeComponent({ children, variant = 'default', className = '', href }:
     <span className={combinedClassName}>
       {children}
     </span>
-  )
-}
-
-function arePropsEqual(prevProps: BadgeProps, nextProps: BadgeProps): boolean {
-  return (
-    prevProps.variant === nextProps.variant &&
-    prevProps.href === nextProps.href &&
-    prevProps.className === nextProps.className &&
-    prevProps.children === nextProps.children
   )
 }
 
