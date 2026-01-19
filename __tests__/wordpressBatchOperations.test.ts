@@ -1,6 +1,6 @@
 import { wordpressAPI } from '@/lib/wordpress'
 import { apiClient, getApiUrl } from '@/lib/api/client'
-import { cacheManager, CACHE_KEYS, getCacheStats, clearCache } from '@/lib/cache'
+import { cacheManager, cacheKeys, getCacheStats, clearCache } from '@/lib/cache'
 
 jest.mock('@/lib/api/client')
 jest.mock('@/lib/cache')
@@ -8,9 +8,9 @@ jest.mock('@/lib/cache')
 // Unmock getApiUrl to use actual implementation
 ;(getApiUrl as jest.MockedFunction<typeof getApiUrl>).mockImplementation((path) => path)
 
-// Mock CACHE_KEYS.media to return correct cache keys
-;(CACHE_KEYS.media as jest.Mock).mockImplementation((id: number) => `media_${id}`)
-;(CACHE_KEYS.search as jest.Mock).mockImplementation((query: string) => `search_${query}`)
+// Mock cacheKeys.media to return correct cache keys
+;(cacheKeys.media as jest.Mock).mockImplementation((id: number) => `media_${id}`)
+;(cacheKeys.search as jest.Mock).mockImplementation((query: string) => `search_${query}`)
 
 describe('WordPress API - Batch Operations and Caching', () => {
   beforeEach(() => {

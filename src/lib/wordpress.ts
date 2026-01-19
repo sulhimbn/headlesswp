@@ -1,6 +1,6 @@
 import type { WordPressPost, WordPressCategory, WordPressTag, WordPressMedia, WordPressAuthor, WordPressSearchResult } from '@/types/wordpress';
 import { apiClient, getApiUrl } from './api/client';
-import { cacheManager, CACHE_TTL, CACHE_KEYS } from './cache';
+import { cacheManager, CACHE_TTL, cacheKeys } from './cache';
 import { logger } from '@/lib/utils/logger';
 import { cacheFetch } from '@/lib/utils/cacheFetch';
 import type { IWordPressAPI } from './api/IWordPressAPI';
@@ -130,7 +130,7 @@ export const wordpressAPI: IWordPressAPI = {
     for (const id of ids) {
       if (id === 0) continue;
 
-      const cacheKey = CACHE_KEYS.media(id);
+      const cacheKey = cacheKeys.media(id);
       const cached = cacheManager.get<WordPressMedia>(cacheKey);
       if (cached) {
         result.set(id, cached);
@@ -150,7 +150,7 @@ export const wordpressAPI: IWordPressAPI = {
     
     for (const media of mediaList) {
       result.set(media.id, media);
-      cacheManager.set(CACHE_KEYS.media(media.id), media, CACHE_TTL.MEDIA);
+      cacheManager.set(cacheKeys.media(media.id), media, CACHE_TTL.MEDIA);
     }
 
     return result;
@@ -159,7 +159,7 @@ export const wordpressAPI: IWordPressAPI = {
   getMediaUrl: async (mediaId: number, signal?: AbortSignal): Promise<string | null> => {
     if (mediaId === 0) return null;
 
-    const cacheKey = CACHE_KEYS.media(mediaId);
+    const cacheKey = cacheKeys.media(mediaId);
     const cached = cacheManager.get<string>(cacheKey);
     if (cached) return cached;
 
@@ -215,7 +215,7 @@ export const wordpressAPI: IWordPressAPI = {
   },
 
   search: async (query: string, signal?: AbortSignal): Promise<WordPressPost[]> => {
-    const cacheKey = CACHE_KEYS.search(query);
+    const cacheKey = cacheKeys.search(query);
 
     const result = await cacheFetch(
       async () => {

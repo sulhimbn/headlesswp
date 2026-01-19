@@ -1,4 +1,4 @@
-import { cacheManager, CACHE_TTL, CACHE_KEYS, CACHE_DEPENDENCIES, cacheKeys, cacheDependencies } from '@/lib/cache';
+import { cacheManager, CACHE_TTL, cacheKeys, cacheDependencies } from '@/lib/cache';
 
 // Mock axios for testing
 jest.mock('axios', () => ({
@@ -203,41 +203,41 @@ describe('Cache Manager', () => {
 
 describe('Cache Keys', () => {
   it('should generate consistent cache keys', () => {
-    expect(CACHE_KEYS.posts()).toBe('posts:default');
-    expect(CACHE_KEYS.posts('{"page":1}')).toBe('posts:{"page":1}');
-    expect(CACHE_KEYS.post('test-slug')).toBe('post:test-slug');
-    expect(CACHE_KEYS.postById(123)).toBe('post:123');
-    expect(CACHE_KEYS.categories()).toBe('categories');
-    expect(CACHE_KEYS.search('test query')).toBe('search:test query');
+    expect(cacheKeys.posts()).toBe('posts:default');
+    expect(cacheKeys.posts('{"page":1}')).toBe('posts:{"page":1}');
+    expect(cacheKeys.post('test-slug')).toBe('post:test-slug');
+    expect(cacheKeys.postById(123)).toBe('post:123');
+    expect(cacheKeys.categories()).toBe('categories');
+    expect(cacheKeys.search('test query')).toBe('search:test query');
   });
 
   it('should generate category cache key', () => {
-    const key = CACHE_KEYS.category('technology');
+    const key = cacheKeys.category('technology');
     expect(key).toBe('category:technology');
   });
 
   it('should generate tag cache key', () => {
-    const key = CACHE_KEYS.tag('javascript');
+    const key = cacheKeys.tag('javascript');
     expect(key).toBe('tag:javascript');
   });
 
   it('should generate media cache key', () => {
-    const key = CACHE_KEYS.media(123);
+    const key = cacheKeys.media(123);
     expect(key).toBe('media:123');
   });
 
   it('should generate author cache key', () => {
-    const key = CACHE_KEYS.author(456);
+    const key = cacheKeys.author(456);
     expect(key).toBe('author:456');
   });
 
   it('should generate search cache key', () => {
-    const key = CACHE_KEYS.search('react hooks');
+    const key = cacheKeys.search('react hooks');
     expect(key).toBe('search:react hooks');
   });
 
   it('should generate tags cache key', () => {
-    const key = CACHE_KEYS.tags();
+    const key = cacheKeys.tags();
     expect(key).toBe('tags');
   });
 });
@@ -256,13 +256,13 @@ describe('WordPress API Caching', () => {
 
       // The actual API call would be made here and cached
       // For testing, we'll verify the cache structure
-      const cacheKey = CACHE_KEYS.posts();
+      const cacheKey = cacheKeys.posts();
       expect(cacheKey).toBe('posts:default');
     });
 
     it('should use different cache keys for different parameters', () => {
-      const key1 = CACHE_KEYS.posts('{"page":1}');
-      const key2 = CACHE_KEYS.posts('{"page":2}');
+      const key1 = cacheKeys.posts('{"page":1}');
+      const key2 = cacheKeys.posts('{"page":2}');
       
       expect(key1).not.toBe(key2);
       expect(key1).toBe('posts:{"page":1}');
@@ -609,9 +609,9 @@ describe('Orphan Dependency Cleanup', () => {
   });
 });
 
-describe('CACHE_DEPENDENCIES Helpers', () => {
+describe('cacheDependencies Helpers', () => {
   it('should generate post dependencies correctly', () => {
-    const deps = CACHE_DEPENDENCIES.post(1, [1, 2], [10, 11], 100);
+    const deps = cacheDependencies.post(1, [1, 2], [10, 11], 100);
 
     expect(deps).toContain('category:1');
     expect(deps).toContain('category:2');
@@ -622,7 +622,7 @@ describe('CACHE_DEPENDENCIES Helpers', () => {
   });
 
   it('should not include media with id 0', () => {
-    const deps = CACHE_DEPENDENCIES.post(1, [1, 2], [10, 11], 0);
+    const deps = cacheDependencies.post(1, [1, 2], [10, 11], 0);
 
     expect(deps).toContain('category:1');
     expect(deps).toContain('category:2');
@@ -633,7 +633,7 @@ describe('CACHE_DEPENDENCIES Helpers', () => {
   });
 
   it('should generate posts list dependencies', () => {
-    const deps = CACHE_DEPENDENCIES.postsList([1, 2], [10, 11]);
+    const deps = cacheDependencies.postsList([1, 2], [10, 11]);
 
     expect(deps).toContain('category:1');
     expect(deps).toContain('category:2');
@@ -642,10 +642,10 @@ describe('CACHE_DEPENDENCIES Helpers', () => {
   });
 
   it('should return empty dependencies for leaf nodes', () => {
-    expect(CACHE_DEPENDENCIES.media()).toEqual([]);
-    expect(CACHE_DEPENDENCIES.author()).toEqual([]);
-    expect(CACHE_DEPENDENCIES.categories()).toEqual([]);
-    expect(CACHE_DEPENDENCIES.tags()).toEqual([]);
+    expect(cacheDependencies.media()).toEqual([]);
+    expect(cacheDependencies.author()).toEqual([]);
+    expect(cacheDependencies.categories()).toEqual([]);
+    expect(cacheDependencies.tags()).toEqual([]);
   });
 });
 
@@ -743,26 +743,4 @@ describe('Cache Key Factory Pattern', () => {
     });
   });
 
-  describe('Backward compatibility', () => {
-    it('should maintain CACHE_KEYS compatibility', () => {
-      expect(CACHE_KEYS.posts()).toBe('posts:default');
-      expect(CACHE_KEYS.posts('{"page":1}')).toBe('posts:{"page":1}');
-      expect(CACHE_KEYS.post('test-slug')).toBe('post:test-slug');
-      expect(CACHE_KEYS.postById(123)).toBe('post:123');
-      expect(CACHE_KEYS.categories()).toBe('categories');
-      expect(CACHE_KEYS.search('test query')).toBe('search:test query');
-    });
-
-    it('should maintain CACHE_DEPENDENCIES compatibility', () => {
-      const deps = CACHE_DEPENDENCIES.post(123, [5, 8], [12, 15], 456);
-      
-      expect(deps).toEqual([
-        'category:5',
-        'category:8',
-        'tag:12',
-        'tag:15',
-        'media:456'
-      ]);
-    });
-  });
 });

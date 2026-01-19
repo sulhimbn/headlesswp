@@ -1,7 +1,7 @@
 import { wordpressAPI } from '@/lib/wordpress';
 import type { WordPressPost, WordPressCategory, WordPressTag } from '@/types/wordpress';
 import { PAGINATION_LIMITS } from '@/lib/api/config';
-import { cacheManager, CACHE_TTL, CACHE_KEYS, CACHE_DEPENDENCIES } from '@/lib/cache';
+import { cacheManager, CACHE_TTL, cacheKeys, cacheDependencies } from '@/lib/cache';
 import { dataValidator, isValidationResultValid, type ValidationResult } from '@/lib/validation/dataValidator';
 import { relationshipValidator, type RelationshipValidatorOptions } from '@/lib/validation/relationshipValidator';
 import { createFallbackPost } from '@/lib/utils/fallbackPost';
@@ -49,22 +49,22 @@ async function getEntityMap<T extends { id: number }>(
 
 async function getCategoriesMap(): Promise<Map<number, WordPressCategory>> {
   return getEntityMap<WordPressCategory>({
-    cacheKey: CACHE_KEYS.categories(),
+    cacheKey: cacheKeys.categories(),
     fetchFn: () => wordpressAPI.getCategories(),
     validateFn: dataValidator.validateCategories.bind(dataValidator),
     ttl: CACHE_TTL.CATEGORIES,
-    dependencies: CACHE_DEPENDENCIES.categories(),
+    dependencies: cacheDependencies.categories(),
     entityName: 'categories'
   });
 }
 
 async function getTagsMap(): Promise<Map<number, WordPressTag>> {
   return getEntityMap<WordPressTag>({
-    cacheKey: CACHE_KEYS.tags(),
+    cacheKey: cacheKeys.tags(),
     fetchFn: () => wordpressAPI.getTags(),
     validateFn: dataValidator.validateTags.bind(dataValidator),
     ttl: CACHE_TTL.TAGS,
-    dependencies: CACHE_DEPENDENCIES.tags(),
+    dependencies: cacheDependencies.tags(),
     entityName: 'tags'
   });
 }
