@@ -114,8 +114,22 @@ export const wordpressAPI: IWordPressAPI = {
 
   getMediaUrlsBatch: async (mediaIds: number[], signal?: AbortSignal): Promise<Map<number, string | null>> => {
     const urlMap = new Map<number, string | null>();
+    const idsToFetch: number[] = [];
 
-    const idsToFetch = mediaIds.filter(id => id !== 0);
+    for (const id of mediaIds) {
+      if (id === 0) {
+        urlMap.set(id, null);
+        continue;
+      }
+
+      const cacheKey = cacheKeys.media(id);
+      const cached = cacheManager.get<string>(cacheKey);
+      if (cached) {
+        urlMap.set(id, cached);
+      } else {
+        idsToFetch.push(id);
+      }
+    }
 
     if (idsToFetch.length > 0) {
       try {
@@ -131,13 +145,14 @@ export const wordpressAPI: IWordPressAPI = {
 
         for (const media of mediaList) {
           urlMap.set(media.id, media.source_url);
+          cacheManager.set(cacheKeys.media(media.id), media.source_url, CACHE_TTL.MEDIA);
         }
       } catch (error) {
-        logger.warn('Failed to fetch media batch for URLs', error, { module: 'wordpressAPI', mediaIds });
+        logger.warn('Failed to fetch media batch for URLs', error, { module: 'wordpressAPI', mediaIds: idsToFetch });
       }
     }
 
-    for (const id of mediaIds) {
+    for (const id of idsToFetch) {
       if (!urlMap.has(id)) {
         urlMap.set(id, null);
       }

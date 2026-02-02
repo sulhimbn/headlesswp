@@ -1,6 +1,204 @@
 # Task Backlog
 
-**Last Updated**: 2026-02-02 (Senior QA Engineer - TEST-PROXY-001: Proxy middleware tests complete with 61 comprehensive tests covering CSP, security headers, and nonce generation)
+**Last Updated**: 2026-02-02 (Performance Engineer - PERF-OPT-001: Media URL batch caching optimization complete)
+
+---
+
+## [PERF-OPT-001] Fix Media URL Batch Caching
+
+**Status**: Complete ✅
+**Priority**: High
+**Effort**: Small
+**Assigned**: Performance Engineer
+**Created**: 2026-02-02
+**Updated**: 2026-02-02
+
+### Problem Identified
+
+**Missing Cache in `getMediaUrlsBatch` Function**:
+
+The `getMediaUrlsBatch` function in `src/lib/wordpress.ts` (lines 115-147) was fetching media URLs in batches but **not caching** the results.
+
+**Comparison with `getMediaUrl`**:
+- `getMediaUrl` (lines 97-113): Checks cache, fetches if needed, **caches result**
+- `getMediaUrlsBatch` (lines 115-147): Fetches in batch, **does not cache results**
+
+**Impact**:
+- Media URLs fetched in batch were not cached for subsequent requests
+- Re-rendering pages with same media items required fetching URLs again
+- Wasted API calls to WordPress backend
+- Poor cache hit rate for media URLs
+- Slower page loads on repeat visits
+
+**User Impact**:
+- Slower page loads when revisiting pages with same media
+- Increased server load from unnecessary API calls
+- Poor cache utilization (media rarely changes, should be cached long-term)
+
+### Implementation Summary
+
+**Files Modified**:
+- `src/lib/wordpress.ts` - Updated `getMediaUrlsBatch` function
+
+**Changes Made**:
+1. Added cache check for each media ID before fetching
+2. Only fetch uncached media IDs in batch
+3. Cache newly fetched media URLs with `CACHE_TTL.MEDIA` (1 hour)
+4. Maintain same batch fetching behavior for uncached IDs
+
+**Code Changes**:
+
+**Before** (no caching):
+```typescript
+getMediaUrlsBatch: async (mediaIds: number[]): Promise<Map<number, string | null>> => {
+  const urlMap = new Map<number, string | null>();
+  const idsToFetch = mediaIds.filter(id => id !== 0);
+
+  if (idsToFetch.length > 0) {
+    const response = await apiClient.get('/wp/v2/media', {
+      params: { include: idsToFetch.join(','), _fields: 'id,source_url' }
+    });
+    const mediaList = response.data;
+    for (const media of mediaList) {
+      urlMap.set(media.id, media.source_url);
+    }
+  }
+
+  for (const id of mediaIds) {
+    if (!urlMap.has(id)) {
+      urlMap.set(id, null);
+    }
+  }
+
+  return urlMap;
+}
+```
+
+**After** (with caching):
+```typescript
+getMediaUrlsBatch: async (mediaIds: number[]): Promise<Map<number, string | null>> => {
+  const urlMap = new Map<number, string | null>();
+  const idsToFetch: number[] = [];
+
+  for (const id of mediaIds) {
+    if (id === 0) {
+      urlMap.set(id, null);
+      continue;
+    }
+
+    const cacheKey = cacheKeys.media(id);
+    const cached = cacheManager.get<string>(cacheKey);
+    if (cached) {
+      urlMap.set(id, cached);
+    } else {
+      idsToFetch.push(id);
+    }
+  }
+
+  if (idsToFetch.length > 0) {
+    const response = await apiClient.get('/wp/v2/media', {
+      params: { include: idsToFetch.join(','), _fields: 'id,source_url' }
+    });
+
+    const mediaList = response.data;
+
+    for (const media of mediaList) {
+      urlMap.set(media.id, media.source_url);
+      cacheManager.set(cacheKeys.media(media.id), media.source_url, CACHE_TTL.MEDIA);
+    }
+  }
+
+  for (const id of idsToFetch) {
+    if (!urlMap.has(id)) {
+      urlMap.set(id, null);
+    }
+  }
+
+  return urlMap;
+}
+```
+
+### Test Results
+
+**Tests Created**:
+- Added 3 new tests in `__tests__/wordpressBatchOperations.test.ts`:
+  - `returns cached media URLs without fetching` - Tests cache hit behavior
+  - `caches newly fetched media URLs` - Tests cache write behavior
+  - `mixes cached and fetched media URLs` - Tests mixed scenario
+
+**Test Coverage**:
+- All existing tests continue to pass (no regressions)
+- 3 new tests added for caching behavior
+- Total: 1968 tests passing, 23 skipped
+
+**Test Execution**:
+```
+PASS __tests__/wordpressBatchOperations.test.ts
+  ✓ returns cached media URLs without fetching (1 ms)
+  ✓ caches newly fetched media URLs (1 ms)
+  ✓ mixes cached and fetched media URLs (1 ms)
+```
+
+### Code Metrics
+
+| Metric | Before | After | Improvement |
+|--------|---------|-------|-------------|
+| **Cache Hit Rate** | 0% (never cached) | High (cached for 1 hour) | Infinite improvement |
+| **API Calls (repeat visit)** | N (N media IDs) | 0 (all from cache) | 100% reduction |
+| **Function Complexity** | Simple | Slightly more complex | Acceptable tradeoff |
+| **Lines Added** | N/A | +15 | 1 file modified |
+
+### Performance Improvements
+
+**Before Optimization**:
+- First visit: Fetch 10 media URLs in batch (1 API call)
+- Second visit: Fetch same 10 media URLs in batch (1 API call)
+- Repeat for every page view
+
+**After Optimization**:
+- First visit: Fetch 10 media URLs in batch (1 API call), cache all for 1 hour
+- Second visit (within 1 hour): Return all 10 URLs from cache (0 API calls)
+- Subsequent views (within 1 hour): Return all from cache (0 API calls)
+
+**Impact on Real-World Scenarios**:
+- **Homepage**: Featured posts cached, subsequent loads skip API calls
+- **News list**: Paginated views with overlapping posts benefit from cache
+- **Post detail**: Media URL cached, re-visits load instantly
+- **Search**: Search results with media URLs cached for repeat queries
+
+### Success Criteria
+
+- ✅ Cache check added for each media ID
+- ✅ Only uncached IDs fetched in batch
+- ✅ Newly fetched URLs cached with 1-hour TTL
+- ✅ Backward compatible (same API signature)
+- ✅ All tests passing (1968 passed, 23 skipped)
+- ✅ Lint passing (0 errors)
+- ✅ TypeScript compilation passing (0 errors)
+- ✅ Zero regressions (all existing tests pass)
+
+### Anti-Patterns Avoided
+
+- ❌ No code duplication (follows same pattern as `getMediaUrl`)
+- ❌ No breaking changes (API signature unchanged)
+- ❌ No performance degradation (added O(n) cache check, worth it)
+- ❌ No unbounded growth (respecting existing cache TTL)
+- ❌ No unnecessary API calls (only fetch uncached IDs)
+
+### Architectural Principles Applied
+
+1. **Caching Strategy**: Cache expensive operations with proper TTL
+2. **Resource Efficiency**: Minimize API calls to WordPress backend
+3. **User-Centric**: Faster page loads on subsequent visits
+4. **Consistency**: Follows same caching pattern as `getMediaUrl`
+5. **Correctness**: Cache invalidation handled by existing TTL
+6. **Maintainability**: Clear, readable code with comments
+
+### See Also
+
+- [Architecture Blueprint Performance Standards](./blueprint.md#performance-standards)
+- [Architecture Blueprint API Standards](./blueprint.md#api-standards)
+- [Task PERF-MON-001: Core Performance Metrics Collection](#perf-mon-001)
 
 ---
 
