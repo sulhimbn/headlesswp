@@ -578,7 +578,81 @@ interface ApiListResult<T> extends ApiResult<T[]> {
 6. **Performance**: N+1 query fix eliminates sequential API calls in search
 7. **Code Clarity**: Smaller, focused wordpress.ts file with less duplication
 
-**See Also**: [Task REFACTOR-010](./task.md#refactor-010), [Task REFACTOR-011](./task.md#refactor-011), [Task REFACTOR-012](./task.md#refactor-012), [Task REFACTOR-014](./task.md#refactor-014), [Task REFACTOR-018](./task.md#refactor-018), [Task ARCH-ERROR-002](./task.md#arch-error-002), [Task REFACTOR-026](./task.md#refactor-026), [Task REFACTOR-027](./task.md#refactor-027), [Task ARCH-UNUSED-001](./task.md#arch-unused-001), [Task REFACTOR-028](./task.md#refactor-028), [Task REFACTOR-029](./task.md#refactor-029), [Task REFACTOR-030](./task.md#refactor-030), [Task REFACTOR-031](./task.md#refactor-031)
+**See Also**: [Task REFACTOR-010](./task.md#refactor-010), [Task REFACTOR-011](./task.md#refactor-011), [Task REFACTOR-012](./task.md#refactor-012), [Task REFACTOR-014](./task.md#refactor-014), [Task REFACTOR-018](./task.md#refactor-018), [Task ARCH-ERROR-002](./task.md#arch-error-002), [Task REFACTOR-026](./task.md#refactor-026), [Task REFACTOR-027](./task.md#refactor-027), [Task ARCH-UNUSED-001](./task.md#arch-unused-001), [Task REFACTOR-028](./task.md#refactor-028), [Task REFACTOR-029](./task.md#refactor-029), [Task REFACTOR-030](./task.md#refactor-030), [Task REFACTOR-031](./task.md#refactor-031), [Task REFACTOR-032](./task.md#refactor-032)
+
+**REFACTOR-032: CacheManager Dependency Extraction**:
+- Created `CacheDependencyManager` class (src/lib/cache/cacheDependencyManager.ts, 167 lines)
+- Created `CacheConfig` module (src/lib/cache/cacheConfig.ts, 108 lines)
+- Extracted dependency tracking logic from CacheManager (registerDependencies, invalidate, getDependencies)
+- Extracted CACHE_TTL constants into separate configuration module
+- Refactored CacheManager to delegate dependency operations to CacheDependencyManager
+- Updated cache.ts to export CACHE_CONFIG from cacheConfig module
+- All dependency management logic now centralized in CacheDependencyManager
+- Cache configuration centralized in CacheConfig module
+
+**Implementation Details**:
+
+**CacheDependencyManager** (167 lines):
+- `registerDependencies(key, dependencies, stats)` - Register bi-directional dependency relationships
+- `invalidate(key, onDelete, stats)` - Cascade invalidation with recursive dependent deletion
+- `getDependencies(key)` - Query dependencies and dependents for a key
+
+**CacheConfig** (108 lines):
+- `CACHE_CONFIG` object with all TTL constants (POSTS, POST, CATEGORIES, TAGS, MEDIA, SEARCH, AUTHOR)
+- Legacy `CACHE_TTL` export for backward compatibility
+- Comprehensive documentation for each TTL value
+
+**CacheManager Refactoring**:
+- Added `CacheDependencyManager` instance
+- Updated `set()` to delegate dependency registration to `CacheDependencyManager`
+- Updated `invalidate()` to delegate cascade invalidation to `CacheDependencyManager`
+- Updated `getDependencies()` to delegate dependency queries to `CacheDependencyManager`
+- Removed duplicate dependency management code from CacheManager
+- Updated imports and exports to use extracted modules
+
+**Code Metrics**:
+
+| Metric | Before | After | Improvement |
+|--------|---------|-------|-------------|
+| **cache.ts** | 874 lines | 817 lines | -57 lines (6.5% reduction) |
+| **CacheDependencyManager** | N/A | 167 lines | +167 lines (new module) |
+| **CacheConfig** | N/A | 108 lines | +108 lines (new module) |
+| **Total** | 874 lines | 1092 lines (817 + 167 + 108) | Net: +218 lines (modular architecture) |
+
+**Test Results**:
+- cache.test.ts: 69 tests passing (all dependency tracking tests pass)
+- cacheMetricsCalculator.test.ts: 18 tests passing
+- cacheCleanup.test.ts: 18 tests passing
+- Total cache tests: 105 tests passing (0 failures, 0 regressions)
+- Lint: 0 errors, 0 warnings
+- TypeScript: 0 errors
+
+**Benefits**:
+1. **Single Responsibility**: CacheManager focuses on core cache operations (get, set, delete)
+2. **Separation of Concerns**: Dependency tracking isolated in CacheDependencyManager
+3. **Configuration Management**: Cache TTL values centralized in CacheConfig module
+4. **Maintainability**: Changes to dependency logic only require updating CacheDependencyManager
+5. **Testability**: CacheDependencyManager can be tested independently
+6. **Open/Closed**: Can extend dependency management without modifying CacheManager
+7. **Code Clarity**: Each module has a single, clear purpose
+8. **Modularity**: Dependencies and configuration can be reused or replaced independently
+
+**Anti-Patterns Avoided**:
+- ❌ No god class (CacheManager reduced from 874 to 817 lines)
+- ❌ No duplicate code (dependency logic defined once in CacheDependencyManager)
+- ❌ No mixed concerns (cache operations, dependency tracking, and configuration separated)
+- ❌ No tight coupling (CacheManager delegates to CacheDependencyManager)
+- ❌ No breaking changes (backward compatible exports maintained)
+
+**Architectural Principles Applied**:
+1. **Single Responsibility Principle**: Each module has one clear responsibility
+2. **Open/Closed Principle**: CacheDependencyManager can be extended without modifying CacheManager
+3. **Dependency Inversion**: CacheManager depends on CacheDependencyManager abstraction
+4. **DRY Principle**: Dependency management logic defined once
+5. **Separation of Concerns**: Cache operations, dependency tracking, and configuration separated
+6. **Modularity**: Independent modules that can be tested and maintained separately
+
+**See Also**: [Task REFACTOR-032](./task.md#refactor-032)
 
 ## Integration Resilience Patterns
 
