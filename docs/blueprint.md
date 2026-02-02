@@ -1,7 +1,7 @@
 # Architecture Blueprint
 
 **Version**: 1.0.0
-**Last Updated**: 2026-01-19 (Principal Software Architect - REFACTOR-030: WordPress API Method Factory Complete)
+**Last Updated**: 2026-02-02 (Principal Software Architect - REFACTOR-031: Service Layer Helper Extraction Complete)
 
 ## System Architecture
 
@@ -320,11 +320,17 @@ interface ApiListResult<T> extends ApiResult<T[]> {
    - Applied to 5 methods (getPostBySlug, getCategoryById, getCategoryBySlug, getTagById, getTagBySlug)
 
 **Service Layer Helpers** (`src/lib/services/enhancedPostService.ts`):
-1. **`fetchAndValidate<T, R>()`** - Unified fetch and validate helper
-   - Merged duplicate `fetchAndValidate` and `fetchAndValidateSingle` functions
-   - Accepts generic `ValidationResult<T>` type for both single and collection validation
-   - Supports configurable log level with safer default ('error')
-   - Applied to 4 service methods (getLatestPosts, getCategoryPosts, getAllPosts, getPostById)
+1. **`fetchAndValidatePosts()`** - Unified fetch, error handling, and validation helper for post collections
+    - Merged duplicate error handling and validation patterns from 6 service methods
+    - Accepts `FetchAndValidatePostsOptions` interface for configuration
+    - Supports optional fallback key for fallback posts
+    - Supports configurable return empty on error flag
+    - Applied to 4 service methods (getLatestPosts, getCategoryPosts, getAllPosts, searchPosts)
+2. **`fetchAndValidateSinglePost()`** - Unified fetch, error handling, and validation helper for single post
+    - Merged duplicate error handling and validation patterns from 2 service methods
+    - Accepts `FetchAndValidateSinglePostOptions` interface for configuration
+    - Supports identifier for logging (string or number)
+    - Applied to 2 service methods (getPostBySlug, getPostById)
 
 2. **`getEntityMap<T>()`** - Generic entity map helper
    - Merged duplicate `getCategoriesMap` and `getTagsMap` functions
@@ -572,7 +578,7 @@ interface ApiListResult<T> extends ApiResult<T[]> {
 6. **Performance**: N+1 query fix eliminates sequential API calls in search
 7. **Code Clarity**: Smaller, focused wordpress.ts file with less duplication
 
-**See Also**: [Task REFACTOR-030](./task.md#refactor-030)
+**See Also**: [Task REFACTOR-010](./task.md#refactor-010), [Task REFACTOR-011](./task.md#refactor-011), [Task REFACTOR-012](./task.md#refactor-012), [Task REFACTOR-014](./task.md#refactor-014), [Task REFACTOR-018](./task.md#refactor-018), [Task ARCH-ERROR-002](./task.md#arch-error-002), [Task REFACTOR-026](./task.md#refactor-026), [Task REFACTOR-027](./task.md#refactor-027), [Task ARCH-UNUSED-001](./task.md#arch-unused-001), [Task REFACTOR-028](./task.md#refactor-028), [Task REFACTOR-029](./task.md#refactor-029), [Task REFACTOR-030](./task.md#refactor-030), [Task REFACTOR-031](./task.md#refactor-031)
 
 ## Integration Resilience Patterns
 
