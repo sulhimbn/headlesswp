@@ -1,6 +1,628 @@
 # Task Backlog
 
-**Last Updated**: 2026-02-02 (Principal Security Engineer - SEC-005: Security Hardening Complete)
+**Last Updated**: 2026-02-02 (Principal Product Strategist - Added features for performance monitoring, SEO, E2E testing, category/tag navigation, and author profiles)
+
+---
+
+## [PERF-MON-001] Implement Core Performance Metrics Collection
+
+**Feature**: PERF-MON-001
+**Status**: Backlog
+**Priority**: P0
+**Effort**: Medium
+**Assigned**: 07 Integration Engineer
+**Created**: 2026-02-02
+**Updated**: 2026-02-02
+
+### Description
+
+Implement core performance metrics collection for the application including page load times (FCP, LCP, TTI), API response times, resource utilization, and error rates.
+
+### Acceptance Criteria
+
+- [ ] Performance metrics collected for page load times (FCP, LCP, TTI)
+- [ ] API response time metrics collected (p50, p95, p99)
+- [ ] Resource utilization metrics collected (CPU, memory)
+- [ ] Error rate metrics collected by endpoint
+- [ ] Metrics integrated with existing TelemetryCollector
+- [ ] Web Vitals API used for frontend performance metrics
+- [ ] Performance metrics API endpoint created for monitoring
+- [ ] Documentation for metrics collection complete
+
+### See Also
+
+- [Feature PERF-MON-001: Performance Monitoring System](./feature.md#perf-mon-001-performance-monitoring-system)
+- [Architecture Blueprint Performance Standards](./blueprint.md#performance-standards)
+
+---
+
+## [PERF-MON-002] Integrate APM Provider
+
+**Feature**: PERF-MON-001
+**Status**: Backlog
+**Priority**: P0
+**Effort**: Medium
+**Assigned**: 07 Integration Engineer
+**Created**: 2026-02-02
+**Updated**: 2026-02-02
+
+### Description
+
+Integrate APM provider (DataDog, New Relic, or Prometheus) for real-time metric export and monitoring dashboards.
+
+### Acceptance Criteria
+
+- [ ] APM provider integration implemented (at least 2 providers supported)
+- [ ] Real-time metric export to APM configured
+- [ ] Performance dashboards created in APM
+- [ ] Alerting rules configured for performance degradation
+- [ ] OpenTelemetry instrumentation considered for provider-agnostic support
+- [ ] Sampling rate configured to reduce data volume
+- [ ] APM integration documentation complete
+
+### See Also
+
+- [Feature PERF-MON-001: Performance Monitoring System](./feature.md#perf-mon-001-performance-monitoring-system)
+- [Architecture Blueprint Integration Resilience Patterns](./blueprint.md#integration-resilience-patterns)
+
+---
+
+## [SEO-001] Implement Dynamic Meta Tags
+
+**Feature**: SEO-001
+**Status**: Backlog
+**Priority**: P1
+**Effort**: Small
+**Assigned**: 08 UI/UX Engineer
+**Created**: 2026-02-02
+**Updated**: 2026-02-02
+
+### Description
+
+Implement dynamic meta tags (title, description, robots) for all pages using Next.js 16 metadata API to improve search engine visibility.
+
+### Acceptance Criteria
+
+- [ ] Dynamic title tags implemented for all pages
+- [ ] Dynamic meta descriptions implemented for all pages
+- [ ] Robots meta tags configured for all pages
+- [ ] Canonical URLs configured for pagination pages
+- [ ] Next.js 16 metadata API used
+- [ ] Meta tag caching configured (ISR)
+- [ ] Meta tag unit tests written
+- [ ] Meta tag documentation complete
+
+### See Also
+
+- [Feature SEO-001: SEO Optimization](./feature.md#seo-001-seo-optimization)
+- [Architecture Blueprint Performance Standards](./blueprint.md#performance-standards)
+
+---
+
+## [SEO-002] Add Schema.org Structured Data
+
+**Feature**: SEO-001
+**Status**: Backlog
+**Priority**: P1
+**Effort**: Medium
+**Assigned**: 08 UI/UX Engineer
+**Created**: 2026-02-02
+**Updated**: 2026-02-02
+
+### Description
+
+Add Schema.org structured data markup for articles, breadcrumbs, organization, and website to help search engines understand content structure.
+
+### Acceptance Criteria
+
+- [ ] Article schema implemented for post pages
+- [ ] BreadcrumbList schema implemented for navigation
+- [ ] Organization schema implemented
+- [ ] Website schema implemented
+- [ ] schema-dts TypeScript types used
+- [ ] Structured data validated with Google Rich Results Test
+- [ ] Structured data unit tests written
+- [ ] Structured data documentation complete
+
+### See Also
+
+- [Feature SEO-001: SEO Optimization](./feature.md#seo-001-seo-optimization)
+- [Architecture Blueprint Performance Standards](./blueprint.md#performance-standards)
+
+---
+
+## [SEO-003] Generate XML Sitemap
+
+**Feature**: SEO-001
+**Status**: Backlog
+**Priority**: P1
+**Effort**: Small
+**Assigned**: 06 Data Architect
+**Created**: 2026-02-02
+**Updated**: 2026-02-02
+
+### Description
+
+Generate XML sitemap for all pages (homepage, posts, categories, tags, authors) to help search engines discover and index content.
+
+### Acceptance Criteria
+
+- [ ] XML sitemap generated dynamically at /sitemap.xml
+- [ ] Sitemap includes all posts
+- [ ] Sitemap includes all categories
+- [ ] Sitemap includes all tags
+- [ ] Sitemap includes all authors
+- [ ] Sitemap includes homepage
+- [ ] next-sitemap package configured
+- [ ] Sitemap caching configured (ISR with long TTL)
+- [ ] Sitemap validated with Google Search Console
+- [ ] Sitemap documentation complete
+
+### See Also
+
+- [Feature SEO-001: SEO Optimization](./feature.md#seo-001-seo-optimization)
+- [Architecture Blueprint Data Architecture](./blueprint.md#data-architecture)
+
+---
+
+## [SEO-004] Configure robots.txt
+
+**Feature**: SEO-001
+**Status**: Backlog
+**Priority**: P1
+**Effort**: Small
+**Assigned**: 06 Data Architect
+**Created**: 2026-02-02
+**Updated**: 2026-02-02
+
+### Description
+
+Configure robots.txt to control search engine crawling behavior and prevent indexing of admin or sensitive pages.
+
+### Acceptance Criteria
+
+- [ ] robots.txt configured at /robots.txt
+- [ ] Public pages allowed (homepage, posts, categories, tags, authors)
+- [ ] Admin or sensitive pages disallowed (if any)
+- [ ] Sitemap URL referenced in robots.txt
+- [ ] robots.txt documentation complete
+
+### See Also
+
+- [Feature SEO-001: SEO Optimization](./feature.md#seo-001-seo-optimization)
+- [Architecture Blueprint Performance Standards](./blueprint.md#performance-standards)
+
+---
+
+## [SEO-005] Add Open Graph and Twitter Card Tags
+
+**Feature**: SEO-001
+**Status**: Backlog
+**Priority**: P1
+**Effort**: Small
+**Assigned**: 08 UI/UX Engineer
+**Created**: 2026-02-02
+**Updated**: 2026-02-02
+
+### Description
+
+Add Open Graph (OG) tags and Twitter Card tags for social media sharing to improve content appearance when shared on social platforms.
+
+### Acceptance Criteria
+
+- [ ] Open Graph tags implemented for all pages (og:title, og:description, og:image, og:url)
+- [ ] Twitter Card tags implemented for all pages (twitter:card, twitter:title, twitter:description, twitter:image)
+- [ ] Default images configured for pages without featured images
+- [ ] OG and Twitter card tags tested with Facebook Debugger and Twitter Card Validator
+- [ ] OG and Twitter card documentation complete
+
+### See Also
+
+- [Feature SEO-001: SEO Optimization](./feature.md#seo-001-seo-optimization)
+- [Architecture Blueprint Design System](./blueprint.md#design-system)
+
+---
+
+## [E2E-001] Setup Playwright Framework
+
+**Feature**: E2E-001
+**Status**: Backlog
+**Priority**: P1
+**Effort**: Medium
+**Assigned**: 03 Test Engineer
+**Created**: 2026-02-02
+**Updated**: 2026-02-02
+
+### Description
+
+Setup Playwright end-to-end testing framework with configuration for multiple browsers (Chromium, Firefox, WebKit) and devices (desktop, mobile, tablet).
+
+### Acceptance Criteria
+
+- [ ] Playwright installed and configured
+- [ ] Multiple browsers configured (Chromium, Firefox, WebKit)
+- [ ] Multiple devices configured (desktop, mobile, tablet)
+- [ ] Playwright configuration file created
+- [ ] Test directory structure created
+- [ ] Playwright documentation complete
+
+### See Also
+
+- [Feature E2E-001: End-to-End Testing Framework](./feature.md#e2e-001-end-to-end-testing-framework)
+- [Architecture Blueprint Testing Standards](./blueprint.md#testing-standards)
+
+---
+
+## [E2E-002] Write E2E Tests for Critical User Flows
+
+**Feature**: E2E-001
+**Status**: Backlog
+**Priority**: P1
+**Effort**: Medium
+**Assigned**: 03 Test Engineer
+**Created**: 2026-02-02
+**Updated**: 2026-02-02
+
+### Description
+
+Write Playwright end-to-end tests for critical user flows including homepage navigation, post listing, post detail view, search functionality, and pagination.
+
+### Acceptance Criteria
+
+- [ ] E2E test for homepage navigation
+- [ ] E2E test for post listing (berita page)
+- [ ] E2E test for pagination on post listing
+- [ ] E2E test for post detail view
+- [ ] E2E test for search functionality
+- [ ] All tests pass on multiple browsers
+- [ ] All tests pass on multiple devices
+- [ ] Test data fixtures created
+- [ ] E2E test documentation complete
+
+### See Also
+
+- [Feature E2E-001: End-to-End Testing Framework](./feature.md#e2e-001-end-to-end-testing-framework)
+- [Architecture Blueprint Testing Standards](./blueprint.md#testing-standards)
+
+---
+
+## [E2E-003] Configure CI/CD for E2E Tests
+
+**Feature**: E2E-001
+**Status**: Backlog
+**Priority**: P1
+**Effort**: Medium
+**Assigned**: 09 DevOps Engineer
+**Created**: 2026-02-02
+**Updated**: 2026-02-02
+
+### Description
+
+Configure CI/CD pipeline (GitHub Actions) to run Playwright E2E tests with test reporting and artifact storage (screenshots, videos).
+
+### Acceptance Criteria
+
+- [ ] GitHub Actions workflow for E2E tests created
+- [ ] E2E tests run on schedule (not on every commit)
+- [ ] Test reports generated and published
+- [ ] Screenshots captured on failure
+- [ ] Videos recorded for test runs
+- [ ] Test artifacts stored in GitHub Actions
+- [ ] E2E test documentation complete
+
+### See Also
+
+- [Feature E2E-001: End-to-End Testing Framework](./feature.md#e2e-001-end-to-end-testing-framework)
+- [Architecture Blueprint Testing Standards](./blueprint.md#testing-standards)
+
+---
+
+## [CAT-TAG-001] Create Category List Page
+
+**Feature**: CAT-TAG-001
+**Status**: Backlog
+**Priority**: P1
+**Effort**: Small
+**Assigned**: 08 UI/UX Engineer
+**Created**: 2026-02-02
+**Updated**: 2026-02-02
+
+### Description
+
+Create category list page that displays all categories with post counts and allows users to browse categories.
+
+### Acceptance Criteria
+
+- [ ] Category list page created at /categories
+- [ ] All categories displayed with names and post counts
+- [ ] Category list uses design tokens for consistent styling
+- [ ] Category links to category detail pages
+- [ ] Loading state displayed while fetching categories
+- [ ] Empty state displayed when no categories exist
+- [ ] Error handling for failed category fetch
+- [ ] SEO meta tags for category list page
+- [ ] Category list page is responsive
+- [ ] Category list page unit tests written
+- [ ] Category list page documentation complete
+
+### See Also
+
+- [Feature CAT-TAG-001: Category and Tag Navigation](./feature.md#cat-tag-001-category-and-tag-navigation)
+- [Architecture Blueprint Design System](./blueprint.md#design-system)
+
+---
+
+## [CAT-TAG-002] Create Category Detail Page
+
+**Feature**: CAT-TAG-001
+**Status**: Backlog
+**Priority**: P1
+**Effort**: Small
+**Assigned**: 08 UI/UX Engineer
+**Created**: 2026-02-02
+**Updated**: 2026-02-02
+
+### Description
+
+Create category detail page that displays posts for a specific category with pagination.
+
+### Acceptance Criteria
+
+- [ ] Category detail page created at /categories/[slug]
+- [ ] Category name and description displayed
+- [ ] Posts for category displayed in grid layout
+- [ ] PostCard component reused for post display
+- [ ] Pagination implemented using existing Pagination component
+- [ ] Breadcrumb navigation implemented
+- [ ] Loading state displayed while fetching posts
+- [ ] Empty state displayed when no posts exist for category
+- [ ] Error handling for invalid category slug
+- [ ] SEO meta tags for category detail page
+- [ ] ISR caching configured (10-30 minutes TTL)
+- [ ] Category detail page unit tests written
+- [ ] Category detail page documentation complete
+
+### See Also
+
+- [Feature CAT-TAG-001: Category and Tag Navigation](./feature.md#cat-tag-001-category-and-tag-navigation)
+- [Architecture Blueprint Design System](./blueprint.md#design-system)
+
+---
+
+## [CAT-TAG-003] Create Tag List Page
+
+**Feature**: CAT-TAG-001
+**Status**: Backlog
+**Priority**: P1
+**Effort**: Small
+**Assigned**: 08 UI/UX Engineer
+**Created**: 2026-02-02
+**Updated**: 2026-02-02
+
+### Description
+
+Create tag list page that displays all tags with post counts and allows users to browse tags.
+
+### Acceptance Criteria
+
+- [ ] Tag list page created at /tags
+- [ ] All tags displayed with names and post counts
+- [ ] Tag list uses design tokens for consistent styling
+- [ ] Tag links to tag detail pages
+- [ ] Loading state displayed while fetching tags
+- [ ] Empty state displayed when no tags exist
+- [ ] Error handling for failed tag fetch
+- [ ] SEO meta tags for tag list page
+- [ ] Tag list page is responsive
+- [ ] Tag list page unit tests written
+- [ ] Tag list page documentation complete
+
+### See Also
+
+- [Feature CAT-TAG-001: Category and Tag Navigation](./feature.md#cat-tag-001-category-and-tag-navigation)
+- [Architecture Blueprint Design System](./blueprint.md#design-system)
+
+---
+
+## [CAT-TAG-004] Create Tag Detail Page
+
+**Feature**: CAT-TAG-001
+**Status**: Backlog
+**Priority**: P1
+**Effort**: Small
+**Assigned**: 08 UI/UX Engineer
+**Created**: 2026-02-02
+**Updated**: 2026-02-02
+
+### Description
+
+Create tag detail page that displays posts for a specific tag with pagination.
+
+### Acceptance Criteria
+
+- [ ] Tag detail page created at /tags/[slug]
+- [ ] Tag name displayed
+- [ ] Posts for tag displayed in grid layout
+- [ ] PostCard component reused for post display
+- [ ] Pagination implemented using existing Pagination component
+- [ ] Breadcrumb navigation implemented
+- [ ] Loading state displayed while fetching posts
+- [ ] Empty state displayed when no posts exist for tag
+- [ ] Error handling for invalid tag slug
+- [ ] SEO meta tags for tag detail page
+- [ ] ISR caching configured (10-30 minutes TTL)
+- [ ] Tag detail page unit tests written
+- [ ] Tag detail page documentation complete
+
+### See Also
+
+- [Feature CAT-TAG-001: Category and Tag Navigation](./feature.md#cat-tag-001-category-and-tag-navigation)
+- [Architecture Blueprint Design System](./blueprint.md#design-system)
+
+---
+
+## [CAT-TAG-005] Add Category/Tag Badges to Post Cards
+
+**Feature**: CAT-TAG-001
+**Status**: Backlog
+**Priority**: P1
+**Effort**: Small
+**Assigned**: 08 UI/UX Engineer
+**Created**: 2026-02-02
+**Updated**: 2026-02-02
+
+### Description
+
+Add category and tag badges to PostCard component that link to category/tag detail pages.
+
+### Acceptance Criteria
+
+- [ ] Category badges added to PostCard component
+- [ ] Category badges link to category detail pages
+- [ ] Tag badges added to PostCard component
+- [ ] Tag badges link to tag detail pages
+- [ ] Badges use design tokens for consistent styling
+- [ ] Badges only display when categories/tags exist
+- [ ] PostCard component unit tests updated
+- [ ] PostCard documentation updated
+
+### See Also
+
+- [Feature CAT-TAG-001: Category and Tag Navigation](./feature.md#cat-tag-001-category-and-tag-navigation)
+- [Architecture Blueprint Design System](./blueprint.md#design-system)
+
+---
+
+## [CAT-TAG-006] Add Category/Tag Navigation to Header
+
+**Feature**: CAT-TAG-001
+**Status**: Backlog
+**Priority**: P2
+**Effort**: Small
+**Assigned**: 08 UI/UX Engineer
+**Created**: 2026-02-02
+**Updated**: 2026-02-02
+
+### Description
+
+Add category and tag navigation links to Header component for easy access to category/tag pages.
+
+### Acceptance Criteria
+
+- [ ] Category navigation link added to Header
+- [ ] Tag navigation link added to Header
+- [ ] Links use design tokens for consistent styling
+- [ ] Links are responsive (mobile-friendly)
+- [ ] Header component unit tests updated
+- [ ] Header documentation updated
+
+### See Also
+
+- [Feature CAT-TAG-001: Category and Tag Navigation](./feature.md#cat-tag-001-category-and-tag-navigation)
+- [Architecture Blueprint Design System](./blueprint.md#design-system)
+
+---
+
+## [AUTHOR-001] Re-introduce Author Fetching
+
+**Feature**: AUTHOR-001
+**Status**: Backlog
+**Priority**: P2
+**Effort**: Small
+**Assigned**: 06 Data Architect
+**Created**: 2026-02-02
+**Updated**: 2026-02-02
+
+### Description
+
+Re-introduce author fetching that was removed in ARCH-UNUSED-001, as author profiles are now a required feature.
+
+### Acceptance Criteria
+
+- [ ] getAuthorById() method re-added to enhancedPostService.ts
+- [ ] getAuthorsMap() method re-added to enhancedPostService.ts
+- [ ] Author fetching uses standardized API methods
+- [ ] Author data cached with appropriate TTL (30-60 minutes)
+- [ ] Author data validated using dataValidator
+- [ ] Author fetching unit tests written
+- [ ] Author fetching documentation updated
+
+### See Also
+
+- [Feature AUTHOR-001: Author Profiles](./feature.md#author-001-author-profiles)
+- [Architecture Blueprint Data Architecture](./blueprint.md#data-architecture)
+- [Task ARCH-UNUSED-001: Remove Unused Author Fetching](#arch-unused-001)
+
+---
+
+## [AUTHOR-002] Create Author Profile Page
+
+**Feature**: AUTHOR-001
+**Status**: Backlog
+**Priority**: P2
+**Effort**: Small
+**Assigned**: 08 UI/UX Engineer
+**Created**: 2026-02-02
+**Updated**: 2026-02-02
+
+### Description
+
+Create author profile page that displays author information and posts by that author.
+
+### Acceptance Criteria
+
+- [ ] Author profile page created at /authors/[id] or /authors/[slug]
+- [ ] Author name and bio displayed
+- [ ] Author avatar/featured image displayed
+- [ ] Posts by author displayed in grid layout
+- [ ] PostCard component reused for post display
+- [ ] Pagination implemented using existing Pagination component
+- [ ] Breadcrumb navigation implemented
+- [ ] Loading state displayed while fetching author data
+- [ ] Empty state displayed when author has no posts
+- [ ] Error handling for invalid author ID or slug
+- [ ] SEO meta tags for author profile page
+- [ ] ISR caching configured (30-60 minutes TTL)
+- [ ] Author profile page unit tests written
+- [ ] Author profile page documentation complete
+
+### See Also
+
+- [Feature AUTHOR-001: Author Profiles](./feature.md#author-001-author-profiles)
+- [Architecture Blueprint Design System](./blueprint.md#design-system)
+
+---
+
+## [AUTHOR-003] Add Author Badges to Post Cards
+
+**Feature**: AUTHOR-001
+**Status**: Backlog
+**Priority**: P2
+**Effort**: Small
+**Assigned**: 08 UI/UX Engineer
+**Created**: 2026-02-02
+**Updated**: 2026-02-02
+
+### Description
+
+Add author badge to PostCard and post detail page that links to author profile page.
+
+### Acceptance Criteria
+
+- [ ] Author badge added to PostCard component
+- [ ] Author badge links to author profile page
+- [ ] Author link added to post detail page
+- [ ] Author name displayed in badge/link
+- [ ] Badges use design tokens for consistent styling
+- [ ] Badges only display when author data exists
+- [ ] PostCard component unit tests updated
+- [ ] Post detail page unit tests updated
+- [ ] Author badge documentation updated
+
+### See Also
+
+- [Feature AUTHOR-001: Author Profiles](./feature.md#author-001-author-profiles)
+- [Architecture Blueprint Design System](./blueprint.md#design-system)
 
 ---
 
