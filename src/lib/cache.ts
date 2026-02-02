@@ -1,6 +1,6 @@
-import { CACHE_TIMES } from '@/lib/api/config';
 import { CacheMetricsCalculator } from './cache/cacheMetricsCalculator';
 import { CacheCleanup } from './cache/cacheCleanup';
+import { CacheDependencyManager } from './cache/cacheDependencyManager';
 import type { ICacheManager } from '@/lib/api/ICacheManager';
 
 /**
@@ -88,6 +88,7 @@ class CacheManager implements ICacheManager {
   };
   private metricsCalculator = new CacheMetricsCalculator();
   private cacheCleanup = new CacheCleanup(this.cache);
+  private dependencyManager = new CacheDependencyManager(this.cache);
 
   /**
     * Get data from cache by key.
@@ -158,26 +159,12 @@ class CacheManager implements ICacheManager {
       ttl,
     };
 
-    // Register dependencies if provided
-    // This creates a bi-directional graph: key -> dependencies AND dependencies -> key
-    if (dependencies && dependencies.length > 0) {
-      entry.dependencies = new Set(dependencies);
-      dependencies.forEach(depKey => {
-        const depEntry = this.cache.get(depKey);
-        
-        // If dependency exists in cache, register this key as its dependent
-        // This enables cascade invalidation from dependency to dependents
-        if (depEntry) {
-          if (!depEntry.dependents) {
-            depEntry.dependents = new Set();
-          }
-          depEntry.dependents.add(key);
-          this.stats.dependencyRegistrations++;
-        }
-      });
-    }
-    
     this.cache.set(key, entry);
+
+    if (dependencies && dependencies.length > 0) {
+      this.dependencyManager.registerDependencies(key, dependencies, this.stats);
+    }
+
     this.stats.sets++;
   }
 
@@ -232,22 +219,7 @@ class CacheManager implements ICacheManager {
    * ```
    */
   invalidate(key: string): void {
-    const entry = this.cache.get(key);
-    if (!entry) {
-      return;
-    }
-
-    // Invalidate this entry
-    this.cache.delete(key);
-    this.stats.deletes++;
-    this.stats.cascadeInvalidations++;
-
-    // Recursively invalidate all dependents
-    // This ensures that any data that depends on this entry is also invalidated
-    if (entry.dependents && entry.dependents.size > 0) {
-      const dependents = Array.from(entry.dependents);
-      dependents.forEach(depKey => this.invalidate(depKey));
-    }
+    this.dependencyManager.invalidate(key, (key) => this.cache.delete(key), this.stats);
   }
 
   /**
@@ -592,16 +564,7 @@ class CacheManager implements ICacheManager {
     * ```
    */
   getDependencies(key: string): { dependencies: string[]; dependents: string[] } {
-    const entry = this.cache.get(key);
-    
-    if (!entry) {
-      return { dependencies: [], dependents: [] };
-    }
-
-    return {
-      dependencies: Array.from(entry.dependencies || []),
-      dependents: Array.from(entry.dependents || []),
-    };
+    return this.dependencyManager.getDependencies(key);
   }
 
   /**
@@ -638,30 +601,8 @@ export const cacheManager = new CacheManager();
 // Convenience exports for backward compatibility
 export const { getStats: getCacheStats, clear: clearCache } = cacheManager;
 
-/**
- * Cache TTL (Time-To-Live) constants in milliseconds.
- * 
- * @remarks
- * These values determine how long cached data remains valid.
- * Choose TTL based on:
- * - Data volatility: How often content changes
- * - Business requirements: Freshness needs
- * - Performance: Longer TTL = fewer API calls
- * 
- * Common TTL patterns:
- * - Short (1-5 min): Highly dynamic data (search results, live content)
- * - Medium (10-30 min): Moderately dynamic data (posts, categories)
- * - Long (1+ hours): Static data (media, authors)
- */
-export const CACHE_TTL = {
-  POSTS: CACHE_TIMES.MEDIUM_SHORT,  // 5 minutes - Post lists refresh often
-  POST: CACHE_TIMES.MEDIUM,           // 10 minutes - Individual posts
-  CATEGORIES: CACHE_TIMES.MEDIUM_LONG, // 30 minutes - Categories rarely change
-  TAGS: CACHE_TIMES.MEDIUM_LONG,      // 30 minutes - Tags rarely change
-  MEDIA: CACHE_TIMES.LONG,            // 1 hour - Media is static
-  SEARCH: CACHE_TIMES.SHORT,          // 2 minutes - Search results expire quickly
-  AUTHOR: CACHE_TIMES.MEDIUM_LONG,    // 30 minutes - Authors rarely change
-} as const;
+export { CACHE_CONFIG as CACHE_TTL } from './cache/cacheConfig';
+export { CACHE_CONFIG } from './cache/cacheConfig';
 
 /**
  * Cache key factory for type-safe cache key generation.
