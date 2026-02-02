@@ -1,7 +1,7 @@
 # Architecture Blueprint
 
 **Version**: 1.0.1
-**Last Updated**: 2026-02-02 (Principal Software Architect - PERF-MON-001: Core Performance Metrics Collection Complete)
+**Last Updated**: 2026-02-02 (Performance Engineer - PERF-OPT-001: Media URL batch caching optimization complete)
 
 ## System Architecture
 
@@ -232,8 +232,10 @@ Development: http://localhost:8080/wp-json/wp/v2/
 
 ### Batch Operations
 - **Media Batch**: `getMediaBatch(ids)` - Fetch multiple media items
-- **Media URL Batch**: `getMediaUrlsBatch(ids)` - Resolve URLs in batch
+- **Media URL Batch**: `getMediaUrlsBatch(ids)` - Resolve URLs in batch with caching
 - Reduces API calls from N to 1 for N media items
+- **Cache Strategy**: Batch-fetched URLs are cached for 1 hour (CACHE_TTL.MEDIA) to optimize repeat requests
+- **Performance Improvement**: First visit fetches URLs in batch, subsequent visits return from cache without API calls
 
 ### Response Format
 ```typescript
@@ -252,9 +254,9 @@ interface Post {
 }
 ```
 
-### API Standardization
+ ### API Standardization
 
-**Principles**:
+ **Principles**:
 - **Backward Compatibility**: Never break existing API consumers
 - **Consistent Naming**: `getById<T>()`, `getBySlug<T>()`, `getAll<T>()`, `search<T>()`
 - **Consistent Error Handling**: All methods return `ApiResult<T>` or `ApiListResult<T>` with consistent error handling
