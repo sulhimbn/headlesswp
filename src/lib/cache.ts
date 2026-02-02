@@ -2,6 +2,7 @@ import { CacheMetricsCalculator } from './cache/cacheMetricsCalculator';
 import { CacheCleanup } from './cache/cacheCleanup';
 import { CacheDependencyManager } from './cache/cacheDependencyManager';
 import type { ICacheManager } from '@/lib/api/ICacheManager';
+import type { CacheEntry, CacheTelemetry } from './cache/types';
 export type { CacheEntry, CacheTelemetry } from './cache/types';
 
 /**
