@@ -1,4 +1,4 @@
-import type { CacheEntry } from '@/lib/cache';
+import type { CacheEntry } from './types';
 
 export interface CleanupResult {
   expired: number;

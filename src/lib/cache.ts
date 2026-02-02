@@ -2,40 +2,7 @@ import { CacheMetricsCalculator } from './cache/cacheMetricsCalculator';
 import { CacheCleanup } from './cache/cacheCleanup';
 import { CacheDependencyManager } from './cache/cacheDependencyManager';
 import type { ICacheManager } from '@/lib/api/ICacheManager';
-
-/**
- * Represents a cached data entry with metadata.
- * 
- * @template T - Type of cached data
- * 
- * @remarks
- * Cache entries store not just the data, but also:
- * - timestamp: When the data was cached
- * - ttl: Time-to-live in milliseconds
- * - dependencies: Set of cache keys this entry depends on (e.g., a post depends on its category)
- * - dependents: Set of cache keys that depend on this entry (for cascade invalidation)
- * 
- * Example: If post-123 depends on category-5:
- * - post-123.dependencies = ['category-5']
- * - category-5.dependents = ['post-123']
- * When category-5 is invalidated, post-123 is automatically invalidated too.
- */
-export interface CacheEntry<T> {
-  data: T;
-  timestamp: number;
-  ttl: number;
-  dependencies?: Set<string>;
-  dependents?: Set<string>;
-}
-
-export interface CacheTelemetry {
-  hits: number;
-  misses: number;
-  sets: number;
-  deletes: number;
-  cascadeInvalidations: number;
-  dependencyRegistrations: number;
-}
+export type { CacheEntry, CacheTelemetry } from './cache/types';
 
 /**
  * Advanced cache manager with dependency-aware cascade invalidation.

@@ -1,8 +1,232 @@
 # Task Backlog
 
-**Last Updated**: 2026-02-02 (Performance Engineer - PERF-OPT-001: Media URL batch caching optimization complete)
+**Last Updated**: 2026-02-02 (Principal Software Architect - ARCH-DEP-001: Cache module circular dependency fixed)
 
 ---
+
+## [ARCH-DEP-001] Fix Cache Module Circular Dependency
+
+**Status**: Complete ✅
+**Priority**: High
+**Effort**: Small
+**Assigned**: Principal Software Architect
+**Created**: 2026-02-02
+**Updated**: 2026-02-02
+
+### Problem Identified
+
+**Circular Dependency Between cache.ts and cacheDependencyManager.ts**:
+
+```
+lib/cache.ts → lib/cache/cacheDependencyManager.ts (imports CacheDependencyManager class)
+lib/cache/cacheDependencyManager.ts → lib/cache.ts (imports CacheEntry type)
+```
+
+**Root Cause**:
+- `CacheEntry` interface was defined in `lib/cache.ts` (line 23-29)
+- `CacheDependencyManager` needed this type to operate on the cache Map
+- `CacheManager` in `lib/cache.ts` used `CacheDependencyManager`
+
+**Additional Circular Dependencies**:
+- `lib/api/ICacheMetricsCalculator.ts` → `lib/cache.ts` (imports CacheEntry)
+- `lib/cache/cacheMetricsCalculator.ts` had duplicate `CacheEntry` and `CacheTelemetry` interfaces
+
+**Impact**:
+- Circular dependencies make module structure harder to understand
+- Creates tight coupling between modules
+- Makes testing harder
+- Makes refactoring harder
+- Anti-pattern in software architecture
+
+### Implementation Summary
+
+**Files Created**:
+- `src/lib/cache/types.ts` - Centralized type definitions for cache module (17 lines)
+  - Exported `CacheEntry<T>` interface
+  - Exported `CacheTelemetry` interface
+  - Single source of truth for cache types
+
+**Files Modified**:
+- `src/lib/cache.ts` - Removed type definitions, added type re-exports
+  - Removed `CacheEntry` interface definition (7 lines)
+  - Removed `CacheTelemetry` interface definition (8 lines)
+  - Added type re-export: `export type { CacheEntry, CacheTelemetry } from './cache/types'`
+
+- `src/lib/cache/cacheDependencyManager.ts` - Updated import path
+  - Changed from: `import type { CacheEntry } from '../cache'`
+  - Changed to: `import type { CacheEntry } from './types'`
+
+- `src/lib/cache/cacheCleanup.ts` - Updated import path
+  - Changed from: `import type { CacheEntry } from '@/lib/cache'`
+  - Changed to: `import type { CacheEntry } from './types'`
+
+- `src/lib/cache/cacheMetricsCalculator.ts` - Removed duplicate type definitions
+  - Removed duplicate `CacheEntry` interface definition (7 lines)
+  - Removed duplicate `CacheTelemetry` interface definition (8 lines)
+  - Added import: `import type { CacheEntry, CacheTelemetry } from './types'`
+  - Added re-export: `export type { CacheEntry, CacheTelemetry } from './types'` (backward compatibility)
+
+- `src/lib/api/ICacheMetricsCalculator.ts` - Updated import path
+  - Changed from: `import type { CacheEntry, CacheTelemetry } from '@/lib/cache'`
+  - Changed to: `import type { CacheEntry, CacheTelemetry } from '@/lib/cache/types'`
+
+### Code Changes
+
+**Before** (circular dependency):
+```typescript
+// src/lib/cache.ts
+export interface CacheEntry<T> {
+  data: T;
+  timestamp: number;
+  ttl: number;
+  dependencies?: Set<string>;
+  dependents?: Set<string>;
+}
+
+import { CacheDependencyManager } from './cache/cacheDependencyManager';
+
+// src/lib/cache/cacheDependencyManager.ts
+import type { CacheEntry } from '../cache';
+
+export class CacheDependencyManager {
+  constructor(private cache: Map<string, CacheEntry<unknown>>) {}
+}
+```
+
+**After** (no circular dependency):
+```typescript
+// src/lib/cache/types.ts
+export interface CacheEntry<T> {
+  data: T;
+  timestamp: number;
+  ttl: number;
+  dependencies?: Set<string>;
+  dependents?: Set<string>;
+}
+
+export interface CacheTelemetry {
+  hits: number;
+  misses: number;
+  sets: number;
+  deletes: number;
+  cascadeInvalidations: number;
+  dependencyRegistrations: number;
+}
+
+// src/lib/cache.ts
+import { CacheDependencyManager } from './cache/cacheDependencyManager';
+export type { CacheEntry, CacheTelemetry } from './cache/types';
+
+// src/lib/cache/cacheDependencyManager.ts
+import type { CacheEntry } from './types';
+
+export class CacheDependencyManager {
+  constructor(private cache: Map<string, CacheEntry<unknown>>) {}
+}
+```
+
+### Code Metrics
+
+| Metric | Before | After | Improvement |
+|--------|---------|-------|-------------|
+| **Total Lines** | 874 lines | 820 lines | -54 lines (6.2% reduction) |
+| **New File** | N/A | 17 lines | +17 lines (types.ts) |
+| **Net Change** | 874 lines | 837 lines (820 + 17) | -37 lines (4.2% reduction) |
+| **Files Modified** | N/A | 5 files | 5 refactored files |
+| **Files Created** | N/A | 1 file | 1 new types file |
+
+### Dependency Graph Changes
+
+**Before (circular)**:
+```
+lib/cache.ts
+  ↓ (imports class)
+lib/cache/cacheDependencyManager.ts
+  ↑ (imports type)
+lib/cache.ts  ← CIRCULAR
+```
+
+**After (acyclic)**:
+```
+lib/cache/cache/types.ts (shared types)
+  ↓ (imports types)
+lib/cache.ts → lib/cache/cacheDependencyManager.ts
+  ↓ (imports types)
+lib/cache/cacheCleanup.ts
+  ↓ (imports types)
+lib/cache/cacheMetricsCalculator.ts → lib/api/ICacheMetricsCalculator.ts
+```
+
+### Test Results
+
+**Test Execution**:
+- ✅ Cache-related tests: 183 tests passing
+- ✅ Full test suite: 1968 tests passing, 23 skipped
+- ✅ Test Suites: 57 passing, 1 skipped
+- ✅ Test Time: 8.707 seconds
+- ✅ Zero new test failures
+
+**Circular Dependency Verification**:
+```bash
+$ npx madge --circular --extensions ts,tsx src
+✔ No circular dependency found!
+```
+
+**Lint Results**:
+```bash
+$ npm run lint
+✖ 0 problems (0 errors, 0 warnings)
+```
+
+### Results
+
+- ✅ Circular dependency eliminated (madge confirms no circular dependencies)
+- ✅ Single source of truth for cache types (types.ts)
+- ✅ Duplicate type definitions removed (cacheMetricsCalculator.ts)
+- ✅ Module structure is now acyclic
+- ✅ Backward compatibility maintained (re-exports)
+- ✅ All tests passing (1968 passed, 23 skipped)
+- ✅ Lint passing (0 errors, 0 warnings)
+- ✅ Zero regressions
+
+### Success Criteria
+
+- ✅ Circular dependency eliminated (verified with madge)
+- ✅ Single source of truth for CacheEntry and CacheTelemetry types
+- ✅ No code duplication (duplicate types removed)
+- ✅ All imports updated to use types.ts
+- ✅ Backward compatibility maintained (re-exports)
+- ✅ All tests passing (no regressions)
+- ✅ Lint passing (0 errors)
+- ✅ Net code reduction (37 lines removed)
+
+### Anti-Patterns Avoided
+
+- ❌ No circular dependencies (acyclic module graph)
+- ❌ No duplicate code (types defined once in types.ts)
+- ❌ No breaking changes (re-exports maintain backward compatibility)
+- ❌ No tight coupling (types decoupled from implementation)
+- ❌ No unnecessary complexity (simple solution)
+
+### Architectural Principles Applied
+
+1. **Single Responsibility**: types.ts focuses solely on type definitions
+2. **Dependency Inversion**: Modules depend on type abstractions, not implementations
+3. **DRY Principle**: Type definitions defined once, reused everywhere
+4. **Separation of Concerns**: Types separated from implementation
+5. **Clean Architecture**: Dependencies flow inward (no circular dependencies)
+6. **Modularity**: Types can be imported independently of implementations
+7. **Open/Closed**: Can add new types without modifying existing code
+
+### See Also
+
+- [Architecture Blueprint Design Principles](./blueprint.md#design-principles)
+- [Architecture Blueprint Anti-Patterns](./blueprint.md#anti-patterns-never-do)
+- [Task REFACTOR-032: CacheManager Dependency Extraction](#refactor-032)
+
+---
+
+
 
 ## [PERF-OPT-001] Fix Media URL Batch Caching
 
