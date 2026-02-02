@@ -3,11 +3,14 @@ import Header from '@/components/layout/Header'
 import PostCard from '@/components/post/PostCard'
 import EmptyState from '@/components/ui/EmptyState'
 import SectionHeading from '@/components/ui/SectionHeading'
-import Footer from '@/components/layout/Footer'
+import dynamic from 'next/dynamic'
 import { UI_TEXT } from '@/lib/constants/uiText'
 import Icon from '@/components/ui/Icon'
 import type { PostWithMediaUrl } from '@/lib/services/IPostService'
 
+const Footer = dynamic(() => import('@/components/layout/Footer'), {
+  loading: () => <div className="h-64 bg-[hsl(var(--color-background-dark))] mt-12" aria-hidden="true" />
+})
 
 export const revalidate = 300 // 5 minutes
 

@@ -7,10 +7,13 @@ import { sanitizeHTML } from '@/lib/utils/sanitizeHTML'
 import Breadcrumb from '@/components/ui/Breadcrumb'
 import Badge from '@/components/ui/Badge'
 import MetaInfo from '@/components/ui/MetaInfo'
-import Footer from '@/components/layout/Footer'
+import dynamic from 'next/dynamic'
 import { logger } from '@/lib/utils/logger'
 import { UI_TEXT } from '@/lib/constants/uiText'
 
+const Footer = dynamic(() => import('@/components/layout/Footer'), {
+  loading: () => <div className="h-64 bg-[hsl(var(--color-background-dark))] mt-12" aria-hidden="true" />
+})
 
 export const revalidate = 3600 // 60 minutes (1 hour)
 
@@ -21,7 +24,6 @@ export default async function PostPage({ params }: { params: { slug: string } })
     notFound()
   }
 
-  // Validate required fields
   if (!post.title.rendered || !post.content.rendered) {
     logger.error('Post is missing required fields:', post)
     notFound()
@@ -38,7 +40,7 @@ export default async function PostPage({ params }: { params: { slug: string } })
     <div className="min-h-screen bg-[hsl(var(--color-background))]">
       <Header />
 
-<main id="main-content" aria-labelledby="page-heading" className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main id="main-content" aria-labelledby="page-heading" className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <h1 id="page-heading" className="sr-only">
           {post.title.rendered}
         </h1>
@@ -54,15 +56,15 @@ export default async function PostPage({ params }: { params: { slug: string } })
                 priority
                 sizes="(max-width: 640px) 100vw, (max-width: 1024px) 90vw, 100vw"
                 placeholder="blur"
-                blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwC9A//2Q=="
+                blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwC9A//2Q=="
               />
             </div>
           )}
-          
+
           <div className="p-8">
             <div className="mb-6">
               <MetaInfo date={post.date} className="mb-4" />
-               
+
               {categoriesDetails.length > 0 && (
                 <div className="flex flex-wrap gap-2 mb-4">
                   {categoriesDetails.map((category) => (
@@ -78,10 +80,10 @@ export default async function PostPage({ params }: { params: { slug: string } })
               {post.title.rendered}
             </h1>
 
-<div
-  className="prose prose-lg max-w-none text-[hsl(var(--color-text-secondary))]"
-  dangerouslySetInnerHTML={{ __html: sanitizeHTML(post.content.rendered, 'full') }}
- />
+            <div
+              className="prose prose-lg max-w-none text-[hsl(var(--color-text-secondary))]"
+              dangerouslySetInnerHTML={{ __html: sanitizeHTML(post.content.rendered, 'full') }}
+            />
 
             {tagsDetails.length > 0 && (
               <div className="mt-8 pt-6 border-t border-[hsl(var(--color-border))]">
