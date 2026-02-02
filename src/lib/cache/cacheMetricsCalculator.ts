@@ -1,22 +1,7 @@
 import { CACHE_METRICS, MEMORY } from '@/lib/constants/appConstants'
 import type { ICacheMetricsCalculator } from '@/lib/api/ICacheMetricsCalculator';
-
-export interface CacheEntry<T> {
-  data: T;
-  timestamp: number;
-  ttl: number;
-  dependencies?: Set<string>;
-  dependents?: Set<string>;
-}
-
-export interface CacheTelemetry {
-  hits: number;
-  misses: number;
-  sets: number;
-  deletes: number;
-  cascadeInvalidations: number;
-  dependencyRegistrations: number;
-}
+import type { CacheEntry, CacheTelemetry } from './types';
+export type { CacheEntry, CacheTelemetry } from './types';
 
 export interface CacheStatistics {
   hits: number;

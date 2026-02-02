@@ -1,4 +1,4 @@
-import type { CacheEntry } from '../cache';
+import type { CacheEntry } from './types';
 
 /**
  * Manages cache dependency tracking and cascade invalidation.

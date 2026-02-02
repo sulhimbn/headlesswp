@@ -1,4 +1,4 @@
-import type { CacheEntry, CacheTelemetry } from '@/lib/cache';
+import type { CacheEntry, CacheTelemetry } from '@/lib/cache/types';
 import type {
   CacheStatistics,
   PerformanceMetrics,
