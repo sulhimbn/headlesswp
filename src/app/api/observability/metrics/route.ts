@@ -2,6 +2,10 @@ import { NextResponse } from 'next/server'
 import { telemetryCollector } from '@/lib/api/telemetry'
 import { withApiRateLimit } from '@/lib/api/rateLimitMiddleware'
 import { TELEMETRY } from '@/lib/constants/appConstants'
+import { 
+  performanceMetricsCollector,
+  captureCurrentResourceUtilization 
+} from '@/lib/api/performanceMetrics'
 
 async function metricsHandler() {
   try {
@@ -68,6 +72,12 @@ async function metricsHandler() {
       recentEvents: apiRequestEvents.slice(-TELEMETRY.RECENT_EVENT_COUNT)
     }
 
+    const apiPerformanceMetrics = performanceMetricsCollector.getApiResponseMetrics()
+    const resourceMetrics = performanceMetricsCollector.getResourceMetrics()
+    const errorMetrics = performanceMetricsCollector.getErrorMetrics()
+    const webVitalsMetrics = performanceMetricsCollector.getWebVitalsMetrics()
+    const currentResourceUtilization = captureCurrentResourceUtilization()
+
     return NextResponse.json({
       summary: {
         totalEvents: allEvents.length,
@@ -80,7 +90,35 @@ async function metricsHandler() {
       retry: retryStats,
       rateLimit: rateLimitStats,
       healthCheck: healthCheckStats,
-      apiRequest: apiRequestStats
+      apiRequest: apiRequestStats,
+      performance: {
+        apiResponse: {
+          total: apiPerformanceMetrics.total,
+          p50: Math.round(apiPerformanceMetrics.p50),
+          p95: Math.round(apiPerformanceMetrics.p95),
+          p99: Math.round(apiPerformanceMetrics.p99),
+          avg: Math.round(apiPerformanceMetrics.avg),
+          byEndpoint: apiPerformanceMetrics.byEndpoint
+        },
+        resourceUtilization: {
+          current: currentResourceUtilization,
+          avgCpuUsage: Math.round(resourceMetrics.avgCpuUsage),
+          avgMemoryUsage: Math.round(resourceMetrics.avgMemoryUsage),
+          avgHeapUsage: Math.round(resourceMetrics.avgHeapUsage)
+        },
+        errorRates: errorMetrics.map(metric => ({
+          endpoint: metric.endpoint,
+          method: metric.method,
+          errorType: metric.errorType,
+          count: metric.count,
+          totalRequests: metric.totalRequests,
+          rate: Math.round(metric.rate * 1000) / 1000
+        })),
+        webVitals: {
+          events: webVitalsMetrics.events.slice(-100),
+          byMetricName: webVitalsMetrics.byMetricName
+        }
+      }
     }, {
       status: 200,
       headers: {

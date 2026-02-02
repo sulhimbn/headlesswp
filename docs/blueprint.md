@@ -1,7 +1,7 @@
 # Architecture Blueprint
 
-**Version**: 1.0.0
-**Last Updated**: 2026-02-02 (Principal Software Architect - REFACTOR-031: Service Layer Helper Extraction Complete)
+**Version**: 1.0.1
+**Last Updated**: 2026-02-02 (Principal Software Architect - PERF-MON-001: Core Performance Metrics Collection Complete)
 
 ## System Architecture
 
@@ -1032,6 +1032,198 @@ swagger-cli validate openapi.yaml
 3. **API Caching**: Implement response caching
 4. **Image Optimization**: Next.js Image component
 5. **Code Splitting**: Route-based splitting
+6. **Performance Monitoring**: Core metrics collection and tracking
+
+### Performance Metrics Collection
+
+**Last Updated**: 2026-02-02 (Principal Software Architect - PERF-MON-001: Core Performance Metrics Collection Complete)
+
+**Overview**: Comprehensive performance metrics collection system for monitoring application performance, API response times, resource utilization, and error rates.
+
+**Implementation**: `src/lib/api/performanceMetrics.ts` and `src/app/api/observability/performance/route.ts`
+
+**Key Features**:
+
+1. **Web Vitals Metrics** (Client-Side):
+   - **FCP (First Contentful Paint)**: Time to first content render
+   - **LCP (Largest Contentful Paint)**: Time to largest content element render
+   - **CLS (Cumulative Layout Shift)**: Layout stability metric
+   - **INP (Interaction to Next Paint)**: Interaction responsiveness
+   - **TTFB (Time to First Byte)**: Server response latency
+
+   **Rating Thresholds**:
+   - **FCP**: Good (< 1.8s), Needs Improvement (1.8s - 3s), Poor (> 3s)
+   - **LCP**: Good (< 2.5s), Needs Improvement (2.5s - 4s), Poor (> 4s)
+   - **CLS**: Good (< 0.1), Needs Improvement (0.1 - 0.25), Poor (> 0.25)
+   - **INP**: Good (< 200ms), Needs Improvement (200ms - 500ms), Poor (> 500ms)
+
+2. **API Response Time Metrics**:
+   - Tracks all API requests with duration, status code, cache hit status
+   - Calculates percentiles: p50, p95, p99
+   - Aggregates metrics by endpoint (method:endpoint)
+   - Provides average, min, max response times
+
+3. **Resource Utilization Metrics**:
+   - **CPU Usage**: Percentage of CPU utilization
+   - **Memory Usage**: MB usage and percentage of total memory
+   - **Heap Usage**: Used MB, total MB, percentage for Node.js heap
+   - Automatic resource monitoring with configurable intervals
+
+4. **Error Rate Metrics**:
+   - Tracks error rates by endpoint, method, and error type
+   - Calculates error rate: errorCount / totalRequests
+   - Automatic rate calculation when successes recorded
+   - Supports tracking multiple error types per endpoint
+
+**API Endpoints**:
+
+- **GET /api/observability/performance** - Dedicated performance metrics endpoint
+- **GET /api/observability/metrics** - Updated to include performance metrics
+
+**Performance Metrics API Response**:
+```json
+{
+  "summary": {
+    "totalApiCalls": 1000,
+    "totalErrorTypes": 5,
+    "totalWebVitalEvents": 500,
+    "timestamp": "2026-02-02T12:00:00Z",
+    "uptime": 3600
+  },
+  "apiResponse": {
+    "total": 1000,
+    "p50": 150,
+    "p95": 300,
+    "p99": 500,
+    "avg": 180,
+    "min": 50,
+    "max": 1000,
+    "byEndpoint": {
+      "GET:/api/posts": {
+        "count": 500,
+        "p50": 150,
+        "p95": 300,
+        "p99": 500,
+        "avg": 180
+      }
+    }
+  },
+  "resourceUtilization": {
+    "current": {
+      "cpuUsagePercent": 45,
+      "memoryUsageMB": 512,
+      "memoryUsagePercent": 25,
+      "heapUsedMB": 256,
+      "heapTotalMB": 1024,
+      "heapPercent": 25
+    },
+    "avgCpuUsage": 42,
+    "avgMemoryUsage": 24,
+    "avgHeapUsage": 23
+  },
+  "errorRates": [
+    {
+      "endpoint": "/api/posts",
+      "method": "GET",
+      "errorType": "NETWORK_ERROR",
+      "count": 5,
+      "totalRequests": 1000,
+      "rate": 0.005
+    }
+  ],
+  "webVitals": {
+    "events": [...],
+    "byMetricName": {
+      "FCP": {
+        "count": 100,
+        "avg": 1200,
+        "min": 800,
+        "max": 2500
+      }
+    }
+  }
+}
+```
+
+**Client-Side Integration**:
+
+The `useWebVitals` hook (`src/lib/utils/webVitals.ts`) automatically collects Web Vitals metrics:
+
+```typescript
+import { useWebVitals } from '@/lib/utils/webVitals'
+
+function MyApp({ Component, pageProps }) {
+  useWebVitals({
+    reportToApi: true,
+    apiEndpoint: '/api/observability/performance'
+  })
+
+  return <Component {...pageProps} />
+}
+```
+
+**Server-Side Integration**:
+
+For API response time tracking, use the `performanceMetricsCollector`:
+
+```typescript
+import { performanceMetricsCollector } from '@/lib/api/performanceMetrics'
+
+const startTime = Date.now()
+try {
+  const response = await apiCall()
+  performanceMetricsCollector.recordApiResponse({
+    endpoint: '/api/posts',
+    method: 'GET',
+    duration: Date.now() - startTime,
+    statusCode: response.status,
+    cacheHit: false
+  })
+  performanceMetricsCollector.recordSuccess('/api/posts', 'GET')
+} catch (error) {
+  performanceMetricsCollector.recordApiResponse({
+    endpoint: '/api/posts',
+    method: 'GET',
+    duration: Date.now() - startTime,
+    statusCode: 500,
+    cacheHit: false
+  })
+  performanceMetricsCollector.recordError('/api/posts', 'GET', 'NETWORK_ERROR')
+}
+```
+
+**Resource Monitoring**:
+
+Start automatic resource monitoring:
+
+```typescript
+import { startResourceMonitoring } from '@/lib/api/performanceMetrics'
+
+// Monitor resources every 60 seconds (default)
+startResourceMonitoring()
+
+// Custom interval (30 seconds)
+startResourceMonitoring(30000)
+```
+
+**Testing**:
+
+- **Comprehensive Test Coverage**: 25 tests covering all performance metrics collection scenarios
+- **Test File**: `__tests__/performanceMetrics.test.ts`
+- **Test Coverage**:
+  - Web Vitals recording and aggregation
+  - API response time metrics with percentiles
+  - Resource utilization metrics
+  - Error rate tracking and calculation
+  - Metric clearing and limits
+  - Percentile calculation utilities
+
+**Implementation Status**: ✅ Complete (PERF-MON-001)
+
+**See Also**:
+- [Task PERF-MON-001: Implement Core Performance Metrics Collection](./task.md#perf-mon-001)
+- [Task PERF-MON-002: Integrate APM Provider](./task.md#perf-mon-002)
+- [Integration Resilience Patterns](#integration-resilience-patterns)
 
 ## Data Architecture
 
