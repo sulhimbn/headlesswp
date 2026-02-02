@@ -1,6 +1,111 @@
 # Task Backlog
 
-**Last Updated**: 2026-02-02 (Principal Software Architect - REFACTOR-031: Service Layer Helper Extraction Complete)
+**Last Updated**: 2026-02-02 (Senior QA Engineer - TEST-API-001: API Route Tests Complete)
+
+---
+
+## [TEST-API-001] API Route Tests
+
+**Status**: Complete ✅
+**Priority**: High
+**Effort**: Medium
+**Assigned**: Senior QA Engineer
+**Created**: 2026-02-02
+**Updated**: 2026-02-02
+
+### Description
+
+Added 22 comprehensive tests for critical API routes (`/api/cache` and `/api/csp-report`) to ensure business logic correctness, error handling, and security violation monitoring.
+
+### Problem Identified
+
+**Untested Critical API Routes**:
+- `/api/cache` route (GET, POST, DELETE) - Cache management operations
+- `/api/csp-report` route (POST) - Security violation reporting
+- No test coverage for cache warming, cache clearing, or pattern-based cache invalidation
+- No test coverage for CSP violation report processing and logging
+
+**Impact**:
+- Critical cache management operations (warming, clearing, pattern-based deletion) untested
+- Security violation reporting untested - could fail silently in production
+- Error paths (cache warming failures, CSP report processing errors) unverified
+- Lack of test coverage for these critical API routes increases regression risk
+
+### Implementation Summary
+
+**Files Created**:
+- `__tests__/cacheApiRoutes.test.ts` - Comprehensive cache API route tests with 265 lines
+  - GET /api/cache tests (3 tests): Fetch cache statistics, handle errors, empty stats
+  - POST /api/cache tests (3 tests): Warm cache successfully, handle failures, partial failures
+  - DELETE /api/cache tests (6 tests): Clear all cache, clear by pattern, handle errors, boundary conditions
+
+- `__tests__/cspReportApiRoute.test.ts` - CSP report API route tests with 213 lines
+  - POST /api/csp-report tests (10 tests): Process CSP reports, handle errors, various violation types
+  - Covers: script-src, script-src-elem, style-src, connect-src, img-src violations
+  - Tests: valid reports, empty reports, malformed reports, JSON parsing errors
+
+**New Tests Added**:
+
+1. **Cache API Routes (12 tests)**:
+   - GET /api/cache: Return 200 with statistics, return 500 on error, handle empty cache
+   - POST /api/cache: Return 200 on successful warming, return 500 on failure, handle partial failures
+   - DELETE /api/cache: Clear all cache, clear by pattern, handle empty pattern, handle errors, handle no matches, handle multiple matches
+
+2. **CSP Report API Route (10 tests)**:
+   - Process successful CSP reports with full violation data
+   - Return 200 for minimal reports (only required fields)
+   - Handle empty CSP report objects
+   - Handle CSP reports with additional metadata (userAgent, timestamp)
+   - Process script-src-elem violations (inline scripts)
+   - Process style-src violations (inline styles)
+   - Process connect-src violations (WebSocket/API connections)
+   - Process img-src violations (data URIs)
+   - Return 400 for malformed JSON
+   - Return 400 for JSON parsing errors
+
+### Test Results
+
+- **Before**: 1857 tests passing (23 skipped)
+- **After**: 1879 tests passing (+22 tests)
+- **Total**: 1879 tests passing, 23 skipped
+- **Test Suites**: 55 passing, 1 skipped
+- **Test Time**: ~7.8 seconds
+- **Lint**: 0 errors
+- **TypeScript**: 0 errors
+- **Zero Regressions**: All existing tests continue to pass
+
+### QA Principles Applied
+
+1. **Test Behavior, Not Implementation**: Verified API responses, error handling, and logging - not internal implementation
+2. **Test Pyramid**: Many unit tests (22 new), focused on API routes (integration level)
+3. **Isolation**: Each test independent with fresh mock setup
+4. **Determinism**: All tests produce consistent results (no flakiness)
+5. **Fast Feedback**: All tests complete in ~0.8 seconds per test file
+6. **Meaningful Coverage**: Cover critical paths (cache management, security reporting)
+
+### Anti-Patterns Avoided
+
+- ❌ No tests depending on execution order
+- ❌ No testing implementation details (tested API responses, not internal state)
+- ❌ No ignoring edge cases (tested empty reports, malformed JSON, zero results)
+- ❌ No tests requiring external services (all mocked)
+- ❌ No brittle test assertions (verified actual behavior, not assumptions)
+- ❌ No flaky tests (all deterministic, no timing dependencies)
+
+### Success Criteria
+
+- ✅ Critical paths covered (cache warming, clearing, pattern-based deletion, CSP report processing)
+- ✅ All tests pass consistently (1879 passing)
+- ✅ Edge cases tested (empty reports, malformed JSON, zero results, partial failures)
+- ✅ Tests readable and maintainable (clear names, AAA pattern)
+- ✅ Breaking code causes test failure (all tests catch regressions)
+- ✅ Lint and typecheck passing (0 errors)
+
+### See Also
+
+- [Architecture Blueprint Testing Standards](./blueprint.md#testing-standards)
+- [Task TEST-PAGE-001: Page Component Tests](#test-page-001)
+- [Task TEST-EDGE-001: Edge Case Tests for Resilience Patterns](#test-edge-001)
 
 ---
 
