@@ -3,7 +3,7 @@ import { logger } from '@/lib/utils/logger'
 export interface TelemetryEvent {
   timestamp: string
   type: string
-  category: 'circuit-breaker' | 'retry' | 'rate-limit' | 'health-check' | 'api-request'
+  category: 'circuit-breaker' | 'retry' | 'rate-limit' | 'health-check' | 'api-request' | 'performance'
   data: Record<string, unknown>
 }
 
