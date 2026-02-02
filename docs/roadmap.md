@@ -1,7 +1,7 @@
 # Roadmap
 
-**Version**: 1.2.0  
-**Last Updated**: 2026-01-10
+**Version**: 1.2.1
+**Last Updated**: 2026-02-02
 
 ---
 
@@ -39,13 +39,13 @@ Build a high-performance, secure headless WordPress platform that delivers news 
 ### Phase 2: Core Features
 **Goal**: Deliver essential news platform functionality
 
-**Status**: In Progress (40% Complete)
+**Status**: In Progress (60% Complete)
 
 **Milestones**:
 - [x] Post listing and detail pages
-- [ ] Category and tag navigation (See #226, #191, #192)
-- [ ] Search functionality (See #227, #189, #221)
-- [ ] Author profiles (See #190)
+- [ ] Category and tag navigation (Tasks: CAT-TAG-001 through CAT-TAG-006)
+- [ ] Search functionality (See existing search implementation, needs E2E testing)
+- [ ] Author profiles (Tasks: AUTHOR-001 through AUTHOR-003)
 - [x] Responsive design
 
 **Estimated Completion**: Q1 2026
@@ -55,14 +55,14 @@ Build a high-performance, secure headless WordPress platform that delivers news 
 ### Phase 3: Optimization
 **Goal**: Improve performance and user experience
 
-**Status**: Complete (60%)
+**Status**: In Progress (80% Complete)
 
 **Milestones**:
 - [x] API response caching (three-tier: in-memory, ISR, HTTP)
 - [x] Image optimization (Next.js Image, blur placeholders)
 - [x] Bundle size optimization (code deduplication, tree shaking)
-- [ ] Performance monitoring
-- [ ] SEO optimization
+- [ ] Performance monitoring (Tasks: PERF-MON-001, PERF-MON-002)
+- [ ] SEO optimization (Tasks: SEO-001 through SEO-005)
 
 **Estimated Completion**: Q1 2026
 
@@ -86,17 +86,21 @@ Build a high-performance, secure headless WordPress platform that delivers news 
 
 ## Current Focus
 
-### Priorities (This Quarter)
+### Priorities (This Quarter - Q1 2026)
 
 1. **P0 - Performance Monitoring**: Implement APM and metrics
 2. **P1 - SEO Optimization**: Improve search engine visibility
-3. **P1 - E2E Testing**: Add Playwright for critical flows
+3. **P1 - Category/Tag Navigation**: Complete Phase 2 core features
+4. **P1 - E2E Testing**: Add Playwright for critical flows
+5. **P2 - Author Profiles**: Add author navigation and profiles
 
 ### Active Initiatives
 
-- Performance metrics and monitoring setup
-- SEO meta tags and structured data
-- E2E test framework implementation
+- [ ] Performance metrics and monitoring setup (PERF-MON-001, PERF-MON-002)
+- [ ] SEO meta tags and structured data (SEO-001 through SEO-005)
+- [ ] Category and tag navigation pages (CAT-TAG-001 through CAT-TAG-006)
+- [ ] E2E test framework implementation (E2E-001 through E2E-003)
+- [ ] Author profiles and navigation (AUTHOR-001 through AUTHOR-003)
 
 ---
 
@@ -104,11 +108,11 @@ Build a high-performance, secure headless WordPress platform that delivers news 
 
 | Item | Impact | Priority | Status |
 |------|--------|----------|--------|
-| [x] E2E testing framework | High | P1 | Planning - Playwright evaluation |
+| [ ] E2E testing framework | High | P1 | In Progress - Playwright setup (E2E-001) |
 | [x] API error handling | Medium | P2 | ✅ Complete - Standardized error types |
 | [x] Rate limiting | High | P0 | ✅ Complete - Token bucket implemented |
-| [ ] Performance monitoring | High | P1 | Not Started |
-| [ ] SEO optimization | Medium | P1 | Not Started |
+| [ ] Performance monitoring | High | P1 | In Progress - Tasks created (PERF-MON-001, PERF-MON-002) |
+| [ ] SEO optimization | Medium | P1 | In Progress - Tasks created (SEO-001 through SEO-005) |
 
 ---
 
