@@ -1,5 +1,4 @@
 import type { ICacheManager } from '@/lib/api/ICacheManager';
-import { logger } from '@/lib/utils/logger';
 
 export interface BatchOperationOptions<T> {
   ids: number[];
@@ -77,6 +76,6 @@ async function executeBatchOperation<T>(options: BatchOperationOptions<T>): Prom
 
 export function createBatchOperationFactory<T>(defaultOptions: Partial<BatchOperationOptions<T>>) {
   return (options: Omit<BatchOperationOptions<T>, keyof typeof defaultOptions>) => {
-    return createBatchOperation({ ...defaultOptions, ...options });
+    return createBatchOperation({ ...defaultOptions, ...options } as BatchOperationOptions<T>);
   };
 }

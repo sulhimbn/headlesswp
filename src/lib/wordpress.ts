@@ -121,13 +121,13 @@ export const wordpressAPI: IWordPressAPI = {
       skipZero: false,
       signal,
       onSuccess: (item, result, cacheManager, cacheKeyFn, cacheTtl) => {
-        result.set(item.id, item.source_url);
-        cacheManager.set(cacheKeyFn(item.id), item.source_url, cacheTtl);
+        (result as unknown as Map<number, string | null>).set(item.id, item.source_url);
+        (cacheManager as { set: (key: string, value: string, ttl: number) => void }).set(cacheKeyFn(item.id), item.source_url, cacheTtl);
       },
       onError: (error, idsToFetch) => {
         logger.warn('Failed to fetch media batch for URLs', error, { module: 'wordpressAPI', mediaIds: idsToFetch });
       }
-    });
+    }) as unknown as Promise<Map<number, string | null>>;
   },
 
   getAuthor: async (id: number, signal?: AbortSignal): Promise<WordPressAuthor> => {
