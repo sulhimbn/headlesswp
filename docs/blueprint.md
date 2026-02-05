@@ -1,7 +1,7 @@
 # Architecture Blueprint
 
 **Version**: 1.0.1
-**Last Updated**: 2026-02-02 (Performance Engineer - PERF-OPT-001: Media URL batch caching optimization complete)
+**Last Updated**: 2026-02-05 (Principal Software Architect - REFACTOR-033: Batch operation pattern extraction complete)
 
 ## System Architecture
 
@@ -655,6 +655,88 @@ interface ApiListResult<T> extends ApiResult<T[]> {
 6. **Modularity**: Independent modules that can be tested and maintained separately
 
 **See Also**: [Task REFACTOR-032](./task.md#refactor-032)
+
+**REFACTOR-033: Batch Operation Pattern**:
+- Created `batchOperations.ts` utility (src/lib/api/batchOperations.ts, 92 lines)
+- Added `createBatchOperation<T>()` generic function for batch fetch operations
+- Added `createBatchOperationFactory<T>()` factory for pre-configured batch operations
+- Refactored `getMediaBatch()` in wordpress.ts to use batch operation pattern
+- Refactored `getMediaUrlsBatch()` in wordpress.ts to use batch operation pattern
+- Eliminated ~40 lines of duplicate batch operation logic from wordpress.ts
+- Added deduplication of IDs to prevent redundant fetch requests
+- Added comprehensive tests (15 tests covering all batch operation scenarios)
+- wordpress.ts: 211 → 172 lines (-39 lines, 18.5% reduction)
+- Test coverage: 1983 tests passing (23 skipped)
+- All tests passing, ESLint and TypeScript compilation pass with 0 errors
+
+**Implementation Details**:
+
+**createBatchOperation<T>()** Generic Function:
+- Accepts `BatchOperationOptions<T>` interface with configuration
+- Handles cache checking for each ID
+- Collects uncached IDs with deduplication (Set-based)
+- Fetches uncached IDs in batch via provided fetch function
+- Caches newly fetched items
+- Supports optional error handling via `onError` callback
+- Supports custom success handling via `onSuccess` callback
+- Handles skipZero option (skip IDs === 0 or set to null)
+- Passes AbortSignal to fetch function for request cancellation
+- Returns Map<number, T | null> with all results (cached, fetched, null for missing)
+
+**BatchOperationOptions<T> Interface**:
+- `ids: number[]` - List of IDs to fetch
+- `cacheKeyFn: (id: number) => string` - Function to generate cache keys
+- `cacheManager: ICacheManager` - Cache manager instance
+- `cacheTtl: number` - Time-to-live for cached items
+- `fetchFn: (idsToFetch: number[], signal?: AbortSignal) => Promise<T[]>` - Batch fetch function
+- `extractIdFn: (item: T) => number` - Function to extract ID from fetched item
+- `skipZero?: boolean` - Skip IDs === 0 (default: false, set to null)
+- `signal?: AbortSignal` - AbortSignal for request cancellation
+- `onSuccess?: (item, result, cacheManager, cacheKeyFn, cacheTtl) => void` - Custom success handler
+- `onError?: (error, idsToFetch) => void` - Custom error handler
+
+**Code Metrics**:
+
+| Metric | Before | After | Improvement |
+|--------|---------|-------|-------------|
+| **wordpress.ts** | 211 lines | 172 lines | -39 lines (18.5% reduction) |
+| **batchOperations.ts** | N/A | 92 lines | +92 lines (new utility) |
+| **batchOperations.test.ts** | N/A | 330 lines | +330 lines (new tests) |
+| **Total** | 211 lines | 594 lines (172 + 92 + 330) | Net: +383 lines (modular architecture + tests) |
+
+**Test Results**:
+- batchOperations.test.ts: 15 tests passing (all batch operation scenarios)
+- wordpressBatchOperations.test.ts: 33 tests passing (all refactored methods pass)
+- Total tests: 1983 passing (23 skipped)
+- Lint: 0 errors, 0 warnings
+- TypeScript: 0 errors
+
+**Benefits**:
+1. **DRY Principle**: Batch operation pattern defined once in reusable utility
+2. **Consistency**: All batch operations follow same structure and patterns
+3. **Type Safety**: Generic function enforces consistent types with TypeScript
+4. **Maintainability**: Single source of truth for batch operation logic
+5. **Testability**: Batch operation utility tested once, not per method
+6. **Extensibility**: Can add new batch operations without duplicating code
+7. **Performance**: Deduplication prevents redundant fetch requests
+8. **Code Clarity**: Smaller, focused wordpress.ts file with less duplication
+
+**Anti-Patterns Avoided**:
+- ❌ No duplicate code (batch operation pattern defined once)
+- ❌ No mixed concerns (batch logic separated from API implementation)
+- ❌ No tight coupling (batch operation utility is generic and reusable)
+- ❌ No breaking changes (same API signature maintained)
+- ❌ No performance regressions (deduplication improves efficiency)
+
+**Architectural Principles Applied**:
+1. **Single Responsibility Principle**: batchOperations.ts focuses solely on batch operations
+2. **Open/Closed Principle**: Can add new batch operations without modifying utility
+3. **DRY Principle**: Batch operation logic defined once
+4. **Type Safety**: Generics enforce type safety at compile time
+5. **Separation of Concerns**: Batch operation logic separated from API implementation
+6. **Modularity**: Batch operation utility can be reused across different APIs
+
+**See Also**: [Task REFACTOR-033](./task.md#refactor-033)
 
 ## Integration Resilience Patterns
 

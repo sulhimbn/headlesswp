@@ -11,6 +11,7 @@ import {
   createPostsMethod,
   createPostsWithHeadersMethod
 } from './api/wpMethodFactory';
+import { createBatchOperation } from './api/batchOperations';
 
 export const wordpressAPI: IWordPressAPI = {
   getPostsWithHeaders: createPostsWithHeadersMethod(),
@@ -62,36 +63,24 @@ export const wordpressAPI: IWordPressAPI = {
   },
 
   getMediaBatch: async (ids: number[], signal?: AbortSignal): Promise<Map<number, WordPressMedia>> => {
-    const result = new Map<number, WordPressMedia>();
-    const idsToFetch: number[] = [];
-
-    for (const id of ids) {
-      if (id === 0) continue;
-
-      const cacheKey = cacheKeys.media(id);
-      const cached = cacheManager.get<WordPressMedia>(cacheKey);
-      if (cached) {
-        result.set(id, cached);
-      } else {
-        idsToFetch.push(id);
-      }
-    }
-
-    if (idsToFetch.length === 0) return result;
-
-    const response = await apiClient.get(getApiUrl('/wp/v2/media'), { 
-      params: { include: idsToFetch.join(',') },
-      signal 
+    const result = await createBatchOperation<WordPressMedia>({
+      ids,
+      cacheKeyFn: cacheKeys.media,
+      cacheManager,
+      cacheTtl: CACHE_TTL.MEDIA,
+      fetchFn: async (idsToFetch, signal) => {
+        const response = await apiClient.get(getApiUrl('/wp/v2/media'), {
+          params: { include: idsToFetch.join(',') },
+          signal
+        });
+        return response.data as WordPressMedia[];
+      },
+      extractIdFn: (media) => media.id,
+      skipZero: true,
+      signal
     });
-    
-    const mediaList: WordPressMedia[] = response.data;
-    
-    for (const media of mediaList) {
-      result.set(media.id, media);
-      cacheManager.set(cacheKeys.media(media.id), media, CACHE_TTL.MEDIA);
-    }
 
-    return result;
+    return result as Map<number, WordPressMedia>;
   },
 
   getMediaUrl: async (mediaId: number, signal?: AbortSignal): Promise<string | null> => {
@@ -113,26 +102,12 @@ export const wordpressAPI: IWordPressAPI = {
   },
 
   getMediaUrlsBatch: async (mediaIds: number[], signal?: AbortSignal): Promise<Map<number, string | null>> => {
-    const urlMap = new Map<number, string | null>();
-    const idsToFetch: number[] = [];
-
-    for (const id of mediaIds) {
-      if (id === 0) {
-        urlMap.set(id, null);
-        continue;
-      }
-
-      const cacheKey = cacheKeys.media(id);
-      const cached = cacheManager.get<string>(cacheKey);
-      if (cached) {
-        urlMap.set(id, cached);
-      } else {
-        idsToFetch.push(id);
-      }
-    }
-
-    if (idsToFetch.length > 0) {
-      try {
+    return createBatchOperation<{ id: number; source_url: string }>({
+      ids: mediaIds,
+      cacheKeyFn: cacheKeys.media,
+      cacheManager,
+      cacheTtl: CACHE_TTL.MEDIA,
+      fetchFn: async (idsToFetch, signal) => {
         const response = await apiClient.get(getApiUrl('/wp/v2/media'), {
           params: {
             include: idsToFetch.join(','),
@@ -140,25 +115,19 @@ export const wordpressAPI: IWordPressAPI = {
           },
           signal
         });
-
-        const mediaList: Array<{ id: number; source_url: string }> = response.data;
-
-        for (const media of mediaList) {
-          urlMap.set(media.id, media.source_url);
-          cacheManager.set(cacheKeys.media(media.id), media.source_url, CACHE_TTL.MEDIA);
-        }
-      } catch (error) {
+        return response.data as Array<{ id: number; source_url: string }>;
+      },
+      extractIdFn: (media) => media.id,
+      skipZero: false,
+      signal,
+      onSuccess: (item, result, cacheManager, cacheKeyFn, cacheTtl) => {
+        (result as unknown as Map<number, string | null>).set(item.id, item.source_url);
+        (cacheManager as { set: (key: string, value: string, ttl: number) => void }).set(cacheKeyFn(item.id), item.source_url, cacheTtl);
+      },
+      onError: (error, idsToFetch) => {
         logger.warn('Failed to fetch media batch for URLs', error, { module: 'wordpressAPI', mediaIds: idsToFetch });
       }
-    }
-
-    for (const id of idsToFetch) {
-      if (!urlMap.has(id)) {
-        urlMap.set(id, null);
-      }
-    }
-
-    return urlMap;
+    }) as unknown as Promise<Map<number, string | null>>;
   },
 
   getAuthor: async (id: number, signal?: AbortSignal): Promise<WordPressAuthor> => {
