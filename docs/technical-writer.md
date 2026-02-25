@@ -32,6 +32,12 @@ This file serves as the long-term memory for the technical-writer autonomous age
 - These scripts exist in package.json but were not documented in README.md
 - Improvement: Added these scripts to the Available Scripts section in README.md
 
+### 2026-02-25 (Second Session)
+- Identified inconsistent npm script commands in README.md Available Scripts section
+- Found: `npm test:watch`, `npm audit:security`, `npm audit:full` missing `run` prefix
+- Fix: Added `run` to make all custom scripts consistent (`npm run test:watch`, etc.)
+- Small atomic diff: 6 lines changed for consistency
+
 ## Known Gaps
 - Some older documentation may have stale dates
 - Cross-references should be verified periodically
