@@ -25,7 +25,7 @@ export default async function PostPage({ params }: { params: { slug: string } })
   }
 
   if (!post.title.rendered || !post.content.rendered) {
-    logger.error('Post is missing required fields:', post)
+    logger.error('Post is missing required fields:', undefined, { post })
     notFound()
   }
 
