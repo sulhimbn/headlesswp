@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback, memo } from 'react'
 import Icon from './Icon'
+import { UI_TEXT } from '@/lib/constants/uiText'
 
 interface SearchBarProps {
   onSearch: (query: string) => void
@@ -15,12 +16,12 @@ interface SearchBarProps {
 
 function SearchBarComponent({
   onSearch,
-  placeholder = 'Search...',
+  placeholder = UI_TEXT.search.placeholder,
   isLoading = false,
   debounceMs = 300,
   className = '',
   initialValue = '',
-  ariaLabel = 'Search'
+  ariaLabel = UI_TEXT.search.label
 }: SearchBarProps) {
   const [query, setQuery] = useState(initialValue)
   const [debouncedQuery, setDebouncedQuery] = useState(initialValue)
@@ -97,7 +98,7 @@ function SearchBarComponent({
             type="button"
             onClick={handleClear}
             className="absolute inset-y-0 right-0 pr-3 flex items-center text-[hsl(var(--color-text-muted))] hover:text-[hsl(var(--color-text-primary))] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--color-primary))] focus:ring-offset-2 rounded-[var(--radius-sm)] transition-colors duration-[var(--transition-fast)]"
-            aria-label="Clear search"
+            aria-label={UI_TEXT.search.clear}
           >
             <Icon type="close" className="h-4 w-4" />
           </button>

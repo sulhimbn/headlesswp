@@ -1,5 +1,6 @@
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react'
 import SearchBar from '@/components/ui/SearchBar'
+import { UI_TEXT } from '@/lib/constants/uiText'
 
 describe('SearchBar Component', () => {
   beforeEach(() => {
@@ -15,15 +16,15 @@ describe('SearchBar Component', () => {
     test('renders search input with default placeholder', () => {
       const onSearch = jest.fn()
       render(<SearchBar onSearch={onSearch} />)
-      const input = screen.getByLabelText('Search')
+      const input = screen.getByLabelText(UI_TEXT.search.label)
       expect(input).toBeInTheDocument()
-      expect(input).toHaveAttribute('placeholder', 'Search...')
+      expect(input).toHaveAttribute('placeholder', UI_TEXT.search.placeholder)
     })
 
     test('renders search input with custom placeholder', () => {
       const onSearch = jest.fn()
       render(<SearchBar onSearch={onSearch} placeholder="Search articles..." />)
-      const input = screen.getByLabelText('Search')
+      const input = screen.getByLabelText(UI_TEXT.search.label)
       expect(input).toHaveAttribute('placeholder', 'Search articles...')
     })
 
@@ -44,7 +45,7 @@ describe('SearchBar Component', () => {
     test('renders with initial value', () => {
       const onSearch = jest.fn()
       render(<SearchBar onSearch={onSearch} initialValue="initial" />)
-      const input = screen.getByLabelText('Search') as HTMLInputElement
+      const input = screen.getByLabelText(UI_TEXT.search.label) as HTMLInputElement
       expect(input.value).toBe('initial')
     })
 
@@ -60,7 +61,7 @@ describe('SearchBar Component', () => {
     test('updates query value on input change', async () => {
       const onSearch = jest.fn()
       render(<SearchBar onSearch={onSearch} />)
-      const input = screen.getByLabelText('Search') as HTMLInputElement
+      const input = screen.getByLabelText(UI_TEXT.search.label) as HTMLInputElement
 
       fireEvent.change(input, { target: { value: 'test query' } })
 
@@ -70,7 +71,7 @@ describe('SearchBar Component', () => {
     test('calls onSearch after debounce delay', async () => {
       const onSearch = jest.fn()
       render(<SearchBar onSearch={onSearch} debounceMs={300} />)
-      const input = screen.getByLabelText('Search') as HTMLInputElement
+      const input = screen.getByLabelText(UI_TEXT.search.label) as HTMLInputElement
 
       fireEvent.change(input, { target: { value: 'test' } })
       jest.advanceTimersByTime(300)
@@ -83,7 +84,7 @@ describe('SearchBar Component', () => {
     test('debounces multiple rapid changes', async () => {
       const onSearch = jest.fn()
       render(<SearchBar onSearch={onSearch} debounceMs={300} />)
-      const input = screen.getByLabelText('Search') as HTMLInputElement
+      const input = screen.getByLabelText(UI_TEXT.search.label) as HTMLInputElement
 
       fireEvent.change(input, { target: { value: 'a' } })
       jest.advanceTimersByTime(100)
@@ -104,11 +105,11 @@ describe('SearchBar Component', () => {
     test('shows clear button when query is not empty', () => {
       const onSearch = jest.fn()
       render(<SearchBar onSearch={onSearch} />)
-      const input = screen.getByLabelText('Search') as HTMLInputElement
+      const input = screen.getByLabelText(UI_TEXT.search.label) as HTMLInputElement
 
       fireEvent.change(input, { target: { value: 'test' } })
 
-      const clearButton = screen.getByLabelText('Clear search')
+      const clearButton = screen.getByLabelText(UI_TEXT.search.clear)
       expect(clearButton).toBeInTheDocument()
     })
 
@@ -116,17 +117,17 @@ describe('SearchBar Component', () => {
       const onSearch = jest.fn()
       render(<SearchBar onSearch={onSearch} />)
 
-      const clearButton = screen.queryByLabelText('Clear search')
+      const clearButton = screen.queryByLabelText(UI_TEXT.search.clear)
       expect(clearButton).not.toBeInTheDocument()
     })
 
     test('clears query when clear button is clicked', () => {
       const onSearch = jest.fn()
       render(<SearchBar onSearch={onSearch} />)
-      const input = screen.getByLabelText('Search') as HTMLInputElement
+      const input = screen.getByLabelText(UI_TEXT.search.label) as HTMLInputElement
 
       fireEvent.change(input, { target: { value: 'test' } })
-      const clearButton = screen.getByLabelText('Clear search')
+      const clearButton = screen.getByLabelText(UI_TEXT.search.clear)
 
       fireEvent.click(clearButton)
 
@@ -136,10 +137,10 @@ describe('SearchBar Component', () => {
     test('focuses input after clearing', () => {
       const onSearch = jest.fn()
       render(<SearchBar onSearch={onSearch} />)
-      const input = screen.getByLabelText('Search') as HTMLInputElement
+      const input = screen.getByLabelText(UI_TEXT.search.label) as HTMLInputElement
 
       fireEvent.change(input, { target: { value: 'test' } })
-      const clearButton = screen.getByLabelText('Clear search')
+      const clearButton = screen.getByLabelText(UI_TEXT.search.clear)
 
       input.blur()
       expect(document.activeElement).not.toBe(input)
@@ -151,10 +152,10 @@ describe('SearchBar Component', () => {
     test('calls onSearch with empty string after clearing', async () => {
       const onSearch = jest.fn()
       render(<SearchBar onSearch={onSearch} debounceMs={100} />)
-      const input = screen.getByLabelText('Search') as HTMLInputElement
+      const input = screen.getByLabelText(UI_TEXT.search.label) as HTMLInputElement
 
       fireEvent.change(input, { target: { value: 'test' } })
-      const clearButton = screen.getByLabelText('Clear search')
+      const clearButton = screen.getByLabelText(UI_TEXT.search.clear)
 
       fireEvent.click(clearButton)
       jest.advanceTimersByTime(100)
@@ -169,11 +170,11 @@ describe('SearchBar Component', () => {
     test('does not show clear button when loading', () => {
       const onSearch = jest.fn()
       render(<SearchBar onSearch={onSearch} isLoading />)
-      const input = screen.getByLabelText('Search') as HTMLInputElement
+      const input = screen.getByLabelText(UI_TEXT.search.label) as HTMLInputElement
 
       fireEvent.change(input, { target: { value: 'test' } })
 
-      const clearButton = screen.queryByLabelText('Clear search')
+      const clearButton = screen.queryByLabelText(UI_TEXT.search.clear)
       expect(clearButton).not.toBeInTheDocument()
     })
 
@@ -188,7 +189,7 @@ describe('SearchBar Component', () => {
     test('disables input when isLoading is true', () => {
       const onSearch = jest.fn()
       render(<SearchBar onSearch={onSearch} isLoading />)
-      const input = screen.getByLabelText('Search')
+      const input = screen.getByLabelText(UI_TEXT.search.label)
 
       expect(input).toBeDisabled()
     })
@@ -196,7 +197,7 @@ describe('SearchBar Component', () => {
     test('sets aria-busy on input when isLoading is true', () => {
       const onSearch = jest.fn()
       render(<SearchBar onSearch={onSearch} isLoading />)
-      const input = screen.getByLabelText('Search')
+      const input = screen.getByLabelText(UI_TEXT.search.label)
 
       expect(input).toHaveAttribute('aria-busy', 'true')
     })
@@ -214,7 +215,7 @@ describe('SearchBar Component', () => {
     test('prevents default form submission', () => {
       const onSearch = jest.fn()
       render(<SearchBar onSearch={onSearch} />)
-      const input = screen.getByLabelText('Search') as HTMLInputElement
+      const input = screen.getByLabelText(UI_TEXT.search.label) as HTMLInputElement
 
       fireEvent.change(input, { target: { value: 'test' } })
       const form = screen.getByRole('search')
@@ -230,7 +231,7 @@ describe('SearchBar Component', () => {
     test('calls onSearch immediately on form submit', () => {
       const onSearch = jest.fn()
       render(<SearchBar onSearch={onSearch} debounceMs={500} />)
-      const input = screen.getByLabelText('Search') as HTMLInputElement
+      const input = screen.getByLabelText(UI_TEXT.search.label) as HTMLInputElement
 
       fireEvent.change(input, { target: { value: 'test' } })
       jest.advanceTimersByTime(100)
@@ -253,7 +254,7 @@ describe('SearchBar Component', () => {
     test('has associated label for input', () => {
       const onSearch = jest.fn()
       render(<SearchBar onSearch={onSearch} />)
-      const label = screen.getByLabelText('Search')
+      const label = screen.getByLabelText(UI_TEXT.search.label)
       expect(label).toBeInTheDocument()
     })
 
@@ -267,11 +268,11 @@ describe('SearchBar Component', () => {
     test('clear button has accessible label', () => {
       const onSearch = jest.fn()
       render(<SearchBar onSearch={onSearch} />)
-      const input = screen.getByLabelText('Search') as HTMLInputElement
+      const input = screen.getByLabelText(UI_TEXT.search.label) as HTMLInputElement
 
       fireEvent.change(input, { target: { value: 'test' } })
 
-      const clearButton = screen.getByLabelText('Clear search')
+      const clearButton = screen.getByLabelText(UI_TEXT.search.clear)
       expect(clearButton).toBeInTheDocument()
     })
 
@@ -294,7 +295,7 @@ describe('SearchBar Component', () => {
     test('input uses design tokens for colors', () => {
       const onSearch = jest.fn()
       render(<SearchBar onSearch={onSearch} />)
-      const input = screen.getByLabelText('Search')
+      const input = screen.getByLabelText(UI_TEXT.search.label)
 
       expect(input).toHaveClass('bg-[hsl(var(--color-surface))]')
       expect(input).toHaveClass('text-[hsl(var(--color-text-primary))]')
@@ -304,7 +305,7 @@ describe('SearchBar Component', () => {
     test('input uses design tokens for radius', () => {
       const onSearch = jest.fn()
       render(<SearchBar onSearch={onSearch} />)
-      const input = screen.getByLabelText('Search')
+      const input = screen.getByLabelText(UI_TEXT.search.label)
 
       expect(input).toHaveClass('rounded-[var(--radius-md)]')
     })
@@ -312,7 +313,7 @@ describe('SearchBar Component', () => {
     test('input uses design tokens for transitions', () => {
       const onSearch = jest.fn()
       render(<SearchBar onSearch={onSearch} />)
-      const input = screen.getByLabelText('Search')
+      const input = screen.getByLabelText(UI_TEXT.search.label)
 
       expect(input).toHaveClass('duration-[var(--transition-fast)]')
     })
@@ -320,10 +321,10 @@ describe('SearchBar Component', () => {
     test('clear button uses design tokens', () => {
       const onSearch = jest.fn()
       render(<SearchBar onSearch={onSearch} />)
-      const input = screen.getByLabelText('Search') as HTMLInputElement
+      const input = screen.getByLabelText(UI_TEXT.search.label) as HTMLInputElement
 
       fireEvent.change(input, { target: { value: 'test' } })
-      const clearButton = screen.getByLabelText('Clear search')
+      const clearButton = screen.getByLabelText(UI_TEXT.search.clear)
 
       expect(clearButton).toHaveClass('text-[hsl(var(--color-text-muted))]')
       expect(clearButton).toHaveClass('rounded-[var(--radius-sm)]')
@@ -334,7 +335,7 @@ describe('SearchBar Component', () => {
     test('input has responsive padding', () => {
       const onSearch = jest.fn()
       render(<SearchBar onSearch={onSearch} />)
-      const input = screen.getByLabelText('Search')
+      const input = screen.getByLabelText(UI_TEXT.search.label)
 
       expect(input).toHaveClass('py-2 sm:py-3')
     })
@@ -342,7 +343,7 @@ describe('SearchBar Component', () => {
     test('input has responsive font size', () => {
       const onSearch = jest.fn()
       render(<SearchBar onSearch={onSearch} />)
-      const input = screen.getByLabelText('Search')
+      const input = screen.getByLabelText(UI_TEXT.search.label)
 
       expect(input).toHaveClass('text-sm sm:text-base')
     })
@@ -360,7 +361,7 @@ describe('SearchBar Component', () => {
     test('input has focus ring styles', () => {
       const onSearch = jest.fn()
       render(<SearchBar onSearch={onSearch} />)
-      const input = screen.getByLabelText('Search')
+      const input = screen.getByLabelText(UI_TEXT.search.label)
 
       expect(input).toHaveClass('focus:ring-2')
       expect(input).toHaveClass('focus:ring-[hsl(var(--color-primary))]')
@@ -369,10 +370,10 @@ describe('SearchBar Component', () => {
     test('clear button has focus styles', () => {
       const onSearch = jest.fn()
       render(<SearchBar onSearch={onSearch} />)
-      const input = screen.getByLabelText('Search') as HTMLInputElement
+      const input = screen.getByLabelText(UI_TEXT.search.label) as HTMLInputElement
 
       fireEvent.change(input, { target: { value: 'test' } })
-      const clearButton = screen.getByLabelText('Clear search')
+      const clearButton = screen.getByLabelText(UI_TEXT.search.clear)
 
       expect(clearButton).toHaveClass('focus:ring-2')
       expect(clearButton).toHaveClass('focus:ring-[hsl(var(--color-primary))]')
@@ -383,7 +384,7 @@ describe('SearchBar Component', () => {
     test('input can receive focus', () => {
       const onSearch = jest.fn()
       render(<SearchBar onSearch={onSearch} />)
-      const input = screen.getByLabelText('Search')
+      const input = screen.getByLabelText(UI_TEXT.search.label)
 
       input.focus()
       expect(document.activeElement).toBe(input)
@@ -392,10 +393,10 @@ describe('SearchBar Component', () => {
     test('clear button can receive focus', () => {
       const onSearch = jest.fn()
       render(<SearchBar onSearch={onSearch} />)
-      const input = screen.getByLabelText('Search') as HTMLInputElement
+      const input = screen.getByLabelText(UI_TEXT.search.label) as HTMLInputElement
 
       fireEvent.change(input, { target: { value: 'test' } })
-      const clearButton = screen.getByLabelText('Clear search')
+      const clearButton = screen.getByLabelText(UI_TEXT.search.clear)
 
       clearButton.focus()
       expect(document.activeElement).toBe(clearButton)
@@ -404,7 +405,7 @@ describe('SearchBar Component', () => {
     test('Enter key in form triggers search', async () => {
       const onSearch = jest.fn()
       render(<SearchBar onSearch={onSearch} debounceMs={500} />)
-      const input = screen.getByLabelText('Search') as HTMLInputElement
+      const input = screen.getByLabelText(UI_TEXT.search.label) as HTMLInputElement
 
       fireEvent.change(input, { target: { value: 'test' } })
       fireEvent.keyDown(input, { key: 'Enter', code: 'Enter' })
@@ -417,7 +418,7 @@ describe('SearchBar Component', () => {
     test('handles empty string search', async () => {
       const onSearch = jest.fn()
       render(<SearchBar onSearch={onSearch} debounceMs={100} />)
-      const input = screen.getByLabelText('Search') as HTMLInputElement
+      const input = screen.getByLabelText(UI_TEXT.search.label) as HTMLInputElement
 
       fireEvent.change(input, { target: { value: '' } })
       jest.advanceTimersByTime(100)
@@ -430,7 +431,7 @@ describe('SearchBar Component', () => {
     test('handles special characters in search query', async () => {
       const onSearch = jest.fn()
       render(<SearchBar onSearch={onSearch} debounceMs={100} />)
-      const input = screen.getByLabelText('Search') as HTMLInputElement
+      const input = screen.getByLabelText(UI_TEXT.search.label) as HTMLInputElement
 
       const specialChars = '<script>alert("test")</script>'
       fireEvent.change(input, { target: { value: specialChars } })
@@ -444,7 +445,7 @@ describe('SearchBar Component', () => {
     test('handles very long search query', async () => {
       const onSearch = jest.fn()
       render(<SearchBar onSearch={onSearch} debounceMs={100} />)
-      const input = screen.getByLabelText('Search') as HTMLInputElement
+      const input = screen.getByLabelText(UI_TEXT.search.label) as HTMLInputElement
 
       const longQuery = 'a'.repeat(1000)
       fireEvent.change(input, { target: { value: longQuery } })
@@ -472,7 +473,7 @@ describe('SearchBar Component', () => {
     test('uses custom debounce time', async () => {
       const onSearch = jest.fn()
       render(<SearchBar onSearch={onSearch} debounceMs={500} />)
-      const input = screen.getByLabelText('Search') as HTMLInputElement
+      const input = screen.getByLabelText(UI_TEXT.search.label) as HTMLInputElement
 
       fireEvent.change(input, { target: { value: 'test' } })
       jest.advanceTimersByTime(500)
@@ -485,7 +486,7 @@ describe('SearchBar Component', () => {
     test('clears previous timeout on new input', async () => {
       const onSearch = jest.fn()
       render(<SearchBar onSearch={onSearch} debounceMs={500} />)
-      const input = screen.getByLabelText('Search') as HTMLInputElement
+      const input = screen.getByLabelText(UI_TEXT.search.label) as HTMLInputElement
 
       fireEvent.change(input, { target: { value: 'a' } })
       jest.advanceTimersByTime(300)
