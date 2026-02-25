@@ -59,7 +59,8 @@ describe('CSP Report API Route', () => {
       expect(data.success).toBe(true)
       expect(mockLogger.error).toHaveBeenCalledWith(
         'CSP Violation:',
-        JSON.stringify(mockReport, null, 2)
+        undefined,
+        { report: mockReport }
       )
     })
 
@@ -101,7 +102,8 @@ describe('CSP Report API Route', () => {
       expect(data.success).toBe(true)
       expect(mockLogger.error).toHaveBeenCalledWith(
         'CSP Violation:',
-        JSON.stringify(mockReport, null, 2)
+        undefined,
+        { report: mockReport }
       )
     })
 
@@ -119,7 +121,8 @@ describe('CSP Report API Route', () => {
       expect(data.success).toBe(true)
       expect(mockLogger.error).toHaveBeenCalledWith(
         'CSP Violation:',
-        JSON.stringify(mockReport, null, 2)
+        undefined,
+        { report: mockReport }
       )
     })
 
@@ -154,7 +157,8 @@ describe('CSP Report API Route', () => {
       expect(data.success).toBe(true)
       expect(mockLogger.error).toHaveBeenCalledWith(
         'CSP Violation:',
-        JSON.stringify(mockReport, null, 2)
+        undefined,
+        { report: mockReport }
       )
     })
 
