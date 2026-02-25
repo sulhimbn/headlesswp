@@ -40,6 +40,7 @@ export default function RootLayout({
         <link rel="preconnect" href={SITE_URL_WWW} />
         <link rel="dns-prefetch" href={SITE_URL} />
         <link rel="dns-prefetch" href={SITE_URL_WWW} />
+        <link rel="alternate" type="application/rss+xml" title="Mitra Banten News - RSS Feed" href={`${SITE_URL}/api/rss`} />
       </head>
       <body className={inter.className}>
         <a
