@@ -41,3 +41,24 @@
 - Issue #358 (ENGAGEMENT) has multiple sub-features: Comments, Newsletter, Social Sharing, RSS
 - RSS was implemented as it's the smallest, safest, most measurable improvement
 - Content Discovery issues (#357) are also in Growth domain for future work
+
+## Implemented Features (Feb 2026)
+
+### Category & Tag Pages with Linked Badges (Issue #357)
+- **Status**: Complete
+- **Features**:
+  - Created `/kategori/[slug]` route - displays posts by category
+  - Created `/tag/[slug]` route - displays posts by tag  
+  - Category badges in post detail now link to `/kategori/[slug]`
+  - Tag badges in post detail now link to `/tag/[slug]`
+  - 12 posts per page with pagination
+  - Uses standardizedAPI for category/tag lookups by slug
+  - 5-minute cache revalidation
+
+## Patterns & Conventions (Updated)
+- Use standardizedAPI.getCategoryBySlug(slug) for category lookup
+- Use standardizedAPI.getTagBySlug(slug) for tag lookup
+- Use standardizedAPI.getAllPosts({ category: id }) for posts by category
+- Use standardizedAPI.getAllPosts({ tag: id }) for posts by tag
+- Route naming: Indonesian for consistency (/kategori, /tag)
+- Pagination basePath should include the slug for proper navigation
