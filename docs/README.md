@@ -61,5 +61,5 @@ Project governance, policies, and agent workflows
 
 ---
 
-**Last Updated**: 2026-01-11
+**Last Updated**: 2026-02-25
 **Maintained By**: HeadlessWP Team
