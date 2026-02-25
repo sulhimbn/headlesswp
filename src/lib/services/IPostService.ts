@@ -1,4 +1,4 @@
-import type { WordPressPost, WordPressCategory, WordPressTag } from '@/types/wordpress';
+import type { WordPressPost, WordPressCategory, WordPressTag, WordPressAuthor } from '@/types/wordpress';
 
 export interface PostWithMediaUrl extends WordPressPost {
   mediaUrl: string | null;
@@ -8,6 +8,7 @@ export interface PostWithDetails extends WordPressPost {
   mediaUrl: string | null;
   categoriesDetails: WordPressCategory[];
   tagsDetails: WordPressTag[];
+  authorDetails: WordPressAuthor | null;
 }
 
 export interface PaginatedPostsResult {
