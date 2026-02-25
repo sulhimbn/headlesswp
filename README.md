@@ -123,7 +123,7 @@ WordPress as a headless CMS with a Next.js 16 frontend. WordPress manages conten
 **Frontend**
 - Next.js 16.1 (App Router)
 - TypeScript 5.9
-- Axios 1.13
+- Axios 1.13.5
 - DOMPurify 3.3
 
 **Backend**

@@ -24,7 +24,7 @@
 - **Framework**: Next.js 16.1 (App Router)
 - **Language**: TypeScript 5.9
 - **Styling**: CSS Modules (to be confirmed)
-- **HTTP Client**: Axios 1.7
+- **HTTP Client**: Axios 1.13.5
 - **Security**: DOMPurify 3.3
 
 ### Backend
