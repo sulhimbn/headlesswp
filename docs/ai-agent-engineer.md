@@ -33,7 +33,13 @@ The AI Agent Engineer is responsible for:
 
 ## Improvements Log
 
-### 2026-02-25 - Second Improvement (THIS PR)
+### 2026-02-25 - Third Improvement (THIS PR)
+- Fixed merge conflict markers in `.github/pull_request_template.md`
+- The file had unmerged conflict markers (<<<<<<< HEAD, =======, >>>>>>>) from a previous merge
+- Cleaned up the template to have a single, working format
+- Created PR with ai-agent-engineer label
+
+### 2026-02-25 - Second Improvement
 - Fixed remaining documentation inconsistencies in `.github/prompt/README.md`
 - Fixed file references: `00-strategist.md` → `00.md`, `02-sanitizer.md` → `02.md`, `04-security.md` → `04.md`
 - These were missed in the previous fix (PR #462)

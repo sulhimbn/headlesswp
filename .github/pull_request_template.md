@@ -1,24 +1,3 @@
-<<<<<<< HEAD
-## 🚀 Pull Request
-
-### 📋 Task Checklist
-- [ ] Task completed and tested
-- [ ] Code follows project standards
-- [ ] Documentation updated if needed
-- [ ] Tests added/updated if applicable
-
-### 🎯 Related Task
-- Reference the specific task from TODO.md that this PR addresses
-
-### 📝 Changes Made
-<!-- Brief description of what was implemented -->
-
-### 🔍 Review Focus
-<!-- Areas that need special attention during review -->
-
-### ✅ Testing Done
-<!-- Description of testing performed -->
-=======
 ## 📋 Pull Request Template
 
 ### 🎯 Type of Change
@@ -81,4 +60,3 @@ Please pay special attention to:
 - Area 1
 - Area 2
 - Area 3
->>>>>>> 64406f1d72c806faff9755f9f93db2a79475480c
