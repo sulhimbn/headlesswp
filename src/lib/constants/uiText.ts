@@ -53,7 +53,8 @@ export const UI_TEXT = {
   },
   search: {
     placeholder: 'Cari berita...',
-    label: 'Cari berita'
+    label: 'Cari berita',
+    clear: 'Hapus pencarian'
   },
   searchPage: {
     heading: (query: string) => `Hasil pencarian: "${query}"`,
