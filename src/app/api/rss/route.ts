@@ -3,6 +3,7 @@ import { apiClient, getApiUrl } from '@/lib/api/client';
 import type { WordPressPost } from '@/types/wordpress';
 import { createMainRSSFeed, createRSSFeed } from '@/lib/utils/rss';
 import { CACHE_TIMES } from '@/lib/api/config';
+import { logger } from '@/lib/utils/logger';
 
 export const dynamic = 'force-dynamic';
 
@@ -26,7 +27,7 @@ export async function GET() {
       },
     });
   } catch (error) {
-    console.error('Error generating RSS feed:', error);
+    logger.error('Error generating RSS feed', error, { module: 'RSSFeed' });
     return new NextResponse('Error generating RSS feed', { status: 500 });
   }
 }
