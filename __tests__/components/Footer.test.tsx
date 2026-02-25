@@ -188,9 +188,9 @@ describe('Footer Component', () => {
       expect(copyrightElements.length).toBeGreaterThan(0)
     })
 
-    test('copyright contains All rights reserved', () => {
+    test('copyright contains Seluruh hak cipta', () => {
       render(<Footer />)
-      expect(screen.getByText(/All rights reserved/)).toBeInTheDocument()
+      expect(screen.getByText(/Seluruh hak cipta/)).toBeInTheDocument()
     })
 
     test('has top border separator', () => {
