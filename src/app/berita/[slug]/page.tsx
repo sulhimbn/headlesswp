@@ -10,12 +10,64 @@ import MetaInfo from '@/components/ui/MetaInfo'
 import dynamic from 'next/dynamic'
 import { logger } from '@/lib/utils/logger'
 import { UI_TEXT } from '@/lib/constants/uiText'
+import { SITE_URL } from '@/lib/api/config'
+import type { Metadata } from 'next'
 
 const Footer = dynamic(() => import('@/components/layout/Footer'), {
   loading: () => <div className="h-64 bg-[hsl(var(--color-background-dark))] mt-12" aria-hidden="true" />
 })
 
 export const revalidate = 3600 // 60 minutes (1 hour)
+
+function stripHtml(html: string): string {
+  return html.replace(/<[^>]*>?/gm, '').trim()
+}
+
+export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
+  const post = await enhancedPostService.getPostBySlug(params.slug)
+  const baseUrl = SITE_URL
+
+  if (!post) {
+    return {
+      title: 'Post Not Found',
+    }
+  }
+
+  const description = stripHtml(post.excerpt.rendered).substring(0, 160)
+  const articleUrl = `${baseUrl}/berita/${post.slug}`
+
+  return {
+    title: post.title.rendered,
+    description,
+    alternates: {
+      canonical: articleUrl,
+    },
+    openGraph: {
+      title: post.title.rendered,
+      description,
+      url: articleUrl,
+      siteName: 'Mitra Banten News',
+      images: [
+        {
+          url: post.mediaUrl || `${baseUrl}/og-image.jpg`,
+          width: 1200,
+          height: 630,
+          alt: stripHtml(post.title.rendered),
+        },
+      ],
+      type: 'article',
+      publishedTime: post.date,
+      modifiedTime: post.modified,
+      authors: [post.authorDetails?.name || 'Mitra Banten News'],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: post.title.rendered,
+      description,
+      images: [post.mediaUrl || `${baseUrl}/og-image.jpg`],
+    },
+  }
+}
 
 export default async function PostPage({ params }: { params: { slug: string } }) {
   const post = await enhancedPostService.getPostBySlug(params.slug)
@@ -41,6 +93,33 @@ export default async function PostPage({ params }: { params: { slug: string } })
       <Header />
 
       <main id="main-content" aria-labelledby="page-heading" className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'NewsArticle',
+              headline: post.title.rendered,
+              image: [post.mediaUrl || `${SITE_URL}/og-image.jpg`],
+              datePublished: post.date,
+              dateModified: post.modified,
+              author: [{
+                '@type': 'Person',
+                name: post.authorDetails?.name || 'Mitra Banten News',
+              }],
+              publisher: {
+                '@type': 'Organization',
+                name: 'Mitra Banten News',
+                logo: {
+                  '@type': 'ImageObject',
+                  url: `${SITE_URL}/logo.png`,
+                },
+              },
+              description: stripHtml(post.excerpt.rendered),
+              url: `${SITE_URL}/berita/${post.slug}`,
+            })
+          }}
+        />
         <h1 id="page-heading" className="sr-only">
           {post.title.rendered}
         </h1>
