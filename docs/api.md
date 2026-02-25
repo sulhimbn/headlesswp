@@ -1921,6 +1921,155 @@ fetch('https://http-intake.logs.datadoghq.com/v1/input/', {
 
 ---
 
+## Cache Management API
+
+### GET /api/cache
+
+**Purpose**: Retrieve cache statistics including size, hits, and misses.
+
+**Usage**: Monitoring cache performance, debugging cache issues.
+
+**Response** (200):
+```json
+{
+  "success": true,
+  "data": {
+    "size": 50,
+    "hits": 1250,
+    "misses": 180
+  },
+  "timestamp": "2026-01-10T10:00:00Z"
+}
+```
+
+**Example**:
+```typescript
+const response = await fetch('http://localhost:3000/api/cache');
+const result = await response.json();
+
+console.log(`Cache size: ${result.data.size}`);
+console.log(`Hit rate: ${result.data.hits / (result.data.hits + result.data.misses) * 100}%`);
+```
+
+---
+
+### POST /api/cache
+
+**Purpose**: Warm the cache by preloading frequently accessed data.
+
+**Usage**: Initialize cache on application startup, prepare for high traffic.
+
+**Response** (200):
+```json
+{
+  "success": true,
+  "message": "Cache warming completed",
+  "data": {
+    "posts": 10,
+    "categories": 5,
+    "tags": 10
+  },
+  "timestamp": "2026-01-10T10:00:00Z"
+}
+```
+
+**Example**:
+```typescript
+const response = await fetch('http://localhost:3000/api/cache', {
+  method: 'POST'
+});
+const result = await response.json();
+
+if (result.success) {
+  console.log('Cache warmed successfully');
+}
+```
+
+---
+
+### DELETE /api/cache
+
+**Purpose**: Clear cache data. Optionally specify a pattern to clear specific cache entries.
+
+**Usage**: Force refresh data, clear stale cache, debugging.
+
+**Query Parameters**:
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| pattern | string | No | Cache key pattern to clear (e.g., `search:`) |
+
+**Response** (200):
+```json
+{
+  "success": true,
+  "message": "All cache cleared",
+  "timestamp": "2026-01-10T10:00:00Z"
+}
+```
+
+**Clear all cache**:
+```typescript
+const response = await fetch('http://localhost:3000/api/cache', {
+  method: 'DELETE'
+});
+```
+
+**Clear specific pattern**:
+```typescript
+const response = await fetch('http://localhost:3000/api/cache?pattern=search:', {
+  method: 'DELETE'
+});
+```
+
+---
+
+## Content Security Policy (CSP) Report API
+
+### POST /api/csp-report
+
+**Purpose**: Receive and log Content Security Policy violation reports.
+
+**Usage**: Monitor CSP violations in production, identify potential security issues.
+
+**Request Body**: CSP Report-URI format
+```json
+{
+  "csp-report": {
+    "blocked-uri": "script-src",
+    "violated-directive": "script-src 'self'",
+    "document-uri": "https://example.com/page",
+    "original-policy": "default-src 'self'; script-src 'self' https://trusted.cdn.com"
+  }
+}
+```
+
+**Response** (200):
+```json
+{
+  "success": true
+}
+```
+
+**Response** (400):
+```json
+{
+  "error": "Failed to process report"
+}
+```
+
+**Example - Frontend Integration**:
+```html
+<meta http-equiv="Content-Security-Policy" 
+      content="default-src 'self'; script-src 'self'; report-uri /api/csp-report">
+```
+
+**Note**: In production, you may want to extend this endpoint to:
+- Send violations to a logging service (Sentry, LogRocket, etc.)
+- Store violations in a database for analysis
+- Send alerts for critical CSP violations
+
+---
+
 ## Performance Tips
 
 ### 1. Use ISR Caching
