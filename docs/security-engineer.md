@@ -35,6 +35,13 @@ This document serves as long-term memory for the security-engineer autonomous ag
   - Referrer-Policy: strict-origin-when-cross-origin
   - Permissions-Policy: camera=(), microphone=(), geolocation=()
 
+### 2026-02-25 (Issue #419)
+- **URL validation and HTTPS enforcement**:
+  - Added validateUrl function in src/lib/api/config.ts
+  - Requires explicit NEXT_PUBLIC_* environment variables (no fallback defaults)
+  - Enforces HTTPS for SITE_URL and SITE_URL_WWW in production
+  - Updated .env.example with HTTPS defaults
+
 ## Known Security Concerns (Future Work)
 - Dockerfile uses node:25-alpine (non-LTS) - should use node:20-alpine or node:22-alpine
 - Dockerfile passes secrets via build args - consider using Docker secrets for production
