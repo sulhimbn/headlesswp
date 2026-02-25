@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { memo } from 'react'
 import { PAGINATION } from '@/lib/api/config'
+import { UI_TEXT } from '@/lib/constants/uiText'
 
 interface PaginationProps {
   currentPage: number
@@ -48,7 +49,7 @@ function PaginationComponent({ currentPage, totalPages, basePath }: PaginationPr
           className="px-3 py-2 text-sm font-medium text-[hsl(var(--color-text-secondary))] bg-[hsl(var(--color-surface))] border border-[hsl(var(--color-border))] rounded-[var(--radius-md)] hover:bg-[hsl(var(--color-secondary-dark))] transition-colors duration-[var(--transition-fast)] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--color-primary))] focus:ring-offset-2"
           aria-label="Previous page"
         >
-          ← Sebelumnya
+          ← {UI_TEXT.pagination.previous}
         </Link>
       )}
 
@@ -80,7 +81,7 @@ function PaginationComponent({ currentPage, totalPages, basePath }: PaginationPr
           className="px-3 py-2 text-sm font-medium text-[hsl(var(--color-text-secondary))] bg-[hsl(var(--color-surface))] border border-[hsl(var(--color-border))] rounded-[var(--radius-md)] hover:bg-[hsl(var(--color-secondary-dark))] transition-colors duration-[var(--transition-fast)] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--color-primary))] focus:ring-offset-2"
           aria-label="Next page"
         >
-          Selanjutnya →
+          {UI_TEXT.pagination.next} →
         </Link>
       )}
     </nav>
