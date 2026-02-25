@@ -34,6 +34,9 @@ This document serves as the long-term memory for the frontend-engineer autonomou
 2. Empty query searches trigger onSearch callback (intentional behavior)
 3. Placeholder social media links in Footer
 
+## Accessibility Improvements Made
+1. Added prefers-reduced-motion support in globals.css (disables animations/transitions for users who prefer reduced motion)
+
 ## Testing
 - Framework: Jest + React Testing Library
 - Run: `npm test`
