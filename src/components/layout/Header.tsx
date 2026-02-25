@@ -12,9 +12,6 @@ const SearchBar = dynamic(() => import('@/components/ui/SearchBar'), { ssr: fals
 const NAVIGATION_ITEMS = [
   { href: '/', label: 'Beranda' },
   { href: '/berita', label: 'Berita' },
-  { href: '/politik', label: 'Politik' },
-  { href: '/ekonomi', label: 'Ekonomi' },
-  { href: '/olahraga', label: 'Olahraga' },
 ] as const
 
 export default memo(function Header() {
