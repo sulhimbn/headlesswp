@@ -35,10 +35,29 @@ This document serves as long-term memory for the security-engineer autonomous ag
   - Referrer-Policy: strict-origin-when-cross-origin
   - Permissions-Policy: camera=(), microphone=(), geolocation=()
 
+- **Added URL validation for environment variables** (PR #488):
+  - validateUrl function ensures required NEXT_PUBLIC_* env vars are set
+  - Enforces HTTPS for SITE_URL/SITE_URL_WWW in production
+
+- **Added cross-origin isolation headers** (PR #507):
+  - Cross-Origin-Opener-Policy: same-origin
+  - Cross-Origin-Resource-Policy: same-origin
+  - Cross-Origin-Embedder-Policy: require-corp
+
+## Current Security Posture
+The application has comprehensive security headers:
+- CSP with nonce (proxy.ts middleware)
+- HSTS with preload
+- All recommended X-* headers
+- Permissions-Policy
+- COOP, CORP, COEP (cross-origin isolation)
+- Rate limiting on all API routes
+- HTML sanitization with DOMPurify
+- Input validation for WordPress data
+
 ## Known Security Concerns (Future Work)
 - Dockerfile uses node:25-alpine (non-LTS) - should use node:20-alpine or node:22-alpine
 - Dockerfile passes secrets via build args - consider using Docker secrets for production
-- Consider adding Content-Security-Policy header (requires careful configuration)
 
 ## Teammate Coordination
 - Check other agents' memory files for relevant context
