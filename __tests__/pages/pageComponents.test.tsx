@@ -6,7 +6,7 @@ import CariPage from '@/app/cari/page';
 import PostPage from '@/app/berita/[slug]/page';
 import type { PostWithDetails, PostWithMediaUrl } from '@/lib/services/IPostService';
 import { render, screen } from '@testing-library/react';
-import { WordPressPost, WordPressCategory, WordPressTag } from '@/types/wordpress';
+import { WordPressPost, WordPressCategory, WordPressTag, WordPressAuthor } from '@/types/wordpress';
 
 jest.mock('@/lib/services/enhancedPostService');
 
@@ -359,6 +359,19 @@ describe('Page Components - Critical Path Testing', () => {
       link: 'https://example.com/tag/government'
     };
 
+    const mockAuthor: WordPressAuthor = {
+      id: 1,
+      name: 'John Doe',
+      description: 'John Doe author',
+      link: 'https://example.com/author/johndoe',
+      slug: 'johndoe',
+      avatar_urls: {
+        '24': 'https://example.com/avatar24.jpg',
+        '48': 'https://example.com/avatar48.jpg',
+        '96': 'https://example.com/avatar96.jpg'
+      }
+    };
+
     const mockPost: PostWithDetails = {
       id: 1,
       title: { rendered: 'Test Post Title' },
@@ -376,7 +389,8 @@ describe('Page Components - Critical Path Testing', () => {
       link: 'https://example.com/test-post',
       mediaUrl: 'https://example.com/image.jpg',
       categoriesDetails: [mockCategory],
-      tagsDetails: [mockTag]
+      tagsDetails: [mockTag],
+      authorDetails: mockAuthor
     };
 
     it('should render post with full details', async () => {
