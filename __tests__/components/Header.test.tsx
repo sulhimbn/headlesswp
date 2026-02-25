@@ -26,9 +26,6 @@ describe('Header Component', () => {
       
       expect(screen.getByRole('link', { name: 'Beranda' })).toBeInTheDocument()
       expect(screen.getByRole('link', { name: 'Berita' })).toBeInTheDocument()
-      expect(screen.getByRole('link', { name: 'Politik' })).toBeInTheDocument()
-      expect(screen.getByRole('link', { name: 'Ekonomi' })).toBeInTheDocument()
-      expect(screen.getByRole('link', { name: 'Olahraga' })).toBeInTheDocument()
     })
 
     test('navigation items have correct hrefs', () => {
@@ -36,9 +33,6 @@ describe('Header Component', () => {
       
       expect(screen.getByRole('link', { name: 'Beranda' })).toHaveAttribute('href', '/')
       expect(screen.getByRole('link', { name: 'Berita' })).toHaveAttribute('href', '/berita')
-      expect(screen.getByRole('link', { name: 'Politik' })).toHaveAttribute('href', '/politik')
-      expect(screen.getByRole('link', { name: 'Ekonomi' })).toHaveAttribute('href', '/ekonomi')
-      expect(screen.getByRole('link', { name: 'Olahraga' })).toHaveAttribute('href', '/olahraga')
     })
   })
 
@@ -120,9 +114,6 @@ describe('Header Component', () => {
       
       expect(screen.getAllByRole('link', { name: 'Beranda' })).toHaveLength(2)
       expect(screen.getAllByRole('link', { name: 'Berita' })).toHaveLength(2)
-      expect(screen.getAllByRole('link', { name: 'Politik' })).toHaveLength(2)
-      expect(screen.getAllByRole('link', { name: 'Ekonomi' })).toHaveLength(2)
-      expect(screen.getAllByRole('link', { name: 'Olahraga' })).toHaveLength(2)
     })
 
     test('closes mobile menu when navigation item is clicked', () => {
@@ -150,7 +141,7 @@ describe('Header Component', () => {
       
       fireEvent.keyDown(firstMenuItem, { key: 'Tab', shiftKey: true })
       
-      const lastMenuItems = screen.getAllByRole('link', { name: 'Olahraga' })
+      const lastMenuItems = screen.getAllByRole('link', { name: 'Berita' })
       const lastMenuItem = lastMenuItems[1]
       expect(lastMenuItem).toHaveFocus()
     })
@@ -160,7 +151,7 @@ describe('Header Component', () => {
       const menuButton = screen.getByRole('button', { name: 'Buka menu' })
       fireEvent.click(menuButton)
       
-      const lastMenuItems = screen.getAllByRole('link', { name: 'Olahraga' })
+      const lastMenuItems = screen.getAllByRole('link', { name: 'Berita' })
       const lastMenuItem = lastMenuItems[1]
       lastMenuItem.focus()
       
