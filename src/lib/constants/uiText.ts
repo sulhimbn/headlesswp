@@ -81,6 +81,6 @@ export const UI_TEXT = {
     email: 'Email: info@mitrabantennews.com',
     phone: 'Telepon: (0254) 123-4567',
     address: 'Alamat: Banten, Indonesia',
-    copyright: (year: number) => `&copy; ${year} Mitra Banten News. All rights reserved.`
+    copyright: (year: number) => `&copy; ${year} Mitra Banten News. Seluruh hak cipta.`
   }
 } as const
