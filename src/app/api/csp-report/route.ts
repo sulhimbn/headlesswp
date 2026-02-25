@@ -6,7 +6,7 @@ async function cspReportHandler(request: NextRequest) {
   try {
     const report = await request.json()
 
-    logger.error('CSP Violation:', undefined, { report })
+    logger.error('CSP Violation:', undefined, { module: 'cspReport', report })
     
     // In production, you might want to:
     // - Send to a logging service (Sentry, LogRocket, etc.)

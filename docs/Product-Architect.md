@@ -39,3 +39,8 @@ This document serves as the long-time memory for the product-architect agent.
 - Files modified:
   - src/lib/api/config.ts (updated default URLs)
   - .env.example (updated to show HTTPS as recommended)
+- Third task: Fixed logger.error call missing module property in CSP-report route (Issue #497)
+- Solution: Added module: 'cspReport' to logger.error meta object for consistency
+- Files modified:
+  - src/app/api/csp-report/route.ts (added module property to logger call)
+  - __tests__/cspReportApiRoute.test.ts (updated test assertions)
