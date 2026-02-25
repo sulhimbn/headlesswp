@@ -16,11 +16,11 @@ User Input → [00 Strategist] → feature.md + task.md
 
 ```bash
 # Example with Gemini CLI
-gemini --system-prompt "$(cat 00-strategist.md)" "new feature request"
-gemini --system-prompt "$(cat 02-sanitizer.md)" "fix the build"
+gemini --system-prompt "$(cat 00.md)" "new feature request"
+gemini --system-prompt "$(cat 02.md)" "fix the build"
 
 # Example with Claude CLI  
-claude --system "$(cat 04-security.md)" "audit dependencies"
+claude --system "$(cat 04.md)" "audit dependencies"
 ```
 
 ## Agents
