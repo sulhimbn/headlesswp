@@ -33,15 +33,21 @@ The AI Agent Engineer is responsible for:
 
 ## Improvements Log
 
-### 2026-02-25 - Initial Setup
-- Created this longtime memory file
-- Established baseline understanding of agent system
+### 2026-02-25 - Second Improvement (THIS PR)
+- Fixed remaining documentation inconsistencies in `.github/prompt/README.md`
+- Fixed file references: `00-strategist.md` → `00.md`, `02-sanitizer.md` → `02.md`, `04-security.md` → `04.md`
+- These were missed in the previous fix (PR #462)
+- Created PR with ai-agent-engineer label
 
 ### 2026-02-25 - First Improvement
 - Fixed documentation inconsistency in `.github/prompt/README.md`
 - File references were incorrect (e.g., `00-strategist.md` instead of `00.md`)
 - Created PR #462 with ai-agent-engineer label
 - Added documentation about agent file structure to this memory file
+
+### 2026-02-25 - Initial Setup
+- Created this longtime memory file
+- Established baseline understanding of agent system
 
 ## Known Issues
 
@@ -59,3 +65,4 @@ The AI Agent Engineer is responsible for:
 - Focus on small, safe, measurable improvements
 - Always create PRs with proper labeling
 - Maintain zero warnings and build success
+- Previous fix in PR #462 only addressed partial README issues
