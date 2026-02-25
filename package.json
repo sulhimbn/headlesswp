@@ -53,6 +53,8 @@
   "author": "Mitra Banten News",
   "license": "MIT",
   "overrides": {
-    "js-yaml": "^4.1.1"
+    "js-yaml": "^4.1.1",
+    "caniuse-lite": "^1.0.30001774",
+    "baseline-browser-mapping": "^2.10.0"
   }
 }
