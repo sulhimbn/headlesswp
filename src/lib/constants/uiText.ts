@@ -7,11 +7,11 @@ export const UI_TEXT = {
     readArticle: (title: string) => `Baca artikel: ${title}`
   },
   metaInfo: {
-    by: 'By',
+    by: 'Oleh',
     datePrefix: ''
   },
   postDetail: {
-    tags: 'Tags',
+    tags: 'Tag',
     backToHome: 'Kembali ke Beranda'
   },
   newsPage: {

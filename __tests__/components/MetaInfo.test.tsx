@@ -10,7 +10,7 @@ describe('MetaInfo Component', () => {
 
     test('renders default author when not provided', () => {
       render(<MetaInfo date="2026-01-10T10:00:00" />)
-      expect(screen.getByText('By Admin')).toBeInTheDocument()
+      expect(screen.getByText('Oleh Admin')).toBeInTheDocument()
     })
 
     test('renders formatted date', () => {
@@ -190,7 +190,7 @@ describe('MetaInfo Component', () => {
 
     test('handles only date (no author)', () => {
       render(<MetaInfo date="2026-01-10T10:00:00" />)
-      expect(screen.getByText('By Admin')).toBeInTheDocument()
+      expect(screen.getByText('Oleh Admin')).toBeInTheDocument()
       const timeElement = screen.getByRole('time')
       expect(timeElement).toBeInTheDocument()
     })

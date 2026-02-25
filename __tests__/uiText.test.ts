@@ -36,7 +36,7 @@ describe('UI_TEXT constants', () => {
 
   describe('metaInfo', () => {
     it('should have by text', () => {
-      expect(UI_TEXT.metaInfo.by).toBe('By');
+      expect(UI_TEXT.metaInfo.by).toBe('Oleh');
     });
 
     it('should have datePrefix as empty string', () => {
@@ -46,7 +46,7 @@ describe('UI_TEXT constants', () => {
 
   describe('postDetail', () => {
     it('should have tags text', () => {
-      expect(UI_TEXT.postDetail.tags).toBe('Tags');
+      expect(UI_TEXT.postDetail.tags).toBe('Tag');
     });
 
     it('should have backToHome text', () => {
