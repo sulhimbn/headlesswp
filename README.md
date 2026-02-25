@@ -149,6 +149,9 @@ npm run lint         # Run ESLint
 npm run typecheck    # Run TypeScript type checking
 npm run test         # Run Jest tests
 npm test:watch       # Run tests in watch mode
+npm run analyze      # Analyze bundle size
+npm run deps:check   # Check for outdated dependencies
+npm run deps:update  # Update dependencies to latest
 npm audit:security   # Check for security vulnerabilities
 npm audit:full       # Full security audit
 ```
