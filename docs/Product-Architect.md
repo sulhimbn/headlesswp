@@ -34,3 +34,8 @@ This document serves as the long-time memory for the product-architect agent.
 - Files created/modified:
   - src/lib/services/cacheInitializer.ts (new)
   - src/app/page.tsx (modified to call initializer)
+- Second task: Fixed default WordPress API URLs to use HTTPS instead of HTTP (Issue #419)
+- Solution: Updated default URLs in config.ts and .env.example to use HTTPS for production security
+- Files modified:
+  - src/lib/api/config.ts (updated default URLs)
+  - .env.example (updated to show HTTPS as recommended)
