@@ -49,6 +49,11 @@ export function proxy(_request: NextRequest) {
     'gyroscope=()',
     'accelerometer=()'
   ].join(', '))
+
+  // Cross-origin isolation headers
+  response.headers.set('Cross-Origin-Opener-Policy', 'same-origin')
+  response.headers.set('Cross-Origin-Resource-Policy', 'same-origin')
+  response.headers.set('Cross-Origin-Embedder-Policy', 'require-corp')
   
   return response
 }
