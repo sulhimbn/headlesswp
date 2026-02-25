@@ -167,7 +167,7 @@ export default async function PostPage({ params }: { params: { slug: string } })
               {categoriesDetails.length > 0 && (
                 <div className="flex flex-wrap gap-2 mb-4">
                   {categoriesDetails.map((category) => (
-                    <Badge key={category.id} variant="category">
+                    <Badge key={category.id} variant="category" href={`/kategori/${category.slug}`}>
                       {category.name}
                     </Badge>
                   ))}
@@ -189,7 +189,7 @@ export default async function PostPage({ params }: { params: { slug: string } })
                 <h3 className="text-sm font-semibold text-[hsl(var(--color-text-muted))] mb-3">{UI_TEXT.postDetail.tags}</h3>
                 <div className="flex flex-wrap gap-2">
                   {tagsDetails.map((tag) => (
-                    <Badge key={tag.id} variant="tag">
+                    <Badge key={tag.id} variant="tag" href={`/tag/${tag.slug}`}>
                       #{tag.name}
                     </Badge>
                   ))}
