@@ -4,6 +4,10 @@ import { axe } from 'jest-axe'
 import Header from '@/components/layout/Header'
 import Footer from '@/components/layout/Footer'
 import PostCard from '@/components/post/PostCard'
+import SearchBar from '@/components/ui/SearchBar'
+import Button from '@/components/ui/Button'
+import Pagination from '@/components/ui/Pagination'
+import EmptyState from '@/components/ui/EmptyState'
 import type { WordPressPost } from '@/types/wordpress'
 
 const mockPost: WordPressPost = {
@@ -74,6 +78,101 @@ describe('Accessibility Tests', () => {
     it('should have proper heading for post title', () => {
       render(<PostCard post={mockPost} />)
       const heading = screen.getByRole('heading', { level: 3 })
+      expect(heading).toBeInTheDocument()
+    })
+  })
+
+  describe('SearchBar', () => {
+    it('should have no accessibility violations', async () => {
+      const { container } = render(<SearchBar onSearch={jest.fn()} />)
+      const results = await axe(container)
+      expect(results).toHaveNoViolations()
+    })
+
+    it('should have search role', () => {
+      render(<SearchBar onSearch={jest.fn()} />)
+      const form = screen.getByRole('search')
+      expect(form).toBeInTheDocument()
+    })
+
+    it('should have searchbox role', () => {
+      render(<SearchBar onSearch={jest.fn()} />)
+      const searchbox = screen.getByRole('searchbox')
+      expect(searchbox).toBeInTheDocument()
+    })
+
+    it('should have proper label for screen readers', () => {
+      render(<SearchBar onSearch={jest.fn()} ariaLabel="Cari berita" />)
+      const searchbox = screen.getByLabelText('Cari berita')
+      expect(searchbox).toBeInTheDocument()
+    })
+  })
+
+  describe('Button', () => {
+    it('should have no accessibility violations', async () => {
+      const { container } = render(<Button>Click me</Button>)
+      const results = await axe(container)
+      expect(results).toHaveNoViolations()
+    })
+
+    it('should have button role', () => {
+      render(<Button>Click me</Button>)
+      const button = screen.getByRole('button')
+      expect(button).toBeInTheDocument()
+    })
+
+    it('should have proper focus styles', () => {
+      render(<Button>Click me</Button>)
+      const button = screen.getByRole('button')
+      expect(button).toHaveClass('focus:ring-2')
+    })
+  })
+
+  describe('Pagination', () => {
+    it('should have no accessibility violations', async () => {
+      const { container } = render(
+        <Pagination currentPage={1} totalPages={5} basePath="/berita" />
+      )
+      const results = await axe(container)
+      expect(results).toHaveNoViolations()
+    })
+
+    it('should have navigation role with proper label', () => {
+      render(
+        <Pagination currentPage={1} totalPages={5} basePath="/berita" />
+      )
+      const navigation = screen.getByRole('navigation', { name: 'Pagination' })
+      expect(navigation).toBeInTheDocument()
+    })
+
+    it('should have page links with proper labels', () => {
+      render(
+        <Pagination currentPage={1} totalPages={5} basePath="/berita" />
+      )
+      const pageLink = screen.getByRole('link', { name: 'Page 1' })
+      expect(pageLink).toBeInTheDocument()
+      expect(pageLink).toHaveAttribute('aria-current', 'page')
+    })
+  })
+
+  describe('EmptyState', () => {
+    it('should have no accessibility violations', async () => {
+      const { container } = render(
+        <EmptyState title="No results" description="No items found" />
+      )
+      const results = await axe(container)
+      expect(results).toHaveNoViolations()
+    })
+
+    it('should have status role', () => {
+      render(<EmptyState title="No results" description="No items found" />)
+      const status = screen.getByRole('status')
+      expect(status).toBeInTheDocument()
+    })
+
+    it('should have heading', () => {
+      render(<EmptyState title="No results" description="No items found" />)
+      const heading = screen.getByRole('heading')
       expect(heading).toBeInTheDocument()
     })
   })
