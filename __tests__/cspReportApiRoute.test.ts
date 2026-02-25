@@ -78,7 +78,8 @@ describe('CSP Report API Route', () => {
       expect(data.error).toBe('Failed to process report')
       expect(mockLogger.error).toHaveBeenCalledWith(
         'Error processing CSP report:',
-        expect.any(Error)
+        expect.any(Error),
+        { module: 'cspReport' }
       )
     })
 
@@ -285,7 +286,8 @@ describe('CSP Report API Route', () => {
       expect(data.error).toBe('Failed to process report')
       expect(mockLogger.error).toHaveBeenCalledWith(
         'Error processing CSP report:',
-        expect.any(SyntaxError)
+        expect.any(SyntaxError),
+        { module: 'cspReport' }
       )
     })
   })

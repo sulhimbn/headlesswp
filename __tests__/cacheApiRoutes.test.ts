@@ -78,7 +78,8 @@ describe('Cache API Routes', () => {
       expect(data.timestamp).toBeDefined()
       expect(mockLogger.error).toHaveBeenCalledWith(
         'Error fetching cache stats:',
-        expect.any(Error)
+        expect.any(Error),
+        { module: 'cache' }
       )
     })
 
@@ -144,7 +145,8 @@ describe('Cache API Routes', () => {
       expect(data.timestamp).toBeDefined()
       expect(mockLogger.error).toHaveBeenCalledWith(
         'Error warming cache:',
-        expect.any(Error)
+        expect.any(Error),
+        { module: 'cache' }
       )
     })
 
@@ -232,7 +234,8 @@ describe('Cache API Routes', () => {
       expect(data.timestamp).toBeDefined()
       expect(mockLogger.error).toHaveBeenCalledWith(
         'Error clearing cache:',
-        expect.anything()
+        expect.anything(),
+        { module: 'cache' }
       )
     })
 
