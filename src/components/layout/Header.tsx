@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useState, useEffect, useRef, useCallback, memo, Suspense } from 'react'
 import dynamic from 'next/dynamic'
 import Icon from '@/components/ui/Icon'
+import ServiceStatus from '@/components/ui/ServiceStatus'
 import { UI_TEXT } from '@/lib/constants/uiText'
 
 const SearchBar = dynamic(() => import('@/components/ui/SearchBar'), { ssr: false })
@@ -94,7 +95,8 @@ export default memo(function Header() {
             Mitra Banten News
           </Link>
 
-          <div className="hidden md:flex items-center space-x-8">
+          <div className="hidden md:flex items-center space-x-4">
+            <ServiceStatus />
             <button
               ref={searchButtonRef}
               type="button"
