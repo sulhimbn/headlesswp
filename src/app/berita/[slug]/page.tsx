@@ -29,7 +29,7 @@ export default async function PostPage({ params }: { params: { slug: string } })
     notFound()
   }
 
-  const { mediaUrl, categoriesDetails, tagsDetails } = post
+  const { mediaUrl, categoriesDetails, tagsDetails, authorDetails } = post
 
   const breadcrumbItems = [
     { label: 'Berita', href: '/berita' },
@@ -64,6 +64,26 @@ export default async function PostPage({ params }: { params: { slug: string } })
           <div className="p-8">
             <div className="mb-6">
               <MetaInfo date={post.date} className="mb-4" />
+
+              {authorDetails && (
+                <div className="flex items-center gap-2 mb-4">
+                  {authorDetails.avatar_urls && Object.keys(authorDetails.avatar_urls).length > 0 && (
+                    <Image
+                      src={authorDetails.avatar_urls['96'] || authorDetails.avatar_urls['48'] || authorDetails.avatar_urls['24']}
+                      alt={authorDetails.name}
+                      width={32}
+                      height={32}
+                      className="rounded-full"
+                    />
+                  )}
+                  <Link
+                    href={`/author/${authorDetails.id}`}
+                    className="text-sm font-medium text-[hsl(var(--color-primary))] hover:text-[hsl(var(--color-primary-dark))] transition-colors"
+                  >
+                    {authorDetails.name}
+                  </Link>
+                </div>
+              )}
 
               {categoriesDetails.length > 0 && (
                 <div className="flex flex-wrap gap-2 mb-4">

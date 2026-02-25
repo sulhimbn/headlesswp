@@ -9,6 +9,7 @@ import { logger } from '@/lib/utils/logger';
 import { getFallbackPosts, type FallbackPostType } from '@/lib/constants/fallbackPosts';
 import type { IPostService, PostWithMediaUrl, PostWithDetails, PaginatedPostsResult } from './IPostService';
 import { standardizedAPI } from '@/lib/api/standardized';
+import { isApiResultSuccessful } from '@/lib/api/response';
 import type { ICacheManager } from '@/lib/api/ICacheManager';
 
 interface EntityMapOptions<T> {
@@ -131,11 +132,24 @@ async function enrichPostWithDetails(post: WordPressPost): Promise<PostWithDetai
     .map(id => tagsMap.get(id))
     .filter((tag): tag is WordPressTag => tag !== undefined);
 
+  let authorDetails = null;
+  if (post.author > 0) {
+    try {
+      const authorResult = await standardizedAPI.getAuthorById(post.author);
+      if (isApiResultSuccessful(authorResult)) {
+        authorDetails = authorResult.data;
+      }
+    } catch (error) {
+      logger.warn(`Failed to fetch author for post ${post.id}`, error, { module: 'enhancedPostService' });
+    }
+  }
+
   return {
     ...post,
     mediaUrl,
     categoriesDetails,
-    tagsDetails
+    tagsDetails,
+    authorDetails
   };
 }
 
