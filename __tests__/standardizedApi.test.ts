@@ -206,7 +206,7 @@ describe('Standardized API - searchPosts', () => {
       { id: 2, title: { rendered: 'Search Result 2' } }
     ] as any[];
 
-    mockedWordpressAPI.search.mockResolvedValue(mockPosts);
+    mockedWordpressAPI.search.mockResolvedValue({ posts: mockPosts, totalPages: 1 });
 
     const result = await standardizedAPI.searchPosts('test query');
 
@@ -216,7 +216,7 @@ describe('Standardized API - searchPosts', () => {
     expect(result.metadata.cacheHit).toBe(false);
     expect(result.pagination).toEqual({
       page: 1,
-      perPage: 2,
+      perPage: 12,
       total: 2,
       totalPages: 1
     });
@@ -672,7 +672,7 @@ describe('Standardized API - Metadata', () => {
 
   test('includes cacheHit in metadata when specified', async () => {
     const mockPosts = [] as any[];
-    mockedWordpressAPI.search.mockResolvedValue(mockPosts);
+    mockedWordpressAPI.search.mockResolvedValue({ posts: mockPosts, totalPages: 0 });
 
     const result = await standardizedAPI.searchPosts('test');
 

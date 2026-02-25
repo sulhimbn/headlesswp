@@ -7,6 +7,15 @@
 
 ## Implemented Features
 
+### Search Results Pagination (Issue #354)
+- **PR**: (to be created)
+- **Status**: Complete
+- **Features**:
+  - Added pagination to search results at /cari page
+  - 12 posts per page (configurable via PAGINATION_LIMITS.SEARCH_POSTS)
+  - Pagination component updated to support query parameters
+  - URL format: /cari?q=query&page=2
+
 ### RSS Feed (Issue #358)
 - **PR**: #465
 - **Status**: Complete
@@ -22,6 +31,7 @@
 - Follow RSS 2.0 specification for XML generation
 - Use CACHE_TIMES from config for consistent caching
 - Add proper Content-Type headers (application/rss+xml)
+- Use PaginatedPostsResult type for paginated results
 
 ## Common Issues & Solutions
 - Type errors with getPosts: use apiClient directly for _fields parameter

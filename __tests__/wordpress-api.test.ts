@@ -242,7 +242,8 @@ describe('WordPress REST API', () => {
 
       const result = await wordpressAPI.search('react');
 
-      expect(result).toEqual(mockPosts);
+      expect(result.posts).toEqual(mockPosts);
+      expect(result.totalPages).toBe(1);
       expect(apiClient.get).toHaveBeenCalledTimes(2);
       expect(cacheManager.set).toHaveBeenCalled();
     });
@@ -252,11 +253,11 @@ describe('WordPress REST API', () => {
         { id: 1, title: { rendered: 'Cached Result' }, content: { rendered: 'Content' }, excerpt: { rendered: 'Excerpt' }, slug: 'cached', date: '2024-01-01', modified: '2024-01-01', author: 1, featured_media: 0, categories: [], tags: [], status: 'publish', type: 'post', link: 'https://example.com/cached' }
       ];
 
-      (cacheManager.get as jest.Mock).mockReturnValue(cachedResults);
+      (cacheManager.get as jest.Mock).mockReturnValue({ posts: cachedResults, totalPages: 1 });
 
       const result = await wordpressAPI.search('test');
 
-      expect(result).toEqual(cachedResults);
+      expect(result.posts).toEqual(cachedResults);
       expect(apiClient.get).not.toHaveBeenCalled();
       expect(cacheManager.get).toHaveBeenCalled();
     });
@@ -269,7 +270,7 @@ describe('WordPress REST API', () => {
 
       const result = await wordpressAPI.search('nonexistent');
 
-      expect(result).toEqual([]);
+      expect(result).toEqual({ posts: [], totalPages: 0 });
       expect(apiClient.get).toHaveBeenCalledTimes(1);
     });
 

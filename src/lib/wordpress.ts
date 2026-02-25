@@ -135,45 +135,55 @@ export const wordpressAPI: IWordPressAPI = {
     return response.data;
   },
 
-  search: async (query: string, signal?: AbortSignal): Promise<WordPressPost[]> => {
+  search: async (query: string, page: number = 1, perPage: number = 12, signal?: AbortSignal): Promise<{ posts: WordPressPost[], totalPages: number }> => {
     const cacheKey = cacheKeys.search(query);
 
     const result = await cacheFetch(
       async () => {
         const searchResponse = await apiClient.get<WordPressSearchResult[]>(
           getApiUrl('/wp/v2/search'),
-          { params: { search: query, _fields: 'id,type,subtype' }, signal }
+          { params: { search: query, _fields: 'id,type,subtype', per_page: 100 }, signal }
         );
 
         const searchResults = searchResponse.data;
         
         if (searchResults.length === 0) {
-          return [];
+          return { posts: [], totalPages: 0 };
         }
 
         const postIds = searchResults.map((result) => result.id);
+        const totalResults = postIds.length;
+        const totalPages = Math.ceil(totalResults / perPage);
+        
+        const startIndex = (page - 1) * perPage;
+        const endIndex = startIndex + perPage;
+        const pagePostIds = postIds.slice(startIndex, endIndex);
+
+        if (pagePostIds.length === 0) {
+          return { posts: [], totalPages };
+        }
 
         const response = await apiClient.get<WordPressPost[]>(
           getApiUrl('/wp/v2/posts'),
           {
             params: {
-              include: postIds.join(','),
+              include: pagePostIds.join(','),
               _fields: 'id,title,excerpt,slug,date,modified,featured_media,categories,tags,status,type,link'
             },
             signal
           }
         );
 
-        return response.data as WordPressPost[];
+        return { posts: response.data as WordPressPost[], totalPages };
       },
       {
-        key: cacheKey,
+        key: `${cacheKey}_page_${page}_per_${perPage}`,
         ttl: CACHE_TTL.SEARCH,
-        transform: (data) => data as WordPressPost[]
+        transform: (data) => data as { posts: WordPressPost[], totalPages: number }
       }
     );
 
-    return result ?? [];
+    return result ?? { posts: [], totalPages: 0 };
   }
 };
 

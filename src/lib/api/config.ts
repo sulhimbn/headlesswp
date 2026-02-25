@@ -37,6 +37,7 @@ export const PAGINATION_LIMITS = {
   LATEST_POSTS: 6,
   CATEGORY_POSTS: 3,
   ALL_POSTS: 50,
+  SEARCH_POSTS: 12,
 } as const
 
 export const DEFAULT_PER_PAGE = 10

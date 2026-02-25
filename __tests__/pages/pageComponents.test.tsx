@@ -256,7 +256,7 @@ describe('Page Components - Critical Path Testing', () => {
     ];
 
     it('should show empty state when no query provided', async () => {
-      (enhancedPostService.searchPosts as jest.Mock).mockResolvedValue([]);
+      (enhancedPostService.searchPosts as jest.Mock).mockResolvedValue({ posts: [], totalPosts: 0, totalPages: 1 });
 
       const Page = await CariPage({ searchParams: {} });
       render(Page);
@@ -267,7 +267,7 @@ describe('Page Components - Critical Path Testing', () => {
     });
 
     it('should show empty state when query is empty string', async () => {
-      (enhancedPostService.searchPosts as jest.Mock).mockResolvedValue([]);
+      (enhancedPostService.searchPosts as jest.Mock).mockResolvedValue({ posts: [], totalPosts: 0, totalPages: 1 });
 
       const Page = await CariPage({ searchParams: { q: '' } });
       render(Page);
@@ -278,7 +278,7 @@ describe('Page Components - Critical Path Testing', () => {
     });
 
     it('should show empty state when query is only whitespace', async () => {
-      (enhancedPostService.searchPosts as jest.Mock).mockResolvedValue([]);
+      (enhancedPostService.searchPosts as jest.Mock).mockResolvedValue({ posts: [], totalPosts: 0, totalPages: 1 });
 
       const Page = await CariPage({ searchParams: { q: '   ' } });
       render(Page);
@@ -289,16 +289,16 @@ describe('Page Components - Critical Path Testing', () => {
     });
 
     it('should search posts when valid query provided', async () => {
-      (enhancedPostService.searchPosts as jest.Mock).mockResolvedValue(mockSearchResults);
+      (enhancedPostService.searchPosts as jest.Mock).mockResolvedValue({ posts: mockSearchResults, totalPosts: 1, totalPages: 1 });
 
       const Page = await CariPage({ searchParams: { q: 'test query' } });
       render(Page);
 
-      expect(enhancedPostService.searchPosts).toHaveBeenCalledWith('test query');
+      expect(enhancedPostService.searchPosts).toHaveBeenCalledWith('test query', 1, 12);
     });
 
     it('should display search results when found', async () => {
-      (enhancedPostService.searchPosts as jest.Mock).mockResolvedValue(mockSearchResults);
+      (enhancedPostService.searchPosts as jest.Mock).mockResolvedValue({ posts: mockSearchResults, totalPosts: 1, totalPages: 1 });
 
       const Page = await CariPage({ searchParams: { q: 'test' } });
       render(Page);
@@ -310,7 +310,7 @@ describe('Page Components - Critical Path Testing', () => {
     });
 
     it('should show no results empty state when search returns empty', async () => {
-      (enhancedPostService.searchPosts as jest.Mock).mockResolvedValue([]);
+      (enhancedPostService.searchPosts as jest.Mock).mockResolvedValue({ posts: [], totalPosts: 0, totalPages: 1 });
 
       const Page = await CariPage({ searchParams: { q: 'nonexistent' } });
       render(Page);
@@ -320,16 +320,16 @@ describe('Page Components - Critical Path Testing', () => {
     });
 
     it('should trim whitespace from query', async () => {
-      (enhancedPostService.searchPosts as jest.Mock).mockResolvedValue(mockSearchResults);
+      (enhancedPostService.searchPosts as jest.Mock).mockResolvedValue({ posts: mockSearchResults, totalPosts: 1, totalPages: 1 });
 
       const Page = await CariPage({ searchParams: { q: '  test query  ' } });
       render(Page);
 
-      expect(enhancedPostService.searchPosts).toHaveBeenCalledWith('test query');
+      expect(enhancedPostService.searchPosts).toHaveBeenCalledWith('test query', 1, 12);
     });
 
     it('should include Header and Footer components', async () => {
-      (enhancedPostService.searchPosts as jest.Mock).mockResolvedValue(mockSearchResults);
+      (enhancedPostService.searchPosts as jest.Mock).mockResolvedValue({ posts: mockSearchResults, totalPosts: 1, totalPages: 1 });
 
       const Page = await CariPage({ searchParams: { q: 'test' } });
       render(Page);

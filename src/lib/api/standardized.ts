@@ -100,17 +100,17 @@ export async function getAllPosts(
   }
 }
 
-export async function searchPosts(query: string): Promise<ApiListResult<WordPressPost>> {
+export async function searchPosts(query: string, page: number = 1, perPage: number = 12): Promise<ApiListResult<WordPressPost>> {
   try {
-    const posts = await wordpressAPI.search(query);
+    const result = await wordpressAPI.search(query, page, perPage);
     const pagination: ApiPaginationMetadata = {
-      page: 1,
-      perPage: posts.length,
-      total: posts.length,
-      totalPages: 1
+      page,
+      perPage,
+      total: result.posts.length,
+      totalPages: result.totalPages
     };
     return createSuccessListResult(
-      posts,
+      result.posts,
       { endpoint: '/wp/v2/search', cacheHit: false },
       pagination
     );

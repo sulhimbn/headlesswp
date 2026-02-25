@@ -80,7 +80,7 @@ describe('Standardized API - Edge Cases and Critical Paths', () => {
 
   describe('searchPosts Edge Cases', () => {
     test('handles empty search results', async () => {
-      mockedWordpressAPI.search.mockResolvedValue([]);
+      mockedWordpressAPI.search.mockResolvedValue({ posts: [], totalPages: 0 });
 
       const result = await standardizedAPI.searchPosts('nonexistent-term');
 
@@ -88,30 +88,30 @@ describe('Standardized API - Edge Cases and Critical Paths', () => {
       expect(result.data).toEqual([]);
       expect(result.pagination).toEqual({
         page: 1,
-        perPage: 0,
+        perPage: 12,
         total: 0,
-        totalPages: 1
+        totalPages: 0
       });
     });
 
     test('handles empty search query', async () => {
       const mockPosts = [{ id: 1, title: { rendered: 'Post 1' } }] as any[];
-      mockedWordpressAPI.search.mockResolvedValue(mockPosts);
+      mockedWordpressAPI.search.mockResolvedValue({ posts: mockPosts, totalPages: 1 });
 
       const result = await standardizedAPI.searchPosts('');
 
       expect(isApiResultSuccessful(result)).toBe(true);
-      expect(wordpressAPI.search).toHaveBeenCalledWith('');
+      expect(wordpressAPI.search).toHaveBeenCalledWith('', 1, 12);
     });
 
     test('handles special characters in search query', async () => {
       const mockPosts = [{ id: 1, title: { rendered: 'Post with émojis 🎉' } }] as any[];
-      mockedWordpressAPI.search.mockResolvedValue(mockPosts);
+      mockedWordpressAPI.search.mockResolvedValue({ posts: mockPosts, totalPages: 1 });
 
       const result = await standardizedAPI.searchPosts('test & special@chars#');
 
       expect(isApiResultSuccessful(result)).toBe(true);
-      expect(wordpressAPI.search).toHaveBeenCalledWith('test & special@chars#');
+      expect(wordpressAPI.search).toHaveBeenCalledWith('test & special@chars#', 1, 12);
     });
 
     test('handles search API error', async () => {

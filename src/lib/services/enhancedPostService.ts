@@ -277,15 +277,16 @@ export const enhancedPostService: IPostService = {
     return Array.from(map.values());
   },
 
-  searchPosts: async (query: string): Promise<PostWithMediaUrl[]> => {
-    return fetchAndValidatePosts({
-      apiCall: async () => {
-        const searchResults = await wordpressAPI.search(query);
-        return { data: searchResults || [] };
-      },
-      operationName: `search posts with query "${query}"`,
-      returnEmptyOnError: true
-    });
+  searchPosts: async (query: string, page: number = 1, perPage: number = PAGINATION_LIMITS.SEARCH_POSTS): Promise<PaginatedPostsResult> => {
+    const { posts, totalPages } = await wordpressAPI.search(query, page, perPage);
+    
+    const postsWithMedia = await enrichPostsWithMediaUrls(posts);
+    
+    return {
+      posts: postsWithMedia,
+      totalPosts: posts.length,
+      totalPages
+    };
   }
 };
 

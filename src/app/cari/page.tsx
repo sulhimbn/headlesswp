@@ -1,10 +1,13 @@
 import { enhancedPostService } from '@/lib/services/enhancedPostService'
 import Header from '@/components/layout/Header'
 import PostCard from '@/components/post/PostCard'
+import Pagination from '@/components/ui/Pagination'
 import EmptyState from '@/components/ui/EmptyState'
 import SectionHeading from '@/components/ui/SectionHeading'
+import { PAGINATION_LIMITS } from '@/lib/api/config'
 import dynamic from 'next/dynamic'
 import { UI_TEXT } from '@/lib/constants/uiText'
+import { PARSING } from '@/lib/constants/appConstants'
 import Icon from '@/components/ui/Icon'
 import type { PostWithMediaUrl } from '@/lib/services/IPostService'
 
@@ -15,16 +18,21 @@ const Footer = dynamic(() => import('@/components/layout/Footer'), {
 export const revalidate = 300 // 5 minutes
 
 interface SearchPageProps {
-  searchParams: { q?: string }
+  searchParams: { q?: string; page?: string }
 }
 
 export default async function CariPage({ searchParams }: SearchPageProps) {
   const query = searchParams.q?.trim() || ''
+  const page = parseInt(searchParams.page || '1', PARSING.DECIMAL_RADIX)
+  const postsPerPage = PAGINATION_LIMITS.SEARCH_POSTS
 
   let searchResults: PostWithMediaUrl[] = []
+  let totalPages = 1
   
   if (query) {
-    searchResults = await enhancedPostService.searchPosts(query)
+    const result = await enhancedPostService.searchPosts(query, page, postsPerPage)
+    searchResults = result.posts
+    totalPages = result.totalPages
   }
 
   return (
@@ -51,6 +59,10 @@ export default async function CariPage({ searchParams }: SearchPageProps) {
                 <PostCard key={post.id} post={post} mediaUrl={post.mediaUrl} priority={index < 6} />
               ))}
             </div>
+
+            {totalPages > 1 && (
+              <Pagination currentPage={page} totalPages={totalPages} basePath="/cari" query={{ q: query }} />
+            )}
           </>
         ) : (
           <EmptyState

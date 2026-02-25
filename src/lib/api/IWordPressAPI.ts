@@ -21,7 +21,7 @@ export interface IWordPressAPI {
     tag?: number;
     search?: string;
   }, signal?: AbortSignal): Promise<WordPressPost[]>;
-  search(query: string, signal?: AbortSignal): Promise<WordPressPost[]>;
+  search(query: string, page?: number, perPage?: number, signal?: AbortSignal): Promise<{ posts: WordPressPost[], totalPages: number }>;
   
   getCategory(slug: string, signal?: AbortSignal): Promise<WordPressCategory | null>;
   getCategoryById(id: number, signal?: AbortSignal): Promise<WordPressCategory | null>;
