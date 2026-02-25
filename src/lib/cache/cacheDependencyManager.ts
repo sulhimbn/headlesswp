@@ -32,7 +32,7 @@ import type { CacheEntry } from './types';
  * 
  * // Query dependencies
  * const deps = dependencyManager.getDependencies('post:123');
- * console.log(deps.dependencies); // ['category:5', 'media:456']
+ * // deps.dependencies = ['category:5', 'media:456']
  * ```
  */
 export class CacheDependencyManager {
@@ -147,9 +147,8 @@ export class CacheDependencyManager {
    * 
    * @example
    * ```typescript
-   * const deps = dependencyManager.getDependencies('post:123');
-   * console.log('Dependencies:', deps.dependencies);
-   * console.log('Dependents:', deps.dependents);
+ * const deps = dependencyManager.getDependencies('post:123');
+ * // deps.dependencies, deps.dependents
    * ```
    */
   getDependencies(key: string): { dependencies: string[]; dependents: string[] } {
