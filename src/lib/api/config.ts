@@ -1,7 +1,17 @@
-export const WORDPRESS_API_BASE_URL = process.env.NEXT_PUBLIC_WORDPRESS_API_URL || 'http://localhost:8080/wp-json'
-export const WORDPRESS_SITE_URL = process.env.NEXT_PUBLIC_WORDPRESS_URL || 'http://localhost:8080'
-export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://mitrabantennews.com'
-export const SITE_URL_WWW = process.env.NEXT_PUBLIC_SITE_URL_WWW || 'https://www.mitrabantennews.com'
+function validateUrl(url: string | undefined, name: string, requireHttps: boolean): string {
+  if (!url) {
+    throw new Error(`Required environment variable NEXT_PUBLIC_${name} is not set`)
+  }
+  if (requireHttps && !url.startsWith('https://') && process.env.NODE_ENV === 'production') {
+    throw new Error(`NEXT_PUBLIC_${name} must use HTTPS in production`)
+  }
+  return url
+}
+
+export const WORDPRESS_API_BASE_URL = validateUrl(process.env.NEXT_PUBLIC_WORDPRESS_API_URL, 'WORDPRESS_API_URL', false)
+export const WORDPRESS_SITE_URL = validateUrl(process.env.NEXT_PUBLIC_WORDPRESS_URL, 'WORDPRESS_URL', false)
+export const SITE_URL = validateUrl(process.env.NEXT_PUBLIC_SITE_URL, 'SITE_URL', true)
+export const SITE_URL_WWW = validateUrl(process.env.NEXT_PUBLIC_SITE_URL_WWW, 'SITE_URL_WWW', true)
 
 export const TIME_CONSTANTS = {
   SECOND_IN_MS: 1000,
