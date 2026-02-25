@@ -14,7 +14,7 @@ async function cacheGetHandler(_request: NextRequest) {
       timestamp: new Date().toISOString(),
     });
   } catch (error) {
-    logger.error('Error fetching cache stats:', error);
+    logger.error('Error fetching cache stats:', error, { module: 'cache' });
     
     return NextResponse.json(
       {
@@ -38,7 +38,7 @@ async function cachePostHandler(_request: NextRequest) {
       timestamp: new Date().toISOString(),
     });
   } catch (error) {
-    logger.error('Error warming cache:', error);
+    logger.error('Error warming cache:', error, { module: 'cache' });
     
     return NextResponse.json(
       {
@@ -64,7 +64,7 @@ async function cacheDeleteHandler(request: NextRequest) {
       timestamp: new Date().toISOString(),
     });
   } catch (error) {
-    logger.error('Error clearing cache:', error);
+    logger.error('Error clearing cache:', error, { module: 'cache' });
     
     return NextResponse.json(
       {

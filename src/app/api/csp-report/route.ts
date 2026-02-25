@@ -20,7 +20,7 @@ async function cspReportHandler(request: NextRequest) {
     
     return NextResponse.json({ success: true })
   } catch (error) {
-    logger.error('Error processing CSP report:', error)
+    logger.error('Error processing CSP report:', error, { module: 'cspReport' })
     return NextResponse.json({ error: 'Failed to process report' }, { status: 400 })
   }
 }
