@@ -7,9 +7,6 @@ export type { CacheEntry, CacheTelemetry } from './cache/types';
 
 /**
  * Advanced cache manager with dependency-aware cascade invalidation.
-
-/**
- * Advanced cache manager with dependency-aware cascade invalidation.
  * 
  * @remarks
  * This cache manager provides:
