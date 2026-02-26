@@ -5,6 +5,16 @@ This document tracks R&D activities and improvements made to the headlesswp proj
 
 ## Completed Work
 
+### 2026-02-26
+- **Issue**: Existing PR #535 verification
+- **Action**: Verified PR is up to date with main, no conflicts, ready for merge
+- **PR**: https://github.com/sulhimbn/headlesswp/pull/535
+
+### 2026-02-26
+- **Issue**: #534 - Fix naming inconsistency in oc-pr-handler.yml job name
+- **Status**: BLOCKED - GitHub App lacks workflow permissions
+- **Note**: Cannot push workflow file changes due to repository permission restrictions
+
 ### 2026-02-25
 - **Issue**: logger.error call missing module property in csp-report route
 - **Fix**: Added missing `module: 'cspReport'` to logger.error call at src/app/api/csp-report/route.ts line 9
