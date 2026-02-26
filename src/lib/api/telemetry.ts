@@ -49,7 +49,7 @@ export class TelemetryCollector {
     this.statsCache[key] = (this.statsCache[key] || 0) + 1
 
     if (this.events.length >= (this.config.maxEvents ?? 1000)) {
-      logger.warn(`Telemetry buffer full (${this.events.length}/${this.config.maxEvents ?? 1000}), flushing...`)
+      logger.warn(`Telemetry buffer full (${this.events.length}/${this.config.maxEvents ?? 1000}), flushing...`, undefined, { module: 'TelemetryCollector' })
       this.flush()
     }
   }
