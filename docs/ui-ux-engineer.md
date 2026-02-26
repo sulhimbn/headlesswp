@@ -6,7 +6,7 @@
 - Component UI/UX improvements
 - Mobile-first design patterns
 
-## Current State (2026-02-25)
+## Current State (2026-02-26)
 
 ### Implemented Features
 - Mobile hamburger menu with keyboard navigation
@@ -23,6 +23,11 @@
   - Header (navigation, no violations)
   - Footer (contentinfo role, headings, no violations)
   - PostCard (article role, heading, no violations)
+  - SearchBar (search role, searchbox, labels)
+  - Button (button role, focus styles)
+  - Pagination (navigation, page links)
+  - EmptyState (status role, heading)
+  - Badge (span and link variants)
 
 ### Key Files
 - `src/components/layout/Header.tsx` - Responsive navigation with mobile menu
