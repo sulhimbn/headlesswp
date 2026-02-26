@@ -278,11 +278,11 @@ This project takes dependency security seriously. Follow these guidelines:
 
 ## Security
 
-If you discover a security vulnerability, please follow our [Security Policy](SECURITY.md) and report it privately.
+If you discover a security vulnerability, please follow our [Security Policy](./SECURITY.md) and report it privately.
 
 ## Getting Help
 
-- 📖 Check [documentation](README.md)
+- 📖 Check [documentation](../README.md)
 - 🐛 [Open an issue](https://github.com/sulhimbn/headlesswp/issues)
 - 💬 Start a [discussion](https://github.com/sulhimbn/headlesswp/discussions)
 
