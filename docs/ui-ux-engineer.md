@@ -39,6 +39,15 @@
 5. Verify with tests, lint, typecheck
 6. Create PR with ui-ux-engineer label
 
+## Verification Workflow (2026-02-26)
+When reviewing existing PR:
+1. Checkout PR branch: `git checkout <branch> || git checkout -b <branch> origin/<branch>`
+2. Merge main: `git merge origin/main --no-edit`
+3. Run lint: `npm run lint`
+4. Run typecheck: `npm run typecheck`
+5. Run tests: `npm run test`
+6. Comment/approve PR with findings
+
 ## Test Commands
 ```bash
 npm test -- __tests__/accessibility.test.tsx
