@@ -33,7 +33,31 @@ git commit -m "feat: add new feature"
 git push origin feature/your-feature-name
 ```
 
-### Branch Strategy
+### Docker Development with Hot Reload
+
+For development with hot reload support, use the development Docker Compose configuration:
+
+```bash
+# Start development environment with hot reload
+docker-compose -f docker-compose.dev.yml up -d
+
+# View logs
+docker-compose -f docker-compose.dev.yml logs -f frontend
+
+# Stop development environment
+docker-compose -f docker-compose.dev.yml down
+```
+
+The development configuration:
+- Uses `npm run dev` for Next.js hot reload
+- Mounts source code volumes for real-time updates
+- Sets `NODE_ENV=development`
+- Exposes debugging ports
+
+For production-like testing, use the standard docker-compose:
+```bash
+docker-compose up -d
+```
 
 - **main**: Production-ready code
 - **agent**: Agent/automation branch
