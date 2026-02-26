@@ -1,7 +1,7 @@
 # Architecture Blueprint
 
-**Version**: 1.0.1
-**Last Updated**: 2026-02-05 (Principal Software Architect - REFACTOR-033: Batch operation pattern extraction complete)
+**Version**: 1.0.2
+**Last Updated**: 2026-02-26 (Principal Software Architect - REFACTOR-033: Batch operation pattern extraction complete)
 
 ## System Architecture
 
@@ -193,6 +193,26 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(({ children, ...props 
 - Skeleton components use `aria-busy="true"` to indicate loading state to screen readers
 - Section headings support optional `id` prop for anchor linking
 - Design tokens used consistently across all skeleton components
+
+### Localization
+
+The UI supports Indonesian (Bahasa Indonesia) localization through `src/lib/constants/uiText.ts`.
+
+**Implementation**:
+- All user-facing text is externalized in `UI_TEXT` constant object
+- Components import and use `UI_TEXT` for all text content
+- Indonesian translations provide localized experience for Indonesian users
+
+**Key Localized Text**:
+- Footer copyright: "Seluruh hak cipta" (All rights reserved)
+- Navigation: "Beranda" (Home), "Berita" (News)
+- Actions: "Baca artikel" (Read article), "Cari berita" (Search news)
+- Error messages, empty states, pagination all localized
+
+**Notes**:
+- UI text is designed for easy addition of new languages
+- Each text section (breadcrumb, postCard, footer, etc.) is a nested object
+- Dynamic values use function templates for proper grammar handling
 
 ### Responsive Design
 
