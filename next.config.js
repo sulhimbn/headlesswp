@@ -1,8 +1,18 @@
 import withBundleAnalyzer from '@next/bundle-analyzer'
+import { withSentryConfig } from '@sentry/nextjs'
 
 const withBundleAnalyzerConfig = withBundleAnalyzer({
   enabled: process.env.ANALYZE === 'true',
 })
+
+const SentryWebpackPluginOptions = {
+  silent: true,
+  org: process.env.SENTRY_ORG,
+  project: process.env.SENTRY_PROJECT,
+  widenClientFileUpload: true,
+  hideSourceMaps: true,
+  disableLogger: true,
+}
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -85,4 +95,7 @@ const nextConfig = {
   }
 }
 
-export default withBundleAnalyzerConfig(nextConfig)
+export default withSentryConfig(
+  withBundleAnalyzerConfig(nextConfig),
+  SentryWebpackPluginOptions
+)

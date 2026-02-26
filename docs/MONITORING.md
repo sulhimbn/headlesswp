@@ -563,3 +563,114 @@ Use metrics to tune resilience patterns:
 - [API Documentation](../api.md)
 - [Integration Testing Guide](../INTEGRATION_TESTING.md)
 - [Telemetry Module](../src/lib/api/telemetry.ts)
+
+---
+
+# Sentry Error Tracking
+
+## Overview
+
+Sentry is integrated for centralized error tracking, performance monitoring, and release health in production.
+
+## Configuration
+
+### Environment Variables
+
+Add the following to your environment configuration:
+
+```bash
+# Sentry Error Tracking (https://sentry.io)
+SENTRY_DSN=https://your-dsn@sentry.io/project-id
+SENTRY_ORG=your-org
+SENTRY_PROJECT=your-project
+SENTRY_AUTH_TOKEN=your-auth-token
+```
+
+### .env.example
+
+The `.env.example` file includes Sentry configuration template:
+
+```bash
+# Sentry Error Tracking (https://sentry.io)
+SENTRY_DSN=
+SENTRY_ORG=your-org
+SENTRY_PROJECT=your-project
+SENTRY_AUTH_TOKEN=
+```
+
+## Sentry Features
+
+### Error Tracking
+
+- **Automatic error capture**: All unhandled exceptions and rejected promises are automatically captured
+- **Source maps**: Uploaded automatically for readable stack traces
+- **Environment tracking**: Errors are tagged with production/development environment
+- **Release tracking**: Track errors by deployment
+
+### Performance Monitoring
+
+- **Traces**: Automatic tracing for server-side requests
+- **Replays**: Session replay on errors (production only)
+- **Sample rate**: 100% trace sample rate for comprehensive monitoring
+
+### Error Boundary
+
+The application includes a React Error Boundary component (`src/components/ErrorBoundary.tsx`) that:
+- Catches React rendering errors
+- Captures errors to Sentry
+- Provides user-friendly error UI
+- Allows error recovery with "Coba lagi" (Try again) button
+
+### Global Error Handler
+
+A global error handler (`src/app/global-error.tsx`) handles errors at the application root level.
+
+## GitHub Secrets
+
+For source map upload in CI, add the following secrets:
+
+1. `SENTRY_ORG`: Your Sentry organization slug
+2. `SENTRY_PROJECT`: Your Sentry project name
+3. `SENTRY_AUTH_TOKEN`: Authentication token with `project:releases` scope
+
+### Creating Sentry Auth Token
+
+1. Go to https://sentry.io/settings/account/api/auth-tokens/
+2. Create a new token with permissions:
+   - `project:releases`
+   - `org:read`
+
+## Development vs Production
+
+| Feature | Development | Production |
+|---------|-------------|------------|
+| Error capture | Console only | Full Sentry |
+| Traces | Disabled | 100% sample |
+| Replays | Disabled | On errors |
+
+## Troubleshooting
+
+### Verify Sentry is Connected
+
+```bash
+# In development, check console for:
+# [Sentry] Event captured: <error-message>
+```
+
+### Check Source Maps
+
+1. Open Sentry dashboard
+2. Navigate to your project
+3. Check Stack Trace tab for source context
+
+### Common Issues
+
+**Issue**: Events not appearing in Sentry
+- Check `SENTRY_DSN` is set correctly
+- Verify `NODE_ENV` is not 'development' in production
+- Check Sentry auth token has correct permissions
+
+**Issue**: Source maps not working
+- Verify `SENTRY_ORG` and `SENTRY_PROJECT` are set
+- Check build output for Sentry plugin messages
+- Ensure auth token has `project:releases` scope
