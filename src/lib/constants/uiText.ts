@@ -33,7 +33,8 @@ export const UI_TEXT = {
     backToHome: 'Kembali ke Beranda',
     viewNews: 'Lihat Berita Terkini',
     contactHelp: 'Jika Anda merasa ini adalah kesalahan, silakan',
-    contactUs: 'hubungi kami'
+    contactUs: 'hubungi kami',
+    searchAlternative: 'atau coba pencarian lain.'
   },
   error: {
     heading: 'Terjadi Kesalahan',

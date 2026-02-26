@@ -35,7 +35,7 @@ export default function NotFound() {
             <Link href="/" className="text-[hsl(var(--color-error))] hover:text-[hsl(var(--color-accent-dark))] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--color-error))] focus:ring-offset-2 rounded">
               {UI_TEXT.notFound.contactUs}
             </Link>{' '}
-            atau coba pencarian lain.
+            {UI_TEXT.notFound.searchAlternative}
           </p>
         </div>
       </div>
