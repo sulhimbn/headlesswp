@@ -39,3 +39,12 @@ This document serves as the long-time memory for the product-architect agent.
 - Files modified:
   - src/lib/api/config.ts (updated default URLs)
   - .env.example (updated to show HTTPS as recommended)
+- Third task: Implemented PWA support for offline capabilities (Issue #516)
+- Solution: Created service worker, manifest.json, and offline fallback page
+- Files created/modified:
+  - public/manifest.json (new)
+  - public/sw.js (new)
+  - public/offline.html (new)
+  - src/components/ServiceWorkerRegistration.tsx (new)
+  - src/app/layout.tsx (added PWA metadata and SW registration)
+  - next.config.js (added PWA-specific headers)

@@ -1,15 +1,28 @@
 import './globals.css'
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { Inter } from 'next/font/google'
 import { SITE_URL, SITE_URL_WWW } from '@/lib/api/config'
+import ServiceWorkerRegistration from '@/components/ServiceWorkerRegistration'
 
 const inter = Inter({ subsets: ['latin'], display: 'swap' })
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  themeColor: '#2563eb',
+}
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: 'Mitra Banten News - Berita Terkini Banten',
   description: 'Portal berita terkini dan terpercaya dari Banten',
   keywords: 'berita banten, mitra banten news, berita terkini',
+  manifest: '/manifest.json',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'Mitra Banten News',
+  },
   openGraph: {
     title: 'Mitra Banten News',
     description: 'Portal berita terkini dan terpercaya dari Banten',
@@ -35,8 +48,13 @@ export default function RootLayout({
   return (
     <html lang="id">
       <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta name="csp-nonce" content="" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="apple-mobile-web-app-title" content="Mitra Banten News" />
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="msapplication-TileColor" content="#2563eb" />
+        <meta name="msapplication-tap-highlight" content="no" />
         <link rel="preconnect" href={SITE_URL} />
         <link rel="preconnect" href={SITE_URL_WWW} />
         <link rel="dns-prefetch" href={SITE_URL} />
@@ -50,6 +68,7 @@ export default function RootLayout({
         >
           Langsung ke konten utama
         </a>
+        <ServiceWorkerRegistration />
         {children}
       </body>
     </html>
