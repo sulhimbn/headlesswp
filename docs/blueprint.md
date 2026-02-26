@@ -1,7 +1,7 @@
 # Architecture Blueprint
 
-**Version**: 1.0.1
-**Last Updated**: 2026-02-05 (Principal Software Architect - REFACTOR-033: Batch operation pattern extraction complete)
+**Version**: 1.0.2
+**Last Updated**: 2026-02-26 (Technical Writer - Documentation update for v1.0.2)
 
 ## System Architecture
 
@@ -2033,16 +2033,20 @@ curl http://localhost:3000/health
 4. **Configuration Management**: Centralize configuration constants
     - `src/lib/constants/appConstants.ts`: Magic number constants (TELEMETRY, PARSING, MEMORY, CACHE_METRICS, RATE_LIMIT)
     - `src/lib/constants/fallbackPosts.ts`: Fallback data constants
-    - `src/lib/constants/uiText.ts`: UI text constants for localization layer
+    - `src/lib/constants/uiText.ts`: UI text constants for localization layer (Indonesian)
     - `src/lib/constants/buttonStyles.ts`: Button variant styles with design tokens
  5. **Layer Separation**: Text and formatting separated from presentation
-    - UI text in `src/lib/constants/uiText.ts`
-    - Date formatting in `src/lib/utils/dateFormat.ts`
-    - Components import and use these utilities
- 6. **Component Optimization**: 
-    - **Server Components**: Do not use React.memo (server always re-renders)
-    - **Client Components**: Use React.memo for frequently-rendered components with stable props
-    - **Custom Comparison**: Provide custom comparison function when memoizing complex props
+     - UI text in `src/lib/constants/uiText.ts` (Indonesian localization)
+     - Date formatting in `src/lib/utils/dateFormat.ts`
+     - Components import and use these utilities
+  6. **Localization**: All UI text uses Indonesian language
+     - Copyright: "Seluruh hak cipta" (All rights reserved)
+     - Consistent with Indonesian UI throughout the application
+     - Centralized in `src/lib/constants/uiText.ts` for easy updates
+   7. **Component Optimization**: 
+     - **Server Components**: Do not use React.memo (server always re-renders)
+     - **Client Components**: Use React.memo for frequently-rendered components with stable props
+     - **Custom Comparison**: Provide custom comparison function when memoizing complex props
     - **Example**: PostCard component uses React.memo with arePropsEqual to prevent unnecessary re-renders
 
 ### Rendering Optimization Guidelines
