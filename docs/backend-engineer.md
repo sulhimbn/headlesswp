@@ -16,9 +16,10 @@
 6. Create PR linked to issue with backend-engineer label
 
 ### Common Fixes
-- Logger.error() signature: `error(message: string, error?: Error | unknown, meta?: Record<string, unknown>)`
+- Logger.warn() and Logger.error() signature: `(message: string, error?: Error | unknown, meta?: Record<string, unknown>)`
   - Always pass `undefined` as second param if no Error, put data in third param as `{ key: value }`
 
 ## Notes
 - Created backend-engineer label for PRs
 - Issue #382: Logger.error() parameter bug - fixed by passing data in meta object
+- Issue #564: logger.warn() missing undefined parameter in telemetry.ts
