@@ -13,7 +13,10 @@ function MetaInfoComponent({ author = `${UI_TEXT.metaInfo.by} Admin`, date, sepa
   const formattedDate = formatDate(date, 'full')
 
   return (
-    <div className={`flex items-center space-x-4 text-sm text-[hsl(var(--color-text-muted))] ${className}`}>
+    <div 
+      className={`flex items-center space-x-4 text-sm text-[hsl(var(--color-text-muted))] ${className}`}
+      aria-label={`Ditulis oleh ${author} pada ${formattedDate}`}
+    >
       <span>{author}</span>
       <span aria-hidden="true">{separator}</span>
       <time dateTime={date}>
