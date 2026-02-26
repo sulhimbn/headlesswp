@@ -68,3 +68,10 @@ Autonomous QA specialist delivering small, safe, measurable improvements.
   - Tests: 21 → 26 (+5)
   - Linked to Issue #518: QA: Add automated accessibility (a11y) testing to CI pipeline
   - Status: PR created
+
+### 2026-02-26
+- **PR #555**: Fix ServiceStatus component test failure (Tooltip test)
+  - Replaced deprecated `button.click()` with `fireEvent.click(button)`
+  - File: `__tests__/components/ServiceStatus.test.tsx`
+  - Linked to Issue #546: TEST: Fix ServiceStatus component test failure (Tooltip test)
+  - Status: PR created
