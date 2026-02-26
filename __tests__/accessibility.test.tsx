@@ -8,6 +8,7 @@ import SearchBar from '@/components/ui/SearchBar'
 import Button from '@/components/ui/Button'
 import Pagination from '@/components/ui/Pagination'
 import EmptyState from '@/components/ui/EmptyState'
+import Badge from '@/components/ui/Badge'
 import type { WordPressPost } from '@/types/wordpress'
 
 const mockPost: WordPressPost = {
@@ -174,6 +175,32 @@ describe('Accessibility Tests', () => {
       render(<EmptyState title="No results" description="No items found" />)
       const heading = screen.getByRole('heading')
       expect(heading).toBeInTheDocument()
+    })
+  })
+
+  describe('Badge', () => {
+    it('should have no accessibility violations (span)', async () => {
+      const { container } = render(<Badge>Category</Badge>)
+      const results = await axe(container)
+      expect(results).toHaveNoViolations()
+    })
+
+    it('should have no accessibility violations (link)', async () => {
+      const { container } = render(<Badge href="/berita">Category</Badge>)
+      const results = await axe(container)
+      expect(results).toHaveNoViolations()
+    })
+
+    it('should have proper link role when href is provided', () => {
+      render(<Badge href="/berita">Category</Badge>)
+      const link = screen.getByRole('link')
+      expect(link).toBeInTheDocument()
+    })
+
+    it('should have no role when rendered as span', () => {
+      render(<Badge>Category</Badge>)
+      const span = screen.getByText('Category')
+      expect(span).toBeInTheDocument()
     })
   })
 })
