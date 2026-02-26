@@ -33,6 +33,11 @@ The AI Agent Engineer is responsible for:
 
 ## Improvements Log
 
+### 2026-02-26 - Fifth Improvement (THIS PR)
+- Fixed outdated path reference in `.github/prompt/README.md`
+- Changed `cli/*.md` to `.github/prompt/*.md` to reflect actual file location
+- Created PR #573 with ai-agent-engineer label
+
 ### 2026-02-26 - Fourth Improvement (THIS PR)
 - Fixed Node.js version mismatch between `.nvmrc` and `Dockerfile`
 - `.nvmrc` specified 20.20.0 but Dockerfile used `node:25-alpine`
@@ -65,6 +70,9 @@ The AI Agent Engineer is responsible for:
 ## Known Issues
 
 - Issue #511: Node.js version mismatch - FIXED in PR #531
+- Issue #534: Naming inconsistency in oc-pr-handler.yml job name - CANNOT FIX (GitHub App lacks workflow permissions)
+  - Job name says "opencode - issue solver" but should say "opencode - pr handler"
+  - Requires manual fix or different token with workflow permissions
 
 ## Areas for Improvement
 
