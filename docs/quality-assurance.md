@@ -68,3 +68,22 @@ Autonomous QA specialist delivering small, safe, measurable improvements.
   - Tests: 21 → 26 (+5)
   - Linked to Issue #518: QA: Add automated accessibility (a11y) testing to CI pipeline
   - Status: PR created
+
+### 2026-02-26
+- **PR #555**: Fix ServiceStatus component test failure (Tooltip test)
+  - Replaced deprecated `button.click()` with `fireEvent.click(button)`
+  - File: `__tests__/components/ServiceStatus.test.tsx`
+  - Linked to Issue #546: TEST: Fix ServiceStatus component test failure (Tooltip test)
+  - Status: PR created
+
+### 2026-02-26
+- **PR #560**: Fix deprecated button.click() in Button.test.tsx
+  - Replaced 3 instances of deprecated `button.click()` with `fireEvent.click(button)`
+  - Files: `__tests__/components/Button.test.tsx`
+  - Linked to Issue #557: TEST: Fix deprecated button.click() in Button.test.tsx
+  - Status: PR created
+
+## Self-Evolve Notes
+- Proactively scanned for similar deprecated button.click() patterns
+- Found 3 instances in Button.test.tsx and created Issue #557 to track
+- Fixed both ServiceStatus.test.tsx (issue #546) and Button.test.tsx (issue #557)
