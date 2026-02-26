@@ -1,6 +1,6 @@
 # AI Agent Engineer - Longtime Memory
 
-**Date**: 2026-02-25
+**Date**: 2026-02-26
 **Status**: Active
 **Domain**: ai-agent-engineer
 
@@ -33,7 +33,14 @@ The AI Agent Engineer is responsible for:
 
 ## Improvements Log
 
-### 2026-02-25 - Third Improvement (THIS PR)
+### 2026-02-26 - Fourth Improvement (THIS PR)
+- Fixed Node.js version mismatch between `.nvmrc` and `Dockerfile`
+- `.nvmrc` specified 20.20.0 but Dockerfile used `node:25-alpine`
+- Aligned Dockerfile to use `node:20-alpine` in all stages for consistency and LTS stability
+- Created PR #531 with ai-agent-engineer label
+- Linked to issue #511
+
+### 2026-02-25 - Third Improvement
 - Fixed merge conflict markers in `.github/pull_request_template.md`
 - The file had unmerged conflict markers (<<<<<<< HEAD, =======, >>>>>>>) from a previous merge
 - Cleaned up the template to have a single, working format
@@ -57,7 +64,7 @@ The AI Agent Engineer is responsible for:
 
 ## Known Issues
 
-- None currently identified
+- Issue #511: Node.js version mismatch - FIXED in PR #531
 
 ## Areas for Improvement
 
