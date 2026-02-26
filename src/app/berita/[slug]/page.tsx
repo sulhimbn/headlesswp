@@ -15,6 +15,8 @@ import { logger } from '@/lib/utils/logger'
 import { UI_TEXT } from '@/lib/constants/uiText'
 import { SITE_URL } from '@/lib/api/config'
 import type { Metadata } from 'next'
+import PersonalizedRecommendations from '@/components/post/PersonalizedRecommendations'
+import ReadingTracker from '@/components/post/ReadingTracker'
 
 const Footer = dynamic(() => import('@/components/layout/Footer'), {
   loading: () => <div className="h-64 bg-[hsl(var(--color-background-dark))] mt-12" aria-hidden="true" />
@@ -102,6 +104,13 @@ export default async function PostPage({ params }: { params: { slug: string } })
       <Header />
 
       <main id="main-content" aria-labelledby="page-heading" className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <ReadingTracker
+          postId={post.id}
+          slug={post.slug}
+          title={post.title.rendered}
+          categoryIds={post.categories}
+          tagIds={post.tags}
+        />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
@@ -224,6 +233,11 @@ export default async function PostPage({ params }: { params: { slug: string } })
             </div>
           </section>
         )}
+
+        <PersonalizedRecommendations
+          currentPostId={post.id}
+          currentCategoryIds={post.categories}
+        />
 
         <div className="mt-8">
           <Link

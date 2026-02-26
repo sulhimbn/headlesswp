@@ -81,3 +81,27 @@
 - Primary category is used as the main filter (first category in array)
 - Related posts use PostWithMediaUrl type for display consistency
 - UI text added to UI_TEXT.homePage.relatedHeading
+
+## Implemented Features (Feb 2026)
+
+### Personalized Content Recommendations (Issue #553)
+- **PR**: #568
+- **Status**: Complete
+- **Features**:
+  - Tracks reading patterns in localStorage (privacy-first)
+  - Shows personalized recommendations based on user's reading history
+  - Category-based recommendations (top 3 categories viewed)
+  - Excludes already-read posts from recommendations
+  - Feature flags for gradual rollout:
+    - `NEXT_PUBLIC_FEATURE_PERSONALIZED_RECOMMENDATIONS=true` to enable
+    - `NEXT_PUBLIC_FEATURE_RECOMMENDATION_ANALYTICS=true` for click tracking
+  - Analytics: tracks recommendation clicks in localStorage
+
+## Patterns & Conventions (Personalized Recommendations)
+- Use readingHistory.ts utilities for localStorage operations
+- Use getTopCategories(limit) to get user's preferred categories
+- Use trackRecommendationClick(postId, source) for analytics
+- API endpoints created: /api/posts, /api/media/[id]
+- Component: PersonalizedRecommendations with loading states
+- Component: ReadingTracker to automatically track post views
+- Hook: useReadingTracker for tracking reading patterns
