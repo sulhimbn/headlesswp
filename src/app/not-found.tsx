@@ -4,14 +4,14 @@ import { UI_TEXT } from '@/lib/constants/uiText'
 
 export default function NotFound() {
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+    <div className="min-h-screen bg-[hsl(var(--color-background))] flex items-center justify-center px-4">
       <div className="max-w-lg w-full text-center">
         <div className="mb-8">
-          <h1 className="text-9xl font-bold text-red-600 mb-4">404</h1>
-          <h2 className="text-3xl font-bold text-gray-900 mb-4">
+          <h1 className="text-9xl font-bold text-[hsl(var(--color-error))] mb-4">404</h1>
+          <h2 className="text-3xl font-bold text-[hsl(var(--color-text-primary))] mb-4">
             {UI_TEXT.notFound.heading}
           </h2>
-          <p className="text-lg text-gray-600 mb-8">
+          <p className="text-lg text-[hsl(var(--color-text-secondary))] mb-8">
             {UI_TEXT.notFound.description}
           </p>
         </div>
@@ -29,10 +29,10 @@ export default function NotFound() {
           </Link>
         </div>
 
-        <div className="mt-12 pt-8 border-t border-gray-200">
-          <p className="text-sm text-gray-500">
+        <div className="mt-12 pt-8 border-t border-[hsl(var(--color-border))]">
+          <p className="text-sm text-[hsl(var(--color-text-muted))]">
             {UI_TEXT.notFound.contactHelp}{' '}
-            <Link href="/" className="text-red-600 hover:text-red-700 focus:outline-none focus:ring-2 focus:ring-red-600 focus:ring-offset-2 rounded">
+            <Link href="/" className="text-[hsl(var(--color-error))] hover:text-[hsl(var(--color-accent-dark))] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--color-error))] focus:ring-offset-2 rounded">
               {UI_TEXT.notFound.contactUs}
             </Link>{' '}
             atau coba pencarian lain.
