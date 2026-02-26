@@ -34,6 +34,12 @@ This document serves as long-term memory for the security-engineer autonomous ag
   - Added no-new-privileges security option
   - Added Trivy vulnerability scanner to security workflow
 
+- **Docker update documentation** (PR #570):
+  - Added Docker update guidelines section to docs/guides/development.md
+  - Documents how Dependabot monitors Docker images
+  - Provides instructions for reviewing and applying Docker updates
+  - Addresses issue #521
+
 - **Closed obsolete PR #542**: CSP already implemented in next.config.js, middleware.ts, and proxy.ts
 
 ### 2026-02-25

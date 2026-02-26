@@ -500,6 +500,59 @@ const posts = await wordpressAPI.getPosts({
 })
 ```
 
+## Docker Image Updates
+
+This project uses Dependabot to automatically monitor and create PRs for Docker image updates.
+
+### How Dependabot Works
+
+Dependabot monitors these Docker files:
+- `Dockerfile` - Node.js application image
+- `docker-compose.yml` - WordPress, MySQL, phpMyAdmin images
+
+When a new version is available, Dependabot automatically creates a pull request with the update.
+
+### Image Update PRs
+
+Docker update PRs include:
+- Version bump (e.g., `mysql:8.0` → `mysql:8.4`)
+- Release notes link
+- Security vulnerability warnings if applicable
+
+### Reviewing Docker Updates
+
+When a Docker update PR is created:
+
+1. **Check the changes** - Verify the new image version
+2. **Review release notes** - Look for breaking changes
+3. **Test locally** - Run `docker-compose build` to verify the image builds
+4. **Check for vulnerabilities** - Review any security advisories
+
+```bash
+# Build and test the updated image
+docker-compose build frontend
+docker-compose up -d
+```
+
+### Manual Image Updates
+
+To manually update a Docker image:
+
+```bash
+# Pull latest image
+docker pull wordpress:latest
+
+# Update version in docker-compose.yml
+# Then rebuild
+docker-compose build frontend
+```
+
+### Image Version Strategy
+
+- **Node.js**: Use specific versions (e.g., `node:20.20.0-alpine`) for reproducibility
+- **Database**: Use specific versions (e.g., `mysql:8.0`) - avoid `latest` for production
+- **WordPress**: Can use `wordpress:latest` for development; consider pinned versions for production
+
 ## Additional Resources
 
 - [Architecture Blueprint](../blueprint.md) - System architecture and design patterns
