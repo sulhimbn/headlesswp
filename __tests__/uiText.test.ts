@@ -254,33 +254,33 @@ describe('UI_TEXT constants', () => {
 
     it('should have copyright function that returns formatted string', () => {
       const result = UI_TEXT.footer.copyright(2026);
-      expect(result).toBe('&copy; 2026 Mitra Banten News. All rights reserved.');
+      expect(result).toBe('&copy; 2026 Mitra Banten News. Seluruh hak cipta.');
     });
 
     it('should have copyright that handles year 2000', () => {
       const result = UI_TEXT.footer.copyright(2000);
-      expect(result).toBe('&copy; 2000 Mitra Banten News. All rights reserved.');
+      expect(result).toBe('&copy; 2000 Mitra Banten News. Seluruh hak cipta.');
     });
 
     it('should have copyright that handles current year', () => {
       const currentYear = new Date().getFullYear();
       const result = UI_TEXT.footer.copyright(currentYear);
-      expect(result).toBe(`&copy; ${currentYear} Mitra Banten News. All rights reserved.`);
+      expect(result).toBe(`&copy; ${currentYear} Mitra Banten News. Seluruh hak cipta.`);
     });
 
     it('should have copyright that handles negative year', () => {
       const result = UI_TEXT.footer.copyright(-1);
-      expect(result).toBe('&copy; -1 Mitra Banten News. All rights reserved.');
+      expect(result).toBe('&copy; -1 Mitra Banten News. Seluruh hak cipta.');
     });
 
     it('should have copyright that handles year 0', () => {
       const result = UI_TEXT.footer.copyright(0);
-      expect(result).toBe('&copy; 0 Mitra Banten News. All rights reserved.');
+      expect(result).toBe('&copy; 0 Mitra Banten News. Seluruh hak cipta.');
     });
 
     it('should have copyright that handles large year', () => {
       const result = UI_TEXT.footer.copyright(9999);
-      expect(result).toBe('&copy; 9999 Mitra Banten News. All rights reserved.');
+      expect(result).toBe('&copy; 9999 Mitra Banten News. Seluruh hak cipta.');
     });
   });
 
@@ -332,11 +332,11 @@ describe('UI_TEXT constants', () => {
 
   describe('copyright function edge cases', () => {
     it('should handle single digit year', () => {
-      expect(UI_TEXT.footer.copyright(5)).toBe('&copy; 5 Mitra Banten News. All rights reserved.');
+      expect(UI_TEXT.footer.copyright(5)).toBe('&copy; 5 Mitra Banten News. Seluruh hak cipta.');
     });
 
     it('should handle very large year', () => {
-      expect(UI_TEXT.footer.copyright(1000000)).toBe('&copy; 1000000 Mitra Banten News. All rights reserved.');
+      expect(UI_TEXT.footer.copyright(1000000)).toBe('&copy; 1000000 Mitra Banten News. Seluruh hak cipta.');
     });
 
     it('should return string type', () => {
@@ -356,7 +356,7 @@ describe('UI_TEXT constants', () => {
 
     it('should include rights text', () => {
       const result = UI_TEXT.footer.copyright(2026);
-      expect(result).toContain('All rights reserved.');
+      expect(result).toContain('Seluruh hak cipta.');
     });
   });
 
