@@ -20,6 +20,13 @@ This file serves as the long-term memory for the user-story-engineer autonomous 
 
 ## Previous Work
 
+### 2026-02-26
+- Fixed test warning: Replaced deprecated `button.click()` with `fireEvent.click()` in ServiceStatus test
+- This eliminates React warning about synthetic events in tests
+- Related to issue #546
+- Verified tests pass with no React warnings
+- PR #563 created with user-story-engineer label
+
 ### 2026-02-25
 - Fixed UI text inconsistency: Changed `metaInfo.by` from 'By' to 'Oleh' (Indonesian)
 - Fixed UI text inconsistency: Changed `postDetail.tags` from 'Tags' to 'Tag' (Indonesian)
@@ -37,3 +44,5 @@ This file serves as the long-term memory for the user-story-engineer autonomous 
 - Keep diffs small and atomic
 - Focus on improvements that enhance user experience
 - Link to related issues when possible
+- Issue #546 about fixing ServiceStatus test was originally a QA issue but picked up as a small improvement
+- The QA agent had previously added tests for ServiceStatus (PR #495), this fix resolves the React warning
