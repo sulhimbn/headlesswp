@@ -9,6 +9,7 @@ import Button from '@/components/ui/Button'
 import Pagination from '@/components/ui/Pagination'
 import EmptyState from '@/components/ui/EmptyState'
 import Badge from '@/components/ui/Badge'
+import SectionHeading from '@/components/ui/SectionHeading'
 import type { WordPressPost } from '@/types/wordpress'
 
 const mockPost: WordPressPost = {
@@ -201,6 +202,38 @@ describe('Accessibility Tests', () => {
       render(<Badge>Category</Badge>)
       const span = screen.getByText('Category')
       expect(span).toBeInTheDocument()
+    })
+  })
+
+  describe('SectionHeading', () => {
+    it('should have no accessibility violations (h2 default)', async () => {
+      const { container } = render(<SectionHeading>Test Heading</SectionHeading>)
+      const results = await axe(container)
+      expect(results).toHaveNoViolations()
+    })
+
+    it('should render as h1 when specified', () => {
+      render(<SectionHeading level="h1">Heading 1</SectionHeading>)
+      const heading = screen.getByRole('heading', { level: 1 })
+      expect(heading).toBeInTheDocument()
+    })
+
+    it('should render as h2 when specified', () => {
+      render(<SectionHeading level="h2">Heading 2</SectionHeading>)
+      const heading = screen.getByRole('heading', { level: 2 })
+      expect(heading).toBeInTheDocument()
+    })
+
+    it('should render as h3 when specified', () => {
+      render(<SectionHeading level="h3">Heading 3</SectionHeading>)
+      const heading = screen.getByRole('heading', { level: 3 })
+      expect(heading).toBeInTheDocument()
+    })
+
+    it('should render with custom id when provided', () => {
+      render(<SectionHeading id="custom-id">Custom ID Heading</SectionHeading>)
+      const heading = screen.getByRole('heading')
+      expect(heading).toHaveAttribute('id', 'custom-id')
     })
   })
 })
