@@ -43,3 +43,4 @@ DX Engineer focuses on improving developer experience through small, safe, measu
 - **PR #522**: Dockerfile Node.js version alignment (commented - already resolved in main)
 - **PR #541**: Add SEO static assets (favicon.ico, robots.txt) - resolves issue #513
 - **PR #554**: Align .nvmrc with CI node-version (use 20 for latest 20.x) - resolves issue #549
+- **PR #575**: Add local Docker development environment with hot reload - resolves issue #551
