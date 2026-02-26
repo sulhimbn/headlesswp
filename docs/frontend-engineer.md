@@ -37,6 +37,7 @@ This document serves as the long-term memory for the frontend-engineer autonomou
 
 ## Accessibility Improvements Made
 1. Added prefers-reduced-motion support in globals.css (disables animations/transitions for users who prefer reduced motion)
+2. Added aria-label="More pages" to Pagination ellipsis for screen reader context
 
 ## Frontend Consistency Improvements
 1. Replaced hardcoded Tailwind colors with CSS variables in error.tsx and not-found.tsx for consistent theming

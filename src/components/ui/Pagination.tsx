@@ -66,7 +66,7 @@ function PaginationComponent({ currentPage, totalPages, basePath, query = {} }: 
 
       {pages.map((page, index) => (
         page === '...' ? (
-          <span key={`ellipsis-${index}`} className="px-3 py-2 text-sm text-[hsl(var(--color-text-secondary))]">
+          <span key={`ellipsis-${index}`} className="px-3 py-2 text-sm text-[hsl(var(--color-text-secondary))]" aria-label="More pages">
             ...
           </span>
         ) : (
