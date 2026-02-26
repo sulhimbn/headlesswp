@@ -81,7 +81,7 @@ services:
     networks:
       - wp_network
     mem_limit: 1g
-    cpus: '2.0'
+    cpus: "2.0"
     restart: unless-stopped
     read_only: true
     tmpfs:
