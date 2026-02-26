@@ -84,6 +84,21 @@
 
 ## Implemented Features (Feb 2026)
 
+### Reading Time Estimate (Issue #NEW)
+- **Status**: Complete
+- **Features**:
+  - Added estimated reading time to post detail pages
+  - Calculates based on 200 words per minute
+  - Displays in MetaInfo component: "X baca" (X min read)
+  - Shows as: Author • Date • X baca
+
+## Patterns & Conventions (Reading Time)
+- Use calculateReadingTime(content) to calculate reading time
+- Reading time is displayed in MetaInfo component
+- UI text: UI_TEXT.metaInfo.readingTime = 'baca'
+
+## Implemented Features (Feb 2026)
+
 ### Personalized Content Recommendations (Issue #553)
 - **PR**: #568
 - **Status**: Complete
