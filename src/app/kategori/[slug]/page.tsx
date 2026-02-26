@@ -10,6 +10,7 @@ import dynamic from 'next/dynamic'
 import { UI_TEXT } from '@/lib/constants/uiText'
 import { PARSING } from '@/lib/constants/appConstants'
 import { isApiResultSuccessful } from '@/lib/api/response'
+import { SITE_URL } from '@/lib/api/config'
 
 const Footer = dynamic(() => import('@/components/layout/Footer'), {
   loading: () => <div className="h-64 bg-[hsl(var(--color-background-dark))] mt-12" aria-hidden="true" />
@@ -56,6 +57,29 @@ export default async function CategoryPage({
       <Header />
 
       <main id="main-content" aria-labelledby="page-heading" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'BreadcrumbList',
+              itemListElement: [
+                {
+                  '@type': 'ListItem',
+                  position: 1,
+                  name: 'Beranda',
+                  item: SITE_URL,
+                },
+                {
+                  '@type': 'ListItem',
+                  position: 2,
+                  name: category.name,
+                  item: `${SITE_URL}/kategori/${params.slug}`,
+                },
+              ],
+            })
+          }}
+        />
         <h1 id="page-heading" className="sr-only">
           Kategori: {category.name}
         </h1>

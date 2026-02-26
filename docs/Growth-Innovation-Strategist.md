@@ -81,3 +81,22 @@
 - Primary category is used as the main filter (first category in array)
 - Related posts use PostWithMediaUrl type for display consistency
 - UI text added to UI_TEXT.homePage.relatedHeading
+
+## Implemented Features (Feb 2026)
+
+### JSON-LD Structured Data for SEO (Issue #517)
+- **PR**: (to be created)
+- **Status**: Complete
+- **Features**:
+  - Added WebSite schema with SearchAction in root layout.tsx - enables site search rich results
+  - Added Organization schema in root layout.tsx - establishes site identity for search engines
+  - Added BreadcrumbList schema to category page (/kategori/[slug]) - improves category page SEO
+  - Added BreadcrumbList schema to tag page (/tag/[slug]) - improves tag page SEO
+  - NewsArticle schema was already present on post detail pages
+
+## Patterns & Conventions (JSON-LD)
+- Use dangerouslySetInnerHTML with JSON.stringify for JSON-LD scripts
+- Schema.org types: WebSite, Organization, BreadcrumbList, NewsArticle
+- BreadcrumbList itemListElement uses position (1-indexed)
+- SearchAction target uses urlTemplate with {search_term_string} placeholder
+- All schemas include @context: 'https://schema.org'

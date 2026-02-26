@@ -66,6 +66,43 @@ export default function RootLayout({
         <link rel="alternate" type="application/rss+xml" title="Mitra Banten News - RSS Feed" href={`${SITE_URL}/api/rss`} />
       </head>
       <body className={inter.className}>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'WebSite',
+              name: 'Mitra Banten News',
+              url: SITE_URL,
+              potentialAction: {
+                '@type': 'SearchAction',
+                target: {
+                  '@type': 'EntryPoint',
+                  urlTemplate: `${SITE_URL}/cari?q={search_term_string}`,
+                },
+                'query-input': 'required name=search_term_string',
+              },
+            })
+          }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'Organization',
+              name: 'Mitra Banten News',
+              url: SITE_URL,
+              logo: `${SITE_URL}/logo.png`,
+              sameAs: [],
+              contactPoint: {
+                '@type': 'ContactPoint',
+                telephone: '',
+                contactType: 'customer service',
+              },
+            })
+          }}
+        />
         <a
           href="#main-content"
           className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-[hsl(var(--color-primary))] focus:text-white focus:rounded-[var(--radius-md)] focus:shadow-[var(--shadow-lg)] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--color-primary))] focus:ring-offset-2 transition-all duration-[var(--transition-normal)]"
