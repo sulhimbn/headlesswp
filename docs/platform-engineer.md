@@ -22,3 +22,4 @@ This document serves as the long-time memory for the platform-engineer agent.
 ## Notes
 - Created 2026-02-25
 - First task: Updated baseline-browser-mapping from 2.8.28 to 2.10.0 (PR #460)
+- 2026-02-26: Added healthcheck to frontend in docker-compose.yml + removed duplicate .DS_Store in .dockerignore (PR #536)
