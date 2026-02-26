@@ -36,3 +36,9 @@ DX Engineer focuses on improving developer experience through small, safe, measu
 - Avoid introducing new dependencies without strong justification
 - Always verify changes with `npm run lint && npm run typecheck && npm test`
 - Keep changes atomic and focused
+
+## Recent Work
+
+### 2026-02-26
+- **PR #522**: Dockerfile Node.js version alignment (commented - already resolved in main)
+- **PR #541**: Add SEO static assets (favicon.ico, robots.txt) - resolves issue #513

@@ -18,6 +18,10 @@ export const metadata: Metadata = {
   description: 'Portal berita terkini dan terpercaya dari Banten',
   keywords: 'berita banten, mitra banten news, berita terkini',
   manifest: '/manifest.json',
+  icons: {
+    icon: '/favicon.ico',
+    apple: '/apple-touch-icon.png',
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',

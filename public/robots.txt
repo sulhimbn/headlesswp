@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://mitrabantennews.com/sitemap.xml
