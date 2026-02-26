@@ -27,6 +27,15 @@ This document serves as long-term memory for the security-engineer autonomous ag
 
 ## Implemented Security Improvements
 
+### 2026-02-26
+- **Docker image hardening** (PR #565):
+  - Added read-only root filesystem to frontend service in docker-compose.yml
+  - Added tmpfs mount for temporary files
+  - Added no-new-privileges security option
+  - Added Trivy vulnerability scanner to security workflow
+
+- **Closed obsolete PR #542**: CSP already implemented in next.config.js, middleware.ts, and proxy.ts
+
 ### 2026-02-25
 - **Added security headers to next.config.js**:
   - X-Content-Type-Options: nosniff
@@ -56,8 +65,8 @@ The application has comprehensive security headers:
 - Input validation for WordPress data
 
 ## Known Security Concerns (Future Work)
-- Dockerfile uses node:25-alpine (non-LTS) - should use node:20-alpine or node:22-alpine
 - Dockerfile passes secrets via build args - consider using Docker secrets for production
+- Consider adding rate limiting to docker-compose services
 
 ## Teammate Coordination
 - Check other agents' memory files for relevant context
