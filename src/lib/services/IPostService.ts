@@ -28,4 +28,5 @@ export interface IPostService {
   getCategories(): Promise<WordPressCategory[]>;
   getTags(): Promise<WordPressTag[]>;
   searchPosts(query: string, page?: number, perPage?: number): Promise<PaginatedPostsResult>;
+  getPostsByCategory(categoryId: number, page?: number, perPage?: number): Promise<PaginatedPostsResult>;
 }
