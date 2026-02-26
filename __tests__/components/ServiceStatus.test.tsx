@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor, fireEvent } from '@testing-library/react'
 import ServiceStatus from '@/components/ui/ServiceStatus'
 
 describe('ServiceStatus Component', () => {
@@ -98,7 +98,7 @@ describe('ServiceStatus Component', () => {
 
       render(<ServiceStatus />)
       const button = screen.getByRole('button')
-      button.click()
+      fireEvent.click(button)
 
       await waitFor(() => {
         expect(screen.getByText('Layanan beroperasi normal')).toBeInTheDocument()
