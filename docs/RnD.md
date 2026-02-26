@@ -6,6 +6,13 @@ This document tracks R&D activities and improvements made to the headlesswp proj
 ## Completed Work
 
 ### 2026-02-26
+- **Issue**: #549 - .nvmrc version differs from CI node-version configuration
+- **Fix**: Changed .nvmrc from exact version `20.20.0` to `20` to align with CI and receive automatic security patches
+- **PR**: https://github.com/sulhimbn/headlesswp/pull/556
+- **Verification**:
+  - Node version compatible: v20.20.0 satisfies .nvmrc "20" requirement
+
+### 2026-02-26
 - **Issue**: Existing PR #535 verification
 - **Action**: Verified PR is up to date with main, no conflicts, ready for merge
 - **PR**: https://github.com/sulhimbn/headlesswp/pull/535
