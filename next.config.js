@@ -1,10 +1,19 @@
 import withBundleAnalyzer from '@next/bundle-analyzer'
+import { withSentryConfig } from '@sentry/nextjs'
 
 const withBundleAnalyzerConfig = withBundleAnalyzer({
   enabled: process.env.ANALYZE === 'true',
 })
 
-/** @type {import('next').NextConfig} */
+const sentryConfig = {
+  silent: true,
+  org: process.env.SENTRY_ORG,
+  project: process.env.SENTRY_PROJECT,
+  widenClientFileUpload: true,
+  hideSourceMaps: true,
+  disableLogger: true,
+}
+
 const nextConfig = {
   output: 'standalone',
   compress: true,
@@ -85,4 +94,5 @@ const nextConfig = {
   }
 }
 
-export default withBundleAnalyzerConfig(nextConfig)
+const exportedConfig = withBundleAnalyzerConfig(nextConfig)
+export default process.env.SENTRY_DSN ? withSentryConfig(exportedConfig, sentryConfig) : exportedConfig

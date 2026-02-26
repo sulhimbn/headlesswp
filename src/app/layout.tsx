@@ -3,6 +3,7 @@ import type { Metadata, Viewport } from 'next'
 import { Inter } from 'next/font/google'
 import { SITE_URL, SITE_URL_WWW } from '@/lib/api/config'
 import ServiceWorkerRegistration from '@/components/ServiceWorkerRegistration'
+import ErrorBoundary from '@/components/ErrorBoundary'
 
 const inter = Inter({ subsets: ['latin'], display: 'swap' })
 
@@ -66,14 +67,16 @@ export default function RootLayout({
         <link rel="alternate" type="application/rss+xml" title="Mitra Banten News - RSS Feed" href={`${SITE_URL}/api/rss`} />
       </head>
       <body className={inter.className}>
-        <a
-          href="#main-content"
-          className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-[hsl(var(--color-primary))] focus:text-white focus:rounded-[var(--radius-md)] focus:shadow-[var(--shadow-lg)] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--color-primary))] focus:ring-offset-2 transition-all duration-[var(--transition-normal)]"
-        >
-          Langsung ke konten utama
-        </a>
-        <ServiceWorkerRegistration />
-        {children}
+        <ErrorBoundary>
+          <a
+            href="#main-content"
+            className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-[hsl(var(--color-primary))] focus:text-white focus:rounded-[var(--radius-md)] focus:shadow-[var(--shadow-lg)] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--color-primary))] focus:ring-offset-2 transition-all duration-[var(--transition-normal)]"
+          >
+            Langsung ke konten utama
+          </a>
+          <ServiceWorkerRegistration />
+          {children}
+        </ErrorBoundary>
       </body>
     </html>
   )
