@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, fireEvent } from '@testing-library/react'
 import Button from '@/components/ui/Button'
 
 describe('Button Component', () => {
@@ -218,7 +218,7 @@ describe('Button Component', () => {
       const handleClick = jest.fn()
       render(<Button onClick={handleClick}>Click me</Button>)
       const button = screen.getByRole('button', { name: 'Click me' })
-      button.click()
+      fireEvent.click(button)
       expect(handleClick).toHaveBeenCalledTimes(1)
     })
 
@@ -226,7 +226,7 @@ describe('Button Component', () => {
       const handleClick = jest.fn()
       render(<Button disabled onClick={handleClick}>Click me</Button>)
       const button = screen.getByRole('button', { name: 'Click me' })
-      button.click()
+      fireEvent.click(button)
       expect(handleClick).not.toHaveBeenCalled()
     })
 
@@ -234,7 +234,7 @@ describe('Button Component', () => {
       const handleClick = jest.fn()
       render(<Button isLoading onClick={handleClick}>Click me</Button>)
       const button = screen.getByRole('button')
-      button.click()
+      fireEvent.click(button)
       expect(handleClick).not.toHaveBeenCalled()
     })
   })
