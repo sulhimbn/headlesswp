@@ -36,7 +36,7 @@ export default function RootLayout({
     <html lang="id">
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <meta name="csp-nonce" content="" />
+
         <link rel="preconnect" href={SITE_URL} />
         <link rel="preconnect" href={SITE_URL_WWW} />
         <link rel="dns-prefetch" href={SITE_URL} />
