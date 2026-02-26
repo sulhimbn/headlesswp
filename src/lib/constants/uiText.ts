@@ -8,7 +8,8 @@ export const UI_TEXT = {
   },
   metaInfo: {
     by: 'Oleh',
-    datePrefix: ''
+    datePrefix: '',
+    readingTime: 'baca'
   },
   postDetail: {
     tags: 'Tag',

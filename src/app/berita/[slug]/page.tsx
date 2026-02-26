@@ -17,6 +17,7 @@ import { SITE_URL } from '@/lib/api/config'
 import type { Metadata } from 'next'
 import PersonalizedRecommendations from '@/components/post/PersonalizedRecommendations'
 import ReadingTracker from '@/components/post/ReadingTracker'
+import { calculateReadingTime } from '@/lib/utils/readingTime'
 
 const Footer = dynamic(() => import('@/components/layout/Footer'), {
   loading: () => <div className="h-64 bg-[hsl(var(--color-background-dark))] mt-12" aria-hidden="true" />
@@ -94,6 +95,8 @@ export default async function PostPage({ params }: { params: { slug: string } })
 
   const { mediaUrl, categoriesDetails, tagsDetails, authorDetails } = post
 
+  const readingTime = calculateReadingTime(post.content.rendered)
+
   const breadcrumbItems = [
     { label: 'Berita', href: '/berita' },
     { label: post.title.rendered, href: `/berita/${post.slug}` }
@@ -160,7 +163,7 @@ export default async function PostPage({ params }: { params: { slug: string } })
 
           <div className="p-8">
             <div className="mb-6">
-              <MetaInfo date={post.date} className="mb-4" />
+              <MetaInfo date={post.date} className="mb-4" readingTime={readingTime} />
 
               {authorDetails && (
                 <div className="flex items-center gap-2 mb-4">
