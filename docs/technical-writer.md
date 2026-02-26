@@ -55,9 +55,16 @@ This file serves as the long-term memory for the technical-writer autonomous age
 - All documentation includes TypeScript examples
 - Follows issue #391 acceptance criteria phases 1-5
 
+### 2026-02-26
+- Found broken links in docs/guides/CONTRIBUTING.md
+- Fixed SECURITY.md link path (was missing `./` prefix)
+- Fixed README.md link path (was missing `../` prefix)
+- Small atomic diff: 2 lines changed
+
 ## Known Gaps
 - Some older documentation may have stale dates
 - Cross-references should be verified periodically
+- Use grep pattern to find broken relative links: `\[.*\]\((?!http|https|#|\./|\.\./)[^)]+\.md\)`
 
 ## Notes
 - Always verify changes don't break anything
