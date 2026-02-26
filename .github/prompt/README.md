@@ -69,4 +69,4 @@ gemini -s "$(cat 00.md)" "Review dark mode progress"
 | Version | Size | For |
 |---------|------|-----|
 | Full (root/*.txt) | 7-15 KB | IDE, manual use |
-| Condensed (cli/*.md) | 1.5-3 KB | CLI tools |
+| Condensed (.github/prompt/*.md) | 1.5-3 KB | CLI tools |
