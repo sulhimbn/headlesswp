@@ -35,21 +35,10 @@ export default async function CategoryPage({
 
   const category = categoryResult.data
 
-  const postsResult = await standardizedAPI.getAllPosts({
-    page,
-    per_page: perPage,
-    category: category.id
-  })
+  const postsResult = await enhancedPostService.getPostsByCategory(category.id, page, perPage)
 
-  const posts = postsResult.data
-  const totalPages = postsResult.pagination.totalPages ?? 0
-
-  const postsWithMedia = await enhancedPostService.getLatestPosts()
-
-  const enrichedPosts = posts.map(post => {
-    const enriched = postsWithMedia.find(p => p.id === post.id)
-    return enriched || { ...post, mediaUrl: null }
-  })
+  const enrichedPosts = postsResult.posts
+  const totalPages = postsResult.totalPages
 
   return (
     <div className="min-h-screen bg-[hsl(var(--color-background))]">
@@ -66,7 +55,7 @@ export default async function CategoryPage({
           <p className="text-[hsl(var(--color-text-secondary))] mb-8">{category.description}</p>
         )}
 
-        {posts.length > 0 ? (
+        {enrichedPosts.length > 0 ? (
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {enrichedPosts.map((post, index) => (

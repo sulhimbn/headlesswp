@@ -48,3 +48,10 @@ This document serves as the long-time memory for the product-architect agent.
   - src/components/ServiceWorkerRegistration.tsx (new)
   - src/app/layout.tsx (added PWA metadata and SW registration)
   - next.config.js (added PWA-specific headers)
+- Fourth task: Optimized category page data fetching
+- Problem: Category page was fetching all latest posts just to get media URLs for category posts - inefficient
+- Solution: Added getPostsByCategory method to enhancedPostService that fetches posts with media URLs directly for a specific category
+- Files modified:
+  - src/lib/services/IPostService.ts (added getPostsByCategory interface)
+  - src/lib/services/enhancedPostService.ts (implemented getPostsByCategory method)
+  - src/app/kategori/[slug]/page.tsx (use new method instead of inefficient approach)
