@@ -24,6 +24,7 @@ export interface IPostService {
   getPaginatedPosts(page?: number, perPage?: number): Promise<PaginatedPostsResult>;
   getPostBySlug(slug: string): Promise<PostWithDetails | null>;
   getPostById(id: number): Promise<PostWithDetails | null>;
+  getRelatedPosts(categoryIds: number[], excludeId: number): Promise<PostWithMediaUrl[]>;
   getCategories(): Promise<WordPressCategory[]>;
   getTags(): Promise<WordPressTag[]>;
   searchPosts(query: string, page?: number, perPage?: number): Promise<PaginatedPostsResult>;

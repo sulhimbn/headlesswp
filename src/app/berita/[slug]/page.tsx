@@ -7,6 +7,9 @@ import { sanitizeHTML } from '@/lib/utils/sanitizeHTML'
 import Breadcrumb from '@/components/ui/Breadcrumb'
 import Badge from '@/components/ui/Badge'
 import MetaInfo from '@/components/ui/MetaInfo'
+import PostCard from '@/components/post/PostCard'
+import SectionHeading from '@/components/ui/SectionHeading'
+import type { PostWithMediaUrl } from '@/lib/services/IPostService'
 import dynamic from 'next/dynamic'
 import { logger } from '@/lib/utils/logger'
 import { UI_TEXT } from '@/lib/constants/uiText'
@@ -71,6 +74,12 @@ export async function generateMetadata({ params }: { params: { slug: string } })
 
 export default async function PostPage({ params }: { params: { slug: string } }) {
   const post = await enhancedPostService.getPostBySlug(params.slug)
+
+  let relatedPosts: PostWithMediaUrl[] = []
+
+  if (post && post.categories.length > 0) {
+    relatedPosts = await enhancedPostService.getRelatedPosts(post.categories, post.id)
+  }
 
   if (!post) {
     notFound()
@@ -198,6 +207,23 @@ export default async function PostPage({ params }: { params: { slug: string } })
             )}
           </div>
         </article>
+
+        {relatedPosts.length > 0 && (
+          <section aria-labelledby="related-heading" className="mt-12">
+            <SectionHeading id="related-heading" className="mb-6">
+              {UI_TEXT.homePage.relatedHeading || 'Artikel Terkait'}
+            </SectionHeading>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {relatedPosts.map((relatedPost) => (
+                <PostCard 
+                  key={relatedPost.id} 
+                  post={relatedPost} 
+                  mediaUrl={relatedPost.mediaUrl} 
+                />
+              ))}
+            </div>
+          </section>
+        )}
 
         <div className="mt-8">
           <Link

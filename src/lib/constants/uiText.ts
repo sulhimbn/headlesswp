@@ -22,7 +22,8 @@ export const UI_TEXT = {
   },
   homePage: {
     featuredHeading: 'Berita Utama',
-    latestHeading: 'Berita Terkini'
+    latestHeading: 'Berita Terkini',
+    relatedHeading: 'Artikel Terkait'
   },
   notFound: {
     heading: 'Halaman Tidak Ditemukan',

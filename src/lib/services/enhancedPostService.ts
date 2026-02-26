@@ -301,6 +301,29 @@ export const enhancedPostService: IPostService = {
       totalPosts: posts.length,
       totalPages
     };
+  },
+
+  getRelatedPosts: async (categoryIds: number[], excludeId: number): Promise<PostWithMediaUrl[]> => {
+    if (categoryIds.length === 0) {
+      return [];
+    }
+
+    const primaryCategoryId = categoryIds[0];
+    
+    const result = await standardizedAPI.getAllPosts({ 
+      category: primaryCategoryId,
+      per_page: PAGINATION_LIMITS.RELATED_POSTS + 1
+    });
+
+    if (!isApiResultSuccessful(result) || !result.data) {
+      return [];
+    }
+
+    const filteredPosts = result.data
+      .filter(post => post.id !== excludeId)
+      .slice(0, PAGINATION_LIMITS.RELATED_POSTS);
+
+    return enrichPostsWithMediaUrls(filteredPosts);
   }
 };
 

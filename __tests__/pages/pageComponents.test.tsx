@@ -340,6 +340,10 @@ describe('Page Components - Critical Path Testing', () => {
   });
 
   describe('PostPage (src/app/berita/[slug]/page.tsx)', () => {
+    beforeEach(() => {
+      (enhancedPostService.getRelatedPosts as jest.Mock).mockResolvedValue([]);
+    });
+
     const mockCategory: WordPressCategory = {
       id: 1,
       name: 'Politics',
