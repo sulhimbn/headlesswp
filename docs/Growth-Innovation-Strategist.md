@@ -62,3 +62,22 @@
 - Use standardizedAPI.getAllPosts({ tag: id }) for posts by tag
 - Route naming: Indonesian for consistency (/kategori, /tag)
 - Pagination basePath should include the slug for proper navigation
+
+## Implemented Features (Feb 2026)
+
+### Related Articles on Post Detail Page
+- **PR**: #532
+- **Status**: Complete
+- **Features**:
+  - Added "Artikel Terkait" (Related Articles) section to post detail page
+  - Fetches up to 3 related posts from the same primary category
+  - Excludes current post from related posts
+  - Uses PAGINATION_LIMITS.RELATED_POSTS config (default: 3)
+  - Only displays when related posts are available
+  - Parallel fetching with main post for optimal performance
+
+## Patterns & Conventions (Related Articles)
+- Use getRelatedPosts(categoryIds, excludeId) to fetch related posts
+- Primary category is used as the main filter (first category in array)
+- Related posts use PostWithMediaUrl type for display consistency
+- UI text added to UI_TEXT.homePage.relatedHeading
