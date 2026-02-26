@@ -23,6 +23,15 @@ This document tracks R&D activities and improvements made to the headlesswp proj
   - Typecheck: PASS
   - Tests: 1983 passed
 
+### 2026-02-26
+- **Issue**: DX: Node.js version mismatch between .nvmrc and Dockerfile
+- **Fix**: Updated Dockerfile to use `node:20-alpine` instead of `node:25-alpine` in all 3 stages (deps, builder, runner) to match .nvmrc (20.20.0) and CI workflow
+- **PR**: https://github.com/sulhimbn/headlesswp/pull/527
+- **Verification**:
+  - Lint: PASS
+  - Typecheck: PASS
+  - Tests: 2008 passed
+
 ## R&D Process
 
 1. **INITIATE**: Scan codebase for issues/improvements
