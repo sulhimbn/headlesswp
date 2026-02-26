@@ -1,5 +1,11 @@
 # Production-ready Dockerfile for Next.js 16
 # Multi-stage build for optimized image size
+#
+# Security recommendations for production deployment:
+# - Run with --read-only flag: docker run --read-only
+# - Use tmpfs for /tmp: docker run --tmpfs /tmp:size=64m
+# - Add no-new-privileges: docker run --security-opt no-new-privileges:true
+# - Or use docker-compose.yml which includes these security settings
 
 # Stage 1: Dependencies
 FROM node:20.20.0-alpine AS deps
@@ -21,8 +27,6 @@ ARG NEXT_PUBLIC_WORDPRESS_URL
 ARG NEXT_PUBLIC_WORDPRESS_API_URL
 ARG NEXT_PUBLIC_SITE_URL
 ARG NEXT_PUBLIC_SITE_URL_WWW
-ARG NEXTAUTH_URL
-ARG NEXTAUTH_SECRET
 ARG NODE_ENV=production
 
 # Set build-time environment variables
@@ -30,8 +34,6 @@ ENV NEXT_PUBLIC_WORDPRESS_URL=${NEXT_PUBLIC_WORDPRESS_URL}
 ENV NEXT_PUBLIC_WORDPRESS_API_URL=${NEXT_PUBLIC_WORDPRESS_API_URL}
 ENV NEXT_PUBLIC_SITE_URL=${NEXT_PUBLIC_SITE_URL}
 ENV NEXT_PUBLIC_SITE_URL_WWW=${NEXT_PUBLIC_SITE_URL_WWW}
-ENV NEXTAUTH_URL=${NEXTAUTH_URL}
-ENV NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
 ENV NODE_ENV=${NODE_ENV}
 
 RUN npx next build
@@ -58,3 +60,6 @@ ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
 CMD ["node", "server.js"]
+
+HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
+  CMD wget --spider -q http://localhost:3000 || exit 1
