@@ -33,9 +33,13 @@ This document serves as the long-term memory for the frontend-engineer autonomou
 1. Conditional ref assignment in maps (works but not ideal pattern)
 2. Empty query searches trigger onSearch callback (intentional behavior)
 3. Placeholder social media links in Footer
+4. Hardcoded Tailwind colors (gray-*, red-*) in error.tsx and not-found.tsx - FIXED
 
 ## Accessibility Improvements Made
 1. Added prefers-reduced-motion support in globals.css (disables animations/transitions for users who prefer reduced motion)
+
+## Frontend Consistency Improvements
+1. Replaced hardcoded Tailwind colors with CSS variables in error.tsx and not-found.tsx for consistent theming
 
 ## Testing
 - Framework: Jest + React Testing Library
