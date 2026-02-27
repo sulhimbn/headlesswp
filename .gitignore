@@ -5,6 +5,7 @@ node_modules/
 .env.development.local
 .env.test.local
 .env.production.local
+.env*.json
 .DS_Store
 *.log
 npm-debug.log*
@@ -16,3 +17,13 @@ build/
 tsconfig.tsbuildinfo
 
 coverage/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+Thumbs.db
