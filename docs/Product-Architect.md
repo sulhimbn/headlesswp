@@ -67,3 +67,8 @@ This document serves as the long-time memory for the product-architect agent.
 - Solution: Updated Node version to 20 and upgraded GitHub Actions to latest versions
 - Files modified:
   - security-workflows.yml (updated Node version 18→20, checkout v5→v6, setup-node v4→v6)
+- Seventh task: Added cache headers to /api/posts API route for performance improvement (Issue #632)
+- Problem: API endpoint lacked cache headers, causing redundant requests
+- Solution: Added Cache-Control headers using existing CACHE_TIMES config (5 min fresh, 10 min stale)
+- Files modified:
+  - src/app/api/posts/route.ts (added CACHE_CONTROL header)
