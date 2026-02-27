@@ -149,6 +149,7 @@ npm run lint         # Run ESLint
 npm run typecheck    # Run TypeScript type checking
 npm run test         # Run Jest tests
 npm run test:watch    # Run tests in watch mode
+npm run check         # Run lint, typecheck, and test
 npm run analyze       # Analyze bundle size
 npm run deps:check    # Check for outdated dependencies
 npm run deps:update   # Update dependencies to latest
@@ -229,7 +230,7 @@ Test coverage:
 
 1. Create a feature branch: `git checkout -b feature/your-feature`
 2. Make your changes
-3. Run quality checks: `npm run lint && npm run typecheck && npm run test`
+3. Run quality checks: `npm run check`
 4. Commit and push
 5. Create Pull Request
 
