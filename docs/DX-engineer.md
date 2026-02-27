@@ -41,6 +41,10 @@ DX Engineer focuses on improving developer experience through small, safe, measu
 ## Recent Work
 
 ### 2026-02-27
+- **PR #640**: Add .npmrc and enhance .gitignore for better developer experience
+  - Created `.npmrc` with `save-exact=true` and `engine-strict=true` for consistent dependency management
+  - Enhanced `.gitignore` with IDE files (.idea/, .vscode/), OS files (Thumbs.db), and environment JSON patterns
+
 - **PR #625**: Fix Node version mismatch in security workflows - resolves issue #608
   - Updated security-workflows.yml to use Node.js 20 (matching .nvmrc)
   - Changed `node-version` from '18' to '20' in dependency-check job
