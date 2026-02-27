@@ -1,10 +1,9 @@
 # Production-ready Dockerfile for Next.js 16
 # Multi-stage build for optimized image size
 #
-# Security recommendations for production deployment:
-# - Run with --read-only flag: docker run --read-only
-# - Use tmpfs for /tmp: docker run --tmpfs /tmp:size=64m
-# - Add no-new-privileges: docker run --security-opt no-new-privileges:true
+# Security features enabled:
+# - Read-only root filesystem support (requires /tmp and /var/run volumes)
+# - Runs as non-root user (nextjs)
 # - Or use docker-compose.yml which includes these security settings
 
 # Stage 1: Dependencies
@@ -47,6 +46,8 @@ ENV NEXT_TELEMETRY_DISABLED=1
 
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
+
+RUN mkdir -p /tmp /var/run && chown nextjs:nodejs /tmp /var/run
 
 COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
