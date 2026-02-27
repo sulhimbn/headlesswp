@@ -16,7 +16,8 @@
     "audit:security": "npm audit --audit-level=moderate",
     "audit:full": "npm audit --audit-level=low",
     "deps:check": "npm outdated",
-    "deps:update": "npm update"
+    "deps:update": "npm update",
+    "size-check": "node scripts/bundle-size-check.js"
   },
   "dependencies": {
     "@sentry/nextjs": "^10.40.0",
@@ -30,6 +31,9 @@
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@next/bundle-analyzer": "^16.1.6",
+    "@size-limit/file": "^12.0.0",
+    "@size-limit/preset-app": "^12.0.0",
+    "@size-limit/webpack": "^12.0.0",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.1",
     "@types/jest": "^30.0.0",
@@ -43,6 +47,7 @@
     "jest": "^30.2.0",
     "jest-axe": "^10.0.0",
     "jest-environment-jsdom": "^30.2.0",
+    "size-limit": "^12.0.0",
     "ts-jest": "^29.2.5",
     "typescript": "^5.9.3"
   },

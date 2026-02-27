@@ -55,3 +55,10 @@ This document serves as the long-time memory for the product-architect agent.
   - src/lib/services/IPostService.ts (added getPostsByCategory interface)
   - src/lib/services/enhancedPostService.ts (implemented getPostsByCategory method)
   - src/app/kategori/[slug]/page.tsx (use new method instead of inefficient approach)
+- Fifth task: Added bundle size monitoring to CI (Issue #591)
+- Problem: No automated bundle size monitoring in CI to prevent bundle bloat
+- Solution: Created bundle-size-check.js script that validates JS chunk sizes against thresholds
+- Files created/modified:
+  - scripts/bundle-size-check.js (new - size check script)
+  - package.json (added size-check script)
+  - Note: CI workflow update needs manual application due to GitHub App permission restrictions
