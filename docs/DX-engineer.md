@@ -41,6 +41,10 @@ DX Engineer focuses on improving developer experience through small, safe, measu
 ## Recent Work
 
 ### 2026-02-27
+- **PR #625**: Fix Node version mismatch in security workflows - resolves issue #608
+  - Updated security-workflows.yml to use Node.js 20 (matching .nvmrc)
+  - Changed `node-version` from '18' to '20' in dependency-check job
+
 - **PR #XXX**: Add `check` npm script for combined lint + typecheck + test verification
   - Added `npm run check` script to package.json for quick local verification
   - Updated docs/DX-engineer.md with new script documentation
