@@ -55,7 +55,11 @@ export const UI_TEXT = {
     previous: 'Sebelumnya',
     next: 'Selanjutnya',
     page: 'Halaman',
-    of: 'dari'
+    of: 'dari',
+    ariaLabel: 'Navigasi halaman',
+    previousPage: 'Halaman sebelumnya',
+    nextPage: 'Halaman selanjutnya',
+    morePages: 'Halaman lainnya'
   },
   search: {
     placeholder: 'Cari berita...',

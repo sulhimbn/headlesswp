@@ -10,6 +10,7 @@ import Pagination from '@/components/ui/Pagination'
 import EmptyState from '@/components/ui/EmptyState'
 import Badge from '@/components/ui/Badge'
 import SectionHeading from '@/components/ui/SectionHeading'
+import { UI_TEXT } from '@/lib/constants/uiText'
 import type { WordPressPost } from '@/types/wordpress'
 
 const mockPost: WordPressPost = {
@@ -143,7 +144,7 @@ describe('Accessibility Tests', () => {
       render(
         <Pagination currentPage={1} totalPages={5} basePath="/berita" />
       )
-      const navigation = screen.getByRole('navigation', { name: 'Pagination' })
+      const navigation = screen.getByRole('navigation', { name: UI_TEXT.pagination.ariaLabel })
       expect(navigation).toBeInTheDocument()
     })
 
@@ -151,7 +152,7 @@ describe('Accessibility Tests', () => {
       render(
         <Pagination currentPage={1} totalPages={5} basePath="/berita" />
       )
-      const pageLink = screen.getByRole('link', { name: 'Page 1' })
+      const pageLink = screen.getByRole('link', { name: `${UI_TEXT.pagination.page} 1` })
       expect(pageLink).toBeInTheDocument()
       expect(pageLink).toHaveAttribute('aria-current', 'page')
     })
