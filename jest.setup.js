@@ -61,3 +61,18 @@ Object.defineProperty(global, 'crypto', {
   configurable: true,
   writable: true
 })
+
+// Mock window.matchMedia for dark mode tests
+Object.defineProperty(window, 'matchMedia', {
+  writable: true,
+  value: jest.fn().mockImplementation(query => ({
+    matches: false,
+    media: query,
+    onchange: null,
+    addListener: jest.fn(),
+    removeListener: jest.fn(),
+    addEventListener: jest.fn(),
+    removeEventListener: jest.fn(),
+    dispatchEvent: jest.fn(),
+  })),
+})
