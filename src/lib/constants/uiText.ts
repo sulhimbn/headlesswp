@@ -76,8 +76,10 @@ export const UI_TEXT = {
   footer: {
     about: 'Tentang Kami',
     aboutTitle: 'Mitra Banten News',
+    aboutHeading: 'Tentang Mitra Banten News',
     aboutDescription: 'Menyajikan berita terkini dan terpercaya dari Banten dan sekitarnya.',
     navigation: 'Navigasi',
+    navigationAriaLabel: 'Navigasi Footer',
     links: {
       home: 'Beranda',
       news: 'Berita',
@@ -90,11 +92,33 @@ export const UI_TEXT = {
     email: 'Email: info@mitrabantennews.com',
     phone: 'Telepon: (0254) 123-4567',
     address: 'Alamat: Banten, Indonesia',
-    copyright: (year: number) => `&copy; ${year} Mitra Banten News. Seluruh hak cipta.`
+    copyright: (year: number) => `&copy; ${year} Mitra Banten News. Seluruh hak cipta.`,
+    social: {
+      facebook: 'Facebook',
+      twitter: 'Twitter',
+      instagram: 'Instagram'
+    }
   },
   serviceStatus: {
     healthy: 'Layanan beroperasi normal',
     degraded: 'Layanan mengalami gangguan',
     down: 'Layanan tidak tersedia'
+  },
+  loading: {
+    news: 'Memuat berita',
+    article: 'Memuat artikel',
+    articleDetail: 'Memuat detail artikel',
+    articleCard: 'Memuat kartu artikel'
+  },
+  header: {
+    siteName: 'Mitra Banten News',
+    homeAriaLabel: 'Mitra Banten News Beranda',
+    openSearch: 'Buka pencarian',
+    closeMenu: 'Tutup menu',
+    openMenu: 'Buka menu',
+    navigation: {
+      home: 'Beranda',
+      news: 'Berita'
+    }
   }
 } as const
