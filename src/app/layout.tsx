@@ -43,6 +43,14 @@ export const metadata: Metadata = {
     locale: 'id_ID',
     type: 'website',
   },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Mitra Banten News',
+    description: 'Portal berita terkini dan terpercaya dari Banten',
+    images: ['/og-image.jpg'],
+    site: '@mitrabantennews',
+    creator: '@mitrabantennews',
+  },
 }
 
 const organizationSchema = {
