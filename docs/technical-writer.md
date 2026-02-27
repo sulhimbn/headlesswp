@@ -93,6 +93,14 @@ This file serves as the long-term memory for the technical-writer autonomous age
 - Small atomic diff: 2 insertions, 1 deletion
 - Created issue #626 and PR #627
 
+### 2026-02-27 (Fifth Session)
+- Proactive scan after PR #627 merged
+- Found inconsistency in README.md "Verify Everything Works" section (lines 63-71)
+- Section still listed individual commands (lint, typecheck, test) instead of consolidated `npm run check`
+- Updated to use `npm run check` for consistency with Available Scripts and Contributing sections
+- Small atomic diff: 3 deletions, 1 insertion
+- Created PR #637
+
 ## Known Gaps
 - Some older documentation may have stale dates
 - Cross-references should be verified periodically
