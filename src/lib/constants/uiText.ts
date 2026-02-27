@@ -1,6 +1,7 @@
 export const UI_TEXT = {
   breadcrumb: {
-    home: 'Beranda'
+    home: 'Beranda',
+    ariaLabel: 'Navigasi breadcrumb'
   },
   postCard: {
     altText: (title: string) => `Gambar utama untuk artikel: ${title}`,
@@ -15,7 +16,8 @@ export const UI_TEXT = {
     tags: 'Tag',
     backToHome: 'Kembali ke Beranda',
     share: 'Bagikan',
-    shareTo: 'Bagikan ke'
+    shareTo: 'Bagikan ke',
+    tableOfContents: 'Daftar Isi'
   },
   newsPage: {
     heading: 'Semua Berita',
@@ -125,5 +127,8 @@ export const UI_TEXT = {
       home: 'Beranda',
       news: 'Berita'
     }
+  },
+  icon: {
+    loading: 'Memuat'
   }
 } as const
