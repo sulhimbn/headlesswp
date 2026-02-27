@@ -2,7 +2,7 @@
 
 **Date**: 2026-01-29
 **Status**: ✅ Active
-**Branch**: agent
+**Branch**: agent-workspace
 
 ## Overview
 
@@ -55,12 +55,12 @@ User Input → [00 Strategist] → feature.md + task.md
 ## Git Branch Strategy
 
 - **Main Branch**: `main` - Production-ready code
-- **Agent Branch**: `agent` - Autonomous agent work
+- **Agent Branch**: `agent-workspace` - Autonomous agent work
 - **Workflow**:
-  1. Start work on `agent` branch
+  1. Start work on `agent-workspace` branch
   2. Sync with `main` periodically
-  3. Create PR from `agent` → `main` when ready
-  4. Merge `main` → `agent` to maintain sync
+  3. Create PR from `agent-workspace` → `main` when ready
+  4. Merge `main` → `agent-workspace` to maintain sync
 
 ## Operational Modes
 
@@ -117,12 +117,12 @@ User Input → [00 Strategist] → feature.md + task.md
 To use the autonomous coding system:
 
 ```bash
-# 1. Ensure you're on the agent branch
-git checkout agent
+# 1. Ensure you're on the agent-workspace branch
+git checkout agent-workspace
 
 # 2. Sync with main
 git pull origin main
-git pull origin agent
+git pull origin agent-workspace
 
 # 3. Use agent 00 (Strategist) for planning
 # Provide your requirement and let it break down features/tasks
