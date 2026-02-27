@@ -1,8 +1,9 @@
 import { memo } from 'react'
+import { UI_TEXT } from '@/lib/constants/uiText'
 
 function PostCardSkeleton() {
   return (
-    <article className="bg-[hsl(var(--color-surface))] rounded-[var(--radius-lg)] shadow-[var(--shadow-md)] overflow-hidden" aria-busy="true" aria-label="Memuat kartu artikel">
+    <article className="bg-[hsl(var(--color-surface))] rounded-[var(--radius-lg)] shadow-[var(--shadow-md)] overflow-hidden" aria-busy="true" aria-label={UI_TEXT.loading.articleCard}>
       <div className="h-48 sm:h-56 md:h-48 bg-[hsl(var(--color-secondary-dark))] animate-pulse" />
       <div className="p-4 sm:p-5 md:p-4">
         <div className="h-6 sm:h-7 md:h-6 bg-[hsl(var(--color-secondary-dark))] rounded-[var(--radius-sm)] animate-pulse mb-2 w-3/4" />

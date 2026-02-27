@@ -412,13 +412,18 @@ describe('UI_TEXT constants', () => {
       expect(UI_TEXT).toHaveProperty('emptyState');
       expect(UI_TEXT).toHaveProperty('pagination');
       expect(UI_TEXT).toHaveProperty('footer');
+      expect(UI_TEXT).toHaveProperty('serviceStatus');
+      expect(UI_TEXT).toHaveProperty('loading');
+      expect(UI_TEXT).toHaveProperty('header');
     });
 
     it('should have footer section with all expected subsections', () => {
       expect(UI_TEXT.footer).toHaveProperty('about');
       expect(UI_TEXT.footer).toHaveProperty('aboutTitle');
+      expect(UI_TEXT.footer).toHaveProperty('aboutHeading');
       expect(UI_TEXT.footer).toHaveProperty('aboutDescription');
       expect(UI_TEXT.footer).toHaveProperty('navigation');
+      expect(UI_TEXT.footer).toHaveProperty('navigationAriaLabel');
       expect(UI_TEXT.footer).toHaveProperty('contact');
       expect(UI_TEXT.footer).toHaveProperty('contactTitle');
       expect(UI_TEXT.footer).toHaveProperty('email');
@@ -426,6 +431,80 @@ describe('UI_TEXT constants', () => {
       expect(UI_TEXT.footer).toHaveProperty('address');
       expect(UI_TEXT.footer).toHaveProperty('links');
       expect(UI_TEXT.footer).toHaveProperty('copyright');
+      expect(UI_TEXT.footer).toHaveProperty('social');
+    });
+  });
+
+  describe('serviceStatus', () => {
+    it('should have healthy text', () => {
+      expect(UI_TEXT.serviceStatus.healthy).toBe('Layanan beroperasi normal');
+    });
+
+    it('should have degraded text', () => {
+      expect(UI_TEXT.serviceStatus.degraded).toBe('Layanan mengalami gangguan');
+    });
+
+    it('should have down text', () => {
+      expect(UI_TEXT.serviceStatus.down).toBe('Layanan tidak tersedia');
+    });
+  });
+
+  describe('loading', () => {
+    it('should have news loading text', () => {
+      expect(UI_TEXT.loading.news).toBe('Memuat berita');
+    });
+
+    it('should have article loading text', () => {
+      expect(UI_TEXT.loading.article).toBe('Memuat artikel');
+    });
+
+    it('should have articleDetail loading text', () => {
+      expect(UI_TEXT.loading.articleDetail).toBe('Memuat detail artikel');
+    });
+
+    it('should have articleCard loading text', () => {
+      expect(UI_TEXT.loading.articleCard).toBe('Memuat kartu artikel');
+    });
+  });
+
+  describe('header', () => {
+    it('should have siteName text', () => {
+      expect(UI_TEXT.header.siteName).toBe('Mitra Banten News');
+    });
+
+    it('should have homeAriaLabel text', () => {
+      expect(UI_TEXT.header.homeAriaLabel).toBe('Mitra Banten News Beranda');
+    });
+
+    it('should have openSearch text', () => {
+      expect(UI_TEXT.header.openSearch).toBe('Buka pencarian');
+    });
+
+    it('should have closeMenu text', () => {
+      expect(UI_TEXT.header.closeMenu).toBe('Tutup menu');
+    });
+
+    it('should have openMenu text', () => {
+      expect(UI_TEXT.header.openMenu).toBe('Buka menu');
+    });
+
+    it('should have navigation section', () => {
+      expect(UI_TEXT.header.navigation.home).toBe('Beranda');
+      expect(UI_TEXT.header.navigation.news).toBe('Berita');
+    });
+  });
+
+  describe('footer social', () => {
+    it('should have facebook text', () => {
+      expect(UI_TEXT.footer.social.facebook).toBe('Facebook');
+    });
+
+    it('should have twitter text', () => {
+      expect(UI_TEXT.footer.social.twitter).toBe('Twitter');
+    });
+
+    it('should have instagram text', () => {
+      expect(UI_TEXT.footer.social.instagram).toBe('Instagram');
     });
   });
 });
