@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, memo } from 'react'
+import { UI_TEXT } from '@/lib/constants/uiText'
 
 type ServiceHealth = 'healthy' | 'degraded' | 'down'
 
@@ -16,12 +17,6 @@ const statusStyles = {
   healthy: 'bg-green-500',
   degraded: 'bg-yellow-500',
   down: 'bg-red-500'
-}
-
-const statusLabelText = {
-  healthy: 'Layanan beroperasi normal',
-  degraded: 'Layanan mengalami gangguan',
-  down: 'Layanan tidak tersedia'
 }
 
 function ServiceStatusComponent() {
@@ -69,7 +64,7 @@ function ServiceStatusComponent() {
       onClick={() => setShowTooltip(!showTooltip)}
       onMouseEnter={() => setShowTooltip(true)}
       onMouseLeave={() => setShowTooltip(false)}
-      aria-label={statusLabelText[status]}
+      aria-label={UI_TEXT.serviceStatus[status]}
     >
       <span
         className={`w-3 h-3 rounded-full ${statusStyles[status]} transition-colors duration-200`}
@@ -77,7 +72,7 @@ function ServiceStatusComponent() {
       />
       {showTooltip && (
         <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-md shadow-lg whitespace-nowrap z-50">
-          {statusLabelText[status]}
+          {UI_TEXT.serviceStatus[status]}
           <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900" />
         </div>
       )}
