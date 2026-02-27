@@ -24,7 +24,7 @@ npm run dev
 # 4. Make changes and test
 npm run lint
 npm run typecheck
-npm test
+npm run test
 
 # 5. Commit changes (use conventional commits)
 git commit -m "feat: add new feature"
@@ -254,9 +254,9 @@ const [posts, categories] = await Promise.all([
 ### Running Tests
 
 ```bash
-npm test              # Run all tests once
-npm test:watch        # Run tests in watch mode
-npm test -- --coverage # Generate coverage report
+npm run test              # Run all tests once
+npm run test:watch        # Run tests in watch mode
+npm run test -- --coverage # Generate coverage report
 ```
 
 ### Test Structure
@@ -432,7 +432,7 @@ Before committing changes, ensure:
 
 - [ ] `npm run lint` passes (ESLint)
 - [ ] `npm run typecheck` passes (TypeScript)
-- [ ] `npm test` passes (all tests)
+- [ ] `npm run test` passes (all tests)
 - [ ] New code has tests added
 - [ ] Design tokens used (no hardcoded Tailwind values)
 - [ ] User content sanitized (DOMPurify)
