@@ -1,6 +1,6 @@
 services:
   wordpress:
-    image: wordpress:6.7
+    image: wordpress:6.7.2
     ports:
       - "8080:80"
     environment:
@@ -24,7 +24,7 @@ services:
       retries: 3
 
   db:
-    image: mysql:8.0
+    image: mysql:8.0.44
     environment:
       MYSQL_DATABASE: ${MYSQL_DATABASE}
       MYSQL_USER: ${MYSQL_USER}
@@ -43,7 +43,7 @@ services:
       retries: 3
 
   phpmyadmin:
-    image: phpmyadmin/phpmyadmin:5.2
+    image: phpmyadmin/phpmyadmin:5.2.2
     ports:
       - "8081:80"
     environment:

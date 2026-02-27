@@ -23,3 +23,5 @@
 - Created backend-engineer label for PRs
 - Issue #382: Logger.error() parameter bug - fixed by passing data in meta object
 - Issue #564: logger.warn() missing undefined parameter in telemetry.ts
+- Issue #547: Docker image versions pinned to patch level (WordPress 6.7.2, MySQL 8.0.44, phpMyAdmin 5.2.2)
+- PR #590: Pin Docker image versions to patch level for #547
