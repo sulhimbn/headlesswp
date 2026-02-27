@@ -6,6 +6,17 @@ This document tracks R&D activities and improvements made to the headlesswp proj
 ## Completed Work
 
 ### 2026-02-27
+- **Issue**: #594 - DX: Create automated stale branch cleanup workflow
+- **Action**: Created .github/workflows/stale-branches.yml using actions/stale@v9
+- **Configuration**:
+  - 30-day inactivity threshold
+  - 7 additional days before closing
+  - Protected branches excluded (main, agent)
+  - Weekly schedule (Sunday midnight)
+- **Files Changed**:
+  - `.github/workflows/stale-branches.yml`: New file (43 lines)
+
+### 2026-02-27
 - **Issue**: #548 - SECURITY: Dockerfile missing read-only root filesystem for production
 - **Action**: Added /tmp and /var/run directories with proper ownership in Dockerfile runner stage
 - **Files Changed**:
