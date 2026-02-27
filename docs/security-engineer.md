@@ -28,6 +28,11 @@ This document serves as long-term memory for the security-engineer autonomous ag
 ## Implemented Security Improvements
 
 ### 2026-02-27
+- **Replace hardcoded URLs in next.config.js remotePatterns** (PR #654):
+  - Changed mitrabantennews.com and www.mitrabantennews.com to **.your-domain.com placeholder
+  - Prevents information disclosure of production domain names in image configuration
+  - Completes the work from PR #613 which fixed .env.example but missed next.config.js
+
 - **Read-only root filesystem for all services** (PR #636):
   - Added `read_only: true` to wordpress and db services in docker-compose.yml
   - Added `/var/run` tmpfs mount to all services (wordpress, db, phpmyadmin, frontend)
