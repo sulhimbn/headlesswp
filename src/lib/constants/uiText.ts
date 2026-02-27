@@ -13,7 +13,9 @@ export const UI_TEXT = {
   },
   postDetail: {
     tags: 'Tag',
-    backToHome: 'Kembali ke Beranda'
+    backToHome: 'Kembali ke Beranda',
+    share: 'Bagikan',
+    shareTo: 'Bagikan ke'
   },
   newsPage: {
     heading: 'Semua Berita',
