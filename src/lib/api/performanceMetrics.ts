@@ -297,14 +297,39 @@ export class PerformanceMetricsCollector {
 
 export const performanceMetricsCollector = new PerformanceMetricsCollector()
 
+let lastCpuInfo: { times: os.CpuInfo['times']; timestamp: number } | null = null
+
 export function captureCurrentResourceUtilization(): ResourceUtilizationMetric {
   const usage = process.memoryUsage()
   const totalMemory = os.totalmem()
   const freeMemory = os.freemem()
   const usedMemory = totalMemory - freeMemory
 
+  const cpus = os.cpus()
+  let cpuUsagePercent = 0
+
+  if (cpus.length > 0) {
+    const currentCpuInfo = cpus[0]
+    const currentTimes = currentCpuInfo.times
+
+    if (lastCpuInfo) {
+      const lastTimes = lastCpuInfo.times
+      const lastTotal = lastTimes.user + lastTimes.nice + lastTimes.sys + lastTimes.idle + lastTimes.irq
+      const currentTotal = currentTimes.user + currentTimes.nice + currentTimes.sys + currentTimes.idle + currentTimes.irq
+
+      const totalDiff = currentTotal - lastTotal
+      const idleDiff = currentTimes.idle - lastTimes.idle
+
+      if (totalDiff > 0) {
+        cpuUsagePercent = Math.round(((totalDiff - idleDiff) / totalDiff) * 100)
+      }
+    }
+
+    lastCpuInfo = { times: currentTimes, timestamp: Date.now() }
+  }
+
   return {
-    cpuUsagePercent: 0,
+    cpuUsagePercent,
     memoryUsageMB: Math.round(usedMemory / 1024 / 1024),
     memoryUsagePercent: Math.round((usedMemory / totalMemory) * 100),
     heapUsedMB: Math.round(usage.heapUsed / 1024 / 1024),
