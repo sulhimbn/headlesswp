@@ -62,3 +62,8 @@ This document serves as the long-time memory for the product-architect agent.
   - scripts/bundle-size-check.js (new - size check script)
   - package.json (added size-check script)
   - Note: CI workflow update needs manual application due to GitHub App permission restrictions
+- Sixth task: Fixed Node version mismatch in security workflows (Issue #608)
+- Problem: security-workflows.yml used Node 18 while project uses Node 20, causing potential build failures
+- Solution: Updated Node version to 20 and upgraded GitHub Actions to latest versions
+- Files modified:
+  - security-workflows.yml (updated Node version 18→20, checkout v5→v6, setup-node v4→v6)
