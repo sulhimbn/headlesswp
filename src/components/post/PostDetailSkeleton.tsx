@@ -1,8 +1,9 @@
 import { memo } from 'react'
+import { UI_TEXT } from '@/lib/constants/uiText'
 
 function PostDetailSkeleton() {
   return (
-    <div className="min-h-screen bg-[hsl(var(--color-background))]" aria-busy="true" aria-label="Memuat detail artikel">
+    <div className="min-h-screen bg-[hsl(var(--color-background))]" aria-busy="true" aria-label={UI_TEXT.loading.articleDetail}>
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-4">
           <div className="h-4 bg-[hsl(var(--color-secondary-dark))] rounded-[var(--radius-sm)] animate-pulse mb-2 w-20" />

@@ -19,7 +19,7 @@ function FooterComponent() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
           <section aria-labelledby="footer-about-heading">
-            <h2 id="footer-about-heading" className="sr-only">Tentang Mitra Banten News</h2>
+            <h2 id="footer-about-heading" className="sr-only">{UI_TEXT.footer.aboutHeading}</h2>
             <div className="mb-4">
               <h3 className="text-xl font-bold mb-2">{UI_TEXT.footer.aboutTitle}</h3>
               <p className="text-[hsl(var(--color-text-muted-dark))] text-sm">
@@ -30,7 +30,7 @@ function FooterComponent() {
 
           <section aria-labelledby="footer-nav-heading">
             <h2 id="footer-nav-heading" className="text-lg font-semibold mb-4">{UI_TEXT.footer.navigation}</h2>
-            <nav aria-label="Navigasi Footer">
+            <nav aria-label={UI_TEXT.footer.navigationAriaLabel}>
                 <ul className="space-y-2">
                   {footerLinks.map((link, index) => (
                     <li key={`${link.href}-${index}`}>
@@ -63,21 +63,21 @@ function FooterComponent() {
               <a
                 href="/"
                 className="text-[hsl(var(--color-text-faint-dark))] hover:text-[hsl(var(--color-surface))] transition-all duration-[var(--transition-fast)] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--color-primary))] focus:ring-offset-2 rounded-[var(--radius-sm)]"
-                aria-label="Facebook"
+                aria-label={UI_TEXT.footer.social.facebook}
               >
                 <Icon type="facebook" className="h-5 w-5" />
               </a>
               <a
                 href="/"
                 className="text-[hsl(var(--color-text-faint-dark))] hover:text-[hsl(var(--color-surface))] transition-all duration-[var(--transition-fast)] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--color-primary))] focus:ring-offset-2 rounded-[var(--radius-sm)]"
-                aria-label="Twitter"
+                aria-label={UI_TEXT.footer.social.twitter}
               >
                 <Icon type="twitter" className="h-5 w-5" />
               </a>
               <a
                 href="/"
                 className="text-[hsl(var(--color-text-faint-dark))] hover:text-[hsl(var(--color-surface))] transition-all duration-[var(--transition-fast)] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--color-primary))] focus:ring-offset-2 rounded-[var(--radius-sm)]"
-                aria-label="Instagram"
+                aria-label={UI_TEXT.footer.social.instagram}
               >
                 <Icon type="instagram" className="h-5 w-5" />
               </a>

@@ -2,13 +2,14 @@ import PostCardSkeleton from '@/components/post/PostCardSkeleton'
 import Header from '@/components/layout/Header'
 import Footer from '@/components/layout/Footer'
 import Skeleton from '@/components/ui/Skeleton'
+import { UI_TEXT } from '@/lib/constants/uiText'
 
 export default function Loading() {
   return (
     <div className="min-h-screen bg-[hsl(var(--color-background))]">
       <Header />
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8" role="status" aria-live="polite" aria-label="Memuat berita">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8" role="status" aria-live="polite" aria-label={UI_TEXT.loading.news}>
         <div className="mb-8" aria-busy="true">
           <Skeleton variant="text" className="h-12 mb-2 w-64" />
           <Skeleton variant="text" className="h-5 w-96" />

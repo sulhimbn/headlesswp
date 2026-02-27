@@ -11,8 +11,8 @@ import { UI_TEXT } from '@/lib/constants/uiText'
 const SearchBar = dynamic(() => import('@/components/ui/SearchBar'), { ssr: false })
 
 const NAVIGATION_ITEMS = [
-  { href: '/', label: 'Beranda' },
-  { href: '/berita', label: 'Berita' },
+  { href: '/', label: UI_TEXT.header.navigation.home },
+  { href: '/berita', label: UI_TEXT.header.navigation.news },
 ] as const
 
 export default memo(function Header() {
@@ -90,9 +90,9 @@ export default memo(function Header() {
           <Link
             href="/"
             className="text-2xl font-bold text-[hsl(var(--color-primary))] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--color-primary))] focus:ring-offset-2 rounded-[var(--radius-sm)]"
-            aria-label="Mitra Banten News Beranda"
+            aria-label={UI_TEXT.header.homeAriaLabel}
           >
-            Mitra Banten News
+            {UI_TEXT.header.siteName}
           </Link>
 
           <div className="hidden md:flex items-center space-x-4">
@@ -105,7 +105,7 @@ export default memo(function Header() {
               aria-expanded={isSearchOpen}
               aria-controls="desktop-search"
             >
-              <span className="sr-only">Buka pencarian</span>
+              <span className="sr-only">{UI_TEXT.header.openSearch}</span>
               <Icon type="search" className="h-5 w-5" />
             </button>
             <nav>
@@ -130,7 +130,7 @@ export default memo(function Header() {
               aria-expanded={isSearchOpen}
               aria-controls="mobile-search"
             >
-              <span className="sr-only">Buka pencarian</span>
+              <span className="sr-only">{UI_TEXT.header.openSearch}</span>
               <Icon type="search" className="h-5 w-5" />
             </button>
             <button
@@ -142,7 +142,7 @@ export default memo(function Header() {
               aria-haspopup="true"
               onClick={toggleMenu}
             >
-              <span className="sr-only">{isMenuOpen ? 'Tutup menu' : 'Buka menu'}</span>
+              <span className="sr-only">{isMenuOpen ? UI_TEXT.header.closeMenu : UI_TEXT.header.openMenu}</span>
               {isMenuOpen ? <Icon type="close" className="h-6 w-6" /> : <Icon type="menu" className="h-6 w-6" />}
             </button>
           </div>
