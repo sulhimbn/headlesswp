@@ -14,9 +14,9 @@ interface HealthResponse {
 const POLL_INTERVAL = 30000
 
 const statusStyles = {
-  healthy: 'bg-green-500',
-  degraded: 'bg-yellow-500',
-  down: 'bg-red-500'
+  healthy: 'bg-[hsl(var(--color-success))]',
+  degraded: 'bg-[hsl(var(--color-warning))]',
+  down: 'bg-[hsl(var(--color-error))]'
 }
 
 function ServiceStatusComponent() {
@@ -71,9 +71,9 @@ function ServiceStatusComponent() {
         aria-hidden="true"
       />
       {showTooltip && (
-        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-md shadow-lg whitespace-nowrap z-50">
+        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-[hsl(var(--color-background-dark))] text-white text-xs rounded-md shadow-lg whitespace-nowrap z-50">
           {UI_TEXT.serviceStatus[status]}
-          <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900" />
+          <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-[hsl(var(--color-background-dark))]" />
         </div>
       )}
     </button>

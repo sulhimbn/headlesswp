@@ -60,8 +60,8 @@ describe('ServiceStatus Component', () => {
 
       render(<ServiceStatus />)
       await waitFor(() => {
-        const indicator = screen.getByRole('button').querySelector('.bg-green-500')
-        expect(indicator).toBeInTheDocument()
+        const indicator = screen.getByRole('button').querySelector('[aria-hidden="true"]')
+        expect(indicator).toHaveClass('bg-[hsl(var(--color-success))]')
       })
     })
 
@@ -73,8 +73,8 @@ describe('ServiceStatus Component', () => {
 
       render(<ServiceStatus />)
       await waitFor(() => {
-        const indicator = screen.getByRole('button').querySelector('.bg-yellow-500')
-        expect(indicator).toBeInTheDocument()
+        const indicator = screen.getByRole('button').querySelector('[aria-hidden="true"]')
+        expect(indicator).toHaveClass('bg-[hsl(var(--color-warning))]')
       })
     })
 
@@ -83,8 +83,8 @@ describe('ServiceStatus Component', () => {
 
       render(<ServiceStatus />)
       await waitFor(() => {
-        const indicator = screen.getByRole('button').querySelector('.bg-red-500')
-        expect(indicator).toBeInTheDocument()
+        const indicator = screen.getByRole('button').querySelector('[aria-hidden="true"]')
+        expect(indicator).toHaveClass('bg-[hsl(var(--color-error))]')
       })
     })
   })
