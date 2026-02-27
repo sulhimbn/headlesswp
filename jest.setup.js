@@ -5,6 +5,16 @@ process.env.WORDPRESS_URL = 'http://localhost:8080'
 process.env.WORDPRESS_API_URL = 'http://localhost:8080/wp-json'
 process.env.NEXT_PUBLIC_WORDPRESS_URL = 'http://localhost:8080'
 process.env.NEXT_PUBLIC_WORDPRESS_API_URL = 'http://localhost:8080/wp-json'
+process.env.NODE_ENV = 'test'
+
+const originalSetInterval = global.setInterval
+global.setInterval = function (...args) {
+  const intervalId = originalSetInterval.apply(this, args)
+  if (typeof intervalId.unref === 'function') {
+    intervalId.unref()
+  }
+  return intervalId
+}
 
 // Mock Next.js server components
 jest.mock('next/server', () => ({

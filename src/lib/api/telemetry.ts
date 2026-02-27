@@ -27,10 +27,13 @@ export class TelemetryCollector {
       maxEvents: config.maxEvents ?? 1000
     }
 
-    if (this.config.flushInterval && this.config.enabled) {
+    if (this.config.flushInterval && this.config.enabled && process.env.NODE_ENV !== 'test') {
       this.flushTimer = setInterval(() => {
         this.flush()
       }, this.config.flushInterval)
+      if (typeof this.flushTimer.unref === 'function') {
+        this.flushTimer.unref()
+      }
     }
   }
 
