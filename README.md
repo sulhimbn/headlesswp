@@ -154,6 +154,7 @@ npm run deps:check    # Check for outdated dependencies
 npm run deps:update   # Update dependencies to latest
 npm run audit:security # Check for security vulnerabilities
 npm run audit:full    # Full security audit
+npm run size-check    # Check bundle size against thresholds
 ```
 
 ## Project Structure
