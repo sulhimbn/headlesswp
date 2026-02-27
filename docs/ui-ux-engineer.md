@@ -69,3 +69,4 @@ npm run typecheck
 ## Recent Improvements (2026-02-27)
 - Added `rounded-[var(--radius-sm)]` to Badge Link focus styles for consistency with other components
 - Use @ts-expect-error for jest-axe import (types not available in package)
+- Added visual feedback when copying link in SocialShare component - shows checkmark with green color for 2 seconds after copying
