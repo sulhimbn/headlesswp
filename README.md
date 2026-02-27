@@ -191,7 +191,7 @@ See [Development Guide](docs/guides/development.md) for complete setup instructi
 ### Prerequisites
 
 - Docker & Docker Compose
-- Node.js 18+
+- Node.js 20+
 - Git
 
 ### Environment Variables
