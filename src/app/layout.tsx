@@ -65,6 +65,38 @@ export default function RootLayout({
         <link rel="dns-prefetch" href={SITE_URL} />
         <link rel="dns-prefetch" href={SITE_URL_WWW} />
         <link rel="alternate" type="application/rss+xml" title="Mitra Banten News - RSS Feed" href={`${SITE_URL}/api/rss`} />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'WebSite',
+              name: 'Mitra Banten News',
+              url: SITE_URL,
+              potentialAction: {
+                '@type': 'SearchAction',
+                target: {
+                  '@type': 'EntryPoint',
+                  urlTemplate: `${SITE_URL}/cari?q={search_term_string}`,
+                },
+                'query-input': 'required name=search_term_string',
+              },
+            })
+          }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'Organization',
+              name: 'Mitra Banten News',
+              url: SITE_URL,
+              logo: `${SITE_URL}/logo.png`,
+              sameAs: [],
+            })
+          }}
+        />
       </head>
       <body className={inter.className}>
         <ErrorBoundary>

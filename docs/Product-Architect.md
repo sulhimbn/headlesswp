@@ -55,3 +55,10 @@ This document serves as the long-time memory for the product-architect agent.
   - src/lib/services/IPostService.ts (added getPostsByCategory interface)
   - src/lib/services/enhancedPostService.ts (implemented getPostsByCategory method)
   - src/app/kategori/[slug]/page.tsx (use new method instead of inefficient approach)
+- Fifth task: Add JSON-LD structured data for SEO (Issue #517)
+- Problem: No JSON-LD structured data implemented - missing Schema.org markup for articles, breadcrumbs, and organization
+- Solution: Added Organization and WebSite schema to layout.tsx, BreadcrumbList schema to category/tag pages (NewsArticle was already implemented)
+- Files modified:
+  - src/app/layout.tsx (added Organization + WebSite schemas)
+  - src/app/kategori/[slug]/page.tsx (added BreadcrumbList schema)
+  - src/app/tag/[slug]/page.tsx (added BreadcrumbList schema)

@@ -1,5 +1,6 @@
 import { standardizedAPI } from '@/lib/api/standardized'
 import { enhancedPostService } from '@/lib/services/enhancedPostService'
+import { SITE_URL } from '@/lib/api/config'
 import Header from '@/components/layout/Header'
 import PostCard from '@/components/post/PostCard'
 import Pagination from '@/components/ui/Pagination'
@@ -56,6 +57,29 @@ export default async function TagPage({
       <Header />
 
       <main id="main-content" aria-labelledby="page-heading" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'BreadcrumbList',
+              itemListElement: [
+                {
+                  '@type': 'ListItem',
+                  position: 1,
+                  name: 'Beranda',
+                  item: SITE_URL,
+                },
+                {
+                  '@type': 'ListItem',
+                  position: 2,
+                  name: `#${tag.name}`,
+                  item: `${SITE_URL}/tag/${params.slug}`,
+                },
+              ],
+            })
+          }}
+        />
         <h1 id="page-heading" className="sr-only">
           Tag: {tag.name}
         </h1>
