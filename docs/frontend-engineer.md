@@ -68,3 +68,6 @@ This document serves as the long-term memory for the frontend-engineer autonomou
 2. Added WebSite schema with SearchAction for site search
 3. Added BreadcrumbList schema to post detail pages
 4. NewsArticle schema was already present in post detail pages
+
+## Code Quality Fixes
+1. Removed empty CSP nonce meta tag from layout.tsx (served no purpose, CSP is handled via headers in next.config.js)
