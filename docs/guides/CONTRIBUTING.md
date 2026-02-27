@@ -94,7 +94,7 @@ git checkout -b fix/your-bug-fix
 ```bash
 npm run lint
 npm run typecheck
-npm test
+npm run test
 npm run build
 ```
 
@@ -184,13 +184,13 @@ chore: maintenance tasks
 
 ```bash
 # Run all tests
-npm test
+npm run test
 
 # Run tests in watch mode
 npm run test:watch
 
 # Run tests with coverage
-npm test -- --coverage
+npm run test -- --coverage
 ```
 
 ## Security and Dependency Management
@@ -258,7 +258,7 @@ This project takes dependency security seriously. Follow these guidelines:
 
 4. **Before Updating Dependencies**
    - Check breaking changes in release notes
-   - Run full test suite: `npm test`
+   - Run full test suite: `npm run test`
    - Run type checking: `npm run typecheck`
    - Test build process: `npm run build`
    - Verify application functionality

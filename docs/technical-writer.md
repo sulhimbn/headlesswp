@@ -18,6 +18,7 @@ This file serves as the long-term memory for the technical-writer autonomous age
 3. Update stale "Last Updated" dates
 4. Add missing code examples
 5. Improve unclear explanations
+6. Fix inconsistent npm script commands (missing `run` prefix)
 
 ### Documentation Standards
 - Keep language clear and concise
@@ -68,6 +69,14 @@ This file serves as the long-term memory for the technical-writer autonomous age
   - Copyright: "Seluruh hak cipta" (All rights reserved)
   - Notes about Indonesian localization in uiText.ts
 - Fixed PR #559 rebase conflict by applying changes on fresh branch
+
+### 2026-02-27
+- Found remaining inconsistent npm script commands in documentation
+- Fixed README.md: Added `run` prefix to `npm test` commands (4 occurrences)
+- Fixed docs/guides/development.md: Added `run` prefix to `npm test` commands (5 occurrences)
+- Fixed docs/guides/CONTRIBUTING.md: Added `run` prefix to `npm test` commands (4 occurrences)
+- Small atomic diff: 13 lines changed for consistency
+- Created PR #583
 
 ## Known Gaps
 - Some older documentation may have stale dates

@@ -67,7 +67,7 @@ curl http://localhost:8080/wp-json/wp/v2/posts
 # Run quality checks (optional)
 npm run lint          # Check code quality
 npm run typecheck     # Verify TypeScript types
-npm test             # Run test suite
+npm run test          # Run test suite
 ```
 
 **Having Issues?** See [Troubleshooting Guide](docs/TROUBLESHOOTING.md)
@@ -215,8 +215,8 @@ See `.env.example` for all available configuration options.
 ## Testing
 
 ```bash
-npm test              # Run all tests
-npm test:watch        # Run tests in watch mode
+npm run test              # Run all tests
+npm run test:watch        # Run tests in watch mode
 ```
 
 Test coverage:
@@ -228,7 +228,7 @@ Test coverage:
 
 1. Create a feature branch: `git checkout -b feature/your-feature`
 2. Make your changes
-3. Run quality checks: `npm run lint && npm run typecheck && npm test`
+3. Run quality checks: `npm run lint && npm run typecheck && npm run test`
 4. Commit and push
 5. Create Pull Request
 
