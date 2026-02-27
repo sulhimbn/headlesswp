@@ -39,6 +39,12 @@ DX Engineer focuses on improving developer experience through small, safe, measu
 
 ## Recent Work
 
+### 2026-02-27
+- **PR #580**: Add local Docker development environment with hot reload - resolves issue #551
+  - Created `Dockerfile.dev` for development mode with Next.js hot reload
+  - Created `docker-compose.dev.yml` override with source code volume mounting
+  - Updated `docs/guides/development.md` with Docker dev workflow
+
 ### 2026-02-26
 - **PR #522**: Dockerfile Node.js version alignment (commented - already resolved in main)
 - **PR #541**: Add SEO static assets (favicon.ico, robots.txt) - resolves issue #513

@@ -1,0 +1,53 @@
+# Docker Compose override for local development with hot reload
+# Usage: docker-compose -f docker-compose.yml -f docker-compose.dev.yml up
+
+services:
+  wordpress:
+    ports:
+      - "8080:80"
+
+  db:
+    ports:
+      - "3306:3306"
+
+  phpmyadmin:
+    ports:
+      - "8081:80"
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+      args:
+        NEXT_PUBLIC_WORDPRESS_URL: http://wordpress:80
+        NEXT_PUBLIC_WORDPRESS_API_URL: http://wordpress:80/wp-json
+        NEXT_PUBLIC_SITE_URL: http://localhost:3000
+        NEXT_PUBLIC_SITE_URL_WWW: http://localhost:3000
+        NODE_ENV: development
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: development
+      NEXT_PUBLIC_WORDPRESS_URL: http://wordpress:80
+      NEXT_PUBLIC_WORDPRESS_API_URL: http://wordpress:80/wp-json
+      NEXT_PUBLIC_SITE_URL: http://localhost:3000
+      NEXT_PUBLIC_SITE_URL_WWW: http://localhost:3000
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/.next
+    depends_on:
+      wordpress:
+        condition: service_healthy
+    networks:
+      - wp_network
+    command: npm run dev
+    develop:
+      watch:
+        - path: .
+          target: /app
+          ignore:
+            - node_modules/**
+            - .next/**
+            - "*.log"
+            - ".env*"

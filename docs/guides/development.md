@@ -8,6 +8,50 @@ Comprehensive guide for developing HeadlessWP. This guide covers development wor
 
 For initial setup and prerequisites, see the main [README](../../README.md).
 
+### Docker Development with Hot Reload
+
+This project includes a Docker development environment with hot reload support for the Next.js frontend.
+
+#### Starting Development Environment
+
+```bash
+# Start all services including frontend with hot reload
+docker-compose -f docker-compose.yml -f docker-compose.dev.yml up -d --build
+
+# View logs
+docker-compose -f docker-compose.yml -f docker-compose.dev.yml logs -f frontend
+
+# Stop services
+docker-compose -f docker-compose.yml -f docker-compose.dev.yml down
+```
+
+#### How Hot Reload Works
+
+The development configuration:
+- Uses `Dockerfile.dev` which runs `npm run dev` (Next.js dev server)
+- Mounts the source code as a volume (`.:/app`)
+- Preserves `node_modules` and `.next` in anonymous volumes to avoid overwriting
+- Changes to source files trigger automatic rebuild
+
+#### Accessing Services
+
+- **Frontend**: http://localhost:3000 (with hot reload)
+- **WordPress**: http://localhost:8080
+- **phpMyAdmin**: http://localhost:8081
+
+#### Troubleshooting
+
+```bash
+# Rebuild after adding new dependencies
+docker-compose -f docker-compose.yml -f docker-compose.dev.yml build frontend --no-cache
+
+# Clean volumes if having issues
+docker-compose -f docker-compose.yml -f docker-compose.dev.yml down -v
+
+# Check frontend logs
+docker-compose -f docker-compose.yml -f docker-compose.dev.yml logs frontend
+```
+
 ### Daily Development Workflow
 
 ```bash
