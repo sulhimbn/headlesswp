@@ -65,4 +65,7 @@ npm run typecheck
 ## Notes
 - Issue #242: Accessibility audit - in progress (adding automated tests)
 - Issue #36: Responsive Design - existing implementation is solid
+
+## Recent Improvements (2026-02-27)
+- Added `rounded-[var(--radius-sm)]` to Badge Link focus styles for consistency with other components
 - Use @ts-expect-error for jest-axe import (types not available in package)
