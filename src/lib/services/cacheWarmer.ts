@@ -1,5 +1,5 @@
 import { wordpressAPI } from '../wordpress';
-import { cacheManager, CACHE_TTL } from '../cache';
+import { cacheManager, CACHE_TTL, cacheKeys } from '../cache';
 import { logger } from '@/lib/utils/logger';
 import type { ICacheManager } from '@/lib/api/ICacheManager';
 
@@ -62,7 +62,8 @@ class CacheWarmer {
 
   private async warmLatestPosts(): Promise<number> {
     const startTime = Date.now();
-    await wordpressAPI.getPosts({ per_page: 6 });
+    const posts = await wordpressAPI.getPosts({ per_page: 6 });
+    this.cacheManager.set(cacheKeys.posts(), posts, CACHE_TTL.POSTS);
     return Date.now() - startTime;
   }
 
