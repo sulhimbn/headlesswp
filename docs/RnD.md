@@ -5,6 +5,18 @@ This document tracks R&D activities and improvements made to the headlesswp proj
 
 ## Completed Work
 
+### 2026-02-27
+- **Issue**: #592 - QA: Fix test worker graceful exit (timer leak)
+- **Action**: Fixed timer leak in telemetry module by adding NODE_ENV check and unref() support
+- **Files Changed**:
+  - `jest.setup.js`: Added setInterval override to unref timers + NODE_ENV=test
+  - `src/lib/api/telemetry.ts`: Added NODE_ENV check to skip timer in test, added unref() call
+- **PR**: https://github.com/sulhimbn/headlesswp/pull/604
+- **Verification**:
+  - Lint: PASS
+  - Typecheck: PASS
+  - Tests: 2076 passed
+
 ### 2026-02-26
 - **Issue**: Existing PR #535 verification
 - **Action**: Verified PR is up to date with main, no conflicts, ready for merge
