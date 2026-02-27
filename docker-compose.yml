@@ -17,6 +17,10 @@ services:
       - wp_network
     mem_limit: 512m
     cpus: '1.0'
+    security_opt:
+      - no-new-privileges:true
+    tmpfs:
+      - /tmp:size=32m
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:80"]
       interval: 30s
@@ -36,6 +40,10 @@ services:
       - wp_network
     mem_limit: 1g
     cpus: '1.0'
+    security_opt:
+      - no-new-privileges:true
+    tmpfs:
+      - /tmp:size=32m
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}"]
       interval: 30s
@@ -56,6 +64,11 @@ services:
       - wp_network
     mem_limit: 256m
     cpus: '0.5'
+    read_only: true
+    tmpfs:
+      - /tmp:size=16m
+    security_opt:
+      - no-new-privileges:true
 
   frontend:
     build:
