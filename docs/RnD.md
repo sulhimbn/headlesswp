@@ -6,6 +6,19 @@ This document tracks R&D activities and improvements made to the headlesswp proj
 ## Completed Work
 
 ### 2026-02-27
+- **Issue**: #648 - DX: Add runtime environment validation on startup
+- **Action**: Created env validation module and health endpoint
+- **Files Changed**:
+  - `src/lib/config/envValidation.ts`: New file - Environment validation module (118 lines)
+  - `src/app/api/health/environment/route.ts`: New file - Health endpoint for environment status (28 lines)
+  - `src/app/layout.tsx`: Added assertEnvironment() call on app initialization
+- **PR**: https://github.com/sulhimbn/headlesswp/pull/658
+- **Verification**:
+  - Lint: PASS
+  - Typecheck: PASS
+  - Tests: 2118 passed
+
+### 2026-02-27
 - **Issue**: #594 - DX: Create automated stale branch cleanup workflow
 - **Action**: Created .github/workflows/stale-branches.yml using actions/stale@v9
 - **Configuration**:
