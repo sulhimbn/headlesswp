@@ -19,6 +19,7 @@ import PersonalizedRecommendations from '@/components/post/PersonalizedRecommend
 import ReadingTracker from '@/components/post/ReadingTracker'
 import { calculateReadingTime } from '@/lib/utils/readingTime'
 import SocialShare from '@/components/ui/SocialShare'
+import ReadingProgress from '@/components/ui/ReadingProgress'
 
 const Footer = dynamic(() => import('@/components/layout/Footer'), {
   loading: () => <div className="h-64 bg-[hsl(var(--color-background-dark))] mt-12" aria-hidden="true" />
@@ -125,6 +126,7 @@ export default async function PostPage({ params }: { params: { slug: string } })
   return (
     <div className="min-h-screen bg-[hsl(var(--color-background))]">
       <Header />
+      <ReadingProgress targetId="article-content" />
 
       <main id="main-content" aria-labelledby="page-heading" className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <ReadingTracker
@@ -171,7 +173,7 @@ export default async function PostPage({ params }: { params: { slug: string } })
           {post.title.rendered}
         </h1>
         <Breadcrumb items={breadcrumbItems} />
-        <article aria-labelledby="article-heading" className="bg-[hsl(var(--color-surface))] rounded-[var(--radius-lg)] shadow-[var(--shadow-lg)] overflow-hidden mt-4">
+        <article aria-labelledby="article-heading" id="article-content" className="bg-[hsl(var(--color-surface))] rounded-[var(--radius-lg)] shadow-[var(--shadow-lg)] overflow-hidden mt-4">
           {post.featured_media > 0 && (
             <div className="relative h-64 sm:h-80 md:h-96 lg:h-[450px]">
               <Image
