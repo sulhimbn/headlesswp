@@ -179,3 +179,23 @@
 - Author profile shows avatar_urls['96'], name, description, and link
 - Route naming: /author/[id]
 - Pagination basePath should include the author id for proper navigation
+
+## Implemented Features (Feb 2026)
+
+### Article Table of Contents
+- **Status**: Complete
+- **Features**:
+  - Added table of contents to post detail pages
+  - Automatically extracts h2-h6 headings from article content
+  - Shows only when article has 3+ headings
+  - Adds IDs to headings for smooth scroll navigation
+  - Indented subheadings based on heading level
+  - Smooth scroll to section on click
+  - Indonesian label: "Daftar Isi"
+
+## Patterns & Conventions (Table of Contents)
+- Use extractHeadings(htmlContent) to extract headings
+- Use shouldShowToc(headings, minHeadings) to determine if TOC should show
+- Use addIdsToHeadings(htmlContent) to add IDs to headings in content
+- TableOfContents component with headings prop
+- Min 3 headings threshold for showing TOC

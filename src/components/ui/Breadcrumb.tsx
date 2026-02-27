@@ -20,7 +20,7 @@ const arePropsEqual = createArePropsEqual<BreadcrumbProps>(BREADCRUMB_PROPS);
 
 function BreadcrumbComponent({ items }: BreadcrumbProps) {
   return (
-    <nav className="flex" aria-label="Breadcrumb">
+    <nav className="flex" aria-label={UI_TEXT.breadcrumb.ariaLabel}>
       <ol className="inline-flex items-center space-x-1 md:space-x-3">
         <li className="inline-flex items-center">
           <Link

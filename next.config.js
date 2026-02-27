@@ -59,12 +59,12 @@ const nextConfig = {
             value: 'strict-origin-when-cross-origin'
           },
           {
-            key: 'Permissions-Policy',
-            value: 'camera=(), microphone=(), geolocation=()'
+            key: 'X-Permitted-Cross-Domain-Policies',
+            value: 'none'
           },
           {
-            key: 'Content-Security-Policy',
-            value: "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://mitrabantennews.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://mitrabantennews.com https://www.mitrabantennews.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
+            key: 'Permissions-Policy',
+            value: 'camera=(), microphone=(), geolocation=()'
           }
         ]
       },

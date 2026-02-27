@@ -20,6 +20,8 @@ import ReadingTracker from '@/components/post/ReadingTracker'
 import { calculateReadingTime } from '@/lib/utils/readingTime'
 import SocialShare from '@/components/ui/SocialShare'
 import ReadingProgress from '@/components/ui/ReadingProgress'
+import TableOfContents from '@/components/ui/TableOfContents'
+import { extractHeadings, shouldShowToc, addIdsToHeadings } from '@/lib/utils/tableOfContents'
 
 const Footer = dynamic(() => import('@/components/layout/Footer'), {
   loading: () => <div className="h-64 bg-[hsl(var(--color-background-dark))] mt-12" aria-hidden="true" />
@@ -98,6 +100,10 @@ export default async function PostPage({ params }: { params: { slug: string } })
   const { mediaUrl, categoriesDetails, tagsDetails, authorDetails } = post
 
   const readingTime = calculateReadingTime(post.content.rendered)
+
+  const headings = extractHeadings(post.content.rendered)
+  const showToc = shouldShowToc(headings)
+  const contentWithIds = showToc ? addIdsToHeadings(post.content.rendered) : post.content.rendered
 
   const breadcrumbItems = [
     { label: 'Berita', href: '/berita' },
@@ -235,9 +241,13 @@ export default async function PostPage({ params }: { params: { slug: string } })
               />
             </div>
 
+            {showToc && (
+              <TableOfContents headings={headings} className="mb-6" />
+            )}
+
             <div
               className="prose prose-lg max-w-none text-[hsl(var(--color-text-secondary))]"
-              dangerouslySetInnerHTML={{ __html: sanitizeHTML(post.content.rendered, 'full') }}
+              dangerouslySetInnerHTML={{ __html: sanitizeHTML(contentWithIds, 'full') }}
             />
 
             {tagsDetails.length > 0 && (
