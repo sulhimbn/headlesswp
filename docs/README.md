@@ -13,14 +13,14 @@ Getting started and development guides
 
 ### [Planning](./planning/)
 Roadmaps, status reports, and planning documents
-- [Roadmap](./planning/ROADMAP.md) - Current project roadmap
-- [Detailed Roadmap](./planning/detailed-roadmap.md) - Comprehensive feature breakdown
-- [Roadmap Recommendations](./planning/roadmap-recommendations.md) - Strategic recommendations
-- [Project Status](./planning/project-status.md) - Current project status
-- [Project Dashboard](./planning/PROJECT_DASHBOARD.md) - Project metrics and KPIs
-- [Critical Action Items](./planning/critical-action-items.md) - Urgent tasks and decisions
-- [Weekly Status Updates](./planning/weekly-status-update.md) - Regular status updates
-- [Archived Reports](./planning/archived-project-status-nov14.md) - Historical status reports
+- [Roadmap](../roadmap.md) - Current project roadmap
+- [Detailed Roadmap](./planning/archive/detailed-roadmap.md) - Comprehensive feature breakdown
+- [Roadmap Recommendations](./planning/archive/roadmap-recommendations.md) - Strategic recommendations
+- [Project Status](./planning/archive/project-status.md) - Current project status
+- [Project Dashboard](./planning/archive/PROJECT_DASHBOARD.md) - Project metrics and KPIs
+- [Critical Action Items](./planning/archive/critical-action-items.md) - Urgent tasks and decisions
+- [Weekly Status Updates](./planning/archive/weekly-status-update.md) - Regular status updates
+- [Archived Reports](./planning/archive/archived-project-status-nov14.md) - Historical status reports
 
 ### [Backlog](./backlog/)
 Tasks, features, and backlog management
@@ -41,7 +41,7 @@ Project governance, policies, and agent workflows
 ## 🚀 Quick Start
 
 1. **New Contributors**: Start with [Development Guide](./guides/development.md)
-2. **Project Overview**: Read [Roadmap](./planning/ROADMAP.md)
+2. **Project Overview**: Read [Roadmap](../roadmap.md)
 3. **Contributing**: Review [Contributing Guide](./guides/CONTRIBUTING.md)
 4. **Security**: Understand [Security Policies](./guides/SECURITY.md)
 
@@ -61,5 +61,5 @@ Project governance, policies, and agent workflows
 
 ---
 
-**Last Updated**: 2026-02-25
+**Last Updated**: 2026-02-27
 **Maintained By**: HeadlessWP Team
