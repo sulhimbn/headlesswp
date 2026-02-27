@@ -18,6 +18,7 @@ import type { Metadata } from 'next'
 import PersonalizedRecommendations from '@/components/post/PersonalizedRecommendations'
 import ReadingTracker from '@/components/post/ReadingTracker'
 import { calculateReadingTime } from '@/lib/utils/readingTime'
+import SocialShare from '@/components/ui/SocialShare'
 
 const Footer = dynamic(() => import('@/components/layout/Footer'), {
   loading: () => <div className="h-64 bg-[hsl(var(--color-background-dark))] mt-12" aria-hidden="true" />
@@ -221,9 +222,16 @@ export default async function PostPage({ params }: { params: { slug: string } })
               )}
             </div>
 
-            <h1 id="article-heading" className="text-4xl font-bold text-[hsl(var(--color-text-primary))] mb-6">
+            <h1 id="article-heading" className="text-4xl font-bold text-[hsl(var(--color-text-primary))] mb-4">
               {post.title.rendered}
             </h1>
+
+            <div className="mb-6">
+              <SocialShare
+                title={stripHtml(post.title.rendered)}
+                url={`/berita/${post.slug}`}
+              />
+            </div>
 
             <div
               className="prose prose-lg max-w-none text-[hsl(var(--color-text-secondary))]"
