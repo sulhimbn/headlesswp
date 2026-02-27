@@ -28,6 +28,11 @@ This document serves as long-term memory for the security-engineer autonomous ag
 ## Implemented Security Improvements
 
 ### 2026-02-27
+- **Dockerfile.dev non-root user** (PR #597):
+  - Added non-root user (nextjs) to development Docker container
+  - Follows principle of least privilege
+  - Aligns with production Dockerfile security practices
+
 - **Extended Docker Compose security hardening** (PR #584):
   - Added no-new-privileges security option to WordPress, MySQL, and phpMyAdmin services
   - Added tmpfs mount for /tmp on all services (prevents temp file attacks)
