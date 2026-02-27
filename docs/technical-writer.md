@@ -85,6 +85,14 @@ This file serves as the long-term memory for the technical-writer autonomous age
 - Small atomic diff: 2 files, +2/-1 lines
 - Created PR #614
 
+### 2026-02-27 (Fourth Session)
+- Found missing `check` npm script in README.md
+- The `check` script exists in package.json (runs lint + typecheck + test) but was not documented
+- Added `npm run check` to Available Scripts section in README.md
+- Updated Contributing section to use simplified `npm run check` command
+- Small atomic diff: 2 insertions, 1 deletion
+- Created issue #626 and PR #627
+
 ## Known Gaps
 - Some older documentation may have stale dates
 - Cross-references should be verified periodically
