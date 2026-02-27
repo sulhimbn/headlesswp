@@ -35,6 +35,9 @@ This document serves as the long-term memory for the frontend-engineer autonomou
 3. Run lint, typecheck, and build before creating PR
 4. Use JSON-LD for SEO improvements (schema.org)
 
+## Testing Issues Fixed
+1. ServiceStatus test (issue #546): Changed from deprecated button.click() to fireEvent.click() - Already resolved in codebase
+
 ## Common Issues Found
 1. Conditional ref assignment in maps (works but not ideal pattern)
 2. Empty query searches trigger onSearch callback (intentional behavior)
