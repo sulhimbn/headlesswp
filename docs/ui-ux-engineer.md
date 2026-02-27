@@ -6,7 +6,7 @@
 - Component UI/UX improvements
 - Mobile-first design patterns
 
-## Current State (2026-02-26)
+## Current State (2026-02-27)
 
 ### Implemented Features
 - Mobile hamburger menu with keyboard navigation
@@ -17,6 +17,7 @@
 - Reduced motion support in globals.css
 - ARIA labels on buttons and navigation
 - MetaInfo component with aria-label for screen reader context
+- Color contrast improvements for WCAG AA compliance (text-muted, text-secondary)
 
 ### Testing Setup
 - Added jest-axe for automated accessibility testing
