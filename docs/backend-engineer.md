@@ -26,3 +26,5 @@
 - Issue #547: Docker image versions pinned to patch level (WordPress 6.7.2, MySQL 8.0.44, phpMyAdmin 5.2.2)
 - PR #590: Pin Docker image versions to patch level for #547
 - PR #644: Fixed CPU usage calculation in performanceMetrics.ts - was always returning 0, now properly calculates using os.cpus() API
+- Issue #648: Add runtime environment validation on startup - implemented envValidation.ts module
+- PR #661: Add runtime environment validation module for #648
