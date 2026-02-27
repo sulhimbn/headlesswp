@@ -78,6 +78,15 @@ This file serves as the long-term memory for the technical-writer autonomous age
 - Small atomic diff: 13 lines changed for consistency
 - Created PR #583
 
+### 2026-02-27 (Second Session)
+- Proactive scan found broken links in docs/README.md
+- Fixed Roadmap link from non-existent `./planning/ROADMAP.md` to existing `../roadmap.md`
+- Fixed Detailed Roadmap link to archived version `./planning/archive/detailed-roadmap.md`
+- Fixed all archived planning doc links to use correct `./planning/archive/` prefix
+- Updated Last Updated date to 2026-02-27
+- Small atomic diff: 10 lines changed
+- Created PR #596
+
 ## Known Gaps
 - Some older documentation may have stale dates
 - Cross-references should be verified periodically
