@@ -5,6 +5,10 @@ describe('UI_TEXT constants', () => {
     it('should have home text', () => {
       expect(UI_TEXT.breadcrumb.home).toBe('Beranda');
     });
+
+    it('should have ariaLabel text', () => {
+      expect(UI_TEXT.breadcrumb.ariaLabel).toBe('Navigasi breadcrumb');
+    });
   });
 
   describe('postCard', () => {
@@ -491,6 +495,12 @@ describe('UI_TEXT constants', () => {
     it('should have navigation section', () => {
       expect(UI_TEXT.header.navigation.home).toBe('Beranda');
       expect(UI_TEXT.header.navigation.news).toBe('Berita');
+    });
+  });
+
+  describe('icon', () => {
+    it('should have loading text', () => {
+      expect(UI_TEXT.icon.loading).toBe('Memuat');
     });
   });
 
