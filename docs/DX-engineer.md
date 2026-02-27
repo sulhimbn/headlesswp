@@ -45,6 +45,10 @@ DX Engineer focuses on improving developer experience through small, safe, measu
   - Created `docker-compose.dev.yml` override with source code volume mounting
   - Updated `docs/guides/development.md` with Docker dev workflow
 
+- **PR #598**: Update Node.js version to 20+ in documentation
+  - Updated README.md and CONTRIBUTING.md to reflect Node.js 20+ requirement
+  - Aligns documentation with .nvmrc and CI configuration
+
 ### 2026-02-26
 - **PR #522**: Dockerfile Node.js version alignment (commented - already resolved in main)
 - **PR #541**: Add SEO static assets (favicon.ico, robots.txt) - resolves issue #513
