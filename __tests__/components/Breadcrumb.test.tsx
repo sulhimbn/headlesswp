@@ -6,7 +6,7 @@ describe('Breadcrumb Component', () => {
   describe('Rendering - Basic Cases', () => {
     test('renders navigation element', () => {
       render(<Breadcrumb items={[]} />)
-      const nav = screen.getByRole('navigation', { name: 'Breadcrumb' })
+      const nav = screen.getByRole('navigation', { name: 'Navigasi breadcrumb' })
       expect(nav).toBeInTheDocument()
     })
 
@@ -123,8 +123,8 @@ describe('Breadcrumb Component', () => {
   describe('Accessibility', () => {
     test('nav has correct aria-label', () => {
       render(<Breadcrumb items={[]} />)
-      const nav = screen.getByRole('navigation', { name: 'Breadcrumb' })
-      expect(nav).toHaveAccessibleName('Breadcrumb')
+      const nav = screen.getByRole('navigation', { name: 'Navigasi breadcrumb' })
+      expect(nav).toHaveAccessibleName('Navigasi breadcrumb')
     })
 
     test('breadcrumb links have focus styles', () => {
@@ -175,7 +175,7 @@ describe('Breadcrumb Component', () => {
 
     test('navigation is flex container', () => {
       const { container } = render(<Breadcrumb items={[]} />)
-      const nav = screen.getByRole('navigation', { name: 'Breadcrumb' })
+      const nav = screen.getByRole('navigation', { name: 'Navigasi breadcrumb' })
       expect(nav).toHaveClass('flex')
     })
 

@@ -75,7 +75,7 @@ describe('Button Component', () => {
       render(<Button isLoading>Loading</Button>)
       const button = screen.getByRole('button')
       expect(button.querySelector('.animate-spin')).toBeInTheDocument()
-      const loadingIcon = screen.getByRole('status', { name: 'Loading' })
+      const loadingIcon = screen.getByRole('status', { name: 'Memuat' })
       expect(loadingIcon).toBeInTheDocument()
     })
 
