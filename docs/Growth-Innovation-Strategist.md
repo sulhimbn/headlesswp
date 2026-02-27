@@ -120,3 +120,22 @@
 - Component: PersonalizedRecommendations with loading states
 - Component: ReadingTracker to automatically track post views
 - Hook: useReadingTracker for tracking reading patterns
+
+## Implemented Features (Feb 2026)
+
+### Social Sharing Buttons
+- **PR**: #588
+- **Status**: Complete
+- **Features**:
+  - Added social sharing buttons to post detail pages
+  - Supports Facebook, Twitter, WhatsApp, and copy link
+  - Located below article title for easy access
+  - Opens share dialogs in new windows
+  - Copy link uses clipboard API with fallback
+
+## Patterns & Conventions (Social Sharing)
+- Use SocialShare component with title and url props
+- Component uses SITE_URL for full URLs
+- Share URLs use platform-specific sharing APIs
+- All buttons have proper aria-labels in Indonesian
+- UI text added to UI_TEXT.postDetail.share and UI_TEXT.postDetail.shareTo
