@@ -28,6 +28,11 @@ This document serves as long-term memory for the security-engineer autonomous ag
 ## Implemented Security Improvements
 
 ### 2026-02-27
+- **Replace hardcoded production URLs in .env.example** (PR #613):
+  - Changed mitrabantennews.com to your-domain.com placeholders
+  - Prevents information disclosure of production domain names
+  - Developers should configure their own domain instead of seeing production defaults
+
 - **Dockerfile.dev non-root user** (PR #597):
   - Added non-root user (nextjs) to development Docker container
   - Follows principle of least privilege
