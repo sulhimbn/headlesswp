@@ -35,7 +35,22 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }
 
   try {
-    const postsResult = await standardizedAPI.getAllPosts({ per_page: 100 })
+    const [postsResult, categoriesResult] = await Promise.all([
+      standardizedAPI.getAllPosts({ per_page: 100 }),
+      standardizedAPI.getAllCategories(),
+    ])
+
+    const sitemapEntries: MetadataRoute.Sitemap = [...staticPages]
+
+    if (isApiResultSuccessful(categoriesResult)) {
+      const categoryUrls: MetadataRoute.Sitemap = categoriesResult.data.map((category) => ({
+        url: `${baseUrl}/kategori/${category.slug}`,
+        lastModified: new Date(),
+        changeFrequency: 'weekly' as const,
+        priority: 0.7,
+      }))
+      sitemapEntries.push(...categoryUrls)
+    }
 
     if (isApiResultSuccessful(postsResult)) {
       const postUrls: MetadataRoute.Sitemap = postsResult.data.map((post) => ({
@@ -44,11 +59,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         changeFrequency: 'weekly' as const,
         priority: 0.8,
       }))
-
-      const sitemap = [...staticPages, ...postUrls]
-      cacheManager.set(cacheKeys.sitemap(), sitemap, CACHE_TTL.SITEMAP)
-      return sitemap
+      sitemapEntries.push(...postUrls)
     }
+
+    cacheManager.set(cacheKeys.sitemap(), sitemapEntries, CACHE_TTL.SITEMAP)
+    return sitemapEntries
   } catch (error) {
     logger.error('Failed to generate sitemap', error, { module: 'sitemap' })
   }
