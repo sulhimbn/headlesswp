@@ -7,6 +7,7 @@ import PostPage from '@/app/berita/[slug]/page';
 import type { PostWithDetails, PostWithMediaUrl } from '@/lib/services/IPostService';
 import { render, screen } from '@testing-library/react';
 import { WordPressPost, WordPressCategory, WordPressTag, WordPressAuthor } from '@/types/wordpress';
+import { UI_TEXT } from '@/lib/constants/uiText';
 
 jest.mock('@/lib/services/enhancedPostService');
 
@@ -168,7 +169,7 @@ describe('Page Components - Critical Path Testing', () => {
       const Page = await BeritaPage({ searchParams: { page: '2' } });
       render(Page);
 
-      const paginationElements = screen.getAllByLabelText(/page/i);
+      const paginationElements = screen.getAllByLabelText(new RegExp(UI_TEXT.pagination.page, 'i'));
       expect(paginationElements.length).toBeGreaterThan(0);
     });
 
@@ -181,7 +182,7 @@ describe('Page Components - Critical Path Testing', () => {
       const Page = await BeritaPage({ searchParams: { page: '1' } });
       render(Page);
 
-      expect(screen.queryByLabelText(/page/i)).not.toBeInTheDocument();
+      expect(screen.queryByLabelText(new RegExp(UI_TEXT.pagination.page, 'i'))).not.toBeInTheDocument();
     });
 
     it('should show empty state when no posts available', async () => {

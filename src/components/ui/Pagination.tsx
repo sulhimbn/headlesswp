@@ -53,12 +53,12 @@ function PaginationComponent({ currentPage, totalPages, basePath, query = {} }: 
   }
 
   return (
-    <nav className="flex items-center justify-center space-x-2 mt-8" aria-label="Pagination">
+    <nav className="flex items-center justify-center space-x-2 mt-8" aria-label={UI_TEXT.pagination.ariaLabel}>
       {currentPage > 1 && (
         <Link
           href={buildHref(currentPage - 1)}
           className="px-3 py-2 text-sm font-medium text-[hsl(var(--color-text-secondary))] bg-[hsl(var(--color-surface))] border border-[hsl(var(--color-border))] rounded-[var(--radius-md)] hover:bg-[hsl(var(--color-secondary-dark))] transition-colors duration-[var(--transition-fast)] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--color-primary))] focus:ring-offset-2"
-          aria-label="Previous page"
+          aria-label={UI_TEXT.pagination.previousPage}
         >
           ← {UI_TEXT.pagination.previous}
         </Link>
@@ -66,7 +66,7 @@ function PaginationComponent({ currentPage, totalPages, basePath, query = {} }: 
 
       {pages.map((page, index) => (
         page === '...' ? (
-          <span key={`ellipsis-${index}`} className="px-3 py-2 text-sm text-[hsl(var(--color-text-secondary))]" aria-label="More pages">
+          <span key={`ellipsis-${index}`} className="px-3 py-2 text-sm text-[hsl(var(--color-text-secondary))]" aria-label={UI_TEXT.pagination.morePages}>
             ...
           </span>
         ) : (
@@ -78,7 +78,7 @@ function PaginationComponent({ currentPage, totalPages, basePath, query = {} }: 
                 ? 'bg-[hsl(var(--color-primary))] text-white'
                 : 'bg-[hsl(var(--color-surface))] text-[hsl(var(--color-text-secondary))] border border-[hsl(var(--color-border))] hover:bg-[hsl(var(--color-secondary-dark))]'
             }`}
-            aria-label={`Page ${page}`}
+            aria-label={`${UI_TEXT.pagination.page} ${page}`}
             aria-current={currentPage === page ? 'page' : undefined}
           >
             {page}
@@ -90,7 +90,7 @@ function PaginationComponent({ currentPage, totalPages, basePath, query = {} }: 
         <Link
           href={buildHref(currentPage + 1)}
           className="px-3 py-2 text-sm font-medium text-[hsl(var(--color-text-secondary))] bg-[hsl(var(--color-surface))] border border-[hsl(var(--color-border))] rounded-[var(--radius-md)] hover:bg-[hsl(var(--color-secondary-dark))] transition-colors duration-[var(--transition-fast)] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--color-primary))] focus:ring-offset-2"
-          aria-label="Next page"
+          aria-label={UI_TEXT.pagination.nextPage}
         >
           {UI_TEXT.pagination.next} →
         </Link>
