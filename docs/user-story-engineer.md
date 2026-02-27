@@ -46,3 +46,12 @@ This file serves as the long-term memory for the user-story-engineer autonomous 
 - Link to related issues when possible
 - Issue #546 about fixing ServiceStatus test was originally a QA issue but picked up as a small improvement
 - The QA agent had previously added tests for ServiceStatus (PR #495), this fix resolves the React warning
+
+### 2026-02-27
+- Extracted hardcoded service status labels to UI_TEXT constants
+- Added `serviceStatus` section to UI_TEXT with three status labels (healthy, degraded, down)
+- Updated ServiceStatus component to use UI_TEXT instead of hardcoded strings
+- This improves maintainability by centralizing UI text
+- All tests passed (2068 tests), lint passed, typecheck passed
+- PR #582 created with user-story-engineer label
+- Process: Scanned for hardcoded text in components, found in ServiceStatus.tsx, extracted to constants
