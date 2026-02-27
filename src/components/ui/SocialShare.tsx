@@ -1,4 +1,4 @@
-import { memo } from 'react'
+import { memo, useState } from 'react'
 import { SITE_URL } from '@/lib/api/config'
 
 export type SocialPlatform = 'facebook' | 'twitter' | 'whatsapp' | 'copy'
@@ -11,7 +11,7 @@ interface SocialShareProps {
 
 interface SharePlatform {
   name: string
-  icon: 'facebook' | 'twitter' | 'whatsapp' | 'link'
+  icon: 'facebook' | 'twitter' | 'whatsapp' | 'link' | 'check'
   getShareUrl: (title: string, url: string) => string
   color: string
 }
@@ -38,6 +38,7 @@ const platforms: SharePlatform[] = [
 ]
 
 function SocialShareComponent({ title, url, className = '' }: SocialShareProps) {
+  const [copied, setCopied] = useState(false)
   const fullUrl = url.startsWith('http') ? url : `${SITE_URL}${url}`
 
   const handleShare = (platform: SharePlatform) => {
@@ -48,6 +49,8 @@ function SocialShareComponent({ title, url, className = '' }: SocialShareProps) 
   const handleCopyLink = async () => {
     try {
       await navigator.clipboard.writeText(fullUrl)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
     } catch {
       const input = document.createElement('input')
       input.value = fullUrl
@@ -55,6 +58,8 @@ function SocialShareComponent({ title, url, className = '' }: SocialShareProps) 
       input.select()
       document.execCommand('copy')
       document.body.removeChild(input)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
     }
   }
 
@@ -74,18 +79,22 @@ function SocialShareComponent({ title, url, className = '' }: SocialShareProps) 
         ))}
         <button
           onClick={handleCopyLink}
-          className="p-2 rounded-full bg-[hsl(var(--color-surface))] text-[hsl(var(--color-text-secondary))] hover:bg-[hsl(var(--color-primary))] hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-[hsl(var(--color-primary))] focus:ring-offset-2"
-          aria-label="Salin tautan"
-          title="Salin tautan"
+          className={`p-2 rounded-full bg-[hsl(var(--color-surface))] text-[hsl(var(--color-text-secondary))] transition-colors focus:outline-none focus:ring-2 focus:ring-[hsl(var(--color-primary))] focus:ring-offset-2 ${
+            copied 
+              ? 'bg-[hsl(var(--color-success))] text-white' 
+              : 'hover:bg-[hsl(var(--color-primary))] hover:text-white'
+          }`}
+          aria-label={copied ? 'Tautan disalin' : 'Salin tautan'}
+          title={copied ? 'Tautan disalin' : 'Salin tautan'}
         >
-          <SocialIcon type="link" />
+          <SocialIcon type={copied ? 'check' : 'link'} />
         </button>
       </div>
     </div>
   )
 }
 
-function SocialIcon({ type }: { type: 'facebook' | 'twitter' | 'whatsapp' | 'link' }) {
+function SocialIcon({ type }: { type: 'facebook' | 'twitter' | 'whatsapp' | 'link' | 'check' }) {
   const className = 'w-5 h-5'
 
   switch (type) {
@@ -111,6 +120,12 @@ function SocialIcon({ type }: { type: 'facebook' | 'twitter' | 'whatsapp' | 'lin
       return (
         <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+        </svg>
+      )
+    case 'check':
+      return (
+        <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
         </svg>
       )
   }
