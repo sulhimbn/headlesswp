@@ -96,5 +96,10 @@ export const UI_TEXT = {
     healthy: 'Layanan beroperasi normal',
     degraded: 'Layanan mengalami gangguan',
     down: 'Layanan tidak tersedia'
+  },
+  authorPage: {
+    website: 'Website',
+    articlesBy: 'Artikel oleh',
+    noArticles: 'Belum ada artikel dari penulis ini.'
   }
 } as const

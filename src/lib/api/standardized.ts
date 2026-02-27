@@ -57,6 +57,7 @@ export interface PostQueryParams {
   per_page?: number;
   category?: number;
   tag?: number;
+  author?: number;
   search?: string;
 }
 

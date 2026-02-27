@@ -351,6 +351,33 @@ export const enhancedPostService: IPostService = {
       totalPosts: result.pagination?.total ?? 0,
       totalPages: result.pagination?.totalPages ?? 0
     };
+  },
+
+  getPostsByAuthor: async (authorId: number, page: number = 1, perPage: number = 12): Promise<PaginatedPostsResult> => {
+    const result = await standardizedAPI.getAllPosts({ 
+      page,
+      per_page: perPage,
+      author: authorId
+    });
+
+    if (!isApiResultSuccessful(result)) {
+      return { posts: [], totalPosts: 0, totalPages: 0 };
+    }
+
+    const validation = dataValidator.validatePosts(result.data);
+    
+    if (!isValidationResultValid(validation)) {
+      logger.error('Invalid author posts data', undefined, { module: 'enhancedPostService', errors: validation.errors });
+      return { posts: [], totalPosts: 0, totalPages: 0 };
+    }
+
+    const enrichedPosts = await enrichPostsWithMediaUrls(validation.data);
+
+    return {
+      posts: enrichedPosts,
+      totalPosts: result.pagination?.total ?? 0,
+      totalPages: result.pagination?.totalPages ?? 0
+    };
   }
 };
 
