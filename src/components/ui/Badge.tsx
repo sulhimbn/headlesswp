@@ -33,7 +33,7 @@ function BadgeComponent({ children, variant = 'default', className = '', href }:
     return (
       <Link
         href={href}
-        className={`${combinedClassName} hover:opacity-80 transition-opacity duration-[var(--transition-fast)] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[hsl(var(--color-primary))]`}
+        className={`${combinedClassName} hover:opacity-80 transition-opacity duration-[var(--transition-fast)] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[hsl(var(--color-primary))] rounded-[var(--radius-sm)]`}
       >
         {children}
       </Link>
