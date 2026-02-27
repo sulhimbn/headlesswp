@@ -69,3 +69,16 @@ This file serves as the long-term memory for the user-story-engineer autonomous 
 - All tests passed (2076 tests), lint passed, typecheck passed
 - PR #605 created with user-story-engineer label
 - Process: Scanned components for hardcoded English aria-labels, found in Pagination.tsx, extracted to constants
+
+### 2026-02-27
+- Added missing PWA icons and assets for issue #646
+- Created icon-192.png (192x192) for PWA installation
+- Created icon-512.png (512x512) for PWA installation
+- Created apple-touch-icon.png (180x180) for Apple devices
+- Created og-image.jpg (1200x630) for social sharing preview
+- Created logo.png (512x512) for schema.org logo
+- Created scripts/generate-icons.js to regenerate icons if needed
+- This improves user experience by enabling PWA installation on mobile and proper social sharing
+- All tests passed (2118 tests), lint passed, typecheck passed
+- PR #659 created with user-story-engineer label
+- Process: Identified missing icons from manifest.json and layout.tsx, used jimp to generate placeholder icons
