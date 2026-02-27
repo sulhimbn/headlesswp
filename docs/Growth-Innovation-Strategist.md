@@ -139,3 +139,23 @@
 - Share URLs use platform-specific sharing APIs
 - All buttons have proper aria-labels in Indonesian
 - UI text added to UI_TEXT.postDetail.share and UI_TEXT.postDetail.shareTo
+
+## Implemented Features (Feb 2026)
+
+### Reading Progress Bar
+- **Status**: Complete
+- **Features**:
+  - Added reading progress bar at top of post detail pages
+  - Shows scroll progress as user reads through article
+  - Fixed position at top, doesn't interfere with content
+  - Uses primary color for the progress indicator
+  - Only shows when user has scrolled (progress > 0)
+  - Uses requestAnimationFrame for smooth updates
+  - Accessible with aria-valuenow, aria-valuemin, aria-valuemax
+
+## Patterns & Conventions (Reading Progress)
+- Use ReadingProgress component with optional targetId prop
+- Default targetId is 'article-content' for post pages
+- Component is memoized for performance
+- Uses passive event listeners for scroll performance
+- Cleanup on unmount removes event listeners
