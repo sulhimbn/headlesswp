@@ -19,8 +19,10 @@ services:
     cpus: '1.0'
     security_opt:
       - no-new-privileges:true
+    read_only: true
     tmpfs:
       - /tmp:size=32m
+      - /var/run:size=16m
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:80"]
       interval: 30s
@@ -42,8 +44,10 @@ services:
     cpus: '1.0'
     security_opt:
       - no-new-privileges:true
+    read_only: true
     tmpfs:
       - /tmp:size=32m
+      - /var/run:size=16m
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}"]
       interval: 30s
@@ -67,6 +71,7 @@ services:
     read_only: true
     tmpfs:
       - /tmp:size=16m
+      - /var/run:size=8m
     security_opt:
       - no-new-privileges:true
 
@@ -99,6 +104,7 @@ services:
     read_only: true
     tmpfs:
       - /tmp:size=64m
+      - /var/run:size=16m
     security_opt:
       - no-new-privileges:true
     healthcheck:
