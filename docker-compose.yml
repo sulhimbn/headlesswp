@@ -43,7 +43,7 @@ services:
       retries: 3
 
   phpmyadmin:
-    image: phpmyadmin/phpmyadmin:5.2
+    image: phpmyadmin/phpmyadmin:5.2.1
     ports:
       - "8081:80"
     environment:
