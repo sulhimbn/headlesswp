@@ -33,6 +33,12 @@ The AI Agent Engineer is responsible for:
 
 ## Improvements Log
 
+### 2026-02-27 - Seventh Improvement (PR #645)
+- Fixed branch name inconsistency in all agent prompts and documentation
+- Repository uses `agent-workspace` branch but documentation incorrectly referenced `agent`
+- Updated 12 prompt files (00.md through 11.md) and AUTONOMOUS_CODING_SYSTEM.md
+- All references now correctly use `agent-workspace` branch name
+
 ### 2026-02-27 - Sixth Improvement (PR #623)
 - Issue #534 identified: Naming inconsistency in oc-pr-handler.yml job name
 - Fix identified: Change "opencode - issue solver" to "opencode - pr handler"
