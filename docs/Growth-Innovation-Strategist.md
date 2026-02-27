@@ -199,3 +199,27 @@
 - Use addIdsToHeadings(htmlContent) to add IDs to headings in content
 - TableOfContents component with headings prop
 - Min 3 headings threshold for showing TOC
+
+## Implemented Features (Feb 2026)
+
+### AI-Powered Content Summarization (Issue #650)
+- **PR**: #662
+- **Status**: Complete
+- **Features**:
+  - Created summarization service supporting OpenAI, Anthropic, and local fallback
+  - Configuration via environment variables:
+    - `SUMMARY_PROVIDER` (openai, anthropic, local)
+    - `SUMMARY_API_KEY` (required for openai/anthropic)
+    - `SUMMARY_MODEL` (optional, defaults to gpt-3.5-turbo or claude-3-haiku)
+    - `SUMMARY_MAX_TOKENS`, `SUMMARY_TEMPERATURE`
+  - 7-day caching for summarized content
+  - API endpoint: GET `/api/summary/[id]`
+  - Returns: summary, originalLength, summaryLength, cached, generatedAt, config
+
+## Patterns & Conventions (AI Summarization)
+- Use summarizePost(postId, content) to generate summary
+- Use isSummarizationEnabled() to check if AI summarization is available
+- Use getSummarizationConfig() to get current config
+- Use clearSummaryCache(postId?) to clear cached summaries
+- Provider: 'local' is always available, 'openai'/'anthropic' need API key
+- Local fallback uses sentence extraction (first 2 sentences)
