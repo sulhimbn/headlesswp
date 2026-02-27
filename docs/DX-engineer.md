@@ -23,7 +23,8 @@ DX Engineer focuses on improving developer experience through small, safe, measu
 
 ### Development Workflow
 - Node version managed via `.nvmrc`
-- Standard npm scripts: `dev`, `build`, `lint`, `typecheck`, `test`
+- Standard npm scripts: `dev`, `build`, `lint`, `typecheck`, `test`, `check`
+- `check` script runs lint + typecheck + test in one command for quick verification
 
 ## Common Improvements
 1. Configuration files (tsconfig.json, eslint.config.js)
@@ -40,6 +41,10 @@ DX Engineer focuses on improving developer experience through small, safe, measu
 ## Recent Work
 
 ### 2026-02-27
+- **PR #XXX**: Add `check` npm script for combined lint + typecheck + test verification
+  - Added `npm run check` script to package.json for quick local verification
+  - Updated docs/DX-engineer.md with new script documentation
+
 - **PR #580**: Add local Docker development environment with hot reload - resolves issue #551
   - Created `Dockerfile.dev` for development mode with Next.js hot reload
   - Created `docker-compose.dev.yml` override with source code volume mounting
