@@ -588,7 +588,7 @@ class CacheKeyFactory {
   private static readonly SEPARATOR = ':'
 
   static create(
-    entity: 'posts' | 'post' | 'categories' | 'category' | 'tags' | 'tag' | 'media' | 'author' | 'search',
+    entity: 'posts' | 'post' | 'categories' | 'category' | 'tags' | 'tag' | 'media' | 'author' | 'search' | 'sitemap',
     params?: string | number
   ): string {
     return params ? `${entity}${this.SEPARATOR}${params}` : entity
@@ -636,6 +636,7 @@ export const cacheKeys = {
   media: (id: number) => CacheKeyFactory.createById('media', id),
   author: (id: number) => CacheKeyFactory.createById('author', id),
   search: (query: string) => CacheKeyFactory.create('search', query),
+  sitemap: () => CacheKeyFactory.create('sitemap'),
 }
 
 /**

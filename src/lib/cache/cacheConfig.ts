@@ -98,6 +98,16 @@ export const CACHE_CONFIG = {
    * - Author posts lists
    */
   AUTHOR: CACHE_TIMES.MEDIUM_LONG,
+
+  /**
+   * Sitemap TTL - 15 minutes.
+   * 
+   * Sitemap is regenerated periodically to ensure SEO freshness.
+   * Uses cache to reduce WordPress API load while maintaining SEO validity.
+   * Used for:
+   * - sitemap.xml generation
+   */
+  SITEMAP: CACHE_TIMES.SITEMAP,
 } as const;
 
 /**

@@ -2,6 +2,7 @@ import { MetadataRoute } from 'next'
 import { SITE_URL } from '@/lib/api/config'
 import { standardizedAPI } from '@/lib/api/standardized'
 import { isApiResultSuccessful } from '@/lib/api/response'
+import { cacheManager, CACHE_TTL, cacheKeys } from '@/lib/cache'
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = SITE_URL
@@ -27,6 +28,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     },
   ]
 
+  const cachedSitemap = cacheManager.get<MetadataRoute.Sitemap>(cacheKeys.sitemap())
+  if (cachedSitemap) {
+    return cachedSitemap
+  }
+
   try {
     const postsResult = await standardizedAPI.getAllPosts({ per_page: 100 })
 
@@ -38,7 +44,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         priority: 0.8,
       }))
 
-      return [...staticPages, ...postUrls]
+      const sitemap = [...staticPages, ...postUrls]
+      cacheManager.set(cacheKeys.sitemap(), sitemap, CACHE_TTL.SITEMAP)
+      return sitemap
     }
   } catch (error) {
     console.error('Failed to generate sitemap:', error)
