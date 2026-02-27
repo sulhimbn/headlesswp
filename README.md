@@ -65,9 +65,7 @@ npm install && npm run dev
 curl http://localhost:8080/wp-json/wp/v2/posts
 
 # Run quality checks (optional)
-npm run lint          # Check code quality
-npm run typecheck     # Verify TypeScript types
-npm run test          # Run test suite
+npm run check          # Run lint, typecheck, and test
 ```
 
 **Having Issues?** See [Troubleshooting Guide](docs/TROUBLESHOOTING.md)
