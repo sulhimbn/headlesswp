@@ -28,6 +28,11 @@ This document serves as long-term memory for the security-engineer autonomous ag
 ## Implemented Security Improvements
 
 ### 2026-02-27
+- **Read-only root filesystem for all services** (PR #636):
+  - Added `read_only: true` to wordpress and db services in docker-compose.yml
+  - Added `/var/run` tmpfs mount to all services (wordpress, db, phpmyadmin, frontend)
+  - Fixes issue #548: Dockerfile missing read-only root filesystem for production
+
 - **Replace hardcoded production URLs in .env.example** (PR #613):
   - Changed mitrabantennews.com to your-domain.com placeholders
   - Prevents information disclosure of production domain names
