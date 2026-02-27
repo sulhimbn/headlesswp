@@ -66,9 +66,7 @@ docker-compose up -d
 npm run dev
 
 # 4. Make changes and test
-npm run lint
-npm run typecheck
-npm run test
+npm run check
 
 # 5. Commit changes (use conventional commits)
 git commit -m "feat: add new feature"
@@ -474,9 +472,7 @@ export async function GET(request: NextRequest) {
 
 Before committing changes, ensure:
 
-- [ ] `npm run lint` passes (ESLint)
-- [ ] `npm run typecheck` passes (TypeScript)
-- [ ] `npm run test` passes (all tests)
+- [ ] `npm run check` passes (lint, typecheck, and test)
 - [ ] New code has tests added
 - [ ] Design tokens used (no hardcoded Tailwind values)
 - [ ] User content sanitized (DOMPurify)

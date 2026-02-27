@@ -92,9 +92,7 @@ git checkout -b fix/your-bug-fix
 ### 3. Test Your Changes
 
 ```bash
-npm run lint
-npm run typecheck
-npm run test
+npm run check
 npm run build
 ```
 
