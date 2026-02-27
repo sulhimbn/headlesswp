@@ -87,7 +87,6 @@ export default function RootLayout({
   return (
     <html lang="id">
       <head>
-        <meta name="csp-nonce" content="" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content="Mitra Banten News" />
