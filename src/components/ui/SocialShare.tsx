@@ -1,3 +1,5 @@
+"use client"
+
 import { memo, useState } from 'react'
 import { SITE_URL } from '@/lib/api/config'
 
