@@ -15,7 +15,8 @@ export const UI_TEXT = {
     tags: 'Tag',
     backToHome: 'Kembali ke Beranda',
     share: 'Bagikan',
-    shareTo: 'Bagikan ke'
+    shareTo: 'Bagikan ke',
+    tableOfContents: 'Daftar Isi'
   },
   newsPage: {
     heading: 'Semua Berita',
