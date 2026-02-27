@@ -102,6 +102,25 @@ export default async function PostPage({ params }: { params: { slug: string } })
     { label: post.title.rendered, href: `/berita/${post.slug}` }
   ]
 
+  const breadcrumbSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      {
+        '@type': 'ListItem',
+        position: 1,
+        name: 'Berita',
+        item: `${SITE_URL}/berita`,
+      },
+      {
+        '@type': 'ListItem',
+        position: 2,
+        name: post.title.rendered,
+        item: `${SITE_URL}/berita/${post.slug}`,
+      },
+    ],
+  }
+
   return (
     <div className="min-h-screen bg-[hsl(var(--color-background))]">
       <Header />
@@ -113,6 +132,12 @@ export default async function PostPage({ params }: { params: { slug: string } })
           title={post.title.rendered}
           categoryIds={post.categories}
           tagIds={post.tags}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(breadcrumbSchema)
+          }}
         />
         <script
           type="application/ld+json"

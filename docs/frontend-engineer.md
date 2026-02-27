@@ -29,6 +29,12 @@ This document serves as the long-term memory for the frontend-engineer autonomou
 - Styles: `src/app/globals.css` (Tailwind + CSS variables)
 - Config: `tailwind.config.js`, `eslint.config.js`
 
+## Workflow Notes
+1. Always verify if an issue is already fixed before implementing
+2. Use proactive scanning to find frontend improvements
+3. Run lint, typecheck, and build before creating PR
+4. Use JSON-LD for SEO improvements (schema.org)
+
 ## Common Issues Found
 1. Conditional ref assignment in maps (works but not ideal pattern)
 2. Empty query searches trigger onSearch callback (intentional behavior)
@@ -53,3 +59,9 @@ This document serves as the long-term memory for the frontend-engineer autonomou
 - HSL color variables for theming
 - Dynamic imports for Footer component (performance)
 - Memoization with custom `arePropsEqual` functions
+
+## SEO Improvements Made
+1. Added Organization schema in root layout (layout.tsx)
+2. Added WebSite schema with SearchAction for site search
+3. Added BreadcrumbList schema to post detail pages
+4. NewsArticle schema was already present in post detail pages
