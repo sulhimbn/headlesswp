@@ -2,6 +2,9 @@ import { NextResponse } from 'next/server'
 import { standardizedAPI } from '@/lib/api/standardized'
 import { isApiResultSuccessful } from '@/lib/api/response'
 import { logger } from '@/lib/utils/logger'
+import { CACHE_TIMES } from '@/lib/api/config'
+
+const CACHE_CONTROL = `public, max-age=${CACHE_TIMES.MEDIUM_SHORT / 1000}, s-maxage=${CACHE_TIMES.MEDIUM_SHORT / 1000}, stale-while-revalidate=${CACHE_TIMES.MEDIUM}`
 
 export async function GET(request: Request) {
   try {
@@ -37,7 +40,9 @@ export async function GET(request: Request) {
       tags: post.tags,
     }))
 
-    return NextResponse.json(posts)
+    const response = NextResponse.json(posts)
+    response.headers.set('Cache-Control', CACHE_CONTROL)
+    return response
   } catch (error) {
     logger.error('Error in /api/posts', error, { module: 'api/posts' })
     return NextResponse.json([], { status: 200 })
