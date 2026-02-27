@@ -104,6 +104,11 @@ export const UI_TEXT = {
     degraded: 'Layanan mengalami gangguan',
     down: 'Layanan tidak tersedia'
   },
+  authorPage: {
+    website: 'Website',
+    articlesBy: 'Artikel oleh',
+    noArticles: 'Belum ada artikel dari penulis ini.'
+  },
   loading: {
     news: 'Memuat berita',
     article: 'Memuat artikel',

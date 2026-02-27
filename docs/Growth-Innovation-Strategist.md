@@ -159,3 +159,23 @@
 - Component is memoized for performance
 - Uses passive event listeners for scroll performance
 - Cleanup on unmount removes event listeners
+
+## Implemented Features (Feb 2026)
+
+### Author Profile Pages (Issue #357)
+- **Status**: Complete
+- **Features**:
+  - Created `/author/[id]` route - displays author profile with avatar, name, description, and link
+  - Lists all posts by author with pagination
+  - 12 posts per page with pagination
+  - Uses standardizedAPI.getAuthorById for author lookup
+  - Uses enhancedPostService.getPostsByAuthor for fetching posts
+  - 5-minute cache revalidation (ISR)
+  - Empty state when no posts available
+
+## Patterns & Conventions (Author Pages)
+- Use standardizedAPI.getAuthorById(id) for author lookup
+- Use enhancedPostService.getPostsByAuthor(authorId, page, perPage) for fetching posts
+- Author profile shows avatar_urls['96'], name, description, and link
+- Route naming: /author/[id]
+- Pagination basePath should include the author id for proper navigation
