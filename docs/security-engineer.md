@@ -27,6 +27,13 @@ This document serves as long-term memory for the security-engineer autonomous ag
 
 ## Implemented Security Improvements
 
+### 2026-02-27
+- **Extended Docker Compose security hardening** (PR #584):
+  - Added no-new-privileges security option to WordPress, MySQL, and phpMyAdmin services
+  - Added tmpfs mount for /tmp on all services (prevents temp file attacks)
+  - Added read-only filesystem to phpMyAdmin service
+  - Now all services have consistent security hardening
+
 ### 2026-02-26
 - **Docker image hardening** (PR #565):
   - Added read-only root filesystem to frontend service in docker-compose.yml
@@ -72,7 +79,6 @@ The application has comprehensive security headers:
 
 ## Known Security Concerns (Future Work)
 - Dockerfile passes secrets via build args - consider using Docker secrets for production
-- Consider adding rate limiting to docker-compose services
 
 ## Teammate Coordination
 - Check other agents' memory files for relevant context
