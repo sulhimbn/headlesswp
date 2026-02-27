@@ -18,6 +18,7 @@
 - ARIA labels on buttons and navigation
 - MetaInfo component with aria-label for screen reader context
 - Color contrast improvements for WCAG AA compliance (text-muted, text-secondary)
+- Loading icon accessibility - added aria-live="polite" for better screen reader announcements
 
 ### Testing Setup
 - Added jest-axe for automated accessibility testing
@@ -30,6 +31,7 @@
 - `src/components/layout/Header.tsx` - Responsive navigation with mobile menu
 - `src/components/layout/Footer.tsx` - Semantic footer with proper roles
 - `src/components/post/PostCard.tsx` - Responsive card component
+- `src/components/ui/Icon.tsx` - Icon component with accessibility attributes
 - `src/app/globals.css` - CSS variables, reduced-motion support
 - `src/app/layout.tsx` - Skip link, meta tags
 
