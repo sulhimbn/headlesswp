@@ -123,6 +123,10 @@ export const UI_TEXT = {
     openSearch: 'Buka pencarian',
     closeMenu: 'Tutup menu',
     openMenu: 'Buka menu',
+    darkMode: {
+      enableLight: 'Aktifkan mode terang',
+      enableDark: 'Aktifkan mode gelap'
+    },
     navigation: {
       home: 'Beranda',
       news: 'Berita'

@@ -114,7 +114,7 @@ export default memo(function Header() {
               type="button"
               className="inline-flex items-center justify-center p-2 rounded-[var(--radius-md)] text-[hsl(var(--color-text-primary))] hover:text-[hsl(var(--color-primary))] hover:bg-[hsl(var(--color-secondary-dark))] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--color-primary))] focus:ring-offset-2"
               onClick={toggleDarkMode}
-              aria-label={isDark ? 'Aktifkan mode terang' : 'Aktifkan mode gelap'}
+              aria-label={isDark ? UI_TEXT.header.darkMode.enableLight : UI_TEXT.header.darkMode.enableDark}
             >
               <Icon type={isDark ? 'sun' : 'moon'} className="h-5 w-5" />
             </button>
@@ -147,7 +147,7 @@ export default memo(function Header() {
               type="button"
               className="inline-flex items-center justify-center p-3 min-w-[44px] min-h-[44px] rounded-[var(--radius-md)] text-[hsl(var(--color-text-primary))] hover:text-[hsl(var(--color-primary))] hover:bg-[hsl(var(--color-secondary-dark))] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--color-primary))] focus:ring-offset-2"
               onClick={toggleDarkMode}
-              aria-label={isDark ? 'Aktifkan mode terang' : 'Aktifkan mode gelap'}
+              aria-label={isDark ? UI_TEXT.header.darkMode.enableLight : UI_TEXT.header.darkMode.enableDark}
             >
               <Icon type={isDark ? 'sun' : 'moon'} className="h-5 w-5" />
             </button>
