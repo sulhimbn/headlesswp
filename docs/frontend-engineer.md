@@ -70,6 +70,12 @@ This document serves as the long-term memory for the frontend-engineer autonomou
 3. Added BreadcrumbList schema to post detail pages
 4. NewsArticle schema was already present in post detail pages
 
+## PWA & Asset Improvements
+1. Added missing PWA icons: icon-192.png (192x192), icon-512.png (512x512)
+2. Added apple-touch-icon.png (180x180) for iOS home screen
+3. Added og-image.jpg (1200x630) for social media sharing
+4. Added logo.png (512x512) for branding
+
 ## Code Quality Fixes
 1. Removed empty CSP nonce meta tag from layout.tsx (served no purpose, CSP is handled via headers in next.config.js)
 2. Replaced hardcoded Tailwind colors (green-500, yellow-500, red-500, gray-900) with CSS variables in ServiceStatus.tsx for consistent theming
