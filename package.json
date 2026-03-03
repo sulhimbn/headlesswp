@@ -21,7 +21,7 @@
     "check": "npm run lint && npm run typecheck && npm test"
   },
   "dependencies": {
-    "@sentry/nextjs": "^10.40.0",
+    "@sentry/nextjs": "10.41.0",
     "axios": "^1.13.5",
     "isomorphic-dompurify": "^2.36.0",
     "next": "^16.1.4",
@@ -64,6 +64,8 @@
   "overrides": {
     "js-yaml": "^4.1.1",
     "caniuse-lite": "^1.0.30001774",
-    "baseline-browser-mapping": "^2.10.0"
+    "baseline-browser-mapping": "^2.10.0",
+    "serialize-javascript": "^7.0.4",
+    "rollup": "^4.59.0"
   }
 }
