@@ -40,6 +40,13 @@ DX Engineer focuses on improving developer experience through small, safe, measu
 
 ## Recent Work
 
+### 2026-03-03
+- **PR #679**: Add pre-commit hooks for lint and typecheck validation - resolves issue #679
+  - Installed husky and initialized with `npx husky init`
+  - Configured pre-commit hook to run `npm run lint && npm run typecheck`
+  - Added `prepare` script in package.json for automatic husky setup on `npm install`
+  - Commits will be blocked if lint or typecheck fails
+
 ### 2026-02-27
 - **PR #640**: Add .npmrc and enhance .gitignore for better developer experience
   - Created `.npmrc` with `save-exact=true` and `engine-strict=true` for consistent dependency management
