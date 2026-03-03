@@ -1,12 +1,15 @@
-import { readdirSync, statSync } from 'fs';
+import { readdirSync, statSync, existsSync } from 'fs';
 import { join } from 'path';
 
 const BUNDLE_DIR = '.next/static';
-const CHUNK_LIMIT_KB = 250;
 const TOTAL_LIMIT_KB = 850;
+const CHUNK_LIMIT_KB = 250;
 
 function getDirSize(dir, files = []) {
   try {
+    if (!existsSync(dir)) {
+      return files;
+    }
     const entries = readdirSync(dir, { withFileTypes: true });
     for (const entry of entries) {
       const fullPath = join(dir, entry.name);
@@ -44,16 +47,21 @@ console.log('======================');
 console.log(`Total chunks: ${files.length}`);
 console.log(`Total size: ${formatSize(totalSize)}`);
 console.log(`Largest chunk: ${formatSize(largestChunk)}`);
+console.log(`\nLimits:`);
+console.log(`- Largest chunk limit: ${CHUNK_LIMIT_KB} KB`);
+console.log(`- Total size limit: ${TOTAL_LIMIT_KB} KB`);
 
 let hasError = false;
 
 if (largestChunk > parseLimit(CHUNK_LIMIT_KB)) {
   console.error(`\n❌ Largest chunk (${formatSize(largestChunk)}) exceeds limit (${CHUNK_LIMIT_KB} KB)`);
+  console.error(`::warning::Bundle size warning: Largest chunk is ${formatSize(largestChunk)}, limit is ${CHUNK_LIMIT_KB} KB`);
   hasError = true;
 }
 
 if (totalSize > parseLimit(TOTAL_LIMIT_KB)) {
   console.error(`\n❌ Total size (${formatSize(totalSize)}) exceeds limit (${TOTAL_LIMIT_KB} KB)`);
+  console.error(`::error::Bundle size exceeded: Total size is ${formatSize(totalSize)}, limit is ${TOTAL_LIMIT_KB} KB`);
   hasError = true;
 }
 
