@@ -4,6 +4,29 @@ import {
   performanceMetricsCollector, 
   captureCurrentResourceUtilization 
 } from '@/lib/api/performanceMetrics'
+import { telemetryCollector } from '@/lib/api/telemetry'
+
+async function performancePostHandler(request: Request) {
+  try {
+    const body = await request.json()
+    
+    if (body.type === 'web-vital' && body.data) {
+      telemetryCollector.record({
+        type: 'web-vital',
+        category: 'performance',
+        data: body.data
+      })
+      
+      return NextResponse.json({ success: true }, { status: 201 })
+    }
+    
+    return NextResponse.json({ error: 'Invalid payload' }, { status: 400 })
+  } catch (error) {
+    return NextResponse.json({
+      error: error instanceof Error ? error.message : 'Unknown error'
+    }, { status: 500 })
+  }
+}
 
 async function performanceHandler() {
   try {
@@ -72,3 +95,4 @@ async function performanceHandler() {
 }
 
 export const GET = withApiRateLimit(performanceHandler, 'performance')
+export const POST = withApiRateLimit(performancePostHandler, 'performance')
