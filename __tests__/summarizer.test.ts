@@ -1,4 +1,4 @@
-import { summarizePost, isSummarizationEnabled, getSummarizationConfig } from '@/lib/services/summarizer';
+import { summarizePost, isSummarizationEnabled, getSummarizationConfig, clearSummaryCache } from '@/lib/services/summarizer';
 import { stripHtml } from '@/lib/utils/stripHtml';
 import { cacheManager } from '@/lib/cache';
 
@@ -159,6 +159,76 @@ describe('summarizer', () => {
       expect(config.model).toBe('claude-3-sonnet');
       expect(config.maxTokens).toBe(300);
       expect(config.temperature).toBe(0.5);
+    });
+  });
+
+  describe('clearSummaryCache', () => {
+    it('should clear cache for specific post ID', () => {
+      clearSummaryCache(123);
+      expect(cacheManager.invalidate).toHaveBeenCalledWith('summary:123');
+    });
+
+    it('should clear all summary caches when no postId provided', () => {
+      const mockCache = new Map([
+        ['summary:1', 'test'],
+        ['summary:2', 'test2'],
+        ['other:key', 'test3'],
+      ]);
+      
+      (cacheManager as unknown as { cache: Map<string, unknown> }).cache = mockCache;
+      
+      clearSummaryCache();
+      
+      expect(cacheManager.invalidate).toHaveBeenCalledWith('summary:1');
+      expect(cacheManager.invalidate).toHaveBeenCalledWith('summary:2');
+    });
+  });
+
+  describe('summarizePost edge cases', () => {
+    it('should handle content with only HTML tags', async () => {
+      (cacheManager.get as jest.Mock).mockReturnValue(null);
+      (cacheManager.set as jest.Mock).mockReturnValue(undefined);
+
+      const result = await summarizePost(1, '<p></p><div></div>');
+
+      expect(result.summary).toBe('');
+      expect(result.cached).toBe(false);
+    });
+
+    it('should handle content at minimum length threshold', async () => {
+      (cacheManager.get as jest.Mock).mockReturnValue(null);
+      (cacheManager.set as jest.Mock).mockReturnValue(undefined);
+
+      const result = await summarizePost(1, '<p>' + 'a'.repeat(50) + '</p>');
+
+      expect(result.summary).toBeTruthy();
+      expect(result.originalLength).toBe(50);
+    });
+
+    it('should return correct metadata in result', async () => {
+      (cacheManager.get as jest.Mock).mockReturnValue(null);
+      (cacheManager.set as jest.Mock).mockReturnValue(undefined);
+
+      const content = '<p>This is a test article with some content for summarization testing.</p>';
+      const result = await summarizePost(999, content);
+
+      expect(result.summaryLength).toBe(result.summary.length);
+      expect(result.originalLength).toBeGreaterThan(0);
+      expect(new Date(result.generatedAt).getTime()).toBeLessThanOrEqual(Date.now());
+    });
+  });
+
+  describe('generateLocalSummary edge cases', () => {
+    it('should handle text with no sentence-ending punctuation', () => {
+      const text = 'This is a single line of text without punctuation';
+      const summary = generateLocalSummary(text);
+      expect(summary).toBeTruthy();
+    });
+
+    it('should handle text with multiple spaces between sentences', () => {
+      const text = 'First sentence  Second sentence  Third sentence';
+      const summary = generateLocalSummary(text);
+      expect(summary.length).toBeGreaterThan(0);
     });
   });
 });
