@@ -1,5 +1,4 @@
 import { render, screen } from '@testing-library/react'
-// @ts-expect-error - jest-axe types not available
 import { axe } from 'jest-axe'
 import Header from '@/components/layout/Header'
 import Footer from '@/components/layout/Footer'
