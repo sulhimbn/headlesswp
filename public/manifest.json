@@ -25,5 +25,43 @@
   "categories": ["news", "magazines"],
   "lang": "id",
   "dir": "ltr",
-  "prefer_related_applications": false
+  "prefer_related_applications": false,
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "Berita Terbaru",
+      "short_name": "Berita",
+      "description": "Lihat berita terbaru",
+      "url": "/berita",
+      "icons": [
+        {
+          "src": "/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Cari Berita",
+      "short_name": "Cari",
+      "description": "Cari berita",
+      "url": "/cari",
+      "icons": [
+        {
+          "src": "/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ],
+  "related_applications": [],
+  "prefer_related_applications": false,
+  "share_target": {
+    "action": "/cari",
+    "method": "GET",
+    "params": {
+      "title": "title",
+      "text": "text",
+      "url": "url"
+    }
+  }
 }
