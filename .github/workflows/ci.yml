@@ -47,10 +47,6 @@ jobs:
       - name: Run tests
         run: npm run test
 
-      - name: Run accessibility tests
-        run: npm run test -- __tests__/accessibility.test.tsx
-        continue-on-error: true
-
   build:
     name: Build
     runs-on: ubuntu-latest
