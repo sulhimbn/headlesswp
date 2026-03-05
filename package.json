@@ -10,7 +10,7 @@
     "start": "next start",
     "lint": "eslint src",
     "typecheck": "tsc --noEmit",
-    "analyze": "ANALYZE=true next build",
+    "analyze": "ANALYZE=true next build --webpack",
     "test": "jest",
     "test:watch": "jest --watch",
     "audit:security": "npm audit --audit-level=moderate",
@@ -65,5 +65,16 @@
     "js-yaml": "^4.1.1",
     "caniuse-lite": "^1.0.30001774",
     "baseline-browser-mapping": "^2.10.0"
-  }
+  },
+  "size-limit": [
+    {
+      "path": ".next/static/chunks/**/*.js",
+      "limit": "250 KB"
+    },
+    {
+      "path": ".next/static/**/*.js",
+      "limit": "850 KB",
+      "total": true
+    }
+  ]
 }
