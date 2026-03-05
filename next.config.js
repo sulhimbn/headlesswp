@@ -3,6 +3,7 @@ import { withSentryConfig } from '@sentry/nextjs'
 
 const withBundleAnalyzerConfig = withBundleAnalyzer({
   enabled: process.env.ANALYZE === 'true',
+  openAnalyzer: false,
 })
 
 const sentryConfig = {
