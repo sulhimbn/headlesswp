@@ -116,3 +116,21 @@ export function assertEnvironment(): void {
     throw new Error(errorMessage);
   }
 }
+
+export function logEnvironmentValidation(): void {
+  const result = validateEnvironment();
+
+  if (result.missing.length > 0) {
+    console.error('[Environment] Validation failed:');
+    result.missing.forEach((error) => console.error(`  - ${error}`));
+  }
+
+  if (result.warnings.length > 0) {
+    console.warn('[Environment] Validation warnings:');
+    result.warnings.forEach((warning) => console.warn(`  - ${warning}`));
+  }
+
+  if (result.valid && result.missing.length === 0 && result.warnings.length === 0) {
+    // Silent success - no need to log in production
+  }
+}
