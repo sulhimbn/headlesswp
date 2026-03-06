@@ -25,8 +25,20 @@ export async function GET(request: Request) {
     const result = await standardizedAPI.getAllPosts(queryParams)
 
     if (!isApiResultSuccessful(result) || !result.data) {
-      logger.warn('Failed to fetch posts from API', undefined, { module: 'api/posts' })
-      return NextResponse.json([], { status: 200 })
+      const errorMessage = result.error 
+        ? result.error.message 
+        : 'Failed to fetch posts from WordPress API';
+      
+      logger.warn('Failed to fetch posts from API', undefined, { 
+        module: 'api/posts',
+        error: result.error,
+        hasData: !!result.data 
+      });
+      
+      return NextResponse.json(
+        { error: errorMessage, code: result.error?.type || 'API_ERROR' },
+        { status: 502 }
+      );
     }
 
     const posts = result.data.map(post => ({
@@ -44,7 +56,11 @@ export async function GET(request: Request) {
     response.headers.set('Cache-Control', CACHE_CONTROL)
     return response
   } catch (error) {
-    logger.error('Error in /api/posts', error, { module: 'api/posts' })
-    return NextResponse.json([], { status: 200 })
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+    logger.error('Error in /api/posts', error, { module: 'api/posts' });
+    return NextResponse.json(
+      { error: errorMessage, code: 'INTERNAL_ERROR' },
+      { status: 500 }
+    );
   }
 }
