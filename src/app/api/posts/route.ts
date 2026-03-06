@@ -25,8 +25,11 @@ export async function GET(request: Request) {
     const result = await standardizedAPI.getAllPosts(queryParams)
 
     if (!isApiResultSuccessful(result) || !result.data) {
-      logger.warn('Failed to fetch posts from API', undefined, { module: 'api/posts' })
-      return NextResponse.json([], { status: 200 })
+      logger.warn('Failed to fetch posts from API', undefined, { module: 'api/posts', error: result.error })
+      return NextResponse.json(
+        { error: 'Failed to fetch posts', details: result.error?.message },
+        { status: 502, headers: { 'Cache-Control': 'no-store' } }
+      )
     }
 
     const posts = result.data.map(post => ({
@@ -45,6 +48,10 @@ export async function GET(request: Request) {
     return response
   } catch (error) {
     logger.error('Error in /api/posts', error, { module: 'api/posts' })
-    return NextResponse.json([], { status: 200 })
+    const message = error instanceof Error ? error.message : 'Unknown error'
+    return NextResponse.json(
+      { error: 'Internal server error', details: message },
+      { status: 500, headers: { 'Cache-Control': 'no-store' } }
+    )
   }
 }
