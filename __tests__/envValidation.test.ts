@@ -25,8 +25,8 @@ describe('envValidation', () => {
     })
 
     it('should return warnings when optional env vars are not set', () => {
-      delete process.env.NEXT_PUBLIC_WORDPRESS_API_URL
-      delete process.env.NEXT_PUBLIC_WORDPRESS_URL
+      process.env.NEXT_PUBLIC_WORDPRESS_API_URL = 'https://example.com/wp-json'
+      process.env.NEXT_PUBLIC_WORDPRESS_URL = 'https://example.com'
       delete process.env.NEXT_PUBLIC_SITE_URL
 
       const result = validateEnvironment()
