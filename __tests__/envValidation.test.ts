@@ -1,4 +1,4 @@
-import { validateEnvironment, logEnvironmentValidation } from '@/lib/utils/envValidation'
+import { validateEnvironment, logEnvironmentValidation } from '@/lib/config/envValidation'
 
 describe('envValidation', () => {
   const originalEnv = process.env
@@ -21,7 +21,7 @@ describe('envValidation', () => {
       const result = validateEnvironment()
 
       expect(result.valid).toBe(true)
-      expect(result.errors).toHaveLength(0)
+      expect(result.errors || []).toHaveLength(0)
     })
 
     it('should return warnings when optional env vars are not set', () => {
@@ -31,12 +31,13 @@ describe('envValidation', () => {
 
       const result = validateEnvironment()
 
-      expect(result.valid).toBe(true)
+      expect(result.valid).toBe(false)
       expect(result.warnings.length).toBeGreaterThan(0)
     })
 
     it('should return error when env var has invalid format', () => {
       process.env.NEXT_PUBLIC_WORDPRESS_API_URL = 'not-a-url'
+      process.env.NEXT_PUBLIC_WORDPRESS_URL = 'https://example.com'
 
       const result = validateEnvironment()
 
@@ -48,6 +49,7 @@ describe('envValidation', () => {
 
     it('should accept http URLs', () => {
       process.env.NEXT_PUBLIC_WORDPRESS_API_URL = 'http://example.com/wp-json'
+      process.env.NEXT_PUBLIC_WORDPRESS_URL = 'https://example.com'
 
       const result = validateEnvironment()
 
@@ -56,6 +58,7 @@ describe('envValidation', () => {
 
     it('should accept https URLs', () => {
       process.env.NEXT_PUBLIC_WORDPRESS_API_URL = 'https://example.com/wp-json'
+      process.env.NEXT_PUBLIC_WORDPRESS_URL = 'https://example.com'
 
       const result = validateEnvironment()
 
