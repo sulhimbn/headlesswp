@@ -23,6 +23,16 @@ const nextConfig = {
         protocol: 'https',
         hostname: '**.your-domain.com',
       },
+      ...(process.env.WORDPRESS_URL ? [
+        {
+          protocol: 'https',
+          hostname: new URL(process.env.WORDPRESS_URL).hostname,
+        },
+        {
+          protocol: 'http',
+          hostname: new URL(process.env.WORDPRESS_URL).hostname,
+        },
+      ] : []),
     ],
   },
   env: {
