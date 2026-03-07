@@ -40,6 +40,27 @@ export interface WordPressTag {
   link: string;
 }
 
+export interface WordPressMediaSize {
+  width: number;
+  height: number;
+  file: string;
+  mime_type: string;
+  source_url: string;
+}
+
+export interface WordPressMediaDetails {
+  width: number;
+  height: number;
+  file: string;
+  sizes: {
+    medium?: WordPressMediaSize;
+    medium_large?: WordPressMediaSize;
+    large?: WordPressMediaSize;
+    thumbnail?: WordPressMediaSize;
+    full?: WordPressMediaSize;
+  };
+}
+
 export interface WordPressMedia {
   id: number;
   source_url: string;
@@ -49,6 +70,7 @@ export interface WordPressMedia {
   alt_text: string;
   media_type: string;
   mime_type: string;
+  media_details?: WordPressMediaDetails;
 }
 
 export interface WordPressAuthor {
