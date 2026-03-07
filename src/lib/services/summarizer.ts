@@ -148,7 +148,7 @@ function generateLocalSummary(text: string): string {
   return summary;
 }
 
-async function generateSummary(
+export async function generateSummary(
   text: string,
   config: SummarizationConfig
 ): Promise<string> {
