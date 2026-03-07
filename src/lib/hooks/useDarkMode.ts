@@ -15,14 +15,23 @@ const DARK_MODE_KEY = 'dark-mode'
 
 function getSystemPreference(): boolean {
   if (typeof window === 'undefined') return false
-  return window.matchMedia('(prefers-color-scheme: dark)').matches
+  if (typeof window.matchMedia !== 'function') return false
+  try {
+    return window.matchMedia('(prefers-color-scheme: dark)').matches
+  } catch {
+    return false
+  }
 }
 
 function getStoredMode(): DarkMode {
   if (typeof window === 'undefined') return 'system'
-  const stored = localStorage.getItem(DARK_MODE_KEY)
-  if (stored === 'light' || stored === 'dark' || stored === 'system') {
-    return stored
+  try {
+    const stored = localStorage.getItem(DARK_MODE_KEY)
+    if (stored === 'light' || stored === 'dark' || stored === 'system') {
+      return stored
+    }
+  } catch {
+    return 'system'
   }
   return 'system'
 }
@@ -43,6 +52,8 @@ export function useDarkMode(): UseDarkModeReturn {
   }, [])
 
   useEffect(() => {
+    if (typeof window.matchMedia !== 'function') return
+    
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
     
     const handleChange = (e: MediaQueryListEvent) => {
@@ -65,7 +76,11 @@ export function useDarkMode(): UseDarkModeReturn {
 
   const setDarkMode = useCallback((newMode: DarkMode) => {
     setModeState(newMode)
-    localStorage.setItem(DARK_MODE_KEY, newMode)
+    try {
+      localStorage.setItem(DARK_MODE_KEY, newMode)
+    } catch {
+      // Silently fail if localStorage is unavailable
+    }
     
     if (newMode === 'system') {
       setIsDark(getSystemPreference())
