@@ -1,25 +1,29 @@
 export interface EnvValidationResult {
   valid: boolean;
-  missing: string[];
+  errors: string[];
   warnings: string[];
 }
 
 export interface EnvVariable {
   name: string;
   required: boolean;
-  description: string;
+  description?: string;
+  pattern?: RegExp;
+  defaultValue?: string;
 }
 
 const REQUIRED_ENV_VARS: EnvVariable[] = [
   {
     name: 'NEXT_PUBLIC_WORDPRESS_URL',
-    required: true,
+    required: false,
     description: 'The public URL of the WordPress site',
+    pattern: /^https?:\/\/.+/,
   },
   {
     name: 'NEXT_PUBLIC_WORDPRESS_API_URL',
-    required: true,
+    required: false,
     description: 'The WordPress REST API URL',
+    pattern: /^https?:\/\/.+/,
   },
 ];
 
@@ -28,11 +32,13 @@ const OPTIONAL_ENV_VARS: EnvVariable[] = [
     name: 'NEXT_PUBLIC_SITE_URL',
     required: false,
     description: 'The public URL of this Next.js site',
+    pattern: /^https?:\/\/.+/,
   },
   {
     name: 'NEXT_PUBLIC_SITE_URL_WWW',
     required: false,
     description: 'The www URL of this Next.js site',
+    pattern: /^https?:\/\/.+/,
   },
   {
     name: 'NEXT_PUBLIC_FEATURE_PERSONALIZED_RECOMMENDATIONS',
@@ -51,25 +57,70 @@ const OPTIONAL_ENV_VARS: EnvVariable[] = [
   },
 ];
 
+const STRICT_REQUIRED_ENV_VARS: EnvVariable[] = [
+  {
+    name: 'NEXT_PUBLIC_WORDPRESS_URL',
+    required: true,
+    description: 'The public URL of the WordPress site',
+    pattern: /^https?:\/\/.+/,
+  },
+  {
+    name: 'NEXT_PUBLIC_WORDPRESS_API_URL',
+    required: true,
+    description: 'The WordPress REST API URL',
+    pattern: /^https?:\/\/.+/,
+  },
+];
+
 export function validateEnvironment(): EnvValidationResult {
-  const missing: string[] = [];
+  const errors: string[] = [];
   const warnings: string[] = [];
 
   for (const envVar of REQUIRED_ENV_VARS) {
-    if (!process.env[envVar.name]) {
-      missing.push(envVar.name);
+    const value = process.env[envVar.name];
+
+    if (!value) {
+      if (envVar.required) {
+        errors.push(`Required environment variable ${envVar.name} is not set`);
+      } else if (envVar.defaultValue) {
+        warnings.push(
+          `Environment variable ${envVar.name} not set, using default: ${envVar.defaultValue}`
+        );
+      }
+      continue;
+    }
+
+    if (envVar.pattern && !envVar.pattern.test(value)) {
+      errors.push(
+        `Environment variable ${envVar.name} has invalid format: ${value}`
+      );
     }
   }
 
   for (const envVar of OPTIONAL_ENV_VARS) {
-    if (!process.env[envVar.name]) {
+    const value = process.env[envVar.name];
+
+    if (!value) {
       warnings.push(`${envVar.name} is not set (optional)`);
+      continue;
+    }
+
+    if (envVar.pattern && !envVar.pattern.test(value)) {
+      warnings.push(
+        `Environment variable ${envVar.name} has invalid format: ${value}`
+      );
     }
   }
 
+  if (!process.env.NEXT_PUBLIC_WORDPRESS_API_URL) {
+    warnings.push(
+      `NEXT_PUBLIC_WORDPRESS_API_URL not set, using default fallback`
+    );
+  }
+
   return {
-    valid: missing.length === 0,
-    missing,
+    valid: errors.length === 0,
+    errors,
     warnings,
   };
 }
@@ -92,21 +143,33 @@ export function getEnvironmentStatus() {
       description: env.description,
       value: process.env[env.name] ? '***SET***' : 'NOT_SET',
     })),
-    missing: validation.missing,
+    errors: validation.errors,
     warnings: validation.warnings,
   };
 }
 
 export function assertEnvironment(): void {
-  const validation = validateEnvironment();
+  const errors: string[] = [];
 
-  if (!validation.valid) {
-    const missingList = validation.missing.join(', ');
+  for (const envVar of STRICT_REQUIRED_ENV_VARS) {
+    const value = process.env[envVar.name];
+
+    if (!value) {
+      errors.push(`Required environment variable ${envVar.name} is not set`);
+    } else if (envVar.pattern && !envVar.pattern.test(value)) {
+      errors.push(
+        `Environment variable ${envVar.name} has invalid format: ${value}`
+      );
+    }
+  }
+
+  if (errors.length > 0) {
+    const missingList = errors.join(', ');
     const errorMessage = [
       `Missing required environment variables: ${missingList}`,
       '',
       'Please set the following environment variables:',
-      ...REQUIRED_ENV_VARS.filter((v) => validation.missing.includes(v.name)).map(
+      ...STRICT_REQUIRED_ENV_VARS.filter((v) => errors.includes(`Required environment variable ${v.name} is not set`)).map(
         (v) => `  - ${v.name}: ${v.description}`
       ),
       '',
@@ -114,5 +177,23 @@ export function assertEnvironment(): void {
     ].join('\n');
 
     throw new Error(errorMessage);
+  }
+}
+
+export function logEnvironmentValidation(): void {
+  const result = validateEnvironment();
+
+  if (result.errors.length > 0) {
+    console.error('[Environment] Validation failed:');
+    result.errors.forEach((error) => console.error(`  - ${error}`));
+  }
+
+  if (result.warnings.length > 0) {
+    console.warn('[Environment] Validation warnings:');
+    result.warnings.forEach((warning) => console.warn(`  - ${warning}`));
+  }
+
+  if (result.valid && result.errors.length === 0 && result.warnings.length === 0) {
+    // Silent success - no need to log in production
   }
 }
