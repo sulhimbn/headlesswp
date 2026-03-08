@@ -208,6 +208,7 @@ export default async function PostPage({ params }: { params: { slug: string } })
                       width={32}
                       height={32}
                       className="rounded-full"
+                      loading="lazy"
                     />
                   )}
                   <Link
