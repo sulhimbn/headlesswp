@@ -70,14 +70,14 @@ class CacheWarmer {
   private async warmCategories(): Promise<number> {
     const startTime = Date.now();
     const categories = await wordpressAPI.getCategories();
-    this.cacheManager.set('categories', categories, CACHE_TTL.CATEGORIES);
+    this.cacheManager.set(cacheKeys.categories(), categories, CACHE_TTL.CATEGORIES);
     return Date.now() - startTime;
   }
 
   private async warmTags(): Promise<number> {
     const startTime = Date.now();
     const tags = await wordpressAPI.getTags();
-    this.cacheManager.set('tags', tags, CACHE_TTL.TAGS);
+    this.cacheManager.set(cacheKeys.tags(), tags, CACHE_TTL.TAGS);
     return Date.now() - startTime;
   }
 
