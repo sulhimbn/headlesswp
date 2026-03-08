@@ -1,5 +1,6 @@
 export interface EnvValidationResult {
   valid: boolean;
+  errors: string[];
   missing: string[];
   warnings: string[];
 }
@@ -8,18 +9,21 @@ export interface EnvVariable {
   name: string;
   required: boolean;
   description: string;
+  pattern?: RegExp;
 }
 
 const REQUIRED_ENV_VARS: EnvVariable[] = [
   {
     name: 'NEXT_PUBLIC_WORDPRESS_URL',
-    required: true,
+    required: false,
     description: 'The public URL of the WordPress site',
+    pattern: /^https?:\/\/.+/,
   },
   {
     name: 'NEXT_PUBLIC_WORDPRESS_API_URL',
-    required: true,
+    required: false,
     description: 'The WordPress REST API URL',
+    pattern: /^https?:\/\/.+/,
   },
 ];
 
@@ -28,6 +32,7 @@ const OPTIONAL_ENV_VARS: EnvVariable[] = [
     name: 'NEXT_PUBLIC_SITE_URL',
     required: false,
     description: 'The public URL of this Next.js site',
+    pattern: /^https?:\/\/.+/,
   },
   {
     name: 'NEXT_PUBLIC_SITE_URL_WWW',
@@ -52,23 +57,50 @@ const OPTIONAL_ENV_VARS: EnvVariable[] = [
 ];
 
 export function validateEnvironment(): EnvValidationResult {
+  const errors: string[] = [];
   const missing: string[] = [];
   const warnings: string[] = [];
 
   for (const envVar of REQUIRED_ENV_VARS) {
     if (!process.env[envVar.name]) {
-      missing.push(envVar.name);
+      if (envVar.required) {
+        missing.push(envVar.name);
+        errors.push(`Required environment variable ${envVar.name} is not set`);
+      } else {
+        warnings.push(`${envVar.name} is not set (optional)`);
+      }
+      continue;
+    }
+
+    if (envVar.pattern && !envVar.pattern.test(process.env[envVar.name]!)) {
+      errors.push(
+        `Environment variable ${envVar.name} has invalid format: ${process.env[envVar.name]}`
+      );
     }
   }
 
   for (const envVar of OPTIONAL_ENV_VARS) {
     if (!process.env[envVar.name]) {
       warnings.push(`${envVar.name} is not set (optional)`);
+      continue;
+    }
+
+    if (envVar.pattern && !envVar.pattern.test(process.env[envVar.name]!)) {
+      warnings.push(
+        `Environment variable ${envVar.name} has invalid format: ${process.env[envVar.name]}`
+      );
     }
   }
 
+  if (!process.env.NEXT_PUBLIC_WORDPRESS_API_URL) {
+    warnings.push(
+      `NEXT_PUBLIC_WORDPRESS_API_URL not set, using default fallback`
+    );
+  }
+
   return {
-    valid: missing.length === 0,
+    valid: errors.length === 0 && missing.length === 0,
+    errors,
     missing,
     warnings,
   };
@@ -114,5 +146,23 @@ export function assertEnvironment(): void {
     ].join('\n');
 
     throw new Error(errorMessage);
+  }
+}
+
+export function logEnvironmentValidation(): void {
+  const result = validateEnvironment();
+
+  if (result.errors.length > 0) {
+    console.error('[Environment] Validation failed:');
+    result.errors.forEach((error) => console.error(`  - ${error}`));
+  }
+
+  if (result.warnings.length > 0) {
+    console.warn('[Environment] Validation warnings:');
+    result.warnings.forEach((warning) => console.warn(`  - ${warning}`));
+  }
+
+  if (result.valid && result.errors.length === 0 && result.warnings.length === 0) {
+    return;
   }
 }
