@@ -31,8 +31,8 @@ describe('envValidation', () => {
 
       const result = validateEnvironment()
 
-      expect(result.valid).toBe(true)
-      expect(result.warnings.length).toBeGreaterThan(0)
+      expect(result.valid).toBe(false)
+      expect(result.missing.length).toBeGreaterThan(0)
     })
 
     it('should return error when env var has invalid format', () => {
