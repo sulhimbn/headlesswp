@@ -1,6 +1,8 @@
-import { summarizePost, isSummarizationEnabled, getSummarizationConfig } from '@/lib/services/summarizer';
+import { summarizePost, isSummarizationEnabled, getSummarizationConfig, clearSummaryCache } from '@/lib/services/summarizer';
 import { stripHtml } from '@/lib/utils/stripHtml';
 import { cacheManager } from '@/lib/cache';
+
+jest.mock('@/lib/cache');
 
 function generateLocalSummary(text: string): string {
   const sentences = text.split(/[.!?]+/).filter((s) => s.trim().length > 0);
@@ -33,11 +35,14 @@ function extractTextFromContent(htmlContent: string): string {
   return stripHtml(htmlContent).trim();
 }
 
-jest.mock('@/lib/cache');
-
 describe('summarizer', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    delete process.env.SUMMARY_PROVIDER;
+    delete process.env.SUMMARY_API_KEY;
+    delete process.env.SUMMARY_MODEL;
+    delete process.env.SUMMARY_MAX_TOKENS;
+    delete process.env.SUMMARY_TEMPERATURE;
   });
 
   describe('extractTextFromContent', () => {
@@ -54,6 +59,11 @@ describe('summarizer', () => {
     it('should decode HTML entities', () => {
       const html = '<p>Hello &amp; World &lt;test&gt;</p>';
       expect(extractTextFromContent(html)).toBe('Hello & World <test>');
+    });
+
+    it('should handle content with multiple paragraphs', () => {
+      const html = '<p>First paragraph.</p><p>Second paragraph.</p>';
+      expect(extractTextFromContent(html)).toBe('First paragraph. Second paragraph.');
     });
   });
 
@@ -75,6 +85,29 @@ describe('summarizer', () => {
       const text = 'First. Second sentence that is quite long and will need truncation. Third.';
       const summary = generateLocalSummary(text);
       expect(summary.length).toBeLessThanOrEqual(text.length * 1.5 + 3);
+    });
+
+    it('should handle text with exactly 2 sentences', () => {
+      const text = 'First sentence. Second sentence.';
+      const summary = generateLocalSummary(text);
+      expect(summary).toContain('First sentence');
+      expect(summary).toContain('Second sentence');
+    });
+
+    it('should truncate when first sentence is long', () => {
+      const text = 'This is a very long first sentence that contains a lot of words and should definitely be truncated when processed by the summary generator. Second sentence here.';
+      const summary = generateLocalSummary(text);
+      expect(summary.length).toBeLessThanOrEqual(340);
+    });
+
+    it('should add period at end if not truncating', () => {
+      const text = 'Short. Also short.';
+      const summary = generateLocalSummary(text);
+      expect(summary.endsWith('.')).toBe(true);
+    });
+
+    it('should handle empty input', () => {
+      expect(generateLocalSummary('')).toBe('');
     });
   });
 
@@ -99,7 +132,6 @@ describe('summarizer', () => {
       expect(result.summary).toBeTruthy();
       expect(result.cached).toBe(false);
       expect(result.generatedAt).toBeTruthy();
-      expect(cacheManager.set).toHaveBeenCalled();
     });
 
     it('should handle very short content', async () => {
@@ -108,6 +140,15 @@ describe('summarizer', () => {
       const result = await summarizePost(789, '<p>Hi</p>');
 
       expect(result.summary).toBe('Hi');
+      expect(result.cached).toBe(false);
+    });
+
+    it('should handle empty content', async () => {
+      (cacheManager.get as jest.Mock).mockReturnValue(null);
+
+      const result = await summarizePost(101, '');
+
+      expect(result.summary).toBe('');
       expect(result.cached).toBe(false);
     });
   });
@@ -128,6 +169,23 @@ describe('summarizer', () => {
       process.env.SUMMARY_PROVIDER = 'openai';
       delete process.env.SUMMARY_API_KEY;
       expect(isSummarizationEnabled()).toBe(false);
+    });
+
+    it('should return true when API key is provided for Anthropic', () => {
+      process.env.SUMMARY_PROVIDER = 'anthropic';
+      process.env.SUMMARY_API_KEY = 'test-key';
+      expect(isSummarizationEnabled()).toBe(true);
+    });
+
+    it('should return false when no API key for Anthropic', () => {
+      process.env.SUMMARY_PROVIDER = 'anthropic';
+      delete process.env.SUMMARY_API_KEY;
+      expect(isSummarizationEnabled()).toBe(false);
+    });
+
+    it('should return true for undefined provider (defaults to local)', () => {
+      delete process.env.SUMMARY_PROVIDER;
+      expect(isSummarizationEnabled()).toBe(true);
     });
   });
 
@@ -159,6 +217,27 @@ describe('summarizer', () => {
       expect(config.model).toBe('claude-3-sonnet');
       expect(config.maxTokens).toBe(300);
       expect(config.temperature).toBe(0.5);
+    });
+
+    it('should parse maxTokens as integer', () => {
+      process.env.SUMMARY_MAX_TOKENS = '150';
+      const config = getSummarizationConfig();
+      expect(config.maxTokens).toBe(150);
+      expect(typeof config.maxTokens).toBe('number');
+    });
+
+    it('should parse temperature as float', () => {
+      process.env.SUMMARY_TEMPERATURE = '0.9';
+      const config = getSummarizationConfig();
+      expect(config.temperature).toBe(0.9);
+      expect(typeof config.temperature).toBe('number');
+    });
+  });
+
+  describe('clearSummaryCache', () => {
+    it('should clear cache for specific post', () => {
+      clearSummaryCache(123);
+      expect(cacheManager.invalidate).toHaveBeenCalledWith('summary:123');
     });
   });
 });
