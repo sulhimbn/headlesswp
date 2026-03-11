@@ -117,6 +117,26 @@ export default function RootLayout({
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }}
         />
+        <script
+          type="speculationrules"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              prerender: [
+                {
+                  source: 'document',
+                  where: {
+                    and: [
+                      { href: { matches: '/berita/**' } },
+                      { element: { role: 'link' } }
+                    ]
+                  },
+                  eager_prerender: false,
+                  prefetch_after: '0.5s'
+                }
+              ]
+            })
+          }}
+        />
       </head>
       <body className={inter.className}>
         <ErrorBoundary>
