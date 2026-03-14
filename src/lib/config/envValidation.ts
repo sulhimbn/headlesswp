@@ -1,14 +1,14 @@
 export interface EnvValidationResult {
   valid: boolean;
   missing: string[];
-  errors: string[];
   warnings: string[];
+  errors?: string[];
 }
 
 export interface EnvVariable {
   name: string;
   required: boolean;
-  description?: string;
+  description: string;
   pattern?: RegExp;
   defaultValue?: string;
 }
@@ -39,6 +39,7 @@ const OPTIONAL_ENV_VARS: EnvVariable[] = [
     name: 'NEXT_PUBLIC_SITE_URL_WWW',
     required: false,
     description: 'The www URL of this Next.js site',
+    pattern: /^https?:\/\/.+/,
   },
   {
     name: 'NEXT_PUBLIC_FEATURE_PERSONALIZED_RECOMMENDATIONS',
@@ -59,20 +60,15 @@ const OPTIONAL_ENV_VARS: EnvVariable[] = [
 
 export function validateEnvironment(): EnvValidationResult {
   const missing: string[] = [];
-  const errors: string[] = [];
   const warnings: string[] = [];
+  const errors: string[] = [];
 
   for (const envVar of REQUIRED_ENV_VARS) {
     const value = process.env[envVar.name];
-
+    
     if (!value) {
       if (envVar.required) {
         missing.push(envVar.name);
-        errors.push(`Required environment variable ${envVar.name} is not set`);
-      } else if (envVar.defaultValue) {
-        warnings.push(
-          `Environment variable ${envVar.name} not set, using default: ${envVar.defaultValue}`
-        );
       }
       continue;
     }
@@ -86,14 +82,20 @@ export function validateEnvironment(): EnvValidationResult {
 
   for (const envVar of OPTIONAL_ENV_VARS) {
     const value = process.env[envVar.name];
-
+    
     if (!value) {
-      warnings.push(`${envVar.name} is not set (optional)`);
+      if (envVar.defaultValue) {
+        warnings.push(
+          `Environment variable ${envVar.name} not set, using default: ${envVar.defaultValue}`
+        );
+      } else {
+        warnings.push(`${envVar.name} is not set (optional)`);
+      }
       continue;
     }
 
     if (envVar.pattern && !envVar.pattern.test(value)) {
-      warnings.push(
+      errors.push(
         `Environment variable ${envVar.name} has invalid format: ${value}`
       );
     }
@@ -108,8 +110,8 @@ export function validateEnvironment(): EnvValidationResult {
   return {
     valid: missing.length === 0 && errors.length === 0,
     missing,
-    errors,
     warnings,
+    errors,
   };
 }
 
@@ -159,17 +161,17 @@ export function assertEnvironment(): void {
 export function logEnvironmentValidation(): void {
   const result = validateEnvironment();
 
-  if (result.errors.length > 0) {
-    console.error('[Environment] Validation failed:');
-    result.errors.forEach((error) => console.error(`  - ${error}`));
+  if (result.errors && result.errors.length > 0) {
+    console.error('[Environment] Validation failed:')
+    result.errors.forEach((error) => console.error(`  - ${error}`))
   }
 
   if (result.warnings.length > 0) {
-    console.warn('[Environment] Validation warnings:');
-    result.warnings.forEach((warning) => console.warn(`  - ${warning}`));
+    console.warn('[Environment] Validation warnings:')
+    result.warnings.forEach((warning) => console.warn(`  - ${warning}`))
   }
 
-  if (result.valid && result.errors.length === 0 && result.warnings.length === 0) {
+  if (result.valid && (!result.errors || result.errors.length === 0) && result.warnings.length === 0) {
     // Silent success - no need to log in production
   }
 }
