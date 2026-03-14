@@ -134,5 +134,15 @@ export const UI_TEXT = {
   },
   icon: {
     loading: 'Memuat'
+  },
+  keyboardShortcuts: {
+    title: 'Pintasan Keyboard',
+    close: 'Tutup',
+    help: 'Tampilkan bantuan pintasan keyboard',
+    focusSearch: 'Fokus bilah pencarian',
+    nextPost: 'Navigasi ke artikel berikutnya',
+    previousPost: 'Navigasi ke artikel sebelumnya',
+    closeModal: 'Tutup modal atau menu',
+    pressToShow: 'Tekan ? kapan saja untuk melihat dialog ini'
   }
 } as const

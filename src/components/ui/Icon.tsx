@@ -1,7 +1,7 @@
 import { memo } from 'react'
 import { UI_TEXT } from '@/lib/constants/uiText'
 
-export type IconType = 'facebook' | 'twitter' | 'instagram' | 'close' | 'menu' | 'search' | 'loading' | 'sun' | 'moon'
+export type IconType = 'facebook' | 'twitter' | 'instagram' | 'close' | 'menu' | 'search' | 'loading' | 'sun' | 'moon' | 'keyboard' | 'arrow-down' | 'arrow-up'
 
 export interface IconProps {
   type: IconType
@@ -66,6 +66,24 @@ function IconComponent({ type, className, 'aria-hidden': ariaHidden = true }: Ic
       return (
         <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden={shouldHideFromScreenReader}>
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+        </svg>
+      )
+    case 'keyboard':
+      return (
+        <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden={shouldHideFromScreenReader}>
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+        </svg>
+      )
+    case 'arrow-down':
+      return (
+        <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden={shouldHideFromScreenReader}>
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+        </svg>
+      )
+    case 'arrow-up':
+      return (
+        <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden={shouldHideFromScreenReader}>
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
         </svg>
       )
     default:
