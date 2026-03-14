@@ -1,108 +1,204 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, fireEvent, act } from '@testing-library/react'
+import '@testing-library/jest-dom'
 import ReadingProgress from '@/components/ui/ReadingProgress'
 
-describe('ReadingProgress Component', () => {
+describe('ReadingProgress', () => {
+  let originalInnerHeight: number
+  let originalScrollHeight: number
+  let originalScrollY: number
+
   beforeEach(() => {
-    jest.useFakeTimers()
+    jest.clearAllMocks()
     
-    window.addEventListener = jest.fn()
-    window.removeEventListener = jest.fn()
-    window.requestAnimationFrame = jest.fn((cb) => {
-      cb(0)
-      return 0
+    originalInnerHeight = window.innerHeight
+    originalScrollHeight = document.documentElement.scrollHeight
+    originalScrollY = window.scrollY
+    
+    Object.defineProperty(window, 'innerHeight', {
+      writable: true,
+      configurable: true,
+      value: 800,
+    })
+    Object.defineProperty(document.documentElement, 'scrollHeight', {
+      writable: true,
+      configurable: true,
+      value: 2000,
     })
     
-    Object.defineProperty(window, 'scrollY', { value: 0, writable: true })
-    Object.defineProperty(window, 'innerHeight', { value: 800, writable: true })
-    Object.defineProperty(document.documentElement, 'scrollHeight', { value: 1800, writable: true })
+    Object.defineProperty(window, 'scrollY', {
+      writable: true,
+      configurable: true,
+      value: 0,
+    })
+    
+    window.scrollTo = jest.fn()
+    window.addEventListener = jest.fn()
+    window.removeEventListener = jest.fn()
+    window.requestAnimationFrame = jest.fn() as unknown as (callback: FrameRequestCallback) => number
+    document.getElementById = jest.fn().mockReturnValue({
+      getBoundingClientRect: () => ({ top: 100 })
+    })
   })
 
   afterEach(() => {
-    jest.useRealTimers()
+    jest.restoreAllMocks()
+    Object.defineProperty(window, 'innerHeight', {
+      writable: true,
+      configurable: true,
+      value: originalInnerHeight,
+    })
+    Object.defineProperty(document.documentElement, 'scrollHeight', {
+      writable: true,
+      configurable: true,
+      value: originalScrollHeight,
+    })
+    Object.defineProperty(window, 'scrollY', {
+      writable: true,
+      configurable: true,
+      value: originalScrollY,
+    })
   })
 
-  describe('Progress bar renders', () => {
-    test('does not render when scroll position is at top', () => {
-      Object.defineProperty(window, 'scrollY', { value: 0, writable: true })
+  describe('Rendering', () => {
+    it('should not render when progress is 0', () => {
+      Object.defineProperty(window, 'scrollY', {
+        writable: true,
+        configurable: true,
+        value: 0,
+      })
       
       const { container } = render(<ReadingProgress />)
       
-      jest.runAllTimers()
-      
-      expect(container.firstChild).not.toBeInTheDocument()
+      expect(container.firstChild).toBeNull()
     })
-  })
 
-  describe('Progress updates on scroll', () => {
-    test('registers scroll event listener on mount', () => {
-      Object.defineProperty(window, 'scrollY', { value: 500, writable: true })
+    it('should render progress bar when scrolling', async () => {
+      Object.defineProperty(window, 'scrollY', {
+        writable: true,
+        configurable: true,
+        value: 500,
+      })
+      
+      const { container } = render(<ReadingProgress />)
+      
+      await act(async () => {})
+      
+      expect(container.firstChild).not.toBeNull()
+    })
+
+    it('should have correct accessibility attributes', async () => {
+      Object.defineProperty(window, 'scrollY', {
+        writable: true,
+        configurable: true,
+        value: 500,
+      })
       
       render(<ReadingProgress />)
       
-      expect(window.addEventListener).toHaveBeenCalledWith(
-        'scroll',
-        expect.any(Function),
-        { passive: true }
-      )
-    })
-
-    test('registers resize event listener on mount', () => {
-      Object.defineProperty(window, 'scrollY', { value: 500, writable: true })
+      await act(async () => {})
       
-      render(<ReadingProgress />)
-      
-      expect(window.addEventListener).toHaveBeenCalledWith(
-        'resize',
-        expect.any(Function),
-        { passive: true }
-      )
+      const progressBar = document.querySelector('[role="progressbar"]')
+      expect(progressBar).toHaveAttribute('aria-valuemin', '0')
+      expect(progressBar).toHaveAttribute('aria-valuemax', '100')
+      expect(progressBar).toHaveAttribute('aria-label', 'Kemajuan membaca')
     })
   })
 
-  describe('Cleanup on unmount', () => {
-    test('removes event listeners on unmount', () => {
-      Object.defineProperty(window, 'scrollY', { value: 500, writable: true })
+  describe('Scroll calculation', () => {
+    it('should calculate progress correctly', async () => {
+      Object.defineProperty(window, 'scrollY', {
+        writable: true,
+        configurable: true,
+        value: 600,
+      })
+      
+      render(<ReadingProgress />)
+      
+      await act(async () => {})
+      
+      const progressBar = document.querySelector('[role="progressbar"]')
+      const valuenow = parseInt(progressBar?.getAttribute('aria-valuenow') || '0', 10)
+      expect(valuenow).toBeGreaterThan(0)
+    })
+
+    it('should cap progress at 100%', async () => {
+      Object.defineProperty(window, 'scrollY', {
+        writable: true,
+        configurable: true,
+        value: 2000,
+      })
+      
+      render(<ReadingProgress />)
+      
+      await act(async () => {})
+      
+      const progressBar = document.querySelector('[role="progressbar"]')
+      const valuenow = parseInt(progressBar?.getAttribute('aria-valuenow') || '0', 10)
+      expect(valuenow).toBeLessThanOrEqual(100)
+    })
+
+    it('should use custom targetId', () => {
+      const mockGetElementById = jest.fn().mockReturnValue(null)
+      global.document.getElementById = mockGetElementById
+
+      render(<ReadingProgress targetId="custom-article" />)
+      
+      expect(mockGetElementById).toHaveBeenCalledWith('custom-article')
+    })
+  })
+
+  describe('Cleanup', () => {
+    it('should remove scroll listener on unmount', () => {
+      const removeEventListenerSpy = jest.spyOn(window, 'removeEventListener')
       
       const { unmount } = render(<ReadingProgress />)
       
-      expect(window.addEventListener).toHaveBeenCalledWith(
-        'scroll',
-        expect.any(Function),
-        { passive: true }
-      )
-      
       unmount()
       
-      expect(window.removeEventListener).toHaveBeenCalledWith(
-        'scroll',
-        expect.any(Function)
-      )
-      expect(window.removeEventListener).toHaveBeenCalledWith(
-        'resize',
-        expect.any(Function)
-      )
+      expect(removeEventListenerSpy).toHaveBeenCalledWith('scroll', expect.any(Function))
+      expect(removeEventListenerSpy).toHaveBeenCalledWith('resize', expect.any(Function))
+    })
+
+    it('should add scroll and resize listeners on mount', () => {
+      const addEventListenerSpy = jest.spyOn(window, 'addEventListener')
+      
+      render(<ReadingProgress />)
+      
+      expect(addEventListenerSpy).toHaveBeenCalledWith('scroll', expect.any(Function), { passive: true })
+      expect(addEventListenerSpy).toHaveBeenCalledWith('resize', expect.any(Function), { passive: true })
     })
   })
 
-  describe('Component behavior', () => {
-    test('renders with default targetId', () => {
-      Object.defineProperty(window, 'scrollY', { value: 500, writable: true })
+  describe('Edge cases', () => {
+    it('should handle zero document height', () => {
+      Object.defineProperty(document.documentElement, 'scrollHeight', {
+        writable: true,
+        configurable: true,
+        value: 800,
+      })
+      
+      Object.defineProperty(window, 'scrollY', {
+        writable: true,
+        configurable: true,
+        value: 0,
+      })
       
       const { container } = render(<ReadingProgress />)
       
-      jest.runAllTimers()
-      
-      expect(container.firstChild).not.toBeInTheDocument()
+      expect(container.firstChild).toBeNull()
     })
 
-    test('handles missing target element gracefully', () => {
-      Object.defineProperty(window, 'scrollY', { value: 500, writable: true })
+    it('should handle missing target element', () => {
+      global.document.getElementById = jest.fn().mockReturnValue(null)
+      Object.defineProperty(window, 'scrollY', {
+        writable: true,
+        configurable: true,
+        value: 100,
+      })
       
-      const { container } = render(<ReadingProgress targetId="non-existent" />)
+      const { container } = render(<ReadingProgress />)
       
-      jest.runAllTimers()
-      
-      expect(container.firstChild).not.toBeInTheDocument()
+      expect(container.firstChild).toBeNull()
     })
   })
 })

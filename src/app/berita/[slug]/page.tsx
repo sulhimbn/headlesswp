@@ -59,7 +59,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
       siteName: 'Mitra Banten News',
       images: [
         {
-          url: post.mediaUrl ? post.mediaUrl : `${baseUrl}/api/og/${post.slug}`,
+          url: `${baseUrl}/api/og/${post.slug}`,
           width: 1200,
           height: 630,
           alt: stripHtml(post.title.rendered),
@@ -74,7 +74,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
       card: 'summary_large_image',
       title: post.title.rendered,
       description,
-      images: [post.mediaUrl ? post.mediaUrl : `${baseUrl}/api/og/${post.slug}`],
+      images: [`${baseUrl}/api/og/${post.slug}`],
     },
   }
 }

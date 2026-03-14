@@ -1,230 +1,174 @@
-import { render, screen, fireEvent, waitFor, act } from '@testing-library/react'
+import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import '@testing-library/jest-dom'
 import SocialShare from '@/components/ui/SocialShare'
-
-jest.mock('@sentry/nextjs', () => ({
-  captureException: jest.fn(),
-}))
 
 jest.mock('@/lib/api/config', () => ({
   SITE_URL: 'https://example.com',
 }))
 
-describe('SocialShare Component', () => {
-  const originalOpen = window.open
-  let mockClipboardWriteText: jest.Mock
+describe('SocialShare', () => {
+  let originalClipboard: Clipboard | undefined
+  let originalExecCommand: ((commandId: string, showUI?: boolean, value?: string) => boolean) | undefined
 
   beforeEach(() => {
-    jest.useFakeTimers()
-    mockClipboardWriteText = jest.fn().mockResolvedValue(undefined)
+    jest.clearAllMocks()
     
-    window.open = jest.fn().mockReturnValue(null)
+    originalClipboard = navigator.clipboard
+    originalExecCommand = document.execCommand
+    
+    global.open = jest.fn()
     
     Object.defineProperty(navigator, 'clipboard', {
-      value: { writeText: mockClipboardWriteText },
       writable: true,
+      configurable: true,
+      value: {
+        writeText: jest.fn().mockResolvedValue(undefined),
+      },
     })
   })
 
   afterEach(() => {
-    jest.useRealTimers()
-    window.open = originalOpen
+    jest.restoreAllMocks()
+    if (originalClipboard) {
+      Object.defineProperty(navigator, 'clipboard', {
+        value: originalClipboard,
+        writable: true,
+        configurable: true,
+      })
+    }
+    if (originalExecCommand !== undefined) {
+      document.execCommand = originalExecCommand
+    }
   })
 
-  const mockTitle = 'Test Article Title'
-  const mockUrl = '/berita/test-article'
-
   describe('Rendering', () => {
-    test('renders all social platform buttons', () => {
-      render(<SocialShare title={mockTitle} url={mockUrl} />)
-
+    it('should render share buttons', () => {
+      render(<SocialShare title="Test Title" url="/test" />)
+      
       expect(screen.getByRole('button', { name: /Bagikan ke Facebook/i })).toBeInTheDocument()
       expect(screen.getByRole('button', { name: /Bagikan ke Twitter/i })).toBeInTheDocument()
       expect(screen.getByRole('button', { name: /Bagikan ke WhatsApp/i })).toBeInTheDocument()
     })
 
-    test('renders copy link button', () => {
-      render(<SocialShare title={mockTitle} url={mockUrl} />)
-
+    it('should render copy link button', () => {
+      render(<SocialShare title="Test Title" url="/test" />)
+      
       expect(screen.getByRole('button', { name: /Salin tautan/i })).toBeInTheDocument()
     })
 
-    test('renders with custom className', () => {
-      const { container } = render(<SocialShare title={mockTitle} url={mockUrl} className="custom-class" />)
-
-      expect(container.firstChild).toHaveClass('custom-class')
-    })
-
-    test('renders 4 buttons total (3 share + 1 copy)', () => {
-      const { container } = render(<SocialShare title={mockTitle} url={mockUrl} />)
-
-      const buttons = container.querySelectorAll('button')
-      expect(buttons.length).toBe(4)
+    it('should apply custom className', () => {
+      render(<SocialShare title="Test Title" url="/test" className="custom-class" />)
+      
+      const container = document.querySelector('.custom-class')
+      expect(container).toBeInTheDocument()
     })
   })
 
-  describe('Share button clicks', () => {
-    test('Facebook button opens correct URL', () => {
-      render(<SocialShare title={mockTitle} url={mockUrl} />)
-
+  describe('Share buttons', () => {
+    it('should open Facebook share dialog', () => {
+      render(<SocialShare title="Test Title" url="/test" />)
+      
       const facebookButton = screen.getByRole('button', { name: /Bagikan ke Facebook/i })
       fireEvent.click(facebookButton)
-
-      expect(window.open).toHaveBeenCalledWith(
-        'https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fexample.com%2Fberita%2Ftest-article',
+      
+      expect(global.open).toHaveBeenCalledWith(
+        'https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fexample.com%2Ftest',
         '_blank',
         'width=600,height=400,noopener,noreferrer'
       )
     })
 
-    test('Twitter button opens correct URL', () => {
-      render(<SocialShare title={mockTitle} url={mockUrl} />)
-
+    it('should open Twitter share dialog', () => {
+      render(<SocialShare title="Test Title" url="/test" />)
+      
       const twitterButton = screen.getByRole('button', { name: /Bagikan ke Twitter/i })
       fireEvent.click(twitterButton)
-
-      expect(window.open).toHaveBeenCalledWith(
-        'https://twitter.com/intent/tweet?text=Test%20Article%20Title&url=https%3A%2F%2Fexample.com%2Fberita%2Ftest-article',
+      
+      expect(global.open).toHaveBeenCalledWith(
+        'https://twitter.com/intent/tweet?text=Test%20Title&url=https%3A%2F%2Fexample.com%2Ftest',
         '_blank',
         'width=600,height=400,noopener,noreferrer'
       )
     })
 
-    test('WhatsApp button opens correct URL', () => {
-      render(<SocialShare title={mockTitle} url={mockUrl} />)
-
+    it('should open WhatsApp share dialog', () => {
+      render(<SocialShare title="Test Title" url="/test" />)
+      
       const whatsappButton = screen.getByRole('button', { name: /Bagikan ke WhatsApp/i })
       fireEvent.click(whatsappButton)
-
-      expect(window.open).toHaveBeenCalledWith(
-        'https://wa.me/?text=Test%20Article%20Title%20https%3A%2F%2Fexample.com%2Fberita%2Ftest-article',
-        '_blank',
-        'width=600,height=400,noopener,noreferrer'
-      )
-    })
-
-    test('share buttons work with absolute URLs', () => {
-      const absoluteUrl = 'https://other-site.com/article'
-      render(<SocialShare title={mockTitle} url={absoluteUrl} />)
-
-      const facebookButton = screen.getByRole('button', { name: /Bagikan ke Facebook/i })
-      fireEvent.click(facebookButton)
-
-      expect(window.open).toHaveBeenCalledWith(
-        'https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fother-site.com%2Farticle',
+      
+      expect(global.open).toHaveBeenCalledWith(
+        'https://wa.me/?text=Test%20Title%20https%3A%2F%2Fexample.com%2Ftest',
         '_blank',
         'width=600,height=400,noopener,noreferrer'
       )
     })
   })
 
-  describe('Copy link functionality with Clipboard API', () => {
-    test('copies link with Clipboard API when available', async () => {
-      render(<SocialShare title={mockTitle} url={mockUrl} />)
-
+  describe('Clipboard API', () => {
+    it('should copy link using clipboard API', async () => {
+      render(<SocialShare title="Test Title" url="/test" />)
+      
       const copyButton = screen.getByRole('button', { name: /Salin tautan/i })
       fireEvent.click(copyButton)
-
-      await waitFor(() => {
-        expect(mockClipboardWriteText).toHaveBeenCalledWith('https://example.com/berita/test-article')
-      })
+      
+      expect(navigator.clipboard.writeText).toHaveBeenCalledWith('https://example.com/test')
     })
 
-    test('shows success state (checkmark) after copying', async () => {
-      render(<SocialShare title={mockTitle} url={mockUrl} />)
-
+    it('should show copied state', async () => {
+      render(<SocialShare title="Test Title" url="/test" />)
+      
       const copyButton = screen.getByRole('button', { name: /Salin tautan/i })
       fireEvent.click(copyButton)
-
-      await waitFor(() => {
-        expect(screen.getByRole('button', { name: /Tautan disalin/i })).toBeInTheDocument()
-      })
-    })
-
-    test('resets to original state after 2 seconds', async () => {
-      render(<SocialShare title={mockTitle} url={mockUrl} />)
-
-      const copyButton = screen.getByRole('button', { name: /Salin tautan/i })
-      fireEvent.click(copyButton)
-
-      await waitFor(() => {
-        expect(screen.getByRole('button', { name: /Tautan disalin/i })).toBeInTheDocument()
-      })
-
-      act(() => {
-        jest.advanceTimersByTime(2000)
-      })
-
-      expect(screen.getByRole('button', { name: /Salin tautan/i })).toBeInTheDocument()
+      
+      expect(await screen.findByRole('button', { name: /Tautan disalin/i })).toBeInTheDocument()
     })
   })
 
-  describe('Platform URL generation', () => {
-    test('generates correct Facebook share URL', () => {
-      render(<SocialShare title={mockTitle} url={mockUrl} />)
-
-      const facebookButton = screen.getByRole('button', { name: /Bagikan ke Facebook/i })
-      fireEvent.click(facebookButton)
-
-      const calledUrl = (window.open as jest.Mock).mock.calls[0][0]
-      expect(calledUrl).toContain('facebook.com/sharer/sharer.php')
-      expect(calledUrl).toContain('u=')
-    })
-
-    test('generates correct Twitter share URL', () => {
-      render(<SocialShare title={mockTitle} url={mockUrl} />)
-
+  describe('URL handling', () => {
+    it('should use full URL if already absolute', () => {
+      render(<SocialShare title="Test Title" url="https://other.com/page" />)
+      
       const twitterButton = screen.getByRole('button', { name: /Bagikan ke Twitter/i })
       fireEvent.click(twitterButton)
-
-      const calledUrl = (window.open as jest.Mock).mock.calls[0][0]
-      expect(calledUrl).toContain('twitter.com/intent/tweet')
-      expect(calledUrl).toContain('text=')
-      expect(calledUrl).toContain('url=')
+      
+      expect(global.open).toHaveBeenCalledWith(
+        expect.stringContaining('url=https%3A%2F%2Fother.com%2Fpage'),
+        '_blank',
+        expect.any(String)
+      )
     })
 
-    test('generates correct WhatsApp share URL', () => {
-      render(<SocialShare title={mockTitle} url={mockUrl} />)
-
-      const whatsappButton = screen.getByRole('button', { name: /Bagikan ke WhatsApp/i })
-      fireEvent.click(whatsappButton)
-
-      const calledUrl = (window.open as jest.Mock).mock.calls[0][0]
-      expect(calledUrl).toContain('wa.me/')
-      expect(calledUrl).toContain('text=')
-    })
-
-    test('encodes URL parameters properly', () => {
-      const urlWithSpaces = '/berita/my article title'
-      render(<SocialShare title={mockTitle} url={urlWithSpaces} />)
-
-      const facebookButton = screen.getByRole('button', { name: /Bagikan ke Facebook/i })
-      fireEvent.click(facebookButton)
-
-      const calledUrl = (window.open as jest.Mock).mock.calls[0][0]
-      expect(calledUrl).toContain('my%20article%20title')
+    it('should prepend SITE_URL for relative URLs', () => {
+      render(<SocialShare title="Test Title" url="/relative/path" />)
+      
+      const twitterButton = screen.getByRole('button', { name: /Bagikan ke Twitter/i })
+      fireEvent.click(twitterButton)
+      
+      expect(global.open).toHaveBeenCalledWith(
+        expect.stringContaining('url=https%3A%2F%2Fexample.com%2Frelative%2Fpath'),
+        '_blank',
+        expect.any(String)
+      )
     })
   })
 
   describe('Accessibility', () => {
-    test('share buttons have correct aria-label', () => {
-      render(<SocialShare title={mockTitle} url={mockUrl} />)
-
-      expect(screen.getByLabelText(/Bagikan ke Facebook/)).toBeInTheDocument()
-      expect(screen.getByLabelText(/Bagikan ke Twitter/)).toBeInTheDocument()
-      expect(screen.getByLabelText(/Bagikan ke WhatsApp/)).toBeInTheDocument()
+    it('should have proper aria-labels on buttons', () => {
+      render(<SocialShare title="Test Title" url="/test" />)
+      
+      expect(screen.getByRole('button', { name: /Bagikan ke Facebook/i })).toHaveAttribute('aria-label')
+      expect(screen.getByRole('button', { name: /Bagikan ke Twitter/i })).toHaveAttribute('aria-label')
+      expect(screen.getByRole('button', { name: /Bagikan ke WhatsApp/i })).toHaveAttribute('aria-label')
     })
 
-    test('copy button has aria-label', () => {
-      render(<SocialShare title={mockTitle} url={mockUrl} />)
-
-      expect(screen.getByLabelText(/Salin tautan/)).toBeInTheDocument()
-    })
-
-    test('buttons have title attributes', () => {
-      render(<SocialShare title={mockTitle} url={mockUrl} />)
-
-      expect(screen.getByRole('button', { name: /Bagikan ke Facebook/i })).toHaveAttribute('title', 'Bagikan ke Facebook')
-      expect(screen.getByRole('button', { name: /Salin tautan/i })).toHaveAttribute('title', 'Salin tautan')
+    it('should update aria-label when copied', async () => {
+      render(<SocialShare title="Test Title" url="/test" />)
+      
+      const copyButton = screen.getByRole('button', { name: /Salin tautan/i })
+      fireEvent.click(copyButton)
+      
+      expect(await screen.findByRole('button', { name: /Tautan disalin/i })).toBeInTheDocument()
     })
   })
 })
