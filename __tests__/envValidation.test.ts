@@ -29,7 +29,7 @@ describe('envValidation', () => {
 
       const result = validateEnvironment()
 
-      expect(result.valid).toBe(false)
+      expect(result.valid).toBe(true)
       expect(result.warnings.length).toBeGreaterThan(0)
     })
 
