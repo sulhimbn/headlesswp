@@ -21,7 +21,13 @@ const nextConfig = {
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: '**.your-domain.com',
+        hostname: 'mitrabantennews.com',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: '**.mitrabantennews.com',
+        pathname: '/**',
       },
     ],
   },
