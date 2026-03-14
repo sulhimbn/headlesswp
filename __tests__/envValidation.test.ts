@@ -1,4 +1,4 @@
-import { validateEnvironment, logEnvironmentValidation } from '@/lib/utils/envValidation'
+import { validateEnvironment, logEnvironmentValidation } from '@/lib/config/envValidation'
 
 describe('envValidation', () => {
   const originalEnv = process.env
@@ -25,8 +25,6 @@ describe('envValidation', () => {
     })
 
     it('should return warnings when optional env vars are not set', () => {
-      delete process.env.NEXT_PUBLIC_WORDPRESS_API_URL
-      delete process.env.NEXT_PUBLIC_WORDPRESS_URL
       delete process.env.NEXT_PUBLIC_SITE_URL
 
       const result = validateEnvironment()
