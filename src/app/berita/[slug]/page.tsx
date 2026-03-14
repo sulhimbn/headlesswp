@@ -59,7 +59,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
       siteName: 'Mitra Banten News',
       images: [
         {
-          url: post.mediaUrl || `${baseUrl}/og-image.jpg`,
+          url: post.mediaUrl || `${baseUrl}/api/og/${post.slug}`,
           width: 1200,
           height: 630,
           alt: stripHtml(post.title.rendered),
@@ -74,7 +74,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
       card: 'summary_large_image',
       title: post.title.rendered,
       description,
-      images: [post.mediaUrl || `${baseUrl}/og-image.jpg`],
+      images: [post.mediaUrl || `${baseUrl}/api/og/${post.slug}`],
     },
   }
 }
@@ -155,7 +155,7 @@ export default async function PostPage({ params }: { params: { slug: string } })
               '@context': 'https://schema.org',
               '@type': 'NewsArticle',
               headline: post.title.rendered,
-              image: [post.mediaUrl || `${SITE_URL}/og-image.jpg`],
+              image: [post.mediaUrl || `${SITE_URL}/api/og/${post.slug}`],
               datePublished: post.date,
               dateModified: post.modified,
               author: [{
