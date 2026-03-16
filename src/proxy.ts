@@ -2,15 +2,76 @@ import { NextRequest, NextResponse } from 'next/server'
 import { SITE_URL, SITE_URL_WWW } from './lib/api/config'
 import { generateNonce } from './lib/utils/cspUtils'
 
-export function proxy(_request: NextRequest) {
+const BOT_USER_AGENTS = [
+  'bot',
+  'spider',
+  'crawler',
+  'slurp',
+  'mediapartners',
+  'googlebot',
+  'bingbot',
+  'yandex',
+  'baiduspider',
+  'facebookexternalhit',
+  'twitterbot',
+  'rogerbot',
+  'linkedinbot',
+  'embedly',
+  'quora link preview',
+  'showyoubot',
+  'outbrain',
+  'pinterest',
+  'applebot',
+]
+
+const STATIC_EXTENSIONS = [
+  '.js',
+  '.css',
+  '.png',
+  '.jpg',
+  '.jpeg',
+  '.gif',
+  '.svg',
+  '.ico',
+  '.woff',
+  '.woff2',
+  '.ttf',
+  '.eot',
+]
+
+export function proxy(request: NextRequest) {
   const response = NextResponse.next()
   
   const nonce = generateNonce()
   
   response.headers.set('x-nonce', nonce)
+
+  const userAgent = request.headers?.get?.('user-agent') || ''
+  const isBot = BOT_USER_AGENTS.some(bot => 
+    userAgent.toLowerCase().includes(bot)
+  )
+
+  if (isBot) {
+    response.headers.set('X-Bot-Detected', 'true')
+  }
+
+  const url = request.nextUrl?.pathname || ''
+  const isStatic = STATIC_EXTENSIONS.some(ext => url.endsWith(ext))
   
-  // Enhanced CSP with nonce for dynamic content
-  // In production, unsafe-inline and unsafe-eval are removed for better security
+  if (isStatic) {
+    response.headers.set(
+      'Cache-Control', 
+      'public, max-age=31536000, immutable'
+    )
+  } else {
+    response.headers.set(
+      'Cache-Control', 
+      'public, max-age=3600, stale-while-revalidate=86400'
+    )
+  }
+
+  response.headers.set('X-Middleware-Cache', 'miss')
+
   const isDevelopment = process.env.NODE_ENV === 'development'
   const csp = [
     "default-src 'self'",
@@ -25,7 +86,6 @@ export function proxy(_request: NextRequest) {
     "form-action 'self'",
     "frame-ancestors 'none'",
     "upgrade-insecure-requests",
-    // Report violations in development
     ...(isDevelopment ? [
       `report-uri /api/csp-report`
     ] : [])
@@ -33,7 +93,6 @@ export function proxy(_request: NextRequest) {
   
   response.headers.set('Content-Security-Policy', csp)
   
-  // Additional security headers
   response.headers.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload')
   response.headers.set('X-Frame-Options', 'DENY')
   response.headers.set('X-Content-Type-Options', 'nosniff')
@@ -51,7 +110,6 @@ export function proxy(_request: NextRequest) {
     'accelerometer=()'
   ].join(', '))
 
-  // Cross-origin isolation headers
   response.headers.set('Cross-Origin-Opener-Policy', 'same-origin')
   response.headers.set('Cross-Origin-Resource-Policy', 'same-origin')
   response.headers.set('Cross-Origin-Embedder-Policy', 'require-corp')
@@ -61,13 +119,6 @@ export function proxy(_request: NextRequest) {
 
 export const config = {
   matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - api (API routes)
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     */
     '/((?!api|_next/static|_next/image|favicon.ico).*)',
   ],
 }
