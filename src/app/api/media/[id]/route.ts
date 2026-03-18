@@ -1,16 +1,18 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { standardizedAPI } from '@/lib/api/standardized'
 import { isApiResultSuccessful } from '@/lib/api/response'
 import { logger } from '@/lib/utils/logger'
+import { withApiRateLimit } from '@/lib/api/rateLimitMiddleware'
 
-export async function GET(
-  request: Request,
-  { params }: { params: Promise<{ id: string }> }
+async function mediaHandler(
+  request: NextRequest,
+  context?: unknown
 ) {
-  try {
-    const { id } = await params
-    const mediaId = parseInt(id, 10)
+  const { params } = context as { params: Promise<{ id: string }> }
+  const { id } = await params
+  const mediaId = parseInt(id, 10)
 
+  try {
     if (isNaN(mediaId)) {
       return NextResponse.json({ source_url: null }, { status: 200 })
     }
@@ -30,3 +32,5 @@ export async function GET(
     return NextResponse.json({ source_url: null }, { status: 200 })
   }
 }
+
+export const GET = withApiRateLimit(mediaHandler, 'media')

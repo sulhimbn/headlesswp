@@ -71,7 +71,7 @@ async function getTagsMap(): Promise<Map<number, WordPressTag>> {
 
 
 
-async function enrichPostsWithMediaUrls(posts: WordPressPost[]): Promise<PostWithMediaUrl[]> {
+export async function enrichPostsWithMediaUrls(posts: WordPressPost[]): Promise<PostWithMediaUrl[]> {
   const mediaIds = [...new Set(posts.map(post => post.featured_media).filter(id => id > 0))];
   let mediaUrls: Map<number, string | null>;
 

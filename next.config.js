@@ -23,6 +23,10 @@ const nextConfig = {
         protocol: 'https',
         hostname: '**.your-domain.com',
       },
+      {
+        protocol: 'https',
+        hostname: 'secure.gravatar.com',
+      },
     ],
   },
   env: {
