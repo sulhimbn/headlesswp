@@ -234,6 +234,46 @@ The UI supports Indonesian (Bahasa Indonesia) localization through `src/lib/cons
 4. **Type Safety**: Strong TypeScript coverage
 5. **Test Coverage**: Comprehensive unit and integration tests
 
+## Image Optimization
+
+**Next.js Image Component**: All images must use the Next.js `<Image>` component for automatic optimization, lazy loading, and format conversion.
+
+**Required Attributes**:
+- `src`: Image source URL
+- `alt`: Descriptive alt text (accessibility requirement)
+- `width` / `height`: Explicit dimensions to prevent layout shift
+- `sizes`: Responsive sizes attribute for proper srcset generation
+
+**Author Avatars**:
+- Use `next/image` `<Image>` component with `priority` for above-the-fold avatars
+- Include author name in alt text: `${authorName} avatar`
+- Avatar domain (`secure.gravatar.com`) must be in `next.config.js` remotePatterns
+- Use `sizes` prop for responsive images (e.g., `"(max-width: 640px) 64px, 96px"`)
+
+**Remote Patterns Configuration** (`next.config.js`):
+```javascript
+images: {
+  remotePatterns: [
+    { protocol: 'https', hostname: '**.your-domain.com' },
+    { protocol: 'https', hostname: 'secure.gravatar.com' },
+  ],
+}
+```
+
+**Example**:
+```tsx
+<Image
+  src={author.avatar_urls['96']}
+  alt={`${author.name} avatar`}
+  width={96}
+  height={96}
+  sizes="(max-width: 640px) 64px, 96px"
+  priority
+/>
+```
+
+**No Native `<img>` Tags**: Native `<img>` elements are forbidden for user content. Use `<Image>` from `next/image` for all images.
+
 ## API Standards
 
 ### Base URL

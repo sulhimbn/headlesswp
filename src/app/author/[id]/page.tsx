@@ -10,6 +10,7 @@ import dynamic from 'next/dynamic';
 import { UI_TEXT } from '@/lib/constants/uiText';
 import { PARSING } from '@/lib/constants/appConstants';
 import { isApiResultSuccessful } from '@/lib/api/response';
+import Image from 'next/image';
 
 const Footer = dynamic(() => import('@/components/layout/Footer'), {
   loading: () => <div className="h-64 bg-[hsl(var(--color-background-dark))] mt-12" aria-hidden="true" />
@@ -50,15 +51,17 @@ export default async function AuthorPage({
       <Header />
 
       <main id="main-content" aria-labelledby="page-heading" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="bg-[hsl(var(--color-background-secondary))] rounded-lg p-6 mb-8">
+        <div className="bg-[hsl(var(--color-surface))] rounded-lg p-6 mb-8 border border-[hsl(var(--color-border))]">
           <div className="flex items-center gap-4">
             {author.avatar_urls && author.avatar_urls['96'] && (
-              <img
+              <Image
                 src={author.avatar_urls['96']}
-                alt={author.name}
+                alt={`${author.name} avatar`}
                 width={96}
                 height={96}
                 className="rounded-full"
+                sizes="(max-width: 640px) 64px, 96px"
+                priority
               />
             )}
             <div>

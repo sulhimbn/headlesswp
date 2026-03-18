@@ -20,7 +20,7 @@ export default function Error({
     <div className="min-h-screen bg-[hsl(var(--color-background))] flex items-center justify-center px-4">
       <div className="max-w-lg w-full text-center">
         <div className="mb-8">
-          <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-[hsl(var(--color-error)/0.1)] mb-6">
+          <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-[hsl(var(--color-error)_/_0.1)] mb-6">
             <svg
               className="w-10 h-10 text-[hsl(var(--color-error))]"
               fill="none"

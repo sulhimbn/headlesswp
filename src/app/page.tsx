@@ -5,6 +5,7 @@ import PostCard from '@/components/post/PostCard'
 import SectionHeading from '@/components/ui/SectionHeading'
 import dynamic from 'next/dynamic'
 import { UI_TEXT } from '@/lib/constants/uiText'
+import { logger } from '@/lib/utils/logger'
 
 const Footer = dynamic(() => import('@/components/layout/Footer'), {
   loading: () => <div className="h-64 bg-[hsl(var(--color-background-dark))] mt-12" aria-hidden="true" />
@@ -13,7 +14,9 @@ const Footer = dynamic(() => import('@/components/layout/Footer'), {
 export const revalidate = 300 // 5 minutes
 
 export default async function HomePage() {
-  cacheInitializer.initialize().catch(() => {})
+  cacheInitializer.initialize().catch((error) => {
+    logger.warn('Cache initialization failed, continuing without cache', { error })
+  })
 
   const [latestPosts, categoryPosts] = await Promise.all([
     enhancedPostService.getLatestPosts(),

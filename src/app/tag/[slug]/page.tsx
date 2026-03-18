@@ -1,5 +1,5 @@
 import { standardizedAPI } from '@/lib/api/standardized'
-import { enhancedPostService } from '@/lib/services/enhancedPostService'
+import { enrichPostsWithMediaUrls } from '@/lib/services/enhancedPostService'
 import Header from '@/components/layout/Header'
 import PostCard from '@/components/post/PostCard'
 import Pagination from '@/components/ui/Pagination'
@@ -44,12 +44,7 @@ export default async function TagPage({
   const posts = postsResult.data
   const totalPages = postsResult.pagination.totalPages ?? 0
 
-  const postsWithMedia = await enhancedPostService.getLatestPosts()
-
-  const enrichedPosts = posts.map(post => {
-    const enriched = postsWithMedia.find(p => p.id === post.id)
-    return enriched || { ...post, mediaUrl: null }
-  })
+  const enrichedPosts = await enrichPostsWithMediaUrls(posts)
 
   return (
     <div className="min-h-screen bg-[hsl(var(--color-background))]">
