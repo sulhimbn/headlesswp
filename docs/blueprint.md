@@ -1128,6 +1128,78 @@ swagger-cli validate openapi.yaml
 
 **Status**: ✅ Complete - Production-ready
 
+### API Contract Testing
+
+**Last Updated**: 2026-03-19 (Quality Assurance Agent)
+
+**Purpose**: Automated verification that WordPress REST API responses conform to expected schemas, ensuring data integrity and preventing breaking changes.
+
+**Implementation**:
+
+**Location**: `__tests__/api-contract/`
+
+**Files**:
+- `schemas.ts` - JSON Schema definitions for all WordPress entity types
+- `wordpress-api-contract.test.ts` - Schema validation tests for WordPress entities
+- `pagination-contract.test.ts` - Pagination header validation tests
+- `openapi-contract.test.ts` - OpenAPI specification conformance tests
+
+**Test Coverage**:
+| Entity | Required Fields | Data Types | Enum Validation | Collection Support |
+|--------|----------------|------------|-----------------|-------------------|
+| Post | ✅ | ✅ | ✅ (status) | ✅ |
+| Category | ✅ | ✅ | - | ✅ |
+| Tag | ✅ | ✅ | - | ✅ |
+| Media | ✅ | ✅ | ✅ (media_type) | ✅ |
+| Author | ✅ | ✅ | - | ✅ |
+| Search Result | ✅ | ✅ | - | ✅ |
+
+**Schema Definitions**:
+
+```typescript
+interface WordPressPostSchema {
+  id: number;
+  title: { rendered: string };
+  content: { rendered: string };
+  excerpt: { rendered: string };
+  slug: string;
+  date: string;
+  modified: string;
+  author: number;
+  categories: number[];
+  tags: number[];
+  status: 'publish' | 'future' | 'draft' | 'pending' | 'private';
+  type: string;
+  link: string;
+}
+```
+
+**Pagination Testing**:
+```typescript
+describe('Pagination Contract Tests', () => {
+  it('validates X-WP-Total header is present and numeric', () => { ... });
+  it('handles single page response', () => { ... });
+  it('handles empty response', () => { ... });
+});
+```
+
+**Usage**:
+```bash
+npm test -- __tests__/api-contract/
+```
+
+**Dependencies**:
+- `jest-openapi` - OpenAPI spec validation
+- `ajv` - JSON Schema validation
+
+**Benefits**:
+1. **Early Detection**: Catches API contract violations before deployment
+2. **Documentation**: Schemas serve as living documentation
+3. **Type Safety**: Validates data types at runtime
+4. **Regression Prevention**: Prevents breaking changes to API responses
+
+**Status**: ✅ Complete - Production-ready (51 tests)
+
 ## Security Standards
 
 1. **XSS Protection**: DOMPurify on all user-generated content with centralized `sanitizeHTML()` utility
