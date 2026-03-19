@@ -27,3 +27,8 @@ coverage/
 
 # OS
 Thumbs.db
+
+# Playwright
+/playwright-report/
+/test-results/
+playwright-results.xml
