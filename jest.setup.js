@@ -1,6 +1,14 @@
 require('@testing-library/jest-dom')
 require('jest-axe/extend-expect')
 
+const path = require('path')
+try {
+  const jestOpenApi = require('jest-openapi').default
+  jestOpenApi(path.join(__dirname, 'docs/openapi.yaml'))
+} catch (error) {
+  console.warn('Failed to initialize jest-openapi:', error.message)
+}
+
 process.env.WORDPRESS_URL = 'http://localhost:8080'
 process.env.WORDPRESS_API_URL = 'http://localhost:8080/wp-json'
 process.env.NEXT_PUBLIC_WORDPRESS_URL = 'http://localhost:8080'
