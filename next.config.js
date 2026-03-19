@@ -23,7 +23,20 @@ const nextConfig = {
         protocol: 'https',
         hostname: '**.your-domain.com',
       },
+      {
+        protocol: 'https',
+        hostname: 'mitrabantennews.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'www.mitrabantennews.com',
+      },
+      {
+        protocol: 'http',
+        hostname: 'localhost',
+      },
     ],
+    formats: ['image/avif', 'image/webp'],
   },
   env: {
     WORDPRESS_URL: process.env.WORDPRESS_URL,

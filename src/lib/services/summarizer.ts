@@ -37,7 +37,7 @@ function getCacheKey(postId: number): string {
   return `summary:${postId}`;
 }
 
-function extractTextFromContent(htmlContent: string): string {
+export function extractTextFromContent(htmlContent: string): string {
   return stripHtml(htmlContent).trim();
 }
 
@@ -121,7 +121,7 @@ async function generateSummaryWithAnthropic(
   return data.content[0]?.text || '';
 }
 
-function generateLocalSummary(text: string): string {
+export function generateLocalSummary(text: string): string {
   const sentences = text.split(/[.!?]+/).filter((s) => s.trim().length > 0);
   
   if (sentences.length <= 2) {
