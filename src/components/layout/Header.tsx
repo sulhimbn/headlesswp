@@ -6,8 +6,10 @@ import { useState, useEffect, useRef, useCallback, memo, Suspense } from 'react'
 import dynamic from 'next/dynamic'
 import Icon from '@/components/ui/Icon'
 import ServiceStatus from '@/components/ui/ServiceStatus'
+import KeyboardShortcutsHint from '@/components/ui/KeyboardShortcutsHint'
 import { UI_TEXT } from '@/lib/constants/uiText'
 import { useDarkMode } from '@/lib/hooks/useDarkMode'
+import { useKeyboardShortcuts } from '@/lib/hooks/useKeyboardShortcuts'
 
 const SearchBar = dynamic(() => import('@/components/ui/SearchBar'), { ssr: false })
 
@@ -85,7 +87,19 @@ export default memo(function Header() {
     setIsMenuOpen(false)
   }, [])
 
+  const closeAll = useCallback(() => {
+    setIsMenuOpen(false)
+    setIsSearchOpen(false)
+  }, [])
+
+  useKeyboardShortcuts({
+    onToggleSearch: toggleSearch,
+    onCloseModal: closeAll,
+    onToggleDarkMode: toggleDarkMode,
+  })
+
   return (
+    <>
     <header className="bg-[hsl(var(--color-surface))] shadow-[var(--shadow-sm)]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
@@ -214,5 +228,7 @@ export default memo(function Header() {
         </div>
       )}
     </header>
+    <KeyboardShortcutsHint />
+    </>
   )
 })

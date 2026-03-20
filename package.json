@@ -12,6 +12,7 @@
     "typecheck": "tsc --noEmit",
     "analyze": "ANALYZE=true next build",
     "test": "jest",
+    "test:e2e": "playwright test",
     "test:watch": "jest --watch",
     "audit:security": "npm audit --audit-level=moderate",
     "audit:full": "npm audit --audit-level=low",
@@ -32,6 +33,7 @@
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@next/bundle-analyzer": "^16.1.6",
+    "@playwright/test": "^1.49.0",
     "@size-limit/file": "^12.0.0",
     "@size-limit/preset-app": "^12.0.0",
     "@size-limit/webpack": "^12.0.0",

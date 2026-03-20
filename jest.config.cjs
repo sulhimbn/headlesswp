@@ -16,6 +16,7 @@ module.exports = {
   ],
   testMatch: [
     '**/__tests__/**/*test.(ts|tsx|js)',
+    '!**/__tests__/e2e/**',
   ],
   workerIdleMemoryLimit: '512KB',
 }
