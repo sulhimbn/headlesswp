@@ -18,4 +18,15 @@ module.exports = {
     '**/__tests__/**/*test.(ts|tsx|js)',
   ],
   workerIdleMemoryLimit: '512KB',
+  collectCoverage: true,
+  coverageDirectory: 'coverage',
+  coverageReporters: ['text', 'lcov', 'clover'],
+  coverageThreshold: {
+    global: {
+      statements: 70,
+      branches: 60,
+      functions: 70,
+      lines: 70,
+    },
+  },
 }
