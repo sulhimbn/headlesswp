@@ -82,4 +82,26 @@ Note: CodeQL and dedicated secret scanning workflows require GitHub Advanced Sec
 
 ---
 
-*Last updated: 2025-11-14T12:45:00Z*
+*Last updated: 2026-03-20T12:50:00Z*
+
+---
+
+## Update: 2026-03-20
+
+### Vulnerability Fixes Applied
+- **serialize-javascript**: Patched RCE vulnerability (GHSA-5c6j-r48x-rmvq)
+- **flatted**: Patched DoS/Prototype Pollution (GHSA-25h7-pfq9-p65f, GHSA-rf6f-7fwh-wjgh)
+- **dompurify**: Patched XSS vulnerability
+- **next**: Patched multiple moderate vulnerabilities (CSRF bypass, DoS, HTTP request smuggling)
+
+### Actions Taken
+- Ran `npm audit fix --audit-level=high`
+- Result: 0 vulnerabilities
+- All transitive dependencies patched
+
+### New Security Features
+- Added `src/middleware.ts` for edge-level security headers
+  - Bot detection and SEO protection
+  - Cache header optimization
+  - ETag support
+  - Geo-based routing headers (Vercel/Cloudflare compatible)
