@@ -48,7 +48,13 @@ class CacheInitializer {
   isInitialized(): boolean {
     return this.initialized;
   }
+
+  reset(): void {
+    this.initialized = false;
+    this.initPromise = null;
+  }
 }
 
+export { CacheInitializer };
 export const cacheInitializer = new CacheInitializer();
 export default cacheInitializer;

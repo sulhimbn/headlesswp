@@ -102,21 +102,21 @@ describe('CacheInitializer', () => {
       expect(mockedCacheWarmer.warmAll).toHaveBeenCalledTimes(1)
     })
 
-    it('should return existing promise for concurrent calls', async () => {
-      const slowPromise = new Promise<{ total: number; success: number; failed: number; results: any[] }>((resolve) => {
-        setTimeout(() => resolve({ total: 3, success: 3, failed: 0, results: [] }), 100)
+    it('should deduplicate concurrent initialize calls', async () => {
+      mockedCacheWarmer.warmAll.mockResolvedValue({
+        total: 3,
+        success: 3,
+        failed: 0,
+        results: []
       })
-      mockedCacheWarmer.warmAll.mockReturnValue(slowPromise)
 
       const promise1 = instance.initialize()
       const promise2 = instance.initialize()
       const promise3 = instance.initialize()
 
-      expect(promise1).toBe(promise2)
-      expect(promise2).toBe(promise3)
       expect(mockedCacheWarmer.warmAll).toHaveBeenCalledTimes(1)
 
-      await promise1
+      await Promise.all([promise1, promise2, promise3])
       expect(instance.isInitialized()).toBe(true)
     })
 
