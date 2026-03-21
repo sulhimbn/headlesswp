@@ -1450,6 +1450,97 @@ startResourceMonitoring(30000)
 - **Orphan Cleanup**: Automatic removal of broken dependency references
 - **Debug Tools**: `getDependencies()`, `getKeysByPattern()` for cache inspection
 
+### On-Demand ISR Webhook Cache Invalidation
+
+**Feature**: On-Demand ISR via WordPress Webhooks (#845)
+
+**Purpose**: Real-time cache invalidation triggered by WordPress content changes, enabling instant content updates instead of waiting for time-based ISR.
+
+**Endpoint**: `POST /api/revalidate`
+
+**Implementation** (`src/app/api/revalidate/route.ts`):
+- Webhook payload validation
+- Secret-based authentication via `REVALIDATE_SECRET` env var
+- Cache invalidation with cascade support
+- Comprehensive logging for observability
+
+**Payload Structure**:
+```typescript
+interface RevalidatePayload {
+  post_id: number;
+  post_type: 'post' | 'page' | 'attachment';
+  action: 'create' | 'update' | 'delete';
+  timestamp: string;
+}
+```
+
+**Security Features**:
+- Secret validation via `REVALIDATE_SECRET` environment variable
+- Support for `x-revalidate-secret` header or `Authorization: Bearer` token
+- Allows requests without secret if `REVALIDATE_SECRET` is not configured (development mode)
+
+**Cache Invalidation Logic**:
+- Post: Invalidates `post:{id}`, `posts:{id}`, `posts:default`
+- Page: Invalidates `page:{id}`, `pages:{id}`
+- Attachment: Invalidates `media:{id}`
+- Delete action: Triggers `invalidateByEntityType('posts')` for cascade cleanup
+
+**Response**:
+```json
+{
+  "success": true,
+  "message": "Cache invalidated for post:123",
+  "data": {
+    "success": true,
+    "postId": 123,
+    "postType": "post",
+    "action": "update",
+    "invalidatedKeys": ["post:123", "posts:123"],
+    "cascadeInvalidations": 5,
+    "timestamp": "2026-03-21T12:00:00.000Z"
+  }
+}
+```
+
+**WordPress Integration Example**:
+```php
+// functions.php or custom plugin
+add_action('save_post', 'trigger_revalidation_webhook', 10, 3);
+
+function trigger_revalidation_webhook($post_id, $post, $update) {
+    // Skip auto-saves and revisions
+    if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) return;
+    if (wp_is_post_revision($post_id)) return;
+    
+    $secret = get_option('revalidate_secret');
+    $webhook_url = get_site_url() . '/api/revalidate';
+    
+    $payload = json_encode([
+        'post_id' => $post_id,
+        'post_type' => $post->post_type,
+        'action' => $update ? 'update' : 'create',
+        'timestamp' => current_time('c'),
+    ]);
+    
+    wp_remote_post($webhook_url, [
+        'body' => $payload,
+        'headers' => [
+            'Content-Type' => 'application/json',
+            'x-revalidate-secret' => $secret,
+        ],
+    ]);
+}
+```
+
+**Benefits**:
+- Real-time cache invalidation (vs. time-based ISR)
+- Reduced server load (no unnecessary cache warming)
+- Better user experience (content updates immediately)
+
+**Tests**: 29 comprehensive tests covering authentication, validation, cache invalidation, and error handling
+
+**See Also**: [Issue #845: On-Demand ISR with WordPress Webhook Cache Invalidation](./task.md#845)
+
 **Cache Dependencies**:
 - Posts depend on: categories, tags, media
 - Posts lists depend on: categories, tags
