@@ -21,13 +21,15 @@ export default async function CategoryPage({
   params,
   searchParams,
 }: {
-  params: { slug: string }
-  searchParams: { page?: string }
+  params: Promise<{ slug: string }>
+  searchParams: Promise<{ page?: string }>
 }) {
-  const page = parseInt(searchParams.page || '1', PARSING.DECIMAL_RADIX)
+  const { slug } = await params;
+  const { page: pageStr } = await searchParams;
+  const page = parseInt(pageStr || '1', PARSING.DECIMAL_RADIX)
   const perPage = 12
 
-  const categoryResult = await standardizedAPI.getCategoryBySlug(params.slug)
+  const categoryResult = await standardizedAPI.getCategoryBySlug(slug)
 
   if (!isApiResultSuccessful(categoryResult)) {
     notFound()
@@ -64,7 +66,7 @@ export default async function CategoryPage({
             </div>
 
             {totalPages > 1 && (
-              <Pagination currentPage={page} totalPages={totalPages} basePath={`/kategori/${params.slug}`} />
+              <Pagination currentPage={page} totalPages={totalPages} basePath={`/kategori/${slug}`} />
             )}
           </>
         ) : (
