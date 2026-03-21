@@ -1,7 +1,7 @@
 # Architecture Blueprint
 
-**Version**: 1.0.2
-**Last Updated**: 2026-02-26 (Principal Software Architect - REFACTOR-033: Batch operation pattern extraction complete)
+**Version**: 1.0.3
+**Last Updated**: 2026-03-21 (System Orchestrator - FIX-844: Restore missing middleware.ts, FIX-843: npm audit vulnerabilities resolved)
 
 ## System Architecture
 
@@ -225,6 +225,22 @@ The UI supports Indonesian (Bahasa Indonesia) localization through `src/lib/cons
 - Mobile-first approach
 - Progressive enhancement
 - Touch-friendly tap targets (minimum 44x44px)
+
+### Edge Middleware
+
+Edge middleware is implemented in `src/middleware.ts` for performance optimization and security.
+
+**Features**:
+- **Bot Detection**: Identifies search engine crawlers and social media bots
+- **Security Headers**: X-DNS-Prefetch-Control, X-Frame-Options, X-Content-Type-Options, Referrer-Policy
+- **SEO Optimization**: X-Robots-Tag and X-SEO-Crawler headers for crawlers
+- **Rate Limit Headers**: X-RateLimit-Policy headers for API consumers
+- **Prefetch Hints**: Preload critical routes for faster navigation
+- **Root Redirect**: Redirects `/` to `/berita` for canonical home page
+
+**Bot Patterns Supported**: Googlebot, Bingbot, Yandex, DuckDuckBot, Baiduspider, Facebookexternalhit, Twitterbot, LinkedInBot, WhatsApp, TelegramBot, Slackbot, Applebot, GPTBot, ClaudeBot, Anthropic-AI, CCBot, Cohere-AI
+
+**Critical Routes Prefetched**: `/berita`, `/kategori`, `/tag`, `/author`, `/cari`
 
 ## Design Principles
 
