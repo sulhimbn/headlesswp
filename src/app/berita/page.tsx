@@ -18,9 +18,10 @@ export const revalidate = 300 // 5 minutes
 export default async function BeritaPage({
   searchParams,
 }: {
-  searchParams: { page?: string }
+  searchParams: Promise<{ page?: string }>
 }) {
-  const page = parseInt(searchParams.page || '1', PARSING.DECIMAL_RADIX)
+  const { page: pageStr } = await searchParams;
+  const page = parseInt(pageStr || '1', PARSING.DECIMAL_RADIX)
   const postsPerPage = PAGINATION_LIMITS.ALL_POSTS
 
   const { posts, totalPages } = await enhancedPostService.getPaginatedPosts(page, postsPerPage)

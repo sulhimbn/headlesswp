@@ -18,12 +18,13 @@ const Footer = dynamic(() => import('@/components/layout/Footer'), {
 export const revalidate = 300 // 5 minutes
 
 interface SearchPageProps {
-  searchParams: { q?: string; page?: string }
+  searchParams: Promise<{ q?: string; page?: string }>
 }
 
 export default async function CariPage({ searchParams }: SearchPageProps) {
-  const query = searchParams.q?.trim() || ''
-  const page = parseInt(searchParams.page || '1', PARSING.DECIMAL_RADIX)
+  const { q, page: pageStr } = await searchParams;
+  const query = q?.trim() || ''
+  const page = parseInt(pageStr || '1', PARSING.DECIMAL_RADIX)
   const postsPerPage = PAGINATION_LIMITS.SEARCH_POSTS
 
   let searchResults: PostWithMediaUrl[] = []

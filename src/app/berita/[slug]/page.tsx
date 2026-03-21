@@ -33,8 +33,9 @@ function stripHtml(html: string): string {
   return html.replace(/<[^>]*>?/gm, '').trim()
 }
 
-export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
-  const post = await enhancedPostService.getPostBySlug(params.slug)
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const { slug } = await params;
+  const post = await enhancedPostService.getPostBySlug(slug)
   const baseUrl = SITE_URL
 
   if (!post) {
@@ -79,8 +80,9 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   }
 }
 
-export default async function PostPage({ params }: { params: { slug: string } }) {
-  const post = await enhancedPostService.getPostBySlug(params.slug)
+export default async function PostPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const post = await enhancedPostService.getPostBySlug(slug)
 
   let relatedPosts: PostWithMediaUrl[] = []
 
