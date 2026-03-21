@@ -21,12 +21,14 @@ export default async function AuthorPage({
   params,
   searchParams,
 }: {
-  params: { id: string }
-  searchParams: { page?: string }
+  params: Promise<{ id: string }>
+  searchParams: Promise<{ page?: string }>
 }) {
-  const page = parseInt(searchParams.page || '1', PARSING.DECIMAL_RADIX);
+  const { id } = await params;
+  const { page: pageStr } = await searchParams;
+  const page = parseInt(pageStr || '1', PARSING.DECIMAL_RADIX);
   const perPage = 12;
-  const authorId = parseInt(params.id, PARSING.DECIMAL_RADIX);
+  const authorId = parseInt(id, PARSING.DECIMAL_RADIX);
 
   if (isNaN(authorId)) {
     notFound();
@@ -95,7 +97,7 @@ export default async function AuthorPage({
             </div>
 
             {totalPages > 1 && (
-              <Pagination currentPage={page} totalPages={totalPages} basePath={`/author/${params.id}`} />
+              <Pagination currentPage={page} totalPages={totalPages} basePath={`/author/${id}`} />
             )}
           </>
         ) : (

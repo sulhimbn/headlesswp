@@ -21,13 +21,15 @@ export default async function TagPage({
   params,
   searchParams,
 }: {
-  params: { slug: string }
-  searchParams: { page?: string }
+  params: Promise<{ slug: string }>
+  searchParams: Promise<{ page?: string }>
 }) {
-  const page = parseInt(searchParams.page || '1', PARSING.DECIMAL_RADIX)
+  const { slug } = await params;
+  const { page: pageStr } = await searchParams;
+  const page = parseInt(pageStr || '1', PARSING.DECIMAL_RADIX)
   const perPage = 12
 
-  const tagResult = await standardizedAPI.getTagBySlug(params.slug)
+  const tagResult = await standardizedAPI.getTagBySlug(slug)
 
   if (!isApiResultSuccessful(tagResult)) {
     notFound()
@@ -75,7 +77,7 @@ export default async function TagPage({
             </div>
 
             {totalPages > 1 && (
-              <Pagination currentPage={page} totalPages={totalPages} basePath={`/tag/${params.slug}`} />
+              <Pagination currentPage={page} totalPages={totalPages} basePath={`/tag/${slug}`} />
             )}
           </>
         ) : (

@@ -138,7 +138,7 @@ describe('Page Components - Critical Path Testing', () => {
         totalPages: 1
       });
 
-      const Page = await BeritaPage({ searchParams: { page: '1' } });
+      const Page = await BeritaPage({ searchParams: Promise.resolve({ page: '1' }) });
       render(Page);
 
       const headings = screen.getAllByText('Semua Berita');
@@ -153,7 +153,7 @@ describe('Page Components - Critical Path Testing', () => {
         totalPages: 1
       });
 
-      const Page = await BeritaPage({ searchParams: { page: '1' } });
+      const Page = await BeritaPage({ searchParams: Promise.resolve({ page: '1' }) });
       render(Page);
 
       const posts = screen.getAllByText('News Post 1');
@@ -166,7 +166,7 @@ describe('Page Components - Critical Path Testing', () => {
         totalPages: 5
       });
 
-      const Page = await BeritaPage({ searchParams: { page: '2' } });
+      const Page = await BeritaPage({ searchParams: Promise.resolve({ page: '2' }) });
       render(Page);
 
       const paginationElements = screen.getAllByLabelText(new RegExp(UI_TEXT.pagination.page, 'i'));
@@ -179,7 +179,7 @@ describe('Page Components - Critical Path Testing', () => {
         totalPages: 1
       });
 
-      const Page = await BeritaPage({ searchParams: { page: '1' } });
+      const Page = await BeritaPage({ searchParams: Promise.resolve({ page: '1' }) });
       render(Page);
 
       expect(screen.queryByLabelText(new RegExp(UI_TEXT.pagination.page, 'i'))).not.toBeInTheDocument();
@@ -191,7 +191,7 @@ describe('Page Components - Critical Path Testing', () => {
         totalPages: 0
       });
 
-      const Page = await BeritaPage({ searchParams: { page: '1' } });
+      const Page = await BeritaPage({ searchParams: Promise.resolve({ page: '1' }) });
       render(Page);
 
       expect(screen.getByText(/Tidak ada berita/i)).toBeInTheDocument();
@@ -203,7 +203,7 @@ describe('Page Components - Critical Path Testing', () => {
         totalPages: 1
       });
 
-      const Page = await BeritaPage({ searchParams: {} });
+      const Page = await BeritaPage({ searchParams: Promise.resolve({}) });
       render(Page);
 
       expect(enhancedPostService.getPaginatedPosts).toHaveBeenCalledWith(1, expect.any(Number));
@@ -215,7 +215,7 @@ describe('Page Components - Critical Path Testing', () => {
         totalPages: 5
       });
 
-      const Page = await BeritaPage({ searchParams: { page: '3' } });
+      const Page = await BeritaPage({ searchParams: Promise.resolve({ page: '3' }) });
       render(Page);
 
       expect(enhancedPostService.getPaginatedPosts).toHaveBeenCalledWith(3, expect.any(Number));
@@ -227,7 +227,7 @@ describe('Page Components - Critical Path Testing', () => {
         totalPages: 1
       });
 
-      const Page = await BeritaPage({ searchParams: { page: '1' } });
+      const Page = await BeritaPage({ searchParams: Promise.resolve({ page: '1' }) });
       render(Page);
 
       expect(screen.getByRole('banner')).toBeInTheDocument();
@@ -259,7 +259,7 @@ describe('Page Components - Critical Path Testing', () => {
     it('should show empty state when no query provided', async () => {
       (enhancedPostService.searchPosts as jest.Mock).mockResolvedValue({ posts: [], totalPosts: 0, totalPages: 1 });
 
-      const Page = await CariPage({ searchParams: {} });
+      const Page = await CariPage({ searchParams: Promise.resolve({}) });
       render(Page);
 
       const matches = screen.getAllByText('Masukkan kata kunci');
@@ -270,7 +270,7 @@ describe('Page Components - Critical Path Testing', () => {
     it('should show empty state when query is empty string', async () => {
       (enhancedPostService.searchPosts as jest.Mock).mockResolvedValue({ posts: [], totalPosts: 0, totalPages: 1 });
 
-      const Page = await CariPage({ searchParams: { q: '' } });
+      const Page = await CariPage({ searchParams: Promise.resolve({ q: '' }) });
       render(Page);
 
       const matches = screen.getAllByText('Masukkan kata kunci');
@@ -281,7 +281,7 @@ describe('Page Components - Critical Path Testing', () => {
     it('should show empty state when query is only whitespace', async () => {
       (enhancedPostService.searchPosts as jest.Mock).mockResolvedValue({ posts: [], totalPosts: 0, totalPages: 1 });
 
-      const Page = await CariPage({ searchParams: { q: '   ' } });
+      const Page = await CariPage({ searchParams: Promise.resolve({ q: '   ' }) });
       render(Page);
 
       const matches = screen.getAllByText('Masukkan kata kunci');
@@ -292,7 +292,7 @@ describe('Page Components - Critical Path Testing', () => {
     it('should search posts when valid query provided', async () => {
       (enhancedPostService.searchPosts as jest.Mock).mockResolvedValue({ posts: mockSearchResults, totalPosts: 1, totalPages: 1 });
 
-      const Page = await CariPage({ searchParams: { q: 'test query' } });
+      const Page = await CariPage({ searchParams: Promise.resolve({ q: 'test query' }) });
       render(Page);
 
       expect(enhancedPostService.searchPosts).toHaveBeenCalledWith('test query', 1, 12);
@@ -301,7 +301,7 @@ describe('Page Components - Critical Path Testing', () => {
     it('should display search results when found', async () => {
       (enhancedPostService.searchPosts as jest.Mock).mockResolvedValue({ posts: mockSearchResults, totalPosts: 1, totalPages: 1 });
 
-      const Page = await CariPage({ searchParams: { q: 'test' } });
+      const Page = await CariPage({ searchParams: Promise.resolve({ q: 'test' }) });
       render(Page);
 
       const headings = screen.getAllByText('Hasil pencarian: "test"');
@@ -313,7 +313,7 @@ describe('Page Components - Critical Path Testing', () => {
     it('should show no results empty state when search returns empty', async () => {
       (enhancedPostService.searchPosts as jest.Mock).mockResolvedValue({ posts: [], totalPosts: 0, totalPages: 1 });
 
-      const Page = await CariPage({ searchParams: { q: 'nonexistent' } });
+      const Page = await CariPage({ searchParams: Promise.resolve({ q: 'nonexistent' }) });
       render(Page);
 
       expect(screen.getByText('Tidak ada hasil')).toBeInTheDocument();
@@ -323,7 +323,7 @@ describe('Page Components - Critical Path Testing', () => {
     it('should trim whitespace from query', async () => {
       (enhancedPostService.searchPosts as jest.Mock).mockResolvedValue({ posts: mockSearchResults, totalPosts: 1, totalPages: 1 });
 
-      const Page = await CariPage({ searchParams: { q: '  test query  ' } });
+      const Page = await CariPage({ searchParams: Promise.resolve({ q: '  test query  ' }) });
       render(Page);
 
       expect(enhancedPostService.searchPosts).toHaveBeenCalledWith('test query', 1, 12);
@@ -332,7 +332,7 @@ describe('Page Components - Critical Path Testing', () => {
     it('should include Header and Footer components', async () => {
       (enhancedPostService.searchPosts as jest.Mock).mockResolvedValue({ posts: mockSearchResults, totalPosts: 1, totalPages: 1 });
 
-      const Page = await CariPage({ searchParams: { q: 'test' } });
+      const Page = await CariPage({ searchParams: Promise.resolve({ q: 'test' }) });
       render(Page);
 
       expect(screen.getByRole('banner')).toBeInTheDocument();
@@ -401,7 +401,7 @@ describe('Page Components - Critical Path Testing', () => {
     it('should render post with full details', async () => {
       (enhancedPostService.getPostBySlug as jest.Mock).mockResolvedValue(mockPost);
 
-      const Page = await PostPage({ params: { slug: 'test-post' } });
+      const Page = await PostPage({ params: Promise.resolve({ slug: 'test-post' }) });
       render(Page);
 
       const article = screen.getByRole('article');
@@ -413,7 +413,7 @@ describe('Page Components - Critical Path Testing', () => {
     it('should call notFound when post does not exist', async () => {
       (enhancedPostService.getPostBySlug as jest.Mock).mockResolvedValue(null);
 
-      await expect(PostPage({ params: { slug: 'nonexistent-post' } })).rejects.toThrow('NEXT_NOT_FOUND');
+      await expect(PostPage({ params: Promise.resolve({ slug: 'nonexistent-post' }) })).rejects.toThrow('NEXT_NOT_FOUND');
       expect(notFound).toHaveBeenCalledTimes(1);
     });
 
@@ -425,7 +425,7 @@ describe('Page Components - Critical Path Testing', () => {
 
       (enhancedPostService.getPostBySlug as jest.Mock).mockResolvedValue(invalidPost);
 
-      await expect(PostPage({ params: { slug: 'test-post' } })).rejects.toThrow('NEXT_NOT_FOUND');
+      await expect(PostPage({ params: Promise.resolve({ slug: 'test-post' }) })).rejects.toThrow('NEXT_NOT_FOUND');
       expect(notFound).toHaveBeenCalledTimes(1);
     });
 
@@ -437,14 +437,14 @@ describe('Page Components - Critical Path Testing', () => {
 
       (enhancedPostService.getPostBySlug as jest.Mock).mockResolvedValue(invalidPost);
 
-      await expect(PostPage({ params: { slug: 'test-post' } })).rejects.toThrow('NEXT_NOT_FOUND');
+      await expect(PostPage({ params: Promise.resolve({ slug: 'test-post' }) })).rejects.toThrow('NEXT_NOT_FOUND');
       expect(notFound).toHaveBeenCalledTimes(1);
     });
 
     it('should render breadcrumb navigation', async () => {
       (enhancedPostService.getPostBySlug as jest.Mock).mockResolvedValue(mockPost);
 
-      const Page = await PostPage({ params: { slug: 'test-post' } });
+      const Page = await PostPage({ params: Promise.resolve({ slug: 'test-post' }) });
       render(Page);
 
       const navs = screen.getAllByRole('navigation');
@@ -456,7 +456,7 @@ describe('Page Components - Critical Path Testing', () => {
     it('should render featured image when media exists', async () => {
       (enhancedPostService.getPostBySlug as jest.Mock).mockResolvedValue(mockPost);
 
-      const Page = await PostPage({ params: { slug: 'test-post' } });
+      const Page = await PostPage({ params: Promise.resolve({ slug: 'test-post' }) });
       render(Page);
 
       const image = screen.getByAltText('Test Post Title');
@@ -475,7 +475,7 @@ describe('Page Components - Critical Path Testing', () => {
 
       (enhancedPostService.getPostBySlug as jest.Mock).mockResolvedValue(postWithoutMedia);
 
-      const Page = await PostPage({ params: { slug: 'test-post' } });
+      const Page = await PostPage({ params: Promise.resolve({ slug: 'test-post' }) });
       render(Page);
 
       const image = screen.queryByAltText('Test Post Title');
@@ -485,7 +485,7 @@ describe('Page Components - Critical Path Testing', () => {
     it('should display post content with sanitization', async () => {
       (enhancedPostService.getPostBySlug as jest.Mock).mockResolvedValue(mockPost);
 
-      const Page = await PostPage({ params: { slug: 'test-post' } });
+      const Page = await PostPage({ params: Promise.resolve({ slug: 'test-post' }) });
       render(Page);
 
       expect(screen.getByText('Test content')).toBeInTheDocument();
@@ -494,7 +494,7 @@ describe('Page Components - Critical Path Testing', () => {
     it('should render category badges when categories exist', async () => {
       (enhancedPostService.getPostBySlug as jest.Mock).mockResolvedValue(mockPost);
 
-      const Page = await PostPage({ params: { slug: 'test-post' } });
+      const Page = await PostPage({ params: Promise.resolve({ slug: 'test-post' }) });
       render(Page);
 
       const categories = screen.getAllByText('Politics');
@@ -510,7 +510,7 @@ describe('Page Components - Critical Path Testing', () => {
 
       (enhancedPostService.getPostBySlug as jest.Mock).mockResolvedValue(postWithoutCategories);
 
-      const Page = await PostPage({ params: { slug: 'test-post' } });
+      const Page = await PostPage({ params: Promise.resolve({ slug: 'test-post' }) });
       render(Page);
 
       const article = screen.getByRole('article');
@@ -520,7 +520,7 @@ describe('Page Components - Critical Path Testing', () => {
     it('should render tag badges when tags exist', async () => {
       (enhancedPostService.getPostBySlug as jest.Mock).mockResolvedValue(mockPost);
 
-      const Page = await PostPage({ params: { slug: 'test-post' } });
+      const Page = await PostPage({ params: Promise.resolve({ slug: 'test-post' }) });
       render(Page);
 
       const tags = screen.getAllByText('#Government');
@@ -536,7 +536,7 @@ describe('Page Components - Critical Path Testing', () => {
 
       (enhancedPostService.getPostBySlug as jest.Mock).mockResolvedValue(postWithoutTags);
 
-      const Page = await PostPage({ params: { slug: 'test-post' } });
+      const Page = await PostPage({ params: Promise.resolve({ slug: 'test-post' }) });
       render(Page);
 
       const article = screen.getByRole('article');
@@ -546,7 +546,7 @@ describe('Page Components - Critical Path Testing', () => {
     it('should render back to home link', async () => {
       (enhancedPostService.getPostBySlug as jest.Mock).mockResolvedValue(mockPost);
 
-      const Page = await PostPage({ params: { slug: 'test-post' } });
+      const Page = await PostPage({ params: Promise.resolve({ slug: 'test-post' }) });
       render(Page);
 
       const backLink = screen.getByRole('link', { name: /Kembali ke Beranda/i });
@@ -557,7 +557,7 @@ describe('Page Components - Critical Path Testing', () => {
     it('should include Header and Footer components', async () => {
       (enhancedPostService.getPostBySlug as jest.Mock).mockResolvedValue(mockPost);
 
-      const Page = await PostPage({ params: { slug: 'test-post' } });
+      const Page = await PostPage({ params: Promise.resolve({ slug: 'test-post' }) });
       render(Page);
 
       expect(screen.getByRole('banner')).toBeInTheDocument();
@@ -567,7 +567,7 @@ describe('Page Components - Critical Path Testing', () => {
     it('should fetch post by correct slug', async () => {
       (enhancedPostService.getPostBySlug as jest.Mock).mockResolvedValue(mockPost);
 
-      await PostPage({ params: { slug: 'test-slug-123' } });
+      await PostPage({ params: Promise.resolve({ slug: 'test-slug-123' }) });
 
       expect(enhancedPostService.getPostBySlug).toHaveBeenCalledWith('test-slug-123');
     });
