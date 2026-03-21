@@ -6,54 +6,17 @@
 ## System Architecture
 
 ```
-┌──────────────────────────────────────────────────────────────┐
-│                        Next.js Server                        │
-│  ┌────────────────────────────────────────────────────────┐  │
-│  │                    Middleware (middleware.ts)           │  │
-│  │  • Bot detection (Googlebot, Bingbot, etc.)            │  │
-│  │  • Security headers (X-Frame-Options, CSP, etc.)      │  │
-│  │  • SEO optimization headers                            │  │
-│  │  • Rate limit headers                                   │  │
-│  │  • Route prefetch hints                                 │  │
-│  │  • Root path redirect (/ → /berita)                    │  │
-│  └────────────────────────────────────────────────────────┘  │
-│  ┌─────────────┐                  ┌───────────────────────┐   │
-│  │   Next.js   │ ◄──────────────► │      WordPress        │   │
-│  │  Frontend   │   (wp-json)     │       Backend         │   │
-│  └─────────────┘                  └───────────────────────┘   │
-└──────────────────────────────────────────────────────────────┘
-     │                                      │
-     │                                      │
-┌─────────────┐                       ┌──────────────┐
-│   Docker    │                       │    MySQL     │
-│  Container  │                       │   Database   │
-└─────────────┘                       └──────────────┘
+┌─────────────┐     REST API      ┌──────────────┐
+│   Next.js   │ ◄──────────────► │  WordPress   │
+│  Frontend   │   (wp-json)      │   Backend    │
+└─────────────┘                  └──────────────┘
+     │                                 │
+     │                                 │
+┌─────────────┐                  ┌──────────────┐
+│   Docker    │                  │   MySQL      │
+│  Container  │                  │  Database    │
+└─────────────┘                  └──────────────┘
 ```
-
-### Middleware (`middleware.ts`)
-
-**Purpose**: Centralized request/response processing layer at the Edge
-
-**Features**:
-
-| Feature | Description | Headers |
-|---------|-------------|---------|
-| Bot Detection | Identifies search engine crawlers and social bots | `X-SEO-Crawler: bot\|human` |
-| Security Headers | Security best practices | `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, `X-DNS-Prefetch-Control: on`, `Referrer-Policy: strict-origin-when-cross-origin` |
-| SEO Headers | Crawler directives | `X-Robots-Tag: index, follow` |
-| Rate Limit Headers | API rate limit information | `X-RateLimit-Policy`, `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset` |
-| Prefetch Hints | Preload critical routes | `Link: </berita,/kategori,/tag,/author,/cari>; rel="prefetch"` |
-| Root Redirect | SEO-friendly root path | `307` redirect to `/berita` |
-
-**Bot Patterns Detected**:
-- Googlebot, Bingbot, Yandex, DuckDuckBot, Baiduspider
-- Facebookexternalhit, Twitterbot, LinkedInbot
-- WhatsApp, Telegram, Slackbot
-- Applebot, GPTBot, ClaudeBot, Anthropic-AI, CCBot, Cohere-AI
-
-**Route Matcher**: All routes except `api`, `_next/static`, `_next/image`, `favicon.ico`, `manifest.json`, `sw.js`
-
-**Implementation**: `middleware.ts` (project root)
 
 ## Technology Stack
 
