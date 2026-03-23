@@ -1,8 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { proxy, config as proxyConfig } from '@/proxy'
+import { middleware as proxy, config as proxyConfig } from '@/middleware'
 
 jest.mock('next/server', () => ({
-  NextRequest: jest.fn(),
+  NextRequest: jest.fn().mockImplementation(() => ({
+    url: 'http://localhost:3000/test',
+    method: 'GET',
+    headers: new Map(),
+    nextUrl: {
+      pathname: '/test'
+    }
+  })),
   NextResponse: {
     next: jest.fn(),
   },
