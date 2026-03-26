@@ -11,6 +11,7 @@ import type { IPostService, PostWithMediaUrl, PostWithDetails, PaginatedPostsRes
 import { standardizedAPI } from '@/lib/api/standardized';
 import { isApiResultSuccessful } from '@/lib/api/response';
 import type { ICacheManager } from '@/lib/api/ICacheManager';
+import { rankPostsByRelevance } from '@/lib/search/searchRelevance';
 
 interface EntityMapOptions<T> {
   cacheKey: string;
@@ -294,7 +295,13 @@ export const enhancedPostService: IPostService = {
   searchPosts: async (query: string, page: number = 1, perPage: number = PAGINATION_LIMITS.SEARCH_POSTS): Promise<PaginatedPostsResult> => {
     const { posts, totalPages } = await wordpressAPI.search(query, page, perPage);
     
-    const postsWithMedia = await enrichPostsWithMediaUrls(posts);
+    const rankedPosts = rankPostsByRelevance(posts, query);
+    const rankedPostsWithoutScore = rankedPosts.map((p) => {
+      const { relevanceScore: _, ...post } = p;
+      return post;
+    });
+    
+    const postsWithMedia = await enrichPostsWithMediaUrls(rankedPostsWithoutScore);
     
     return {
       posts: postsWithMedia,
