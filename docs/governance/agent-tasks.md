@@ -144,7 +144,7 @@
 
 ### **12. Monitoring & Analytics**
 **Priority:** 🔵 Low | **Estimasi:** 2-3 jam
-- [ ] Add error tracking (Sentry)
+- [x] Add error tracking (Sentry)
 - [ ] Implement analytics (Google Analytics)
 - [ ] Setup performance monitoring
 - [ ] Add logging for debugging
