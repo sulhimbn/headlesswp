@@ -1,4 +1,7 @@
 import { logger, LogLevel, LoggerInternal } from '@/lib/utils/logger'
+import * as Sentry from '@sentry/nextjs'
+
+jest.mock('@sentry/nextjs')
 
 describe('Logger', () => {
   let testLogger: LoggerInternal
@@ -6,6 +9,8 @@ describe('Logger', () => {
   let consoleInfoSpy: jest.SpyInstance
   let consoleWarnSpy: jest.SpyInstance
   let consoleErrorSpy: jest.SpyInstance
+  let mockGetClient: jest.SpyInstance
+  let mockCaptureException: jest.SpyInstance
 
   beforeEach(() => {
     testLogger = new LoggerInternal({ level: LogLevel.DEBUG, enableTimestamp: false, enableColors: false })
@@ -13,6 +18,8 @@ describe('Logger', () => {
     consoleInfoSpy = jest.spyOn(console, 'info').mockImplementation()
     consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation()
     consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation()
+    mockGetClient = jest.spyOn(Sentry, 'getClient').mockReturnValue(true as any)
+    mockCaptureException = jest.spyOn(Sentry, 'captureException').mockReturnValue('event-id' as any)
   })
 
   afterEach(() => {
@@ -20,6 +27,8 @@ describe('Logger', () => {
     consoleInfoSpy.mockRestore()
     consoleWarnSpy.mockRestore()
     consoleErrorSpy.mockRestore()
+    mockGetClient.mockRestore()
+    mockCaptureException.mockRestore()
   })
 
   describe('debug', () => {
@@ -148,6 +157,33 @@ describe('Logger', () => {
       testLogger.error('Error message', undefined, { module: 'TestModule', userId: 123 })
       expect(consoleErrorSpy).toHaveBeenCalledTimes(1)
       expect(consoleErrorSpy).toHaveBeenCalledWith('[ERROR] [TestModule] Error message', { module: 'TestModule', userId: 123 })
+    })
+
+    it('should capture error to Sentry when client is available', () => {
+      const error = new Error('Sentry test error')
+      testLogger.error('Error message', error, { module: 'TestModule' })
+      expect(mockCaptureException).toHaveBeenCalledWith(error, {
+        extra: { module: 'TestModule' },
+      })
+    })
+
+    it('should not capture to Sentry when no client is available', () => {
+      mockGetClient.mockReturnValueOnce(false as any)
+      const error = new Error('Sentry test error')
+      testLogger.error('Error message', error)
+      expect(mockCaptureException).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('captureMessage', () => {
+    it('should capture message to Sentry', () => {
+      testLogger.captureMessage('Test message', 'warning')
+      expect(Sentry.captureMessage).toHaveBeenCalledWith('Test message', 'warning')
+    })
+
+    it('should use default info level', () => {
+      testLogger.captureMessage('Test message')
+      expect(Sentry.captureMessage).toHaveBeenCalledWith('Test message', 'info')
     })
   })
 

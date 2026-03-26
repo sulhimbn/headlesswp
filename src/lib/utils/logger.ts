@@ -1,3 +1,5 @@
+import * as Sentry from '@sentry/nextjs'
+
 export enum LogLevel {
   DEBUG = 0,
   INFO = 1,
@@ -103,6 +105,16 @@ class Logger {
 
   error(message: string, error?: Error | unknown, meta?: Record<string, unknown>): void {
     this.log(LogLevel.ERROR, message, error, meta)
+    if (error && Sentry.getClient()) {
+      const errorObj = error instanceof Error ? error : new Error(String(error))
+      Sentry.captureException(errorObj, {
+        extra: meta,
+      })
+    }
+  }
+
+  captureMessage(message: string, level: string = 'info', _meta?: Record<string, unknown>): void {
+    Sentry.captureMessage(message, level as Sentry.SeverityLevel)
   }
 
   setLevel(level: LogLevel): void {
