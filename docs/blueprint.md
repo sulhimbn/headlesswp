@@ -1,7 +1,7 @@
 # Architecture Blueprint
 
-**Version**: 1.0.3
-**Last Updated**: 2026-03-21 (System Orchestrator - FIX-844: Restore missing middleware.ts, FIX-843: npm audit vulnerabilities resolved)
+**Version**: 1.0.4
+**Last Updated**: 2026-03-26 (Security Engineer - FIX-883: picomatch ReDoS vulnerability resolved)
 
 ## System Architecture
 
@@ -1216,6 +1216,16 @@ swagger-cli validate openapi.yaml
 **Last Security Audit**: 2026-01-19 (Principal Security Engineer) - All 14 checks verified ✅ (SEC-004)
 
 **Security Status**: ✅ SECURE - No critical issues found
+
+## Recent Security Fixes
+
+### FIX-883: picomatch ReDoS Vulnerability (2026-03-26)
+- **Issue**: GHSA-c2c7-rcm5-vvqj - ReDoS via extglob quantifiers in picomatch
+- **Affected Versions**: picomatch < 2.3.2 and >= 4.0.0 < 4.0.4
+- **Impact**: High - Used by jest, @sentry/nextjs, and size-limit
+- **Fix**: Added picomatch override to package.json with version ^4.0.4
+- **Verification**: npm audit shows 0 vulnerabilities ✅
+- **Tests**: All tests pass ✅
 
 **See Also**: [Task SEC-004: Security Audit](./task.md#sec-004)
 
