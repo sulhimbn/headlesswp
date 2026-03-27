@@ -223,3 +223,23 @@
 - Use clearSummaryCache(postId?) to clear cached summaries
 - Provider: 'local' is always available, 'openai'/'anthropic' need API key
 - Local fallback uses sentence extraction (first 2 sentences)
+
+## Implemented Features (Mar 2026)
+
+### AI-Powered Semantic Search (Issue #873)
+- **Status**: Complete
+- **Features**:
+  - Created semantic search service with keyword extraction and relevance scoring
+  - Improved search relevance through TF-IDF-style keyword matching
+  - Title matches weighted higher than content matches
+  - Recent posts prioritized in results
+  - Added related queries suggestion feature
+  - API endpoint: GET/POST `/api/search/semantic?q=query&page=1&per_page=12`
+  - Updated /cari page to use semantic search with related queries display
+
+## Patterns & Conventions (Semantic Search)
+- Use semanticSearchService.search(query, page, perPage) for semantic search
+- Use enhancedPostService.semanticSearchPosts(query, page, perPage) for enriched results
+- Related queries generated based on keyword extraction and category patterns
+- Service uses caching with CACHE_TTL.SEARCH
+- UI text added: searchPage.relatedQueries, searchPage.searchResultCount

@@ -17,6 +17,13 @@ export interface PaginatedPostsResult {
   totalPages: number;
 }
 
+export interface SemanticSearchResult {
+  posts: PostWithMediaUrl[];
+  relatedQueries: string[];
+  totalPosts: number;
+  totalPages: number;
+}
+
 export interface IPostService {
   getLatestPosts(): Promise<PostWithMediaUrl[]>;
   getCategoryPosts(): Promise<PostWithMediaUrl[]>;
@@ -28,6 +35,7 @@ export interface IPostService {
   getCategories(): Promise<WordPressCategory[]>;
   getTags(): Promise<WordPressTag[]>;
   searchPosts(query: string, page?: number, perPage?: number): Promise<PaginatedPostsResult>;
+  semanticSearchPosts(query: string, page?: number, perPage?: number): Promise<SemanticSearchResult>;
   getPostsByCategory(categoryId: number, page?: number, perPage?: number): Promise<PaginatedPostsResult>;
   getPostsByAuthor(authorId: number, page?: number, perPage?: number): Promise<PaginatedPostsResult>;
 }
