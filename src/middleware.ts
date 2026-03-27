@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import * as Sentry from '@sentry/nextjs'
 
 const BOT_UA_PATTERNS = [
   /googlebot/i,
@@ -57,21 +58,30 @@ function setPrefetchHints(response: NextResponse): void {
 }
 
 export function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl
+  try {
+    const { pathname } = request.nextUrl
 
-  const isBot = isBotUserAgent(request.headers.get('user-agent'))
-  const response = NextResponse.next()
+    const isBot = isBotUserAgent(request.headers.get('user-agent'))
+    const response = NextResponse.next()
 
-  setSecurityHeaders(response)
-  setBotOptimizationHeaders(response, isBot)
-  setRateLimitHeaders(response)
-  setPrefetchHints(response)
+    setSecurityHeaders(response)
+    setBotOptimizationHeaders(response, isBot)
+    setRateLimitHeaders(response)
+    setPrefetchHints(response)
 
-  if (pathname === '/') {
-    return NextResponse.redirect(new URL('/berita', request.url), 307)
+    if (pathname === '/') {
+      return NextResponse.redirect(new URL('/berita', request.url), 307)
+    }
+
+    return response
+  } catch (error) {
+    Sentry.captureException(error, {
+      tags: {
+        middleware: 'root',
+      },
+    })
+    throw error
   }
-
-  return response
 }
 
 export const config = {
