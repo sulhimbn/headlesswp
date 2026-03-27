@@ -46,11 +46,20 @@ export async function generateMetadata({ params }: { params: { slug: string } })
       description,
       url: `${SITE_URL}/kategori/${params.slug}`,
       type: 'website',
+      images: [
+        {
+          url: `${SITE_URL}/og/category/${params.slug}`,
+          width: 1200,
+          height: 630,
+          alt: `Kategori: ${category.name}`,
+        },
+      ],
     },
     twitter: {
-      card: 'summary',
+      card: 'summary_large_image',
       title,
       description,
+      images: [`${SITE_URL}/og/category/${params.slug}`],
     },
     robots: {
       index: true,
