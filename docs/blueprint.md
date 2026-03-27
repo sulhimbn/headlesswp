@@ -1,7 +1,7 @@
 # Architecture Blueprint
 
-**Version**: 1.0.3
-**Last Updated**: 2026-03-21 (System Orchestrator - FIX-844: Restore missing middleware.ts, FIX-843: npm audit vulnerabilities resolved)
+**Version**: 1.0.4
+**Last Updated**: 2026-03-27 (System Orchestrator - FIX-883: picomatch ReDoS fix, FIX-860: middleware/proxy consolidation)
 
 ## System Architecture
 
@@ -691,6 +691,22 @@ interface ApiListResult<T> extends ApiResult<T[]> {
 6. **Modularity**: Independent modules that can be tested and maintained separately
 
 **See Also**: [Task REFACTOR-032](./task.md#refactor-032)
+
+**FIX-883: picomatch ReDoS Vulnerability Fix**:
+- Added picomatch override in package.json to version 4.0.3
+- Fixes GHSA-c2c7-rcm5-vvqj (CVSS 7.5 HIGH) ReDoS via extglob quantifiers
+- Transitive dependencies: jest@30.2.0, @sentry/nextjs@10.40.0, size-limit@12.0.0
+- npm audit shows 0 high/critical vulnerabilities
+- All 2151 tests passing, build successful
+
+**FIX-860: middleware.ts and proxy.ts Consolidation**:
+- Next.js 16 detects both middleware.ts and proxy.ts as conflicting
+- Merged middleware.ts functionality into proxy.ts (all 4 functions)
+- Removed duplicate middleware.ts file
+- Root redirect to /berita preserved in proxy.ts
+- Build successful, all tests passing
+
+**See Also**: [Task FIX-883](./task.md#fix-883), [Task FIX-860](./task.md#fix-860)
 
 **REFACTOR-033: Batch Operation Pattern**:
 - Created `batchOperations.ts` utility (src/lib/api/batchOperations.ts, 92 lines)
