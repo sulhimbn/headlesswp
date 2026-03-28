@@ -134,5 +134,10 @@ export const UI_TEXT = {
   },
   icon: {
     loading: 'Memuat'
+  },
+  keyboardShortcuts: {
+    title: 'Pintasan Keyboard',
+    close: 'Tutup',
+    hint: 'Tekan ? kapan saja untuk melihat pintasan keyboard'
   }
 } as const
