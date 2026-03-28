@@ -1,43 +1,35 @@
-import { summarizePost, isSummarizationEnabled, getSummarizationConfig } from '@/lib/services/summarizer';
-import { stripHtml } from '@/lib/utils/stripHtml';
+import {
+  summarizePost,
+  isSummarizationEnabled,
+  getSummarizationConfig,
+  clearSummaryCache,
+  generateLocalSummary,
+  extractTextFromContent,
+} from '@/lib/services/summarizer';
 import { cacheManager } from '@/lib/cache';
-
-function generateLocalSummary(text: string): string {
-  const sentences = text.split(/[.!?]+/).filter((s) => s.trim().length > 0);
-  
-  if (sentences.length <= 2) {
-    return text.substring(0, 300);
-  }
-
-  const firstSentence = sentences[0].trim();
-  const secondSentence = sentences[1].trim();
-  
-  let summary = firstSentence;
-  if (summary.length < 150 && secondSentence) {
-    summary += '. ' + secondSentence;
-  }
-  
-  if (summary.length > 225) {
-    summary = summary.substring(0, 225).trim();
-    if (!summary.endsWith('.')) {
-      summary += '...';
-    }
-  } else {
-    summary += '.';
-  }
-  
-  return summary;
-}
-
-function extractTextFromContent(htmlContent: string): string {
-  return stripHtml(htmlContent).trim();
-}
 
 jest.mock('@/lib/cache');
 
 describe('summarizer', () => {
+  let fetchMock: jest.Mock;
+
   beforeEach(() => {
     jest.clearAllMocks();
+    fetchMock = jest.fn();
+    global.fetch = fetchMock;
+    delete process.env.SUMMARY_PROVIDER;
+    delete process.env.SUMMARY_API_KEY;
+    delete process.env.SUMMARY_MODEL;
+    delete process.env.SUMMARY_MAX_TOKENS;
+    delete process.env.SUMMARY_TEMPERATURE;
+  });
+
+  afterEach(() => {
+    delete process.env.SUMMARY_PROVIDER;
+    delete process.env.SUMMARY_API_KEY;
+    delete process.env.SUMMARY_MODEL;
+    delete process.env.SUMMARY_MAX_TOKENS;
+    delete process.env.SUMMARY_TEMPERATURE;
   });
 
   describe('extractTextFromContent', () => {
@@ -76,6 +68,113 @@ describe('summarizer', () => {
       const summary = generateLocalSummary(text);
       expect(summary.length).toBeLessThanOrEqual(text.length * 1.5 + 3);
     });
+
+    it('should handle text with exactly 2 sentences', () => {
+      const text = 'First sentence. Second sentence.';
+      const summary = generateLocalSummary(text);
+      expect(summary).toContain('First sentence');
+      expect(summary).toContain('Second sentence');
+    });
+
+    it('should handle text with no sentence terminators', () => {
+      const text = 'No sentence terminators here';
+      const summary = generateLocalSummary(text);
+      expect(summary).toBe(text);
+    });
+  });
+
+  describe('generateSummaryWithOpenAI', () => {
+    it('should throw error when API key is not configured', async () => {
+      const { generateSummaryWithOpenAI } = await import('@/lib/services/summarizer');
+      const config = { provider: 'openai' as const, apiKey: undefined };
+      
+      await expect(generateSummaryWithOpenAI('test text', config)).rejects.toThrow('OpenAI API key not configured');
+    });
+
+    it('should return summary from OpenAI API', async () => {
+      const { generateSummaryWithOpenAI } = await import('@/lib/services/summarizer');
+      const config = { provider: 'openai' as const, apiKey: 'test-key', model: 'gpt-4' };
+      const mockResponse = {
+        ok: true,
+        json: jest.fn().mockResolvedValue({
+          choices: [{ message: { content: 'AI generated summary' } }],
+        }),
+      };
+      fetchMock.mockResolvedValue(mockResponse);
+
+      const result = await generateSummaryWithOpenAI('test text', config);
+      
+      expect(result).toBe('AI generated summary');
+      expect(fetchMock).toHaveBeenCalledWith(
+        'https://api.openai.com/v1/chat/completions',
+        expect.objectContaining({
+          method: 'POST',
+          headers: expect.objectContaining({
+            Authorization: 'Bearer test-key',
+          }),
+        })
+      );
+    });
+
+    it('should throw error when API returns non-ok response', async () => {
+      const { generateSummaryWithOpenAI } = await import('@/lib/services/summarizer');
+      const config = { provider: 'openai' as const, apiKey: 'test-key' };
+      const mockResponse = {
+        ok: false,
+        status: 401,
+        text: jest.fn().mockResolvedValue('Unauthorized'),
+      };
+      fetchMock.mockResolvedValue(mockResponse);
+
+      await expect(generateSummaryWithOpenAI('test text', config)).rejects.toThrow('OpenAI API error: 401');
+    });
+  });
+
+  describe('generateSummaryWithAnthropic', () => {
+    it('should throw error when API key is not configured', async () => {
+      const { generateSummaryWithAnthropic } = await import('@/lib/services/summarizer');
+      const config = { provider: 'anthropic' as const, apiKey: undefined };
+      
+      await expect(generateSummaryWithAnthropic('test text', config)).rejects.toThrow('Anthropic API key not configured');
+    });
+
+    it('should return summary from Anthropic API', async () => {
+      const { generateSummaryWithAnthropic } = await import('@/lib/services/summarizer');
+      const config = { provider: 'anthropic' as const, apiKey: 'test-anthropic-key', model: 'claude-3-sonnet' };
+      const mockResponse = {
+        ok: true,
+        json: jest.fn().mockResolvedValue({
+          content: [{ text: 'Anthropic generated summary' }],
+        }),
+      };
+      fetchMock.mockResolvedValue(mockResponse);
+
+      const result = await generateSummaryWithAnthropic('test text', config);
+      
+      expect(result).toBe('Anthropic generated summary');
+      expect(fetchMock).toHaveBeenCalledWith(
+        'https://api.anthropic.com/v1/messages',
+        expect.objectContaining({
+          method: 'POST',
+          headers: expect.objectContaining({
+            'x-api-key': 'test-anthropic-key',
+          }),
+        })
+      );
+    });
+
+    it('should throw error when API returns non-ok response', async () => {
+      const { generateSummaryWithAnthropic } = await import('@/lib/services/summarizer');
+      const config = { provider: 'anthropic' as const, apiKey: 'test-key' };
+      const mockResponse = {
+        ok: false,
+        status: 429,
+        text: jest.fn().mockResolvedValue('Rate limited'),
+      };
+      fetchMock.mockResolvedValue(mockResponse);
+
+      await expect(generateSummaryWithAnthropic('test text', config)).rejects.toThrow('Anthropic API error: 429');
+    });
   });
 
   describe('summarizePost', () => {
@@ -102,12 +201,80 @@ describe('summarizer', () => {
       expect(cacheManager.set).toHaveBeenCalled();
     });
 
-    it('should handle very short content', async () => {
+    it('should handle very short content (less than 50 chars)', async () => {
       (cacheManager.get as jest.Mock).mockReturnValue(null);
 
       const result = await summarizePost(789, '<p>Hi</p>');
 
       expect(result.summary).toBe('Hi');
+      expect(result.cached).toBe(false);
+    });
+
+    it('should handle content that results in short text after HTML stripping', async () => {
+      (cacheManager.get as jest.Mock).mockReturnValue(null);
+
+      const result = await summarizePost(101, '<p>Short</p>');
+
+      expect(result.summary).toBe('Short');
+      expect(result.cached).toBe(false);
+    });
+
+    it('should use OpenAI provider when configured', async () => {
+      process.env.SUMMARY_PROVIDER = 'openai';
+      process.env.SUMMARY_API_KEY = 'test-key';
+      (cacheManager.get as jest.Mock).mockReturnValue(null);
+      (cacheManager.set as jest.Mock).mockReturnValue(undefined);
+      
+      const mockResponse = {
+        ok: true,
+        json: jest.fn().mockResolvedValue({
+          choices: [{ message: { content: 'OpenAI summary' } }],
+        }),
+      };
+      fetchMock.mockResolvedValue(mockResponse);
+
+      const result = await summarizePost(111, '<p>This is a longer piece of content that needs summarization. It has many sentences and should be processed by the AI.</p>');
+
+      expect(result.summary).toBe('OpenAI summary');
+      expect(fetchMock).toHaveBeenCalled();
+    });
+
+    it('should use Anthropic provider when configured', async () => {
+      process.env.SUMMARY_PROVIDER = 'anthropic';
+      process.env.SUMMARY_API_KEY = 'test-anthropic-key';
+      (cacheManager.get as jest.Mock).mockReturnValue(null);
+      (cacheManager.set as jest.Mock).mockReturnValue(undefined);
+      
+      const mockResponse = {
+        ok: true,
+        json: jest.fn().mockResolvedValue({
+          content: [{ text: 'Anthropic summary' }],
+        }),
+      };
+      fetchMock.mockResolvedValue(mockResponse);
+
+      const result = await summarizePost(222, '<p>This is a longer piece of content that needs summarization. It has many sentences and should be processed by the AI.</p>');
+
+      expect(result.summary).toBe('Anthropic summary');
+      expect(fetchMock).toHaveBeenCalled();
+    });
+
+    it('should fallback to local summary when AI provider fails', async () => {
+      process.env.SUMMARY_PROVIDER = 'openai';
+      process.env.SUMMARY_API_KEY = 'test-key';
+      (cacheManager.get as jest.Mock).mockReturnValue(null);
+      (cacheManager.set as jest.Mock).mockReturnValue(undefined);
+      
+      const mockResponse = {
+        ok: false,
+        status: 500,
+        text: jest.fn().mockResolvedValue('Server error'),
+      };
+      fetchMock.mockResolvedValue(mockResponse);
+
+      const result = await summarizePost(333, '<p>This is a longer piece of content that needs summarization. It has many sentences and should be processed by the AI.</p>');
+
+      expect(result.summary).toBeTruthy();
       expect(result.cached).toBe(false);
     });
   });
@@ -126,6 +293,18 @@ describe('summarizer', () => {
 
     it('should return false when no API key for OpenAI', () => {
       process.env.SUMMARY_PROVIDER = 'openai';
+      delete process.env.SUMMARY_API_KEY;
+      expect(isSummarizationEnabled()).toBe(false);
+    });
+
+    it('should return true when API key is provided for Anthropic', () => {
+      process.env.SUMMARY_PROVIDER = 'anthropic';
+      process.env.SUMMARY_API_KEY = 'test-anthropic-key';
+      expect(isSummarizationEnabled()).toBe(true);
+    });
+
+    it('should return false when no API key for Anthropic', () => {
+      process.env.SUMMARY_PROVIDER = 'anthropic';
       delete process.env.SUMMARY_API_KEY;
       expect(isSummarizationEnabled()).toBe(false);
     });
@@ -159,6 +338,35 @@ describe('summarizer', () => {
       expect(config.model).toBe('claude-3-sonnet');
       expect(config.maxTokens).toBe(300);
       expect(config.temperature).toBe(0.5);
+    });
+  });
+
+  describe('clearSummaryCache', () => {
+    it('should clear cache for specific post', () => {
+      clearSummaryCache(123);
+      
+      expect(cacheManager.invalidate).toHaveBeenCalledWith('summary:123');
+    });
+
+    it('should clear all summary caches when no postId provided', () => {
+      const mockCache = new Map<string, unknown>();
+      mockCache.set('summary:1', 'data1');
+      mockCache.set('summary:2', 'data2');
+      mockCache.set('other:key', 'data3');
+      
+      (cacheManager as unknown as { cache: Map<string, unknown> }).cache = mockCache;
+
+      clearSummaryCache();
+      
+      expect(cacheManager.invalidate).toHaveBeenCalledWith('summary:1');
+      expect(cacheManager.invalidate).toHaveBeenCalledWith('summary:2');
+      expect(cacheManager.invalidate).not.toHaveBeenCalledWith('other:key');
+    });
+
+    it('should handle missing cache gracefully', () => {
+      (cacheManager as unknown as { cache: undefined }).cache = undefined;
+      
+      expect(() => clearSummaryCache()).not.toThrow();
     });
   });
 });
