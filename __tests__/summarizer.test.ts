@@ -1,33 +1,15 @@
-import { summarizePost, isSummarizationEnabled, getSummarizationConfig } from '@/lib/services/summarizer';
+import { 
+  summarizePost, 
+  isSummarizationEnabled, 
+  getSummarizationConfig,
+  generateLocalSummary,
+  generateSummaryWithOpenAI,
+  generateSummaryWithAnthropic,
+  generateSummary,
+  clearSummaryCache
+} from '@/lib/services/summarizer';
 import { stripHtml } from '@/lib/utils/stripHtml';
 import { cacheManager } from '@/lib/cache';
-
-function generateLocalSummary(text: string): string {
-  const sentences = text.split(/[.!?]+/).filter((s) => s.trim().length > 0);
-  
-  if (sentences.length <= 2) {
-    return text.substring(0, 300);
-  }
-
-  const firstSentence = sentences[0].trim();
-  const secondSentence = sentences[1].trim();
-  
-  let summary = firstSentence;
-  if (summary.length < 150 && secondSentence) {
-    summary += '. ' + secondSentence;
-  }
-  
-  if (summary.length > 225) {
-    summary = summary.substring(0, 225).trim();
-    if (!summary.endsWith('.')) {
-      summary += '...';
-    }
-  } else {
-    summary += '.';
-  }
-  
-  return summary;
-}
 
 function extractTextFromContent(htmlContent: string): string {
   return stripHtml(htmlContent).trim();
@@ -159,6 +141,286 @@ describe('summarizer', () => {
       expect(config.model).toBe('claude-3-sonnet');
       expect(config.maxTokens).toBe(300);
       expect(config.temperature).toBe(0.5);
+    });
+  });
+
+  describe('generateSummaryWithOpenAI', () => {
+    const originalFetch = global.fetch;
+
+    beforeEach(() => {
+      jest.clearAllMocks();
+    });
+
+    afterEach(() => {
+      global.fetch = originalFetch;
+    });
+
+    it('should throw error when API key is not configured', async () => {
+      const { generateSummaryWithOpenAI } = await import('@/lib/services/summarizer');
+      
+      await expect(
+        generateSummaryWithOpenAI('test text', { provider: 'openai' })
+      ).rejects.toThrow('OpenAI API key not configured');
+    });
+
+    it('should call OpenAI API and return summary', async () => {
+      const mockResponse = {
+        ok: true,
+        json: jest.fn().mockResolvedValue({
+          choices: [{ message: { content: 'Test summary from AI' } }]
+        })
+      };
+      global.fetch = jest.fn().mockResolvedValue(mockResponse);
+
+      const { generateSummaryWithOpenAI } = await import('@/lib/services/summarizer');
+      
+      const result = await generateSummaryWithOpenAI('test text', { 
+        provider: 'openai', 
+        apiKey: 'test-key',
+        model: 'gpt-4',
+        maxTokens: 100,
+        temperature: 0.5
+      });
+
+      expect(result).toBe('Test summary from AI');
+      expect(global.fetch).toHaveBeenCalledWith(
+        'https://api.openai.com/v1/chat/completions',
+        expect.objectContaining({
+          method: 'POST',
+          headers: expect.objectContaining({
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer test-key'
+          })
+        })
+      );
+    });
+
+    it('should throw error when API returns error status', async () => {
+      const mockResponse = {
+        ok: false,
+        status: 500,
+        text: jest.fn().mockResolvedValue('Internal Server Error')
+      };
+      global.fetch = jest.fn().mockResolvedValue(mockResponse);
+
+      const { generateSummaryWithOpenAI } = await import('@/lib/services/summarizer');
+      
+      await expect(
+        generateSummaryWithOpenAI('test text', { 
+          provider: 'openai', 
+          apiKey: 'test-key' 
+        })
+      ).rejects.toThrow('OpenAI API error: 500');
+    });
+
+    it('should handle empty response', async () => {
+      const mockResponse = {
+        ok: true,
+        json: jest.fn().mockResolvedValue({
+          choices: []
+        })
+      };
+      global.fetch = jest.fn().mockResolvedValue(mockResponse);
+
+      const { generateSummaryWithOpenAI } = await import('@/lib/services/summarizer');
+      
+      const result = await generateSummaryWithOpenAI('test text', { 
+        provider: 'openai', 
+        apiKey: 'test-key' 
+      });
+
+      expect(result).toBe('');
+    });
+  });
+
+  describe('generateSummaryWithAnthropic', () => {
+    const originalFetch = global.fetch;
+
+    beforeEach(() => {
+      jest.clearAllMocks();
+    });
+
+    afterEach(() => {
+      global.fetch = originalFetch;
+    });
+
+    it('should throw error when API key is not configured', async () => {
+      const { generateSummaryWithAnthropic } = await import('@/lib/services/summarizer');
+      
+      await expect(
+        generateSummaryWithAnthropic('test text', { provider: 'anthropic' })
+      ).rejects.toThrow('Anthropic API key not configured');
+    });
+
+    it('should call Anthropic API and return summary', async () => {
+      const mockResponse = {
+        ok: true,
+        json: jest.fn().mockResolvedValue({
+          content: [{ text: 'Test summary from Claude' }]
+        })
+      };
+      global.fetch = jest.fn().mockResolvedValue(mockResponse);
+
+      const { generateSummaryWithAnthropic } = await import('@/lib/services/summarizer');
+      
+      const result = await generateSummaryWithAnthropic('test text', { 
+        provider: 'anthropic', 
+        apiKey: 'test-key',
+        model: 'claude-3-sonnet',
+        maxTokens: 100,
+        temperature: 0.5
+      });
+
+      expect(result).toBe('Test summary from Claude');
+      expect(global.fetch).toHaveBeenCalledWith(
+        'https://api.anthropic.com/v1/messages',
+        expect.objectContaining({
+          method: 'POST',
+          headers: expect.objectContaining({
+            'Content-Type': 'application/json',
+            'x-api-key': 'test-key',
+            'anthropic-version': '2023-06-01'
+          })
+        })
+      );
+    });
+
+    it('should throw error when API returns error status', async () => {
+      const mockResponse = {
+        ok: false,
+        status: 429,
+        text: jest.fn().mockResolvedValue('Rate limited')
+      };
+      global.fetch = jest.fn().mockResolvedValue(mockResponse);
+
+      const { generateSummaryWithAnthropic } = await import('@/lib/services/summarizer');
+      
+      await expect(
+        generateSummaryWithAnthropic('test text', { 
+          provider: 'anthropic', 
+          apiKey: 'test-key' 
+        })
+      ).rejects.toThrow('Anthropic API error: 429');
+    });
+
+    it('should handle empty response', async () => {
+      const mockResponse = {
+        ok: true,
+        json: jest.fn().mockResolvedValue({
+          content: []
+        })
+      };
+      global.fetch = jest.fn().mockResolvedValue(mockResponse);
+
+      const { generateSummaryWithAnthropic } = await import('@/lib/services/summarizer');
+      
+      const result = await generateSummaryWithAnthropic('test text', { 
+        provider: 'anthropic', 
+        apiKey: 'test-key' 
+      });
+
+      expect(result).toBe('');
+    });
+  });
+
+  describe('generateSummary', () => {
+    it('should route to OpenAI provider', async () => {
+      const mockResponse = {
+        ok: true,
+        json: jest.fn().mockResolvedValue({
+          choices: [{ message: { content: 'OpenAI summary' } }]
+        })
+      };
+      global.fetch = jest.fn().mockResolvedValue(mockResponse);
+
+      const result = await generateSummary('test text', { 
+        provider: 'openai', 
+        apiKey: 'test-key' 
+      });
+
+      expect(result).toBe('OpenAI summary');
+    });
+
+    it('should route to Anthropic provider', async () => {
+      const mockResponse = {
+        ok: true,
+        json: jest.fn().mockResolvedValue({
+          content: [{ text: 'Test summary from Claude' }]
+        })
+      };
+      global.fetch = jest.fn().mockResolvedValue(mockResponse);
+      
+      const result = await generateSummary('test text', { 
+        provider: 'anthropic', 
+        apiKey: 'test-key' 
+      });
+
+      expect(result).toBe('Test summary from Claude');
+    });
+
+    it('should default to local provider for unknown provider', async () => {
+      const result = await generateSummary('test text', { 
+        provider: 'unknown' as any
+      });
+
+      expect(result).toBeTruthy();
+    });
+  });
+
+  describe('summarizePost error handling', () => {
+    const originalFetch = global.fetch;
+
+    beforeEach(() => {
+      jest.clearAllMocks();
+      (cacheManager.get as jest.Mock).mockReturnValue(null);
+    });
+
+    afterEach(() => {
+      global.fetch = originalFetch;
+    });
+
+    it('should fallback to local summary when OpenAI fails', async () => {
+      const mockResponse = {
+        ok: false,
+        status: 500,
+        text: jest.fn().mockResolvedValue('Server error')
+      };
+      global.fetch = jest.fn().mockResolvedValue(mockResponse);
+      (cacheManager.set as jest.Mock).mockReturnValue(undefined);
+
+      const result = await summarizePost(123, '<p>This is a test article. It has multiple sentences. More content here.</p>');
+
+      expect(result.summary).toBeTruthy();
+      expect(result.cached).toBe(false);
+    });
+  });
+
+  describe('clearSummaryCache', () => {
+    beforeEach(() => {
+      jest.clearAllMocks();
+    });
+
+    it('should invalidate specific post summary cache', () => {
+      clearSummaryCache(123);
+
+      expect(cacheManager.invalidate).toHaveBeenCalledWith('summary:123');
+    });
+
+    it('should clear all summary caches when no postId provided', () => {
+      const mockCache = new Map([
+        ['summary:1', 'value1'],
+        ['summary:2', 'value2'],
+        ['other:key', 'value3']
+      ]);
+      
+      (cacheManager as any).cache = mockCache;
+      (cacheManager.invalidate as jest.Mock).mockReturnValue(undefined);
+
+      clearSummaryCache();
+
+      expect(cacheManager.invalidate).toHaveBeenCalledWith('summary:1');
+      expect(cacheManager.invalidate).toHaveBeenCalledWith('summary:2');
+      expect(cacheManager.invalidate).not.toHaveBeenCalledWith('other:key');
     });
   });
 });
