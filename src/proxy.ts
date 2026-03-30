@@ -2,15 +2,41 @@ import { NextRequest, NextResponse } from 'next/server'
 import { SITE_URL, SITE_URL_WWW } from './lib/api/config'
 import { generateNonce } from './lib/utils/cspUtils'
 
-export function proxy(_request: NextRequest) {
+const BOT_UA_PATTERNS = [
+  /googlebot/i,
+  /bingbot/i,
+  /yandex/i,
+  /duckduckbot/i,
+  /baiduspider/i,
+  /facebookexternalhit/i,
+  /twitterbot/i,
+  /linkedinbot/i,
+  /whatsapp/i,
+  /telegrambot/i,
+  /slackbot/i,
+  /applebot/i,
+  /GPTBot/i,
+  /ClaudeBot/i,
+  /anthropic-ai/i,
+  /CCBot/i,
+  /cohere-ai/i,
+]
+
+const CRITICAL_ROUTES = ['/berita', '/kategori', '/tag', '/author', '/cari']
+
+function isBotUserAgent(userAgent: string | null): boolean {
+  if (!userAgent) return false
+  return BOT_UA_PATTERNS.some((pattern) => pattern.test(userAgent))
+}
+
+export function proxy(request: NextRequest) {
+  const { pathname } = request.nextUrl
   const response = NextResponse.next()
   
   const nonce = generateNonce()
   
   response.headers.set('x-nonce', nonce)
   
-  // Enhanced CSP with nonce for dynamic content
-  // In production, unsafe-inline and unsafe-eval are removed for better security
   const isDevelopment = process.env.NODE_ENV === 'development'
   const csp = [
     "default-src 'self'",
@@ -25,7 +51,6 @@ export function proxy(_request: NextRequest) {
     "form-action 'self'",
     "frame-ancestors 'none'",
     "upgrade-insecure-requests",
-    // Report violations in development
     ...(isDevelopment ? [
       `report-uri /api/csp-report`
     ] : [])
@@ -33,7 +58,6 @@ export function proxy(_request: NextRequest) {
   
   response.headers.set('Content-Security-Policy', csp)
   
-  // Additional security headers
   response.headers.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload')
   response.headers.set('X-Frame-Options', 'DENY')
   response.headers.set('X-Content-Type-Options', 'nosniff')
@@ -51,10 +75,25 @@ export function proxy(_request: NextRequest) {
     'accelerometer=()'
   ].join(', '))
 
-  // Cross-origin isolation headers
   response.headers.set('Cross-Origin-Opener-Policy', 'same-origin')
   response.headers.set('Cross-Origin-Resource-Policy', 'same-origin')
   response.headers.set('Cross-Origin-Embedder-Policy', 'require-corp')
+
+  const isBot = isBotUserAgent(request.headers.get('user-agent'))
+  response.headers.set('X-DNS-Prefetch-Control', 'on')
+  response.headers.set('X-Robots-Tag', 'index, follow')
+  response.headers.set('X-SEO-Crawler', isBot ? 'bot' : 'human')
+  response.headers.set('X-RateLimit-Policy', '60;w=60')
+  response.headers.set('X-RateLimit-Limit', '60')
+  response.headers.set('X-RateLimit-Remaining', '59')
+  response.headers.set('X-RateLimit-Reset', Math.ceil(Date.now() / 60000).toString())
+
+  const criticalRoutesStr = CRITICAL_ROUTES.join(',')
+  response.headers.set('Link', `<${criticalRoutesStr}>; rel="prefetch"`)
+
+  if (pathname === '/') {
+    return NextResponse.redirect(new URL('/berita', request.url), 307)
+  }
   
   return response
 }
