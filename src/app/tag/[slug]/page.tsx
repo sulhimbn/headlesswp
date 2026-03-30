@@ -10,12 +10,51 @@ import dynamic from 'next/dynamic'
 import { UI_TEXT } from '@/lib/constants/uiText'
 import { PARSING } from '@/lib/constants/appConstants'
 import { isApiResultSuccessful } from '@/lib/api/response'
+import { SITE_URL } from '@/lib/api/config'
+import { generatePageHreflang } from '@/lib/utils/hreflang'
+import type { Metadata } from 'next'
 
 const Footer = dynamic(() => import('@/components/layout/Footer'), {
   loading: () => <div className="h-64 bg-[hsl(var(--color-background-dark))] mt-12" aria-hidden="true" />
 })
 
 export const revalidate = 300
+
+export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
+  const tagResult = await standardizedAPI.getTagBySlug(params.slug)
+  const baseUrl = SITE_URL
+
+  if (!isApiResultSuccessful(tagResult)) {
+    return {
+      title: 'Tag Tidak Ditemukan',
+    }
+  }
+
+  const tag = tagResult.data
+  const tagUrl = `${baseUrl}/tag/${tag.slug}`
+  const hreflangEntries = generatePageHreflang(tag.slug, 'tag')
+
+  const languages: Record<string, string> = {}
+  for (const entry of hreflangEntries) {
+    languages[entry.lang] = entry.url
+  }
+
+  return {
+    title: `Tag: #${tag.name} - Mitra Banten News`,
+    description: tag.description || `Artikel terbaru dengan tag #${tag.name} di Mitra Banten News`,
+    alternates: {
+      canonical: tagUrl,
+      languages,
+    },
+    openGraph: {
+      title: `Tag: #${tag.name} - Mitra Banten News`,
+      description: tag.description || `Artikel terbaru dengan tag #${tag.name} di Mitra Banten News`,
+      url: tagUrl,
+      siteName: 'Mitra Banten News',
+      type: 'website',
+    },
+  }
+}
 
 export default async function TagPage({
   params,
