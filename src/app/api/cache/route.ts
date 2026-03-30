@@ -1,10 +1,63 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getCacheStats, clearCache } from '@/lib/cache';
+import { getCacheStats, clearCache, exportCacheData, importCacheData } from '@/lib/cache';
 import { cacheWarmer } from '@/lib/services/cacheWarmer';
 import { logger } from '@/lib/utils/logger';
 import { withApiRateLimit } from '@/lib/api/rateLimitMiddleware';
 
-async function cacheGetHandler(_request: NextRequest) {
+function getCacheSecret(): string | undefined {
+  return process.env.CACHE_SECRET;
+}
+
+function validateCacheSecret(request: NextRequest): boolean {
+  const CACHE_SECRET = getCacheSecret();
+  
+  if (!CACHE_SECRET) {
+    logger.warn('CACHE_SECRET not configured - denying access', { module: 'cache' });
+    return false;
+  }
+  
+  const authHeader = request.headers.get('x-cache-secret');
+  return authHeader === CACHE_SECRET;
+}
+
+async function cacheGetHandler(request: NextRequest) {
+  const { searchParams } = new URL(request.url);
+  const action = searchParams.get('action');
+
+  if (action === 'export') {
+    if (!validateCacheSecret(request)) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Unauthorized - CACHE_SECRET required',
+          timestamp: new Date().toISOString(),
+        },
+        { status: 401 }
+      );
+    }
+
+    try {
+      const data = exportCacheData();
+
+      return NextResponse.json({
+        success: true,
+        data,
+        timestamp: new Date().toISOString(),
+      });
+    } catch (error) {
+      logger.error('Error exporting cache:', error, { module: 'cache' });
+      
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Failed to export cache',
+          timestamp: new Date().toISOString(),
+        },
+        { status: 500 }
+      );
+    }
+  }
+
   try {
     const stats = getCacheStats();
 
@@ -27,7 +80,70 @@ async function cacheGetHandler(_request: NextRequest) {
   }
 }
 
-async function cachePostHandler(_request: NextRequest) {
+async function cachePostHandler(request: NextRequest) {
+  const { searchParams } = new URL(request.url);
+  const action = searchParams.get('action');
+
+  if (action === 'import') {
+    if (!validateCacheSecret(request)) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Unauthorized - CACHE_SECRET required',
+          timestamp: new Date().toISOString(),
+        },
+        { status: 401 }
+      );
+    }
+
+    try {
+      const body = await request.json();
+      const { data, merge } = body;
+
+      if (!data) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: 'Missing cache data in request body',
+            timestamp: new Date().toISOString(),
+          },
+          { status: 400 }
+        );
+      }
+
+      const result = importCacheData(data, merge !== false);
+
+      if (!result.success) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: result.error || 'Failed to import cache',
+            timestamp: new Date().toISOString(),
+          },
+          { status: 400 }
+        );
+      }
+
+      return NextResponse.json({
+        success: true,
+        message: `Cache imported: ${result.imported} entries`,
+        imported: result.imported,
+        timestamp: new Date().toISOString(),
+      });
+    } catch (error) {
+      logger.error('Error importing cache:', error, { module: 'cache' });
+      
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Failed to import cache - invalid JSON',
+          timestamp: new Date().toISOString(),
+        },
+        { status: 400 }
+      );
+    }
+  }
+
   try {
     const result = await cacheWarmer.warmAll();
     
