@@ -44,7 +44,14 @@ export const metadata: Metadata = {
       },
     ],
     locale: 'id_ID',
+    alternateLocale: ['en_US'],
     type: 'website',
+  },
+  alternates: {
+    languages: {
+      'id': SITE_URL,
+      'en': `${SITE_URL}/en`,
+    },
   },
   twitter: {
     card: 'summary_large_image',
