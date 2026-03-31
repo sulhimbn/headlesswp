@@ -2,6 +2,7 @@ export const WORDPRESS_API_BASE_URL = process.env.NEXT_PUBLIC_WORDPRESS_API_URL 
 export const WORDPRESS_SITE_URL = process.env.NEXT_PUBLIC_WORDPRESS_URL || 'https://mitrabantennews.com'
 export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://mitrabantennews.com'
 export const SITE_URL_WWW = process.env.NEXT_PUBLIC_SITE_URL_WWW || 'https://www.mitrabantennews.com'
+export const REVALIDATE_SECRET = process.env.REVALIDATE_SECRET
 
 export const TIME_CONSTANTS = {
   SECOND_IN_MS: 1000,
