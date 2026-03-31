@@ -2,8 +2,8 @@ import { CacheMetricsCalculator } from './cache/cacheMetricsCalculator';
 import { CacheCleanup } from './cache/cacheCleanup';
 import { CacheDependencyManager } from './cache/cacheDependencyManager';
 import type { ICacheManager } from '@/lib/api/ICacheManager';
-import type { CacheEntry, CacheTelemetry } from './cache/types';
-export type { CacheEntry, CacheTelemetry } from './cache/types';
+import type { CacheEntry, CacheTelemetry, ExportCacheResult, ImportCacheResult, CacheExportEntry } from './cache/types';
+export type { CacheEntry, CacheTelemetry, ExportCacheResult, ImportCacheResult, CacheExportEntry } from './cache/types';
 
 /**
  * Advanced cache manager with dependency-aware cascade invalidation.
@@ -557,6 +557,112 @@ class CacheManager implements ICacheManager {
     } else {
       this.clearAll();
     }
+  }
+
+  /**
+   * Export all non-expired cache entries as JSON.
+   * 
+   * @returns ExportCacheResult with entries and metadata
+   * 
+   * @remarks
+   * Exports all non-expired cache entries in a portable format:
+   * - version: Format version for compatibility
+   * - exportedAt: ISO timestamp
+   * - entryCount: Number of entries exported
+   * - entries: Array of { key, data, ttl, timestamp }
+   * 
+   * Only non-expired entries are included.
+   * 
+   * @example
+   * ```typescript
+   * const result = cacheManager.exportCache();
+   * console.log(result.entryCount);
+   * // Save to file or transfer to another instance
+   * ```
+   */
+  exportCache(): ExportCacheResult {
+    const now = Date.now();
+    const entries: CacheExportEntry[] = [];
+    let entryCount = 0;
+
+    this.cache.forEach((entry, key) => {
+      if (now - entry.timestamp < entry.ttl) {
+        entries.push({
+          key,
+          data: entry.data,
+          ttl: entry.ttl,
+          timestamp: entry.timestamp,
+        });
+        entryCount++;
+      }
+    });
+
+    return {
+      success: true,
+      version: '1.0',
+      exportedAt: new Date().toISOString(),
+      entryCount,
+      entries,
+    };
+  }
+
+  /**
+   * Import cache entries from JSON export.
+   * 
+   * @param data - Export data with entries array
+   * @returns ImportCacheResult with import statistics
+   * 
+   * @remarks
+   * Imports cache entries from exported format:
+   * - Validates format before import
+   * - Skips expired entries (based on current time)
+   * - Does NOT restore dependencies (they are derived from data)
+   * - Overwrites existing entries with same key
+   * 
+   * @example
+   * ```typescript
+   * const result = cacheManager.importCache(exportedData);
+   * console.log(result.imported);
+   * ```
+   */
+  importCache(data: { entries?: Array<{ key: string; data: unknown; ttl: number; timestamp: number }> }): ImportCacheResult {
+    if (!data || !Array.isArray(data.entries)) {
+      return {
+        success: false,
+        imported: 0,
+        skipped: 0,
+        error: 'Invalid import data format: missing entries array',
+      };
+    }
+
+    const now = Date.now();
+    let imported = 0;
+    let skipped = 0;
+
+    for (const entry of data.entries) {
+      if (!entry.key || typeof entry.data === 'undefined' || typeof entry.ttl !== 'number') {
+        skipped++;
+        continue;
+      }
+
+      if (now - entry.timestamp >= entry.ttl) {
+        skipped++;
+        continue;
+      }
+
+      this.cache.set(entry.key, {
+        data: entry.data,
+        timestamp: entry.timestamp,
+        ttl: entry.ttl,
+      });
+      imported++;
+    }
+
+    return {
+      success: true,
+      imported,
+      skipped,
+    };
   }
 }
 

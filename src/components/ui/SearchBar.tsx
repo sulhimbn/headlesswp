@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useEffect, useCallback, memo } from 'react'
+import { useState, useRef, useEffect, useCallback, memo, forwardRef } from 'react'
 import Icon from './Icon'
 import { UI_TEXT } from '@/lib/constants/uiText'
 
@@ -14,7 +14,7 @@ interface SearchBarProps {
   ariaLabel?: string
 }
 
-function SearchBarComponent({
+const SearchBarComponent = forwardRef<HTMLInputElement, SearchBarProps>(function SearchBarComponent({
   onSearch,
   placeholder = UI_TEXT.search.placeholder,
   isLoading = false,
@@ -22,12 +22,22 @@ function SearchBarComponent({
   className = '',
   initialValue = '',
   ariaLabel = UI_TEXT.search.label
-}: SearchBarProps) {
+}: SearchBarProps, forwardedRef) {
   const [query, setQuery] = useState(initialValue)
   const [debouncedQuery, setDebouncedQuery] = useState(initialValue)
   const inputRef = useRef<HTMLInputElement>(null)
   const timeoutRef = useRef<NodeJS.Timeout | undefined>(undefined)
   const pendingQueryRef = useRef(initialValue)
+
+  useEffect(() => {
+    if (forwardedRef) {
+      if (typeof forwardedRef === 'function') {
+        forwardedRef(inputRef.current)
+      } else {
+        (forwardedRef as React.MutableRefObject<HTMLInputElement | null>).current = inputRef.current
+      }
+    }
+  }, [forwardedRef])
 
   const handleSearch = useCallback((searchQuery: string) => {
     onSearch(searchQuery)
@@ -111,7 +121,7 @@ function SearchBarComponent({
       </div>
     </form>
   )
-}
+})
 
 function arePropsEqual(prevProps: SearchBarProps, nextProps: SearchBarProps): boolean {
   return (
@@ -125,4 +135,7 @@ function arePropsEqual(prevProps: SearchBarProps, nextProps: SearchBarProps): bo
   )
 }
 
-export default memo(SearchBarComponent, arePropsEqual)
+const SearchBar = memo(SearchBarComponent, arePropsEqual)
+SearchBar.displayName = 'SearchBar'
+
+export default SearchBar
