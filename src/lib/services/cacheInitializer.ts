@@ -1,7 +1,7 @@
 import { cacheWarmer } from './cacheWarmer';
 import { logger } from '@/lib/utils/logger';
 
-class CacheInitializer {
+export class CacheInitializer {
   private initialized = false;
   private initPromise: Promise<void> | null = null;
 
