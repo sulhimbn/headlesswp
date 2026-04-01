@@ -1,7 +1,22 @@
 # Architecture Blueprint
 
-**Version**: 1.0.3
-**Last Updated**: 2026-03-21 (System Orchestrator - FIX-844: Restore missing middleware.ts, FIX-843: npm audit vulnerabilities resolved)
+**Version**: 1.0.4
+**Last Updated**: 2026-04-01 (System Orchestrator - Issue #928: Bundle size check, #862: Playwright E2E tests, FIX: Remove duplicate middleware.ts, FIX: Env validation build issue)
+
+## What's New (v1.0.4)
+
+### Features Added
+- **Bundle Size Check in CI**: Added automated bundle size validation to CI pipeline (soft limit 200MB warning, hard limit 300MB failure)
+- **E2E Tests with Playwright**: Added Playwright configuration and critical user flow tests (homepage load, navigation)
+- **Webhook Endpoint for Cache Invalidation**: New innovation proposal for proactive content change detection
+
+### Bug Fixes
+- **Duplicate Middleware Removed**: Removed duplicate `src/middleware.ts` file that was conflicting with `src/proxy.ts` during build
+- **Build Environment Variables**: Changed env validation to not require env vars during build (only at runtime), fixing CI build failures
+
+### What's New (v1.0.3)
+- FIX-844: Restore missing middleware.ts
+- FIX-843: npm audit vulnerabilities resolved
 
 ## System Architecture
 
