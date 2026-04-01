@@ -98,7 +98,7 @@ export function createMainRSSFeed(posts: WordPressPost[]): RSSFeed {
     link: SITE_URL,
     description: 'Portal berita terkini dan terpercaya dari Banten',
     language: 'id',
-    pubDate: items.length > 0 ? items[0].pubDate : formatRFC822Date(new Date().toISOString()),
+    pubDate: items.length > 0 ? items[0]?.pubDate ?? formatRFC822Date(new Date().toISOString()) : formatRFC822Date(new Date().toISOString()),
     items,
   };
 }
@@ -111,7 +111,7 @@ export function createCategoryRSSFeed(posts: WordPressPost[], category: WordPres
     link: category.link,
     description: `Berita terkini dalam kategori ${category.name}`,
     language: 'id',
-    pubDate: items.length > 0 ? items[0].pubDate : formatRFC822Date(new Date().toISOString()),
+    pubDate: items.length > 0 ? items[0]?.pubDate ?? formatRFC822Date(new Date().toISOString()) : formatRFC822Date(new Date().toISOString()),
     items,
   };
 }

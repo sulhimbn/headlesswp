@@ -94,7 +94,9 @@ class RelationshipValidator {
     const allErrors: ValidationError[] = [];
 
     for (let i = 0; i < posts.length; i++) {
-      const errors = this.validatePostRelationships(posts[i], options);
+      const post = posts[i];
+      if (!post) continue;
+      const errors = this.validatePostRelationships(post, options);
       if (errors.length > 0) {
         allErrors.push(
           ...errors.map(error => ({

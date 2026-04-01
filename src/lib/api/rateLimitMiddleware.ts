@@ -50,7 +50,7 @@ async function checkRateLimit(key: string, options: ApiRouteRateLimitOptions): P
 
   if (state.requestTimes.length >= options.maxRequests) {
     const oldestRequest = state.requestTimes[0]
-    const waitTime = Math.ceil((oldestRequest + options.windowMs - now) / 1000)
+    const waitTime = Math.ceil(((oldestRequest ?? 0) + options.windowMs - now) / 1000)
     throw {
       type: ApiErrorType.RATE_LIMIT_ERROR,
       message: `Rate limit exceeded. Please try again in ${waitTime} seconds.`,
@@ -68,6 +68,9 @@ export function withApiRateLimit(
 ) {
   return async (request: NextRequest, context?: unknown): Promise<NextResponse> => {
     const options = API_ROUTE_RATE_LIMITS[optionsKey]
+    if (!options) {
+      return NextResponse.json({ success: false, error: 'Invalid rate limit configuration' }, { status: 500 })
+    }
 
     try {
       await checkRateLimit(options.key, options)
@@ -75,7 +78,7 @@ export function withApiRateLimit(
       const response = await handler(request, context)
       const state = getRateLimitState(options.key)
       const remaining = Math.max(0, options.maxRequests - state.requestTimes.length)
-      const resetTime = state.lastReset + options.windowMs
+      const resetTime = (state.lastReset ?? 0) + options.windowMs
       const resetSeconds = Math.ceil((resetTime - Date.now()) / 1000)
 
       response.headers.set('X-RateLimit-Limit', options.maxRequests.toString())

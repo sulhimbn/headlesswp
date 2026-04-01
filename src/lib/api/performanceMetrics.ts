@@ -199,21 +199,21 @@ export class PerformanceMetricsCollector {
       const count = sorted.length
       byEndpoint[key] = {
         count,
-        p50: sorted[Math.floor(count * 0.5)],
-        p95: sorted[Math.floor(count * 0.95)],
-        p99: sorted[Math.floor(count * 0.99)],
+        p50: sorted[Math.floor(count * 0.5)] ?? 0,
+        p95: sorted[Math.floor(count * 0.95)] ?? 0,
+        p99: sorted[Math.floor(count * 0.99)] ?? 0,
         avg: sorted.reduce((sum, d) => sum + d, 0) / count
       }
     }
 
     return {
       total: n,
-      p50: durations[p50Index],
-      p95: durations[p95Index],
-      p99: durations[p99Index],
+      p50: durations[p50Index] ?? 0,
+      p95: durations[p95Index] ?? 0,
+      p99: durations[p99Index] ?? 0,
       avg,
-      min: durations[0],
-      max: durations[n - 1],
+      min: durations[0] ?? 0,
+      max: durations[n - 1] ?? 0,
       byEndpoint
     }
   }
@@ -238,7 +238,7 @@ export class PerformanceMetricsCollector {
     const avgHeapUsage = this.resourceMetrics.reduce((sum, m) => sum + m.heapPercent, 0) / this.resourceMetrics.length
 
     return {
-      latest: this.resourceMetrics[this.resourceMetrics.length - 1],
+      latest: this.resourceMetrics[this.resourceMetrics.length - 1] ?? null,
       avgCpuUsage,
       avgMemoryUsage,
       avgHeapUsage
@@ -269,7 +269,7 @@ export class PerformanceMetricsCollector {
       if (!metricMap[event.name]) {
         metricMap[event.name] = []
       }
-      metricMap[event.name].push(event.value)
+      metricMap[event.name]!.push(event.value)
     }
 
     for (const [name, values] of Object.entries(metricMap)) {
@@ -277,8 +277,8 @@ export class PerformanceMetricsCollector {
       byMetricName[name] = {
         count: sorted.length,
         avg: sorted.reduce((sum, v) => sum + v, 0) / sorted.length,
-        min: sorted[0],
-        max: sorted[sorted.length - 1]
+        min: sorted[0] ?? 0,
+        max: sorted[sorted.length - 1] ?? 0
       }
     }
 
@@ -310,9 +310,9 @@ export function captureCurrentResourceUtilization(): ResourceUtilizationMetric {
 
   if (cpus.length > 0) {
     const currentCpuInfo = cpus[0]
-    const currentTimes = currentCpuInfo.times
+    const currentTimes = currentCpuInfo?.times
 
-    if (lastCpuInfo) {
+    if (lastCpuInfo && currentTimes) {
       const lastTimes = lastCpuInfo.times
       const lastTotal = lastTimes.user + lastTimes.nice + lastTimes.sys + lastTimes.idle + lastTimes.irq
       const currentTotal = currentTimes.user + currentTimes.nice + currentTimes.sys + currentTimes.idle + currentTimes.irq
@@ -325,7 +325,9 @@ export function captureCurrentResourceUtilization(): ResourceUtilizationMetric {
       }
     }
 
-    lastCpuInfo = { times: currentTimes, timestamp: Date.now() }
+    if (currentTimes) {
+      lastCpuInfo = { times: currentTimes, timestamp: Date.now() }
+    }
   }
 
   return {
