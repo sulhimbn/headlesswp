@@ -76,6 +76,12 @@ export async function generateMetadata({ params }: { params: { slug: string } })
       description,
       images: [post.mediaUrl ? post.mediaUrl : `${baseUrl}/api/og/${post.slug}`],
     },
+    other: {
+      'og:image:width': '1200',
+      'og:image:height': '630',
+      'og:image:alt': stripHtml(post.title.rendered),
+      'og:image:secure_url': post.mediaUrl ? post.mediaUrl : `${baseUrl}/api/og/${post.slug}`,
+    },
   }
 }
 
