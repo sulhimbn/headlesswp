@@ -8,7 +8,10 @@ export function generateNonce(): string {
 
   let result = ''
   for (let i = 0; i < array.length; i++) {
-    result += String.fromCharCode(array[i])
+    const charCode = array[i]
+    if (charCode !== undefined) {
+      result += String.fromCharCode(charCode)
+    }
   }
   const nonce = btoa(result)
   

@@ -39,10 +39,14 @@ export function extractHeadings(htmlContent: string): TocHeading[] {
   
   let match
   while ((match = headingRegex.exec(htmlContent)) !== null) {
-    const level = parseInt(match[1], 10)
+    const levelStr = match[1]
+    if (!levelStr) {
+      continue
+    }
+    const level = parseInt(levelStr, 10)
     const textContent = match[2]
     
-    const text = textContent.replace(/<[^>]*>/g, '').trim()
+    const text = textContent?.replace(/<[^>]*>/g, '').trim() ?? '';
     
     if (text && text.length > 0) {
       const id = generateId(text, existingIds)

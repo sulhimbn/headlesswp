@@ -50,6 +50,9 @@ async function checkRateLimit(key: string, options: ApiRouteRateLimitOptions): P
 
   if (state.requestTimes.length >= options.maxRequests) {
     const oldestRequest = state.requestTimes[0]
+    if (!oldestRequest) {
+      return
+    }
     const waitTime = Math.ceil((oldestRequest + options.windowMs - now) / 1000)
     throw {
       type: ApiErrorType.RATE_LIMIT_ERROR,
@@ -68,6 +71,9 @@ export function withApiRateLimit(
 ) {
   return async (request: NextRequest, context?: unknown): Promise<NextResponse> => {
     const options = API_ROUTE_RATE_LIMITS[optionsKey]
+    if (!options) {
+      throw new Error(`Invalid rate limit options key: ${optionsKey}`)
+    }
 
     try {
       await checkRateLimit(options.key, options)

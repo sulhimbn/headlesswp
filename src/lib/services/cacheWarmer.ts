@@ -33,7 +33,7 @@ class CacheWarmer {
 
       settledResults.forEach((result, index) => {
         const names = ['latest posts', 'categories', 'tags'];
-        const name = names[index];
+        const name = names[index] ?? 'unknown';
 
         if (result.status === 'fulfilled') {
           results.push({ name, status: 'success', latency: result.value });

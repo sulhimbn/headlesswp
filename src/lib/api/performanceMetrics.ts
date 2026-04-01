@@ -199,21 +199,21 @@ export class PerformanceMetricsCollector {
       const count = sorted.length
       byEndpoint[key] = {
         count,
-        p50: sorted[Math.floor(count * 0.5)],
-        p95: sorted[Math.floor(count * 0.95)],
-        p99: sorted[Math.floor(count * 0.99)],
+        p50: sorted[Math.floor(count * 0.5)] ?? 0,
+        p95: sorted[Math.floor(count * 0.95)] ?? 0,
+        p99: sorted[Math.floor(count * 0.99)] ?? 0,
         avg: sorted.reduce((sum, d) => sum + d, 0) / count
       }
     }
 
     return {
       total: n,
-      p50: durations[p50Index],
-      p95: durations[p95Index],
-      p99: durations[p99Index],
+      p50: durations[p50Index] ?? 0,
+      p95: durations[p95Index] ?? 0,
+      p99: durations[p99Index] ?? 0,
       avg,
-      min: durations[0],
-      max: durations[n - 1],
+      min: durations[0] ?? 0,
+      max: durations[n - 1] ?? 0,
       byEndpoint
     }
   }
@@ -238,7 +238,7 @@ export class PerformanceMetricsCollector {
     const avgHeapUsage = this.resourceMetrics.reduce((sum, m) => sum + m.heapPercent, 0) / this.resourceMetrics.length
 
     return {
-      latest: this.resourceMetrics[this.resourceMetrics.length - 1],
+      latest: this.resourceMetrics[this.resourceMetrics.length - 1] ?? null,
       avgCpuUsage,
       avgMemoryUsage,
       avgHeapUsage
@@ -266,10 +266,14 @@ export class PerformanceMetricsCollector {
     const metricMap: Record<string, number[]> = {}
 
     for (const event of webVitalsEvents) {
-      if (!metricMap[event.name]) {
-        metricMap[event.name] = []
+      const eventName = event.name
+      if (!eventName) {
+        continue
       }
-      metricMap[event.name].push(event.value)
+      if (!metricMap[eventName]) {
+        metricMap[eventName] = []
+      }
+      metricMap[eventName]!.push(event.value)
     }
 
     for (const [name, values] of Object.entries(metricMap)) {
@@ -277,8 +281,8 @@ export class PerformanceMetricsCollector {
       byMetricName[name] = {
         count: sorted.length,
         avg: sorted.reduce((sum, v) => sum + v, 0) / sorted.length,
-        min: sorted[0],
-        max: sorted[sorted.length - 1]
+        min: sorted[0] ?? 0,
+        max: sorted[sorted.length - 1] ?? 0
       }
     }
 
@@ -310,6 +314,16 @@ export function captureCurrentResourceUtilization(): ResourceUtilizationMetric {
 
   if (cpus.length > 0) {
     const currentCpuInfo = cpus[0]
+    if (!currentCpuInfo) {
+      return {
+        cpuUsagePercent: 0,
+        memoryUsageMB: Math.round(usedMemory / 1024 / 1024),
+        memoryUsagePercent: Math.round((usedMemory / totalMemory) * 100),
+        heapUsedMB: Math.round(usage.heapUsed / 1024 / 1024),
+        heapTotalMB: Math.round(usage.heapTotal / 1024 / 1024),
+        heapPercent: Math.round((usage.heapUsed / usage.heapTotal) * 100)
+      }
+    }
     const currentTimes = currentCpuInfo.times
 
     if (lastCpuInfo) {

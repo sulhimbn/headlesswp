@@ -128,8 +128,8 @@ function generateLocalSummary(text: string): string {
     return text.substring(0, DEFAULT_SUMMARY_LENGTH * 2);
   }
 
-  const firstSentence = sentences[0].trim();
-  const secondSentence = sentences[1].trim();
+  const firstSentence = sentences[0]?.trim() ?? '';
+  const secondSentence = sentences[1]?.trim() ?? '';
   
   let summary = firstSentence;
   if (summary.length < DEFAULT_SUMMARY_LENGTH && secondSentence) {
