@@ -22,7 +22,9 @@
   },
   "dependencies": {
     "@sentry/nextjs": "^10.40.0",
+    "@vercel/og": "0.11.1",
     "axios": "^1.13.5",
+    "ioredis": "5.10.1",
     "isomorphic-dompurify": "^2.36.0",
     "next": "^16.2.1",
     "react": "^19.2.4",
@@ -32,6 +34,7 @@
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@next/bundle-analyzer": "^16.1.6",
+    "@playwright/test": "1.59.1",
     "@size-limit/file": "^12.0.0",
     "@size-limit/preset-app": "^12.0.0",
     "@size-limit/webpack": "^12.0.0",
