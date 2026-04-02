@@ -5,6 +5,7 @@ import { SITE_URL, SITE_URL_WWW } from '@/lib/api/config'
 import { assertEnvironment } from '@/lib/config/envValidation'
 import ServiceWorkerRegistration from '@/components/ServiceWorkerRegistration'
 import ErrorBoundary from '@/components/ErrorBoundary'
+import KeyboardShortcutsProvider from '@/components/ui/KeyboardShortcutsProvider'
 
 assertEnvironment()
 
@@ -126,8 +127,10 @@ export default function RootLayout({
           >
             Langsung ke konten utama
           </a>
-          <ServiceWorkerRegistration />
-          {children}
+          <KeyboardShortcutsProvider>
+            <ServiceWorkerRegistration />
+            {children}
+          </KeyboardShortcutsProvider>
         </ErrorBoundary>
       </body>
     </html>
