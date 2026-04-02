@@ -40,6 +40,16 @@ DX Engineer focuses on improving developer experience through small, safe, measu
 
 ## Recent Work
 
+### 2026-04-02
+- **Issue #857**: Add Storybook for component documentation and visual testing
+  - Initialized Storybook v10.3.3 with Next.js Vite builder
+  - Created stories for UI components: Button, Badge, Skeleton, PostCard
+  - Added accessibility addon (@storybook/addon-a11y)
+  - Added Vitest integration for visual testing (@storybook/addon-vitest)
+  - Added documentation addon (@storybook/addon-docs)
+  - Added Chromatic integration (@chromatic-com/storybook)
+  - Added Storybook build job to CI pipeline
+
 ### 2026-02-27
 - **PR #640**: Add .npmrc and enhance .gitignore for better developer experience
   - Created `.npmrc` with `save-exact=true` and `engine-strict=true` for consistent dependency management

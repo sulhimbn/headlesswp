@@ -558,13 +558,119 @@ class CacheManager implements ICacheManager {
       this.clearAll();
     }
   }
+
+  /**
+   * Export all cache entries with metadata for debugging.
+   * 
+   * @returns Cache state object with entries and metadata
+   * 
+   * @remarks
+   * Exports cache state including:
+   * - All cache entries with keys, data, timestamps, and TTL
+   * - Export metadata (timestamp, entry count, version)
+   * 
+   * Use this for:
+   * - Debugging cache issues
+   * - Sharing cache state for troubleshooting
+   * - Analyzing cache behavior
+   * 
+   * @example
+   * ```typescript
+   * const cacheState = cacheManager.exportCache();
+   * // Save to file or share for debugging
+   * ```
+   */
+  exportCache(): { entries: Record<string, { data: unknown; timestamp: number; ttl: number; expiresAt: string }>; metadata: { exportedAt: string; entryCount: number; version: string } } {
+    const entries: Record<string, { data: unknown; timestamp: number; ttl: number; expiresAt: string }> = {};
+    
+    this.cache.forEach((entry, key) => {
+      entries[key] = {
+        data: entry.data,
+        timestamp: entry.timestamp,
+        ttl: entry.ttl,
+        expiresAt: new Date(entry.timestamp + entry.ttl).toISOString(),
+      };
+    });
+
+    return {
+      entries,
+      metadata: {
+        exportedAt: new Date().toISOString(),
+        entryCount: Object.keys(entries).length,
+        version: '1.0',
+      },
+    };
+  }
+
+  /**
+   * Import cache state from exported data.
+   * 
+   * @param data - Exported cache state
+   * @param options - Import options (merge vs replace)
+   * @returns Import result with success count and errors
+   * 
+   * @remarks
+   * Import options:
+   * - `mode: 'merge'` (default): Add new entries, skip existing keys
+   * - `mode: 'replace'`: Clear cache first, then import all entries
+   * 
+   * Validation:
+   * - Validates required fields (entries, metadata)
+   * - Skips entries with invalid timestamps or TTL
+   * - Reports errors for individual entry failures
+   * 
+   * @example
+   * ```typescript
+   * // Merge mode (default)
+   * const result = cacheManager.importCache(exportedData);
+   * 
+   * // Replace mode
+   * const result = cacheManager.importCache(exportedData, { mode: 'replace' });
+   * ```
+   */
+  importCache(data: { entries: Record<string, { data: unknown; timestamp: number; ttl: number }>; metadata: { exportedAt: string; entryCount: number; version: string } }, options?: { mode?: 'merge' | 'replace' }): { success: number; failed: number; errors: string[] } {
+    const mode = options?.mode || 'merge';
+    const result = { success: 0, failed: 0, errors: [] as string[] };
+
+    if (!data || !data.entries || !data.metadata) {
+      result.errors.push('Invalid import data: missing entries or metadata');
+      return result;
+    }
+
+    if (mode === 'replace') {
+      this.clearAll();
+    }
+
+    for (const [key, entry] of Object.entries(data.entries)) {
+      try {
+        if (typeof entry.timestamp !== 'number' || typeof entry.ttl !== 'number' || entry.ttl < 0 || entry.timestamp < 0) {
+          result.errors.push(`Invalid entry for key "${key}": invalid timestamp or TTL`);
+          result.failed++;
+          continue;
+        }
+
+        if (mode === 'merge' && this.cache.has(key)) {
+          result.success++;
+          continue;
+        }
+
+        this.set(key, entry.data, entry.ttl);
+        result.success++;
+      } catch (error) {
+        result.errors.push(`Failed to import key "${key}": ${error instanceof Error ? error.message : 'Unknown error'}`);
+        result.failed++;
+      }
+    }
+
+    return result;
+  }
 }
 
 // Global cache instance - single source of truth for all caching operations
 export const cacheManager = new CacheManager();
 
 // Convenience exports for backward compatibility
-export const { getStats: getCacheStats, clear: clearCache } = cacheManager;
+export const { getStats: getCacheStats, clear: clearCache, exportCache, importCache } = cacheManager;
 
 export { CACHE_CONFIG as CACHE_TTL } from './cache/cacheConfig';
 export { CACHE_CONFIG } from './cache/cacheConfig';

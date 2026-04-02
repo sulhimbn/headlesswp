@@ -744,3 +744,183 @@ describe('Cache Key Factory Pattern', () => {
   });
 
 });
+
+describe('Cache Export/Import', () => {
+  beforeEach(() => {
+    cacheManager.clearAll();
+    cacheManager.resetStats();
+  });
+
+  describe('exportCache', () => {
+    it('should export empty cache', () => {
+      const result = cacheManager.exportCache();
+      
+      expect(result.entries).toEqual({});
+      expect(result.metadata.entryCount).toBe(0);
+      expect(result.metadata.version).toBe('1.0');
+      expect(result.metadata.exportedAt).toBeDefined();
+    });
+
+    it('should export cache entries with metadata', () => {
+      cacheManager.set('post:1', { title: 'Test Post' }, 60000);
+      cacheManager.set('categories', ['cat1', 'cat2'], 300000);
+
+      const result = cacheManager.exportCache();
+
+      expect(Object.keys(result.entries)).toContain('post:1');
+      expect(Object.keys(result.entries)).toContain('categories');
+      expect(result.entries['post:1'].data).toEqual({ title: 'Test Post' });
+      expect(result.entries['post:1'].ttl).toBe(60000);
+      expect(result.entries['post:1'].timestamp).toBeDefined();
+      expect(result.entries['post:1'].expiresAt).toBeDefined();
+      expect(result.metadata.entryCount).toBe(2);
+    });
+
+    it('should include expiresAt calculated from timestamp and TTL', () => {
+      const now = Date.now();
+      cacheManager.set('key1', 'data', 60000);
+
+      const result = cacheManager.exportCache();
+      const expectedExpires = new Date(now + 60000).toISOString();
+      
+      expect(result.entries['key1'].expiresAt).toBeDefined();
+    });
+  });
+
+  describe('importCache', () => {
+    it('should import cache entries in merge mode', () => {
+      cacheManager.set('existing', 'existing-data', 60000);
+
+      const importData = {
+        entries: {
+          'new-key': { data: 'new-data', timestamp: Date.now(), ttl: 60000 },
+        },
+        metadata: { exportedAt: new Date().toISOString(), entryCount: 1, version: '1.0' }
+      };
+
+      const result = cacheManager.importCache(importData);
+
+      expect(result.success).toBe(1);
+      expect(result.failed).toBe(0);
+      expect(cacheManager.get('new-key')).toBe('new-data');
+      expect(cacheManager.get('existing')).toBe('existing-data');
+    });
+
+    it('should import cache entries in replace mode', () => {
+      cacheManager.set('existing', 'existing-data', 60000);
+
+      const importData = {
+        entries: {
+          'new-key': { data: 'new-data', timestamp: Date.now(), ttl: 60000 },
+        },
+        metadata: { exportedAt: new Date().toISOString(), entryCount: 1, version: '1.0' }
+      };
+
+      const result = cacheManager.importCache(importData, { mode: 'replace' });
+
+      expect(result.success).toBe(1);
+      expect(result.failed).toBe(0);
+      expect(cacheManager.get('new-key')).toBe('new-data');
+      expect(cacheManager.get('existing')).toBeNull();
+    });
+
+    it('should skip existing keys in merge mode', () => {
+      cacheManager.set('key1', 'original', 60000);
+
+      const importData = {
+        entries: {
+          'key1': { data: 'updated', timestamp: Date.now(), ttl: 60000 },
+        },
+        metadata: { exportedAt: new Date().toISOString(), entryCount: 1, version: '1.0' }
+      };
+
+      const result = cacheManager.importCache(importData, { mode: 'merge' });
+
+      expect(result.success).toBe(1);
+      expect(cacheManager.get('key1')).toBe('original');
+    });
+
+    it('should return error for invalid import data', () => {
+      const result = cacheManager.importCache(null as any);
+      
+      expect(result.success).toBe(0);
+      expect(result.failed).toBe(0);
+      expect(result.errors).toContain('Invalid import data: missing entries or metadata');
+    });
+
+    it('should return error for missing entries', () => {
+      const result = cacheManager.importCache({ metadata: { exportedAt: '', entryCount: 0, version: '1.0' } } as any);
+      
+      expect(result.success).toBe(0);
+      expect(result.errors).toContain('Invalid import data: missing entries or metadata');
+    });
+
+    it('should skip entries with invalid timestamp', () => {
+      const importData = {
+        entries: {
+          'key1': { data: 'data', timestamp: -1, ttl: 60000 },
+        },
+        metadata: { exportedAt: new Date().toISOString(), entryCount: 1, version: '1.0' }
+      };
+
+      const result = cacheManager.importCache(importData);
+
+      expect(result.success).toBe(0);
+      expect(result.failed).toBe(1);
+      expect(result.errors[0]).toContain('Invalid entry');
+    });
+
+    it('should skip entries with negative TTL', () => {
+      const importData = {
+        entries: {
+          'key1': { data: 'data', timestamp: Date.now(), ttl: -1 },
+        },
+        metadata: { exportedAt: new Date().toISOString(), entryCount: 1, version: '1.0' }
+      };
+
+      const result = cacheManager.importCache(importData);
+
+      expect(result.success).toBe(0);
+      expect(result.failed).toBe(1);
+    });
+
+    it('should import multiple entries', () => {
+      const importData = {
+        entries: {
+          'key1': { data: 'data1', timestamp: Date.now(), ttl: 60000 },
+          'key2': { data: 'data2', timestamp: Date.now(), ttl: 60000 },
+          'key3': { data: 'data3', timestamp: Date.now(), ttl: 60000 },
+        },
+        metadata: { exportedAt: new Date().toISOString(), entryCount: 3, version: '1.0' }
+      };
+
+      const result = cacheManager.importCache(importData);
+
+      expect(result.success).toBe(3);
+      expect(result.failed).toBe(0);
+      expect(cacheManager.get('key1')).toBe('data1');
+      expect(cacheManager.get('key2')).toBe('data2');
+      expect(cacheManager.get('key3')).toBe('data3');
+    });
+  });
+
+  describe('export and import roundtrip', () => {
+    it('should export and import cache preserving data', () => {
+      cacheManager.set('post:1', { id: 1, title: 'Post 1' }, 60000);
+      cacheManager.set('post:2', { id: 2, title: 'Post 2' }, 60000);
+      cacheManager.set('categories', ['cat1', 'cat2'], 300000);
+
+      const exported = cacheManager.exportCache();
+
+      cacheManager.clearAll();
+
+      const importResult = cacheManager.importCache(exported);
+
+      expect(importResult.success).toBe(3);
+      expect(importResult.failed).toBe(0);
+      expect(cacheManager.get('post:1')).toEqual({ id: 1, title: 'Post 1' });
+      expect(cacheManager.get('post:2')).toEqual({ id: 2, title: 'Post 2' });
+      expect(cacheManager.get('categories')).toEqual(['cat1', 'cat2']);
+    });
+  });
+});

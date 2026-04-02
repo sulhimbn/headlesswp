@@ -11,6 +11,7 @@ import type { IPostService, PostWithMediaUrl, PostWithDetails, PaginatedPostsRes
 import { standardizedAPI } from '@/lib/api/standardized';
 import { isApiResultSuccessful } from '@/lib/api/response';
 import type { ICacheManager } from '@/lib/api/ICacheManager';
+import { semanticSearchService } from './semanticSearch';
 
 interface EntityMapOptions<T> {
   cacheKey: string;
@@ -26,8 +27,8 @@ async function getEntityMap<T extends { id: number }>(
   options: EntityMapOptions<T>
 ): Promise<Map<number, T>> {
   const cache = options.cacheManager ?? cacheManager;
-  const cached = cache.get<Map<number, T>>(options.cacheKey);
-  if (cached) return cached;
+  const cached = await cache.get<Map<number, T>>(options.cacheKey);
+  if (cached !== null && cached !== undefined) return cached;
 
   try {
     const entities = await options.fetchFn();
@@ -292,14 +293,14 @@ export const enhancedPostService: IPostService = {
   },
 
   searchPosts: async (query: string, page: number = 1, perPage: number = PAGINATION_LIMITS.SEARCH_POSTS): Promise<PaginatedPostsResult> => {
-    const { posts, totalPages } = await wordpressAPI.search(query, page, perPage);
+    const semanticResult = await semanticSearchService.search(query, page, perPage);
     
-    const postsWithMedia = await enrichPostsWithMediaUrls(posts);
+    const postsWithMedia = await enrichPostsWithMediaUrls(semanticResult.posts);
     
     return {
       posts: postsWithMedia,
-      totalPosts: posts.length,
-      totalPages
+      totalPosts: semanticResult.posts.length,
+      totalPages: semanticResult.totalPages
     };
   },
 

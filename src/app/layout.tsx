@@ -3,10 +3,14 @@ import type { Metadata, Viewport } from 'next'
 import { Inter } from 'next/font/google'
 import { SITE_URL, SITE_URL_WWW } from '@/lib/api/config'
 import { assertEnvironment } from '@/lib/config/envValidation'
+import { initializeContentChangeDetection } from '@/lib/services/contentChangeDetector'
 import ServiceWorkerRegistration from '@/components/ServiceWorkerRegistration'
 import ErrorBoundary from '@/components/ErrorBoundary'
+import PrefetchProvider from '@/components/PrefetchProvider'
+import ClientLayout from '@/components/ClientLayout'
 
 assertEnvironment()
+initializeContentChangeDetection()
 
 const inter = Inter({ subsets: ['latin'], display: 'swap' })
 
@@ -53,6 +57,13 @@ export const metadata: Metadata = {
     images: ['/og-image.jpg'],
     site: '@mitrabantennews',
     creator: '@mitrabantennews',
+  },
+  alternates: {
+    canonical: SITE_URL,
+    languages: {
+      'x-default': SITE_URL,
+      'id': SITE_URL,
+    },
   },
 }
 
@@ -127,7 +138,11 @@ export default function RootLayout({
             Langsung ke konten utama
           </a>
           <ServiceWorkerRegistration />
-          {children}
+          <PrefetchProvider>
+            <ClientLayout>
+              {children}
+            </ClientLayout>
+          </PrefetchProvider>
         </ErrorBoundary>
       </body>
     </html>

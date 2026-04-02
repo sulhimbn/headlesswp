@@ -29,6 +29,7 @@ export interface WordPressCategory {
   parent: number;
   count: number;
   link: string;
+  modified?: string;
 }
 
 export interface WordPressTag {
@@ -38,6 +39,7 @@ export interface WordPressTag {
   description: string;
   count: number;
   link: string;
+  modified?: string;
 }
 
 export interface WordPressMedia {
