@@ -5,6 +5,8 @@ export interface TelemetryEvent {
   type: string
   category: 'circuit-breaker' | 'retry' | 'rate-limit' | 'health-check' | 'api-request' | 'performance'
   data: Record<string, unknown>
+  correlationId?: string
+  requestId?: string
 }
 
 export interface TelemetryConfig {
