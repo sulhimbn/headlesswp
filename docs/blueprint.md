@@ -1,7 +1,7 @@
 # Architecture Blueprint
 
-**Version**: 1.0.3
-**Last Updated**: 2026-03-21 (System Orchestrator - FIX-844: Restore missing middleware.ts, FIX-843: npm audit vulnerabilities resolved)
+**Version**: 1.0.4
+**Last Updated**: 2026-04-05 (System Orchestrator - ARCH-DRIFT-978: Merged middleware.ts into proxy.ts, Next.js 16.2.1 compatibility)
 
 ## System Architecture
 
@@ -228,11 +228,12 @@ The UI supports Indonesian (Bahasa Indonesia) localization through `src/lib/cons
 
 ### Edge Middleware
 
-Edge middleware is implemented in `src/middleware.ts` for performance optimization and security.
+Edge middleware is implemented in `src/proxy.ts` for performance optimization and security. Note: Next.js 16.2.1 requires using proxy.ts only - middleware.ts cannot coexist with proxy.ts.
 
 **Features**:
 - **Bot Detection**: Identifies search engine crawlers and social media bots
-- **Security Headers**: X-DNS-Prefetch-Control, X-Frame-Options, X-Content-Type-Options, Referrer-Policy
+- **Security Headers**: X-DNS-Prefetch-Control, X-Frame-Options, X-Content-Type-Options, Referrer-Policy, HSTS
+- **CSP Headers**: Nonce-based Content Security Policy for dynamic content
 - **SEO Optimization**: X-Robots-Tag and X-SEO-Crawler headers for crawlers
 - **Rate Limit Headers**: X-RateLimit-Policy headers for API consumers
 - **Prefetch Hints**: Preload critical routes for faster navigation
