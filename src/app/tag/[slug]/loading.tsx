@@ -9,7 +9,7 @@ export default function Loading() {
     <div className="min-h-screen bg-[hsl(var(--color-background))]">
       <Header />
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8" role="status" aria-live="polite" aria-label={UI_TEXT.loading.news}>
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8" role="status" aria-live="polite" aria-label={UI_TEXT.loading.tag}>
         <div className="mb-8" aria-busy="true">
           <Skeleton variant="text" className="h-12 mb-2 w-64" />
           <Skeleton variant="text" className="h-5 w-96" />

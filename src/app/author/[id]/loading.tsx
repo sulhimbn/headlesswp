@@ -9,19 +9,19 @@ export default function Loading() {
     <div className="min-h-screen bg-[hsl(var(--color-background))]">
       <Header />
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8" role="status" aria-live="polite" aria-label={UI_TEXT.loading.news}>
-        <div className="bg-[hsl(var(--color-background-secondary))] rounded-lg p-6 mb-8" aria-busy="true">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8" role="status" aria-live="polite" aria-label={UI_TEXT.loading.author}>
+        <div className="bg-[hsl(var(--color-surface))] rounded-lg p-6 mb-8" aria-busy="true">
           <div className="flex items-center gap-4">
             <Skeleton variant="circular" className="h-24 w-24" />
-            <div className="flex-1">
-              <Skeleton variant="text" className="h-8 w-48 mb-2" />
-              <Skeleton variant="text" className="h-4 w-64" />
+            <div>
+              <Skeleton variant="text" className="h-8 w-48" />
+              <Skeleton variant="text" className="h-5 w-64 mt-2" />
               <Skeleton variant="text" className="h-4 w-32 mt-2" />
             </div>
           </div>
         </div>
 
-        <Skeleton variant="text" className="h-8 w-48 mb-6" />
+        <Skeleton variant="text" className="h-10 w-48 mb-6" />
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" aria-busy="true">
           {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((i) => (

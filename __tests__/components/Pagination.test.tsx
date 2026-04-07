@@ -83,7 +83,7 @@ describe('Pagination Component', () => {
       render(<Pagination currentPage={3} totalPages={5} basePath={basePath} />)
       const currentPageLink = screen.getByRole('link', { name: `${UI_TEXT.pagination.page} 3` })
       expect(currentPageLink).toHaveClass('bg-[hsl(var(--color-primary))]')
-      expect(currentPageLink).toHaveClass('text-white')
+      expect(currentPageLink).toHaveClass('text-[hsl(var(--color-surface))]')
     })
 
     test('non-current pages have inactive styling', () => {
