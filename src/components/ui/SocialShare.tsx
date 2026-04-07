@@ -83,8 +83,8 @@ function SocialShareComponent({ title, url, className = '' }: SocialShareProps) 
           onClick={handleCopyLink}
           className={`p-2 rounded-full bg-[hsl(var(--color-surface))] text-[hsl(var(--color-text-secondary))] transition-colors focus:outline-none focus:ring-2 focus:ring-[hsl(var(--color-primary))] focus:ring-offset-2 ${
             copied 
-              ? 'bg-[hsl(var(--color-success))] text-white' 
-              : 'hover:bg-[hsl(var(--color-primary))] hover:text-white'
+              ? 'bg-[hsl(var(--color-success))] text-[hsl(var(--color-surface))]' 
+              : 'hover:bg-[hsl(var(--color-primary))] hover:text-[hsl(var(--color-surface))]'
           }`}
           aria-label={copied ? 'Tautan disalin' : 'Salin tautan'}
           title={copied ? 'Tautan disalin' : 'Salin tautan'}
