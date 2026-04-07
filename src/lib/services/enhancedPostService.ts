@@ -326,7 +326,7 @@ export const enhancedPostService: IPostService = {
     return enrichPostsWithMediaUrls(filteredPosts);
   },
 
-  getPostsByCategory: async (categoryId: number, page: number = 1, perPage: number = 12): Promise<PaginatedPostsResult> => {
+  getPostsByCategory: async (categoryId: number, page: number = 1, perPage: number = PAGINATION_LIMITS.CATEGORY_POSTS): Promise<PaginatedPostsResult> => {
     const result = await standardizedAPI.getAllPosts({ 
       page,
       per_page: perPage,
@@ -353,7 +353,7 @@ export const enhancedPostService: IPostService = {
     };
   },
 
-  getPostsByTag: async (tagId: number, page: number = 1, perPage: number = 12): Promise<PaginatedPostsResult> => {
+  getPostsByTag: async (tagId: number, page: number = 1, perPage: number = PAGINATION_LIMITS.TAG_POSTS): Promise<PaginatedPostsResult> => {
     const result = await standardizedAPI.getAllPosts({ 
       page,
       per_page: perPage,
@@ -380,7 +380,7 @@ export const enhancedPostService: IPostService = {
     };
   },
 
-  getPostsByAuthor: async (authorId: number, page: number = 1, perPage: number = 12): Promise<PaginatedPostsResult> => {
+  getPostsByAuthor: async (authorId: number, page: number = 1, perPage: number = PAGINATION_LIMITS.AUTHOR_POSTS): Promise<PaginatedPostsResult> => {
     const result = await standardizedAPI.getAllPosts({ 
       page,
       per_page: perPage,
