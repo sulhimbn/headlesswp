@@ -39,7 +39,7 @@ async function postsHandler(_request: Request) {
 
     if (!isApiResultSuccessful(result) || !result.data) {
       logger.warn('Failed to fetch posts from API', undefined, { module: 'api/posts' })
-      return NextResponse.json([], { status: 200 })
+      return NextResponse.json({ error: 'Failed to fetch posts' }, { status: 500 })
     }
 
     const posts = result.data.map(post => ({
@@ -58,7 +58,7 @@ async function postsHandler(_request: Request) {
     return response
   } catch (error) {
     logger.error('Error in /api/posts', error, { module: 'api/posts' })
-    return NextResponse.json([], { status: 200 })
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
 
