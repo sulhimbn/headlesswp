@@ -2,22 +2,25 @@ import { NextRequest, NextResponse } from 'next/server';
 import { summarizePost, isSummarizationEnabled, getSummarizationConfig } from '@/lib/services/summarizer';
 import { wordpressAPI } from '@/lib/wordpress';
 import { logger } from '@/lib/utils/logger';
+import { withApiRateLimit } from '@/lib/api/rateLimitMiddleware';
 
 export const dynamic = 'force-dynamic';
 
-interface RouteParams {
-  params: Promise<{ id: string }>;
+function sanitizePostId(id: string): number | null {
+  const parsed = parseInt(id, 10)
+  if (isNaN(parsed) || parsed < 1 || parsed > 2147483647) return null
+  return parsed
 }
 
-export async function GET(
+async function summaryHandler(
   request: NextRequest,
-  { params }: RouteParams
+  context: { params: Promise<{ id: string }> }
 ): Promise<NextResponse> {
   try {
-    const { id } = await params;
-    const postId = parseInt(id, 10);
+    const { id } = await context.params;
+    const postId = sanitizePostId(id);
 
-    if (isNaN(postId)) {
+    if (postId === null) {
       return NextResponse.json(
         { error: 'Invalid post ID' },
         { status: 400 }
@@ -58,3 +61,6 @@ export async function GET(
     );
   }
 }
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const GET = withApiRateLimit(summaryHandler as any, 'metrics')

@@ -4,10 +4,11 @@ import type { WordPressPost } from '@/types/wordpress';
 import { createMainRSSFeed, createRSSFeed } from '@/lib/utils/rss';
 import { CACHE_TIMES } from '@/lib/api/config';
 import { logger } from '@/lib/utils/logger';
+import { withApiRateLimit } from '@/lib/api/rateLimitMiddleware';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET() {
+async function rssHandler() {
   try {
     const response = await apiClient.get<WordPressPost[]>(getApiUrl('/wp/v2/posts'), {
       params: {
@@ -31,3 +32,5 @@ export async function GET() {
     return new NextResponse('Error generating RSS feed', { status: 500 });
   }
 }
+
+export const GET = withApiRateLimit(rssHandler, 'metrics')

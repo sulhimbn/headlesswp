@@ -14,6 +14,8 @@ const API_ROUTE_RATE_LIMITS: Record<string, ApiRouteRateLimitOptions> = {
   metrics: { key: 'metrics', maxRequests: RATE_LIMIT.METRICS_MAX_REQUESTS, windowMs: RATE_LIMIT.DEFAULT_WINDOW_MS },
   cache: { key: 'cache', maxRequests: RATE_LIMIT.CACHE_MAX_REQUESTS, windowMs: RATE_LIMIT.DEFAULT_WINDOW_MS },
   cspReport: { key: 'csp-report', maxRequests: RATE_LIMIT.CSP_REPORT_MAX_REQUESTS, windowMs: RATE_LIMIT.DEFAULT_WINDOW_MS },
+  posts: { key: 'posts', maxRequests: RATE_LIMIT.METRICS_MAX_REQUESTS, windowMs: RATE_LIMIT.DEFAULT_WINDOW_MS },
+  performance: { key: 'performance', maxRequests: RATE_LIMIT.METRICS_MAX_REQUESTS, windowMs: RATE_LIMIT.DEFAULT_WINDOW_MS },
 }
 
 interface RateLimitState {
@@ -62,8 +64,10 @@ async function checkRateLimit(key: string, options: ApiRouteRateLimitOptions): P
   state.requestTimes.push(now)
 }
 
+type NextRequestHandler = (request: NextRequest, context?: unknown) => Promise<NextResponse>
+
 export function withApiRateLimit(
-  handler: (request: NextRequest, context?: unknown) => Promise<NextResponse>,
+  handler: NextRequestHandler,
   optionsKey: keyof typeof API_ROUTE_RATE_LIMITS = 'metrics'
 ) {
   return async (request: NextRequest, context?: unknown): Promise<NextResponse> => {
