@@ -1,4 +1,4 @@
-import { ApiError, createApiError } from './errors';
+import { ApiError, createApiError, getHttpStatusCode } from './errors';
 
 export interface ApiMetadata {
   timestamp: string;
@@ -110,3 +110,5 @@ export async function fetchAndHandleNotFound<T>(
     return createErrorResult(apiError, { endpoint });
   }
 }
+
+export { getHttpStatusCode };

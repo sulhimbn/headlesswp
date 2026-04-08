@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { standardizedAPI } from '@/lib/api/standardized'
-import { isApiResultSuccessful } from '@/lib/api/response'
+import { getHttpStatusCode } from '@/lib/api/response'
 import { logger } from '@/lib/utils/logger'
 
 export async function GET(
@@ -12,13 +12,20 @@ export async function GET(
     const mediaId = parseInt(id, 10)
 
     if (isNaN(mediaId)) {
-      return NextResponse.json({ source_url: null }, { status: 200 })
+      return NextResponse.json(
+        { error: 'Invalid media ID' },
+        { status: 400 }
+      )
     }
 
     const result = await standardizedAPI.getMediaById(mediaId)
 
-    if (!isApiResultSuccessful(result) || !result.data) {
-      return NextResponse.json({ source_url: null }, { status: 200 })
+    if (!result.data) {
+      const statusCode = result.error ? getHttpStatusCode(result.error) : 404
+      return NextResponse.json(
+        { error: result.error?.message || 'Media not found' },
+        { status: statusCode }
+      )
     }
 
     return NextResponse.json({
@@ -27,6 +34,9 @@ export async function GET(
     })
   } catch (error) {
     logger.error('Error in /api/media/[id]', error, { module: 'api/media' })
-    return NextResponse.json({ source_url: null }, { status: 200 })
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    )
   }
 }
