@@ -42,6 +42,12 @@ export const PAGINATION_LIMITS = {
   RELATED_POSTS: 3,
 } as const
 
+export const API_QUERY_LIMITS = {
+  MAX_PER_PAGE: 100,
+  MAX_PAGE: 1000,
+  MAX_QUERY_LENGTH: 200,
+} as const
+
 export const DEFAULT_PER_PAGE = 10
 
 export const REVALIDATE_TIMES = {
