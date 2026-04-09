@@ -1,7 +1,6 @@
 'use client'
 
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 import { useState, useEffect, useRef, useCallback, memo, Suspense } from 'react'
 import dynamic from 'next/dynamic'
 import Icon from '@/components/ui/Icon'
@@ -9,7 +8,7 @@ import ServiceStatus from '@/components/ui/ServiceStatus'
 import { UI_TEXT } from '@/lib/constants/uiText'
 import { useDarkMode } from '@/lib/hooks/useDarkMode'
 
-const SearchBar = dynamic(() => import('@/components/ui/SearchBar'), { ssr: false })
+const SearchAutocomplete = dynamic(() => import('@/components/ui/SearchAutocomplete'), { ssr: false })
 
 const NAVIGATION_ITEMS = [
   { href: '/', label: UI_TEXT.header.navigation.home },
@@ -17,7 +16,6 @@ const NAVIGATION_ITEMS = [
 ] as const
 
 export default memo(function Header() {
-  const router = useRouter()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isSearchOpen, setIsSearchOpen] = useState(false)
   const { isDark, toggleDarkMode } = useDarkMode()
@@ -62,14 +60,6 @@ export default memo(function Header() {
       setIsSearchOpen(false)
     }
   }
-
-  const handleSearch = useCallback((query: string) => {
-    if (query.trim()) {
-      router.push(`/cari?q=${encodeURIComponent(query)}`)
-    } else {
-      router.push('/cari')
-    }
-  }, [router])
 
   const toggleSearch = useCallback(() => {
     setIsSearchOpen(!isSearchOpen)
@@ -176,8 +166,7 @@ export default memo(function Header() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
             <div className="max-w-2xl mx-auto">
               <Suspense fallback={<div className="h-10 sm:h-12 bg-[hsl(var(--color-secondary-dark))] rounded-[var(--radius-md)] animate-pulse" />}>
-                <SearchBar
-                  onSearch={handleSearch}
+                <SearchAutocomplete
                   placeholder={UI_TEXT.search.placeholder}
                   ariaLabel={UI_TEXT.search.label}
                 />

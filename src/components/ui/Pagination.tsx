@@ -75,7 +75,7 @@ function PaginationComponent({ currentPage, totalPages, basePath, query = {} }: 
             href={page === 1 ? getFirstPageHref() : buildHref(page as number)}
             className={`px-3 py-2 text-sm font-medium rounded-[var(--radius-md)] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--color-primary))] focus:ring-offset-2 transition-colors duration-[var(--transition-fast)] ${
               currentPage === page
-                ? 'bg-[hsl(var(--color-primary))] text-white'
+                ? 'bg-[hsl(var(--color-primary))] text-[hsl(var(--color-surface))]'
                 : 'bg-[hsl(var(--color-surface))] text-[hsl(var(--color-text-secondary))] border border-[hsl(var(--color-border))] hover:bg-[hsl(var(--color-secondary-dark))]'
             }`}
             aria-label={`${UI_TEXT.pagination.page} ${page}`}

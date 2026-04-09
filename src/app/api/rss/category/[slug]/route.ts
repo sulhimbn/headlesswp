@@ -1,18 +1,20 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { wordpressAPI } from '@/lib/wordpress';
 import { apiClient, getApiUrl } from '@/lib/api/client';
 import type { WordPressPost } from '@/types/wordpress';
 import { createCategoryRSSFeed, createRSSFeed } from '@/lib/utils/rss';
 import { CACHE_TIMES } from '@/lib/api/config';
 import { logger } from '@/lib/utils/logger';
+import { withApiRateLimit } from '@/lib/api/rateLimitMiddleware';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET(
-  request: Request,
-  { params }: { params: Promise<{ slug: string }> }
+async function categoryRssHandler(
+  request: NextRequest,
+  context: unknown
 ) {
   try {
+    const { params } = context as { params: Promise<{ slug: string }> }
     const { slug } = await params;
 
     const categories = await wordpressAPI.getCategories();
@@ -45,3 +47,5 @@ export async function GET(
     return new NextResponse('Error generating RSS feed', { status: 500 });
   }
 }
+
+export const GET = withApiRateLimit(categoryRssHandler, 'rssCategory')

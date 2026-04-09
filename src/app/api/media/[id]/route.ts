@@ -1,24 +1,26 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { standardizedAPI } from '@/lib/api/standardized'
 import { isApiResultSuccessful } from '@/lib/api/response'
 import { logger } from '@/lib/utils/logger'
+import { withApiRateLimit } from '@/lib/api/rateLimitMiddleware'
 
-export async function GET(
-  request: Request,
-  { params }: { params: Promise<{ id: string }> }
+async function mediaHandler(
+  request: NextRequest,
+  context: unknown
 ) {
   try {
+    const { params } = context as { params: Promise<{ id: string }> }
     const { id } = await params
     const mediaId = parseInt(id, 10)
 
     if (isNaN(mediaId)) {
-      return NextResponse.json({ source_url: null }, { status: 200 })
+      return NextResponse.json({ error: 'Invalid media ID', source_url: null }, { status: 400 })
     }
 
     const result = await standardizedAPI.getMediaById(mediaId)
 
     if (!isApiResultSuccessful(result) || !result.data) {
-      return NextResponse.json({ source_url: null }, { status: 200 })
+      return NextResponse.json({ error: 'Media not found', source_url: null }, { status: 404 })
     }
 
     return NextResponse.json({
@@ -27,6 +29,8 @@ export async function GET(
     })
   } catch (error) {
     logger.error('Error in /api/media/[id]', error, { module: 'api/media' })
-    return NextResponse.json({ source_url: null }, { status: 200 })
+    return NextResponse.json({ error: 'Internal server error', source_url: null }, { status: 500 })
   }
 }
+
+export const GET = withApiRateLimit(mediaHandler, 'media')

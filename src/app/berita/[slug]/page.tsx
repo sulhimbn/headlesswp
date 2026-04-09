@@ -22,6 +22,7 @@ import SocialShare from '@/components/ui/SocialShare'
 import ReadingProgress from '@/components/ui/ReadingProgress'
 import TableOfContents from '@/components/ui/TableOfContents'
 import { extractHeadings, shouldShowToc, addIdsToHeadings } from '@/lib/utils/tableOfContents'
+import { stripHtml } from '@/lib/utils/stripHtml'
 
 const Footer = dynamic(() => import('@/components/layout/Footer'), {
   loading: () => <div className="h-64 bg-[hsl(var(--color-background-dark))] mt-12" aria-hidden="true" />
@@ -29,9 +30,6 @@ const Footer = dynamic(() => import('@/components/layout/Footer'), {
 
 export const revalidate = 3600 // 60 minutes (1 hour)
 
-function stripHtml(html: string): string {
-  return html.replace(/<[^>]*>?/gm, '').trim()
-}
 
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
   const post = await enhancedPostService.getPostBySlug(params.slug)

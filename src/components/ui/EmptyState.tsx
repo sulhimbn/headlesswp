@@ -42,7 +42,7 @@ function EmptyStateComponent({ title, description, icon, action, className = '' 
       {action && (
         <Link
           href={action.href}
-          className="inline-flex items-center px-4 py-2 text-base font-medium text-white bg-[hsl(var(--color-primary))] rounded-[var(--radius-md)] hover:bg-[hsl(var(--color-primary-dark))] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--color-primary))] focus:ring-offset-2 transition-colors duration-[var(--transition-normal)]"
+          className="inline-flex items-center px-4 py-2 text-base font-medium text-[hsl(var(--color-surface))] bg-[hsl(var(--color-primary))] rounded-[var(--radius-md)] hover:bg-[hsl(var(--color-primary-dark))] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--color-primary))] focus:ring-offset-2 transition-colors duration-[var(--transition-normal)]"
         >
           {action.label}
         </Link>

@@ -8,6 +8,7 @@ import SectionHeading from '@/components/ui/SectionHeading';
 import { notFound } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import { UI_TEXT } from '@/lib/constants/uiText';
+import { parsePageFromParams, DEFAULT_PER_PAGE } from '@/lib/hooks/usePagination';
 import { PARSING } from '@/lib/constants/appConstants';
 import { isApiResultSuccessful } from '@/lib/api/response';
 
@@ -22,10 +23,10 @@ export default async function AuthorPage({
   searchParams,
 }: {
   params: { id: string }
-  searchParams: { page?: string }
+  searchParams: { page?: string | string[] }
 }) {
-  const page = parseInt(searchParams.page || '1', PARSING.DECIMAL_RADIX);
-  const perPage = 12;
+  const page = parsePageFromParams(searchParams);
+  const perPage = DEFAULT_PER_PAGE;
   const authorId = parseInt(params.id, PARSING.DECIMAL_RADIX);
 
   if (isNaN(authorId)) {

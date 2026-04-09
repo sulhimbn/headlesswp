@@ -47,10 +47,10 @@ export default class ErrorBoundary extends Component<Props, State> {
           alignItems: 'center',
           justifyContent: 'center'
         }}>
-          <h2 style={{ marginBottom: '1rem', color: '#dc2626' }}>
+          <h2 style={{ marginBottom: '1rem', color: 'hsl(var(--color-error))' }}>
             Terjadi kesalahan
           </h2>
-          <p style={{ color: '#6b7280', marginBottom: '1.5rem' }}>
+          <p style={{ color: 'hsl(var(--color-text-muted))', marginBottom: '1.5rem' }}>
             Kami sedang memperbaiki masalah ini. Silakan coba lagi nanti.
           </p>
           <button
@@ -60,8 +60,8 @@ export default class ErrorBoundary extends Component<Props, State> {
             }}
             style={{
               padding: '0.75rem 1.5rem',
-              backgroundColor: '#2563eb',
-              color: 'white',
+              backgroundColor: 'hsl(var(--color-primary))',
+              color: 'hsl(var(--color-surface))',
               border: 'none',
               borderRadius: '0.375rem',
               cursor: 'pointer'

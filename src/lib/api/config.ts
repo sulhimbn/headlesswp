@@ -1,7 +1,29 @@
-export const WORDPRESS_API_BASE_URL = process.env.NEXT_PUBLIC_WORDPRESS_API_URL || 'https://mitrabantennews.com/wp-json'
-export const WORDPRESS_SITE_URL = process.env.NEXT_PUBLIC_WORDPRESS_URL || 'https://mitrabantennews.com'
-export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://mitrabantennews.com'
-export const SITE_URL_WWW = process.env.NEXT_PUBLIC_SITE_URL_WWW || 'https://www.mitrabantennews.com'
+function getRequiredEnvVar(name: string): string {
+  const value = process.env[name]
+  if (!value) {
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error(`${name} is required`)
+    }
+    console.warn(`${name} is not set, using placeholder`)
+    return `https://placeholder-${name.toLowerCase().replace('next_public_', '')}.com`
+  }
+  return value
+}
+
+export function validateConfig(): void {
+  getRequiredEnvVar('NEXT_PUBLIC_WORDPRESS_API_URL')
+  getRequiredEnvVar('NEXT_PUBLIC_WORDPRESS_URL')
+  getRequiredEnvVar('NEXT_PUBLIC_SITE_URL')
+}
+
+if (process.env.NODE_ENV !== 'test') {
+  validateConfig()
+}
+
+export const WORDPRESS_API_BASE_URL = getRequiredEnvVar('NEXT_PUBLIC_WORDPRESS_API_URL')
+export const WORDPRESS_SITE_URL = getRequiredEnvVar('NEXT_PUBLIC_WORDPRESS_URL')
+export const SITE_URL = getRequiredEnvVar('NEXT_PUBLIC_SITE_URL')
+export const SITE_URL_WWW = process.env.NEXT_PUBLIC_SITE_URL_WWW || ''
 
 export const TIME_CONSTANTS = {
   SECOND_IN_MS: 1000,
@@ -62,4 +84,11 @@ export const FEATURE_FLAGS = {
 export const RECOMMENDATION_CONFIG = {
   MAX_HISTORY_ITEMS: 20,
   MAX_RECOMMENDATIONS: 3,
+} as const
+
+export const API_QUERY_LIMITS = {
+  MAX_PER_PAGE: 100,
+  MAX_PAGE: 1000,
+  MAX_QUERY_LENGTH: 200,
+  AUTOCOMPLETE: 8,
 } as const

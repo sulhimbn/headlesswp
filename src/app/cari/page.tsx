@@ -7,9 +7,9 @@ import SectionHeading from '@/components/ui/SectionHeading'
 import { PAGINATION_LIMITS } from '@/lib/api/config'
 import dynamic from 'next/dynamic'
 import { UI_TEXT } from '@/lib/constants/uiText'
-import { PARSING } from '@/lib/constants/appConstants'
 import Icon from '@/components/ui/Icon'
 import type { PostWithMediaUrl } from '@/lib/services/IPostService'
+import { sanitizeSearchQuery } from '@/lib/utils/querySanitizer'
 
 const Footer = dynamic(() => import('@/components/layout/Footer'), {
   loading: () => <div className="h-64 bg-[hsl(var(--color-background-dark))] mt-12" aria-hidden="true" />
@@ -22,9 +22,10 @@ interface SearchPageProps {
 }
 
 export default async function CariPage({ searchParams }: SearchPageProps) {
-  const query = searchParams.q?.trim() || ''
-  const page = parseInt(searchParams.page || '1', PARSING.DECIMAL_RADIX)
-  const postsPerPage = PAGINATION_LIMITS.SEARCH_POSTS
+  const sanitized = sanitizeSearchQuery(searchParams.q, searchParams.page, undefined)
+  const query = sanitized.query
+  const page = sanitized.page
+  const postsPerPage = Math.min(PAGINATION_LIMITS.SEARCH_POSTS, sanitized.perPage)
 
   let searchResults: PostWithMediaUrl[] = []
   let totalPages = 1
