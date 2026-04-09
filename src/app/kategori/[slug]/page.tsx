@@ -8,8 +8,8 @@ import SectionHeading from '@/components/ui/SectionHeading'
 import { notFound } from 'next/navigation'
 import dynamic from 'next/dynamic'
 import { UI_TEXT } from '@/lib/constants/uiText'
-import { PARSING } from '@/lib/constants/appConstants'
 import { isApiResultSuccessful } from '@/lib/api/response'
+import { parsePageNumber } from '@/lib/hooks/usePagination'
 
 const Footer = dynamic(() => import('@/components/layout/Footer'), {
   loading: () => <div className="h-64 bg-[hsl(var(--color-background-dark))] mt-12" aria-hidden="true" />
@@ -24,7 +24,7 @@ export default async function CategoryPage({
   params: { slug: string }
   searchParams: { page?: string }
 }) {
-  const page = parseInt(searchParams.page || '1', PARSING.DECIMAL_RADIX)
+  const page = parsePageNumber(searchParams)
   const perPage = 12
 
   const categoryResult = await standardizedAPI.getCategoryBySlug(params.slug)
