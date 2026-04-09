@@ -1,86 +1,48 @@
-export interface EnvValidationResult {
-  valid: boolean
-  errors: string[]
-  warnings: string[]
-}
+/**
+ * @deprecated Use @/lib/config/envValidation instead
+ * This module is maintained for backward compatibility and will be removed in a future version.
+ */
+import {
+  validateEnvironment as configValidateEnvironment,
+  logEnvironmentValidation as configLogEnvironmentValidation,
+  type EnvValidationResult as ConfigEnvValidationResult,
+  type EnvVariable,
+} from '@/lib/config/envValidation';
 
-export interface EnvVariable {
-  name: string
-  required: boolean
-  pattern?: RegExp
-  defaultValue?: string
-}
+export type EnvValidationResult = ConfigEnvValidationResult;
+export type EnvVariable = EnvVariable;
 
-const REQUIRED_ENV_VARS: EnvVariable[] = [
-  {
-    name: 'NEXT_PUBLIC_WORDPRESS_API_URL',
-    required: false,
-    pattern: /^https?:\/\/.+/,
-  },
-  {
-    name: 'NEXT_PUBLIC_WORDPRESS_URL',
-    required: false,
-    pattern: /^https?:\/\/.+/,
-  },
-  {
-    name: 'NEXT_PUBLIC_SITE_URL',
-    required: false,
-    pattern: /^https?:\/\/.+/,
-  },
-]
+const WRAPPER_OPTIONAL_VARS = [
+  'NEXT_PUBLIC_WORDPRESS_API_URL',
+  'NEXT_PUBLIC_WORDPRESS_URL',
+  'NEXT_PUBLIC_SITE_URL',
+];
 
 export function validateEnvironment(): EnvValidationResult {
-  const errors: string[] = []
-  const warnings: string[] = []
-
-  for (const envVar of REQUIRED_ENV_VARS) {
-    const value = process.env[envVar.name]
-
+  const result = configValidateEnvironment();
+  
+  const errors: string[] = [...(result.errors || [])];
+  const warnings: string[] = [...(result.warnings || [])];
+  
+  for (const name of WRAPPER_OPTIONAL_VARS) {
+    const value = process.env[name];
     if (!value) {
-      if (envVar.required) {
-        errors.push(`Required environment variable ${envVar.name} is not set`)
-      } else if (envVar.defaultValue) {
-        warnings.push(
-          `Environment variable ${envVar.name} not set, using default: ${envVar.defaultValue}`
-        )
+      if (name.includes('WORDPRESS')) {
+        warnings.push(`${name} not set, using default fallback`);
       }
-      continue
-    }
-
-    if (envVar.pattern && !envVar.pattern.test(value)) {
-      errors.push(
-        `Environment variable ${envVar.name} has invalid format: ${value}`
-      )
+    } else if (!/^https?:\/\/.+/.test(value)) {
+      errors.push(`Environment variable ${name} has invalid format: ${value}`);
     }
   }
-
-  if (!process.env.NEXT_PUBLIC_WORDPRESS_API_URL) {
-    warnings.push(
-      `NEXT_PUBLIC_WORDPRESS_API_URL not set, using default fallback`
-    )
-  }
-
+  
   return {
     valid: errors.length === 0,
+    missing: [],
     errors,
     warnings,
-  }
+  };
 }
 
 export function logEnvironmentValidation(): void {
-  const result = validateEnvironment()
-
-  if (result.errors.length > 0) {
-    console.error('[Environment] Validation failed:')
-    result.errors.forEach((error) => console.error(`  - ${error}`))
-  }
-
-  if (result.warnings.length > 0) {
-    console.warn('[Environment] Validation warnings:')
-    result.warnings.forEach((warning) => console.warn(`  - ${warning}`))
-  }
-
-  if (result.valid && result.errors.length === 0 && result.warnings.length === 0) {
-    // Silent success - no need to log in production
-  }
+  configLogEnvironmentValidation();
 }
