@@ -1,5 +1,5 @@
 import { standardizedAPI } from '@/lib/api/standardized'
-import { enhancedPostService } from '@/lib/services/enhancedPostService'
+import { wordpressAPI } from '@/lib/wordpress'
 import Header from '@/components/layout/Header'
 import PostCard from '@/components/post/PostCard'
 import Pagination from '@/components/ui/Pagination'
@@ -10,6 +10,7 @@ import dynamic from 'next/dynamic'
 import { UI_TEXT } from '@/lib/constants/uiText'
 import { PARSING } from '@/lib/constants/appConstants'
 import { isApiResultSuccessful } from '@/lib/api/response'
+import type { WordPressPost } from '@/types/wordpress'
 
 const Footer = dynamic(() => import('@/components/layout/Footer'), {
   loading: () => <div className="h-64 bg-[hsl(var(--color-background-dark))] mt-12" aria-hidden="true" />
@@ -41,15 +42,20 @@ export default async function TagPage({
     tag: tag.id
   })
 
+  if (!isApiResultSuccessful(postsResult)) {
+    notFound()
+  }
+
   const posts = postsResult.data
   const totalPages = postsResult.pagination.totalPages ?? 0
 
-  const postsWithMedia = await enhancedPostService.getLatestPosts()
-
-  const enrichedPosts = posts.map(post => {
-    const enriched = postsWithMedia.find(p => p.id === post.id)
-    return enriched || { ...post, mediaUrl: null }
-  })
+  const mediaIds = [...new Set(posts.map(p => p.featured_media).filter(id => id > 0))]
+  const mediaUrls = await wordpressAPI.getMediaUrlsBatch(mediaIds)
+  
+  const enrichedPosts = posts.map(post => ({
+    ...post,
+    mediaUrl: mediaUrls.get(post.featured_media) || null
+  }))
 
   return (
     <div className="min-h-screen bg-[hsl(var(--color-background))]">
