@@ -228,7 +228,7 @@ The UI supports Indonesian (Bahasa Indonesia) localization through `src/lib/cons
 
 ### Edge Middleware
 
-Edge middleware is implemented in `src/middleware.ts` for performance optimization and security.
+Edge middleware is implemented in `src/proxy.ts` for performance optimization and security.
 
 **Features**:
 - **Bot Detection**: Identifies search engine crawlers and social media bots
