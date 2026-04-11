@@ -10,8 +10,20 @@ export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url)
     const categories = searchParams.get('categories')
-    const perPage = parseInt(searchParams.get('per_page') || '10', 10)
-    const page = parseInt(searchParams.get('page') || '1', 10)
+    const rawPerPage = searchParams.get('per_page')
+    const rawPage = searchParams.get('page')
+    
+    const perPage = (() => {
+      const parsed = parseInt(rawPerPage || '10', 10)
+      if (isNaN(parsed) || parsed < 1) return 10
+      return Math.min(parsed, 100)
+    })()
+    
+    const page = (() => {
+      const parsed = parseInt(rawPage || '1', 10)
+      if (isNaN(parsed) || parsed < 1) return 1
+      return parsed
+    })()
 
     const queryParams: Record<string, string | number> = {
       per_page: perPage,
@@ -24,9 +36,18 @@ export async function GET(request: Request) {
 
     const result = await standardizedAPI.getAllPosts(queryParams)
 
-    if (!isApiResultSuccessful(result) || !result.data) {
+    if (!isApiResultSuccessful(result)) {
       logger.warn('Failed to fetch posts from API', undefined, { module: 'api/posts' })
-      return NextResponse.json([], { status: 200 })
+      const errorResponse = {
+        error: 'Failed to fetch posts',
+        details: result.error?.message || 'Unknown error',
+      }
+      return NextResponse.json(errorResponse, { status: 500 })
+    }
+
+    if (!result.data) {
+      logger.warn('No posts found', undefined, { module: 'api/posts' })
+      return NextResponse.json({ error: 'No posts found' }, { status: 404 })
     }
 
     const posts = result.data.map(post => ({
@@ -45,6 +66,10 @@ export async function GET(request: Request) {
     return response
   } catch (error) {
     logger.error('Error in /api/posts', error, { module: 'api/posts' })
-    return NextResponse.json([], { status: 200 })
+    const errorResponse = {
+      error: 'Internal server error',
+      details: error instanceof Error ? error.message : 'Unknown error',
+    }
+    return NextResponse.json(errorResponse, { status: 500 })
   }
 }

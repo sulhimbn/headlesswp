@@ -4,6 +4,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import Header from '@/components/layout/Header'
 import { sanitizeHTML } from '@/lib/utils/sanitizeHTML'
+import { stripHtml } from '@/lib/utils/stripHtml'
 import Breadcrumb from '@/components/ui/Breadcrumb'
 import Badge from '@/components/ui/Badge'
 import MetaInfo from '@/components/ui/MetaInfo'
@@ -28,10 +29,6 @@ const Footer = dynamic(() => import('@/components/layout/Footer'), {
 })
 
 export const revalidate = 3600 // 60 minutes (1 hour)
-
-function stripHtml(html: string): string {
-  return html.replace(/<[^>]*>?/gm, '').trim()
-}
 
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
   const post = await enhancedPostService.getPostBySlug(params.slug)
