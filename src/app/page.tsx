@@ -5,12 +5,13 @@ import PostCard from '@/components/post/PostCard'
 import SectionHeading from '@/components/ui/SectionHeading'
 import dynamic from 'next/dynamic'
 import { UI_TEXT } from '@/lib/constants/uiText'
+import { REVALIDATE_TIMES } from '@/lib/api/config'
 
 const Footer = dynamic(() => import('@/components/layout/Footer'), {
   loading: () => <div className="h-64 bg-[hsl(var(--color-background-dark))] mt-12" aria-hidden="true" />
 })
 
-export const revalidate = 300 // 5 minutes
+export const revalidate = REVALIDATE_TIMES.HOMEPAGE
 
 export default async function HomePage() {
   cacheInitializer.initialize().catch(() => {})
