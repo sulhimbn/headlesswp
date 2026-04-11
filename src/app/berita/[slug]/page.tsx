@@ -4,6 +4,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import Header from '@/components/layout/Header'
 import { sanitizeHTML } from '@/lib/utils/sanitizeHTML'
+import { stripHtml } from '@/lib/utils/stripHtml'
 import Breadcrumb from '@/components/ui/Breadcrumb'
 import Badge from '@/components/ui/Badge'
 import MetaInfo from '@/components/ui/MetaInfo'
@@ -13,7 +14,7 @@ import type { PostWithMediaUrl } from '@/lib/services/IPostService'
 import dynamic from 'next/dynamic'
 import { logger } from '@/lib/utils/logger'
 import { UI_TEXT } from '@/lib/constants/uiText'
-import { SITE_URL } from '@/lib/api/config'
+import { SITE_URL, REVALIDATE_TIMES } from '@/lib/api/config'
 import type { Metadata } from 'next'
 import PersonalizedRecommendations from '@/components/post/PersonalizedRecommendations'
 import ReadingTracker from '@/components/post/ReadingTracker'
@@ -27,11 +28,7 @@ const Footer = dynamic(() => import('@/components/layout/Footer'), {
   loading: () => <div className="h-64 bg-[hsl(var(--color-background-dark))] mt-12" aria-hidden="true" />
 })
 
-export const revalidate = 3600 // 60 minutes (1 hour)
-
-function stripHtml(html: string): string {
-  return html.replace(/<[^>]*>?/gm, '').trim()
-}
+export const revalidate = REVALIDATE_TIMES.POST_DETAIL
 
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
   const post = await enhancedPostService.getPostBySlug(params.slug)

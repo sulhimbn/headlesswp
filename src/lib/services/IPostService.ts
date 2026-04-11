@@ -29,5 +29,6 @@ export interface IPostService {
   getTags(): Promise<WordPressTag[]>;
   searchPosts(query: string, page?: number, perPage?: number): Promise<PaginatedPostsResult>;
   getPostsByCategory(categoryId: number, page?: number, perPage?: number): Promise<PaginatedPostsResult>;
+  getPostsByTag(tagId: number, page?: number, perPage?: number): Promise<PaginatedPostsResult>;
   getPostsByAuthor(authorId: number, page?: number, perPage?: number): Promise<PaginatedPostsResult>;
 }
