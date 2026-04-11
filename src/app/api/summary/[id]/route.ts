@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { summarizePost, isSummarizationEnabled, getSummarizationConfig } from '@/lib/services/summarizer';
 import { wordpressAPI } from '@/lib/wordpress';
 import { logger } from '@/lib/utils/logger';
+import { validatePositiveInteger } from '@/lib/validation/validationUtils';
 
 export const dynamic = 'force-dynamic';
 
@@ -15,14 +16,24 @@ export async function GET(
 ): Promise<NextResponse> {
   try {
     const { id } = await params;
-    const postId = parseInt(id, 10);
-
-    if (isNaN(postId)) {
+    
+    const parsedId = parseInt(id, 10);
+    if (isNaN(parsedId)) {
       return NextResponse.json(
-        { error: 'Invalid post ID' },
+        { error: 'Invalid post ID: must be a number' },
         { status: 400 }
       );
     }
+    
+    const validationError = validatePositiveInteger(parsedId, 'postId');
+    if (validationError) {
+      return NextResponse.json(
+        { error: validationError.message },
+        { status: 400 }
+      );
+    }
+
+    const postId = parsedId;
 
     const post = await wordpressAPI.getPostById(postId);
     
