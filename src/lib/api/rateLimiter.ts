@@ -37,8 +37,9 @@ export class RateLimiter {
   }
 
   async checkLimit(): Promise<void> {
-    while (this.checking) {
-      await new Promise(resolve => setTimeout(resolve, 10))
+    if (this.checking) {
+      await new Promise(resolve => setImmediate(resolve))
+      return this.checkLimit()
     }
     this.checking = true
     try {
@@ -68,13 +69,12 @@ export class RateLimiter {
   }
 
   getInfo(): RateLimitInfo {
-    while (this.checking) {
-      const start = Date.now()
-      while (this.checking && Date.now() - start < 1000) {
-        if (!this.checking) break
-      }
-      if (this.checking) {
-        throw new Error('Timeout waiting for rate limiter check to complete')
+    if (this.checking) {
+      return {
+        remainingRequests: 0,
+        resetTime: 0,
+        windowMs: this.options.windowMs,
+        maxRequests: this.options.maxRequests,
       }
     }
 
@@ -93,14 +93,8 @@ export class RateLimiter {
   }
 
   reset(): void {
-    while (this.checking) {
-      const start = Date.now()
-      while (this.checking && Date.now() - start < 1000) {
-        if (!this.checking) break
-      }
-      if (this.checking) {
-        throw new Error('Timeout waiting for rate limiter check to complete')
-      }
+    if (this.checking) {
+      return
     }
     this.lastRefill = Date.now()
     this.requestTimes = []
