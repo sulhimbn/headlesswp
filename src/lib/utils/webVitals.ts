@@ -13,15 +13,11 @@ export interface WebVitalsReport {
 
 interface UseWebVitalsOptions {
   reportToAnalytics?: (metric: WebVitalsReport) => void
-  reportToApi?: boolean
-  apiEndpoint?: string
 }
 
 export function useWebVitals(options: UseWebVitalsOptions = {}) {
   const {
     reportToAnalytics,
-    reportToApi = true,
-    apiEndpoint = '/api/observability/performance'
   } = options
 
   useEffect(() => {
@@ -43,23 +39,6 @@ export function useWebVitals(options: UseWebVitalsOptions = {}) {
       }
 
       reportToAnalytics?.(report)
-
-      if (reportToApi) {
-        fetch(apiEndpoint, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            type: 'web-vital',
-            category: 'performance',
-            data: report
-          }),
-          keepalive: true
-        }).catch((error) => {
-          console.error('Failed to report web vital:', error)
-        })
-      }
     }
 
     onCLS(reportMetric)
@@ -67,7 +46,7 @@ export function useWebVitals(options: UseWebVitalsOptions = {}) {
     onINP(reportMetric)
     onLCP(reportMetric)
     onTTFB(reportMetric)
-  }, [reportToAnalytics, reportToApi, apiEndpoint])
+  }, [reportToAnalytics])
 }
 
 export default useWebVitals

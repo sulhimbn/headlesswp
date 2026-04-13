@@ -1045,11 +1045,6 @@ Implement core performance metrics collection for the application including page
   - Error rate metrics by endpoint, method, and error type
   - `performanceMetricsCollector` singleton instance
 
-- `src/app/api/observability/performance/route.ts` - Performance metrics API endpoint (70 lines)
-  - GET /api/observability/performance endpoint
-  - Returns all performance metrics (API response, resource utilization, error rates, Web Vitals)
-  - Rate limited via `withApiRateLimit` middleware
-
 - `src/lib/utils/webVitals.ts` - Client-side Web Vitals hook (45 lines)
   - `useWebVitals` hook for automatic Web Vitals collection
   - Reports to API endpoint automatically
@@ -1131,7 +1126,7 @@ Implement core performance metrics collection for the application including page
 - ✅ Resource utilization metrics (CPU, memory, heap)
 - ✅ Error rate metrics by endpoint, method, and error type
 - ✅ Metrics integrated with existing TelemetryCollector
-- ✅ Performance metrics API endpoint created (/api/observability/performance)
+- ✅ Web Vitals collection implemented via useWebVitals hook
 - ✅ Documentation complete (blueprint.md updated)
 - ✅ All tests passing (1904 passed, 23 skipped)
 - ✅ ESLint and TypeScript compilation pass
@@ -1145,7 +1140,7 @@ Implement core performance metrics collection for the application including page
 - ✅ Error rate metrics collected by endpoint
 - ✅ Metrics integrated with existing TelemetryCollector
 - ✅ Web Vitals API used for frontend performance metrics
-- ✅ Performance metrics API endpoint created for monitoring
+- ✅ Web Vitals collection via useWebVitals hook (reportToAnalytics)
 - ✅ Documentation for metrics collection complete
 
 ### Anti-Patterns Avoided
