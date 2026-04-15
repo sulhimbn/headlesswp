@@ -1234,7 +1234,7 @@ swagger-cli validate openapi.yaml
 
 **Overview**: Comprehensive performance metrics collection system for monitoring application performance, API response times, resource utilization, and error rates.
 
-**Implementation**: `src/lib/api/performanceMetrics.ts` and `src/app/api/observability/performance/route.ts`
+**Implementation**: `src/lib/api/performanceMetrics.ts` and `src/app/api/observability/metrics/route.ts`
 
 **Key Features**:
 
@@ -1271,8 +1271,7 @@ swagger-cli validate openapi.yaml
 
 **API Endpoints**:
 
-- **GET /api/observability/performance** - Dedicated performance metrics endpoint
-- **GET /api/observability/metrics** - Updated to include performance metrics
+- **GET /api/observability/metrics** - Performance metrics endpoint (updated to include all metrics)
 
 **Performance Metrics API Response**:
 ```json
@@ -1349,7 +1348,7 @@ import { useWebVitals } from '@/lib/utils/webVitals'
 function MyApp({ Component, pageProps }) {
   useWebVitals({
     reportToApi: true,
-    apiEndpoint: '/api/observability/performance'
+    apiEndpoint: '/api/observability/metrics'
   })
 
   return <Component {...pageProps} />

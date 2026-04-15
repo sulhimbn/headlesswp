@@ -21,7 +21,7 @@ export function useWebVitals(options: UseWebVitalsOptions = {}) {
   const {
     reportToAnalytics,
     reportToApi = true,
-    apiEndpoint = '/api/observability/performance'
+    apiEndpoint = '/api/observability/metrics'
   } = options
 
   useEffect(() => {
