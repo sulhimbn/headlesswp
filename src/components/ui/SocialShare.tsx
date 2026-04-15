@@ -2,6 +2,7 @@
 
 import { memo, useState } from 'react'
 import { SITE_URL } from '@/lib/api/config'
+import { logger } from '@/lib/utils/logger'
 
 export type SocialPlatform = 'facebook' | 'twitter' | 'whatsapp' | 'copy'
 
@@ -53,15 +54,20 @@ function SocialShareComponent({ title, url, className = '' }: SocialShareProps) 
       await navigator.clipboard.writeText(fullUrl)
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
-    } catch {
-      const input = document.createElement('input')
-      input.value = fullUrl
-      document.body.appendChild(input)
-      input.select()
-      document.execCommand('copy')
-      document.body.removeChild(input)
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
+    } catch (error) {
+      logger.warn('Clipboard API failed, using fallback', error, { module: 'SocialShare' })
+      try {
+        const input = document.createElement('input')
+        input.value = fullUrl
+        document.body.appendChild(input)
+        input.select()
+        document.execCommand('copy')
+        document.body.removeChild(input)
+        setCopied(true)
+        setTimeout(() => setCopied(false), 2000)
+      } catch (fallbackError) {
+        logger.error('Failed to copy link', fallbackError, { module: 'SocialShare' })
+      }
     }
   }
 

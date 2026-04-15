@@ -1,12 +1,13 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { sanitizeHTML } from '@/lib/utils/sanitizeHTML'
 import { getTopCategories, trackRecommendationClick, type ReadingHistoryItem } from '@/lib/utils/readingHistory'
 import { FEATURE_FLAGS, RECOMMENDATION_CONFIG } from '@/lib/api/config'
 import { UI_TEXT } from '@/lib/constants/uiText'
+import { logger } from '@/lib/utils/logger'
 import type { WordPressPost } from '@/types/wordpress'
 
 interface PersonalizedRecommendation {
@@ -47,7 +48,7 @@ async function fetchMediaUrl(mediaId: number): Promise<string | null> {
     const response = await fetch(`/api/media/${mediaId}`)
     if (!response.ok) return null
     const media = await response.json()
-    return media.source_url || null
+    return media.data?.source_url || null
   } catch {
     return null
   }
@@ -58,9 +59,21 @@ interface PersonalizedRecommendationsProps {
   currentCategoryIds: number[]
 }
 
+function getReadingHistory(): Set<number> {
+  try {
+    const data = JSON.parse(localStorage.getItem('reading_history') || '{"items":[]}')
+    return new Set(data.items?.map((item: ReadingHistoryItem) => item.postId) || [])
+  } catch (error) {
+    logger.warn('Failed to read reading history from localStorage', error, { module: 'PersonalizedRecommendations' })
+    return new Set()
+  }
+}
+
 export default function PersonalizedRecommendations({ currentPostId, currentCategoryIds }: PersonalizedRecommendationsProps) {
   const [recommendations, setRecommendations] = useState<PersonalizedRecommendation[]>([])
   const [loading, setLoading] = useState(true)
+
+  const categoryIdsKey = useMemo(() => currentCategoryIds.join(','), [currentCategoryIds])
 
   useEffect(() => {
     async function loadRecommendations() {
@@ -76,10 +89,7 @@ export default function PersonalizedRecommendations({ currentPostId, currentCate
 
       let posts = await fetchRecommendationsByCategories(relevantCategories, currentPostId)
 
-      const readPostIds = new Set(
-        JSON.parse(localStorage.getItem('reading_history') || '{"items":[]}')
-          .items?.map((item: ReadingHistoryItem) => item.postId) || []
-      )
+      const readPostIds = getReadingHistory()
 
       posts = posts.filter(post => !readPostIds.has(post.id) && post.id !== currentPostId)
 
@@ -112,7 +122,7 @@ export default function PersonalizedRecommendations({ currentPostId, currentCate
     }
 
     loadRecommendations()
-  }, [currentPostId, currentCategoryIds.join(',')])
+  }, [currentPostId, categoryIdsKey])
 
   const handleRecommendationClick = (postId: number) => {
     if (FEATURE_FLAGS.RECOMMENDATION_ANALYTICS) {
