@@ -46,7 +46,8 @@ function ServiceStatusComponent() {
         } else {
           setStatus('degraded')
         }
-      } catch {
+      } catch (err) {
+        console.error('Health check failed:', err)
         setStatus('down')
       }
     }

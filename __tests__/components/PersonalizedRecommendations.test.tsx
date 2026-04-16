@@ -226,4 +226,67 @@ describe('PersonalizedRecommendations Component', () => {
       expect(heading.id).toBe('personalized-heading')
     })
   })
+
+  describe('localStorage error handling', () => {
+    const mockPosts = [
+      {
+        id: 2,
+        title: { rendered: 'Test Post' },
+        excerpt: { rendered: '<p>Excerpt</p>' },
+        slug: 'test-post',
+        featured_media: 0,
+        date: '2026-01-10T10:00:00',
+      },
+    ]
+
+    test('handles localStorage unavailability gracefully', async () => {
+      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {})
+
+      mockFetch.mockResolvedValue({
+        ok: true,
+        json: async () => mockPosts,
+      })
+
+      const originalGetItem = localStorage.getItem
+      Object.defineProperty(localStorage, 'getItem', {
+        value: () => {
+          throw new Error('QuotaExceededError: DOM Exception 22')
+        },
+        configurable: true,
+      })
+
+      render(<PersonalizedRecommendations currentPostId={1} currentCategoryIds={[1]} />)
+
+      await waitFor(() => {
+        expect(screen.getByText('Test Post')).toBeInTheDocument()
+      })
+
+      Object.defineProperty(localStorage, 'getItem', {
+        value: originalGetItem,
+        configurable: true,
+      })
+      consoleErrorSpy.mockRestore()
+    })
+
+    test('handles corrupted localStorage data gracefully', async () => {
+      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {})
+
+      mockFetch.mockResolvedValue({
+        ok: true,
+        json: async () => mockPosts,
+      })
+
+      localStorage.setItem('reading_history', 'invalid-json{')
+
+
+      render(<PersonalizedRecommendations currentPostId={1} currentCategoryIds={[1]} />)
+
+      await waitFor(() => {
+        expect(screen.getByText('Test Post')).toBeInTheDocument()
+      })
+
+      localStorage.removeItem('reading_history')
+      consoleErrorSpy.mockRestore()
+    })
+  })
 })

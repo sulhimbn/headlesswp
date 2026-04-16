@@ -1,6 +1,7 @@
 import { GET as HealthGET } from '@/app/api/health/route'
 import { GET as ReadinessGET } from '@/app/api/health/readiness/route'
 import { GET as MetricsGET } from '@/app/api/observability/metrics/route'
+import { GET as PostsGET } from '@/app/api/posts/route'
 import { telemetryCollector } from '@/lib/api/telemetry'
 import { resetAllRateLimitState } from '@/lib/api/rateLimitMiddleware'
 
@@ -8,6 +9,16 @@ const mockRequest = {} as any
 
 jest.mock('@/lib/api/client', () => ({
   checkApiHealth: jest.fn()
+}))
+
+jest.mock('@/lib/api/standardized', () => ({
+  standardizedAPI: {
+    getAllPosts: jest.fn()
+  }
+}))
+
+jest.mock('@/lib/api/response', () => ({
+  isApiResultSuccessful: jest.fn()
 }))
 
 jest.mock('next/server', () => ({
@@ -437,6 +448,63 @@ describe('Health Check API Endpoints', () => {
 
       expect(response.status).toBe(500)
       expect(data.error).toBe('Test error')
+    })
+  })
+
+  describe('GET /api/posts', () => {
+    const { standardizedAPI } = require('@/lib/api/standardized')
+    const { isApiResultSuccessful } = require('@/lib/api/response')
+
+    const postsRequest = { url: 'http://localhost:3000/api/posts' } as any
+
+    it('should return 200 with posts when successful', async () => {
+      const mockPosts = [
+        { id: 1, title: 'Test Post', excerpt: 'Test excerpt', slug: 'test-post', featured_media: 123, date: '2026-01-01', categories: [1], tags: [1] }
+      ]
+      
+      isApiResultSuccessful.mockReturnValue(true)
+      standardizedAPI.getAllPosts.mockResolvedValue({ data: mockPosts })
+
+      const response = await PostsGET(postsRequest)
+      const data = await response.json()
+
+      expect(response.status).toBe(200)
+      expect(data).toHaveLength(1)
+      expect(data[0].id).toBe(1)
+    })
+
+    it('should return 503 when API result is unsuccessful', async () => {
+      isApiResultSuccessful.mockReturnValue(false)
+      standardizedAPI.getAllPosts.mockResolvedValue({})
+
+      const response = await PostsGET(postsRequest)
+      const data = await response.json()
+
+      expect(response.status).toBe(503)
+      expect(data.error).toBe('Failed to fetch posts')
+      expect(data.message).toBe('API returned unsuccessful response')
+    })
+
+    it('should return 503 when result data is null', async () => {
+      isApiResultSuccessful.mockReturnValue(true)
+      standardizedAPI.getAllPosts.mockResolvedValue({ data: null })
+
+      const response = await PostsGET(postsRequest)
+      const data = await response.json()
+
+      expect(response.status).toBe(503)
+      expect(data.error).toBe('Failed to fetch posts')
+    })
+
+    it('should return 500 when exception is thrown', async () => {
+      isApiResultSuccessful.mockReturnValue(true)
+      standardizedAPI.getAllPosts.mockRejectedValue(new Error('Network error'))
+
+      const response = await PostsGET(postsRequest)
+      const data = await response.json()
+
+      expect(response.status).toBe(500)
+      expect(data.error).toBe('Internal server error')
     })
   })
 })
