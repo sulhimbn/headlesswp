@@ -17,8 +17,19 @@ export async function GET(
 
     const result = await standardizedAPI.getMediaById(mediaId)
 
-    if (!isApiResultSuccessful(result) || !result.data) {
-      return NextResponse.json({ source_url: null }, { status: 200 })
+    if (!isApiResultSuccessful(result)) {
+      logger.error('Failed to fetch media', result.error, { module: 'api/media' })
+      return NextResponse.json(
+        { error: result.error?.message || 'Failed to fetch media' },
+        { status: 500 }
+      )
+    }
+
+    if (!result.data) {
+      return NextResponse.json(
+        { error: 'Media not found' },
+        { status: 404 }
+      )
     }
 
     return NextResponse.json({
@@ -27,6 +38,9 @@ export async function GET(
     })
   } catch (error) {
     logger.error('Error in /api/media/[id]', error, { module: 'api/media' })
-    return NextResponse.json({ source_url: null }, { status: 200 })
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    )
   }
 }
