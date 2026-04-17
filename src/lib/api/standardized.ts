@@ -194,6 +194,15 @@ export async function getAuthorById(id: number): Promise<ApiResult<WordPressAuth
   }
 }
 
+export async function getAllAuthors(): Promise<ApiListResult<WordPressAuthor>> {
+  try {
+    const authors = await wordpressAPI.getAuthors();
+    return getAllEntities(authors, '/wp/v2/users');
+  } catch (error) {
+    return createErrorListResult('/wp/v2/users', undefined, undefined, error);
+  }
+}
+
 export const standardizedAPI = {
   getPostById,
   getPostBySlug,
@@ -206,5 +215,6 @@ export const standardizedAPI = {
   getTagBySlug,
   getAllTags,
   getMediaById,
-  getAuthorById
+  getAuthorById,
+  getAllAuthors
 };
