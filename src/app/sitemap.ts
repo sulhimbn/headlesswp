@@ -35,9 +35,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }
 
   try {
-    const [postsResult, categoriesResult] = await Promise.all([
+    const [postsResult, categoriesResult, tagsResult, authorsResult] = await Promise.all([
       standardizedAPI.getAllPosts({ per_page: 100 }),
       standardizedAPI.getAllCategories(),
+      standardizedAPI.getAllTags(),
+      standardizedAPI.getAllAuthors(),
     ])
 
     const sitemapEntries: MetadataRoute.Sitemap = [...staticPages]
@@ -50,6 +52,26 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         priority: 0.7,
       }))
       sitemapEntries.push(...categoryUrls)
+    }
+
+    if (isApiResultSuccessful(tagsResult)) {
+      const tagUrls: MetadataRoute.Sitemap = tagsResult.data.map((tag) => ({
+        url: `${baseUrl}/tag/${tag.slug}`,
+        lastModified: new Date(),
+        changeFrequency: 'weekly' as const,
+        priority: 0.6,
+      }))
+      sitemapEntries.push(...tagUrls)
+    }
+
+    if (isApiResultSuccessful(authorsResult)) {
+      const authorUrls: MetadataRoute.Sitemap = authorsResult.data.map((author) => ({
+        url: `${baseUrl}/author/${author.slug || author.id}`,
+        lastModified: new Date(),
+        changeFrequency: 'weekly' as const,
+        priority: 0.5,
+      }))
+      sitemapEntries.push(...authorUrls)
     }
 
     if (isApiResultSuccessful(postsResult)) {

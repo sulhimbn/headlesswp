@@ -1,5 +1,5 @@
 import { standardizedAPI } from '@/lib/api/standardized'
-import { enhancedPostService } from '@/lib/services/enhancedPostService'
+import { wordpressAPI } from '@/lib/wordpress'
 import Header from '@/components/layout/Header'
 import PostCard from '@/components/post/PostCard'
 import Pagination from '@/components/ui/Pagination'
@@ -44,12 +44,13 @@ export default async function TagPage({
   const posts = postsResult.data
   const totalPages = postsResult.pagination.totalPages ?? 0
 
-  const postsWithMedia = await enhancedPostService.getLatestPosts()
+  const mediaIds = posts.map(post => post.featured_media).filter(id => id > 0)
+  const mediaUrls = await wordpressAPI.getMediaUrlsBatch(mediaIds)
 
-  const enrichedPosts = posts.map(post => {
-    const enriched = postsWithMedia.find(p => p.id === post.id)
-    return enriched || { ...post, mediaUrl: null }
-  })
+  const enrichedPosts = posts.map(post => ({
+    ...post,
+    mediaUrl: mediaUrls.get(post.featured_media) || null
+  }))
 
   return (
     <div className="min-h-screen bg-[hsl(var(--color-background))]">
