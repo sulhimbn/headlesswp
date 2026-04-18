@@ -23,6 +23,11 @@ import ReadingProgress from '@/components/ui/ReadingProgress'
 import TableOfContents from '@/components/ui/TableOfContents'
 import { extractHeadings, shouldShowToc, addIdsToHeadings } from '@/lib/utils/tableOfContents'
 
+function escapeJsonLdString(str: string): string {
+  const stripped = stripHtml(str || '')
+  return stripped.replace(/\\/g, '\\\\').replace(/"/g, '\\"')
+}
+
 const Footer = dynamic(() => import('@/components/layout/Footer'), {
   loading: () => <div className="h-64 bg-[hsl(var(--color-background-dark))] mt-12" aria-hidden="true" />
 })
@@ -154,7 +159,7 @@ export default async function PostPage({ params }: { params: { slug: string } })
             __html: JSON.stringify({
               '@context': 'https://schema.org',
               '@type': 'NewsArticle',
-              headline: post.title.rendered,
+              headline: escapeJsonLdString(post.title.rendered),
               image: [post.mediaUrl || `${SITE_URL}/og-image.jpg`],
               datePublished: post.date,
               dateModified: post.modified,
@@ -170,7 +175,7 @@ export default async function PostPage({ params }: { params: { slug: string } })
                   url: `${SITE_URL}/logo.png`,
                 },
               },
-              description: stripHtml(post.excerpt.rendered),
+              description: escapeJsonLdString(post.excerpt.rendered),
               url: `${SITE_URL}/berita/${post.slug}`,
             })
           }}
