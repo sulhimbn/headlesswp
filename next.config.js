@@ -15,6 +15,7 @@ const sentryConfig = {
 }
 
 const nextConfig = {
+  poweredByHeader: false,
   output: 'standalone',
   compress: true,
   images: {
