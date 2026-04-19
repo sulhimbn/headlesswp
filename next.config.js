@@ -17,6 +17,7 @@ const sentryConfig = {
 const nextConfig = {
   output: 'standalone',
   compress: true,
+  poweredByHeader: false,
   images: {
     remotePatterns: [
       {

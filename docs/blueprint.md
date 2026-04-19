@@ -1,7 +1,7 @@
 # Architecture Blueprint
 
-**Version**: 1.0.3
-**Last Updated**: 2026-03-21 (System Orchestrator - FIX-844: Restore missing middleware.ts, FIX-843: npm audit vulnerabilities resolved)
+**Version**: 1.0.4
+**Last Updated**: 2026-04-19 (System Orchestrator - SECURITY: Fixed 5 critical vulnerabilities)
 
 ## System Architecture
 
@@ -21,11 +21,11 @@
 ## Technology Stack
 
 ### Frontend
-- **Framework**: Next.js 16.1 (App Router)
+- **Framework**: Next.js 16.2 (App Router)
 - **Language**: TypeScript 5.9
 - **Styling**: CSS Modules (to be confirmed)
-- **HTTP Client**: Axios 1.13.5
-- **Security**: DOMPurify 3.3
+- **HTTP Client**: Axios 1.7.9
+- **Security**: DOMPurify 3.2.6
 
 ### Backend
 - **CMS**: WordPress
