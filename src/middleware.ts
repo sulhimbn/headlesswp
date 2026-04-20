@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { checkRateLimit, getRateLimitKey } from './lib/utils/rate-limit'
+import { RATE_LIMIT_MAX_REQUESTS } from './lib/api/config'
 
 const BOT_UA_PATTERNS = [
   /googlebot/i,
@@ -44,11 +46,20 @@ function setBotOptimizationHeaders(response: NextResponse, isBot: boolean): void
   }
 }
 
-function setRateLimitHeaders(response: NextResponse): void {
-  response.headers.set('X-RateLimit-Policy', '60;w=60')
-  response.headers.set('X-RateLimit-Limit', '60')
-  response.headers.set('X-RateLimit-Remaining', '59')
-  response.headers.set('X-RateLimit-Reset', Math.ceil(Date.now() / 60000).toString())
+function getClientIP(request: NextRequest): string {
+  const forwarded = request.headers.get('x-forwarded-for')
+  if (forwarded) {
+    return forwarded.split(',')[0].trim()
+  }
+  return request.headers.get('x-real-ip') || 'unknown'
+}
+
+function setRateLimitHeaders(response: NextResponse, remaining: number, resetTime: number): void {
+  const windowSeconds = Math.ceil((resetTime - Date.now()) / 1000)
+  response.headers.set('X-RateLimit-Limit', RATE_LIMIT_MAX_REQUESTS.toString())
+  response.headers.set('X-RateLimit-Remaining', Math.max(0, remaining).toString())
+  response.headers.set('X-RateLimit-Reset', Math.ceil(resetTime / 1000).toString())
+  response.headers.set('X-RateLimit-Policy', `${RATE_LIMIT_MAX_REQUESTS};w=${windowSeconds}`)
 }
 
 function setPrefetchHints(response: NextResponse): void {
@@ -58,13 +69,29 @@ function setPrefetchHints(response: NextResponse): void {
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
+  const clientIP = getClientIP(request)
+  const rateLimitKey = getRateLimitKey(clientIP, pathname)
+
+  const { allowed, remaining, resetTime } = checkRateLimit(rateLimitKey)
+
+  if (!allowed) {
+    return NextResponse.json(
+      { error: 'Too many requests' },
+      {
+        status: 429,
+        headers: {
+          'Retry-After': Math.ceil((resetTime - Date.now()) / 1000).toString(),
+        },
+      }
+    )
+  }
 
   const isBot = isBotUserAgent(request.headers.get('user-agent'))
   const response = NextResponse.next()
 
   setSecurityHeaders(response)
   setBotOptimizationHeaders(response, isBot)
-  setRateLimitHeaders(response)
+  setRateLimitHeaders(response, remaining, resetTime)
   setPrefetchHints(response)
 
   if (pathname === '/') {
