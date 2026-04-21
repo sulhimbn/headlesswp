@@ -159,3 +159,61 @@ export function validateNonNegativeInteger(value: number, fieldName: string): Va
   }
   return null;
 }
+
+export type TypeSchema = Record<string, (value: unknown) => boolean>;
+
+type ValidateTypeSchema = {
+  [K in keyof TypeSchema]: (value: unknown) => boolean
+};
+
+export function validateType<T extends ValidateTypeSchema>(
+  data: unknown,
+  schema: T
+): data is T {
+  if (typeof data !== 'object' || data === null) {
+    return false;
+  }
+
+  const record = data as Record<string, unknown>;
+
+  for (const key of Object.keys(schema)) {
+    if (!(key in record)) {
+      return false;
+    }
+
+    const validatorFn = schema[key as keyof T];
+    if (!validatorFn(record[key as string])) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+export function isString(value: unknown): value is string {
+  return typeof value === 'string';
+}
+
+export function isNumber(value: unknown): value is number {
+  return typeof value === 'number' && !isNaN(value);
+}
+
+export function isBoolean(value: unknown): value is boolean {
+  return typeof value === 'boolean';
+}
+
+export function isObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+export function isArray(value: unknown): value is unknown[] {
+  return Array.isArray(value);
+}
+
+export function isPositiveInteger(value: unknown): value is number {
+  return isNumber(value) && Number.isInteger(value) && value > 0;
+}
+
+export function isNonNegativeInteger(value: unknown): value is number {
+  return isNumber(value) && Number.isInteger(value) && value >= 0;
+}

@@ -24,6 +24,10 @@ export const CACHE_METRICS = {
   MILLISECONDS_TO_SECONDS: 1000,
 } as const
 
+export const CACHE = {
+  CLEANUP_INTERVAL_MS: 3600000,
+} as const
+
 export const RATE_LIMIT = {
   DEFAULT_WINDOW_MS: 60000,
   HEALTH_MAX_REQUESTS: 300,
