@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { summarizePost, isSummarizationEnabled, getSummarizationConfig } from '@/lib/services/summarizer';
 import { wordpressAPI } from '@/lib/wordpress';
 import { logger } from '@/lib/utils/logger';
+import { withApiRateLimit } from '@/lib/api/rateLimitMiddleware';
 
 export const dynamic = 'force-dynamic';
 
@@ -9,7 +10,7 @@ interface RouteParams {
   params: Promise<{ id: string }>;
 }
 
-export async function GET(
+async function summaryHandler(
   request: NextRequest,
   { params }: RouteParams
 ): Promise<NextResponse> {
@@ -58,3 +59,5 @@ export async function GET(
     );
   }
 }
+
+export const GET = withApiRateLimit(summaryHandler, 'summary');

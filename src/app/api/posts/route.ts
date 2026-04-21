@@ -3,10 +3,11 @@ import { standardizedAPI } from '@/lib/api/standardized'
 import { isApiResultSuccessful } from '@/lib/api/response'
 import { logger } from '@/lib/utils/logger'
 import { CACHE_TIMES } from '@/lib/api/config'
+import { withApiRateLimit } from '@/lib/api/rateLimitMiddleware'
 
 const CACHE_CONTROL = `public, max-age=${CACHE_TIMES.MEDIUM_SHORT / 1000}, s-maxage=${CACHE_TIMES.MEDIUM_SHORT / 1000}, stale-while-revalidate=${CACHE_TIMES.MEDIUM}`
 
-export async function GET(request: Request) {
+async function postsHandler(request: Request) {
   try {
     const { searchParams } = new URL(request.url)
     const categories = searchParams.get('categories')
@@ -45,6 +46,8 @@ export async function GET(request: Request) {
     return response
   } catch (error) {
     logger.error('Error in /api/posts', error, { module: 'api/posts' })
-    return NextResponse.json([], { status: 200 })
+    return NextResponse.json({ error: 'Failed to fetch posts' }, { status: 500 })
   }
 }
+
+export const GET = withApiRateLimit(postsHandler, 'posts')
