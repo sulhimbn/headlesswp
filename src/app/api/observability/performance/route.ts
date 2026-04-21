@@ -4,6 +4,11 @@ import {
   performanceMetricsCollector, 
   captureCurrentResourceUtilization 
 } from '@/lib/api/performanceMetrics'
+import { withCors, corsOptionsResponse } from '@/lib/api/cors'
+
+export async function OPTIONS() {
+  return corsOptionsResponse()
+}
 
 async function performanceHandler() {
   try {
@@ -14,7 +19,7 @@ async function performanceHandler() {
 
     const currentResourceUtilization = captureCurrentResourceUtilization()
 
-    return NextResponse.json({
+    return withCors(NextResponse.json({
       summary: {
         totalApiCalls: apiMetrics.total,
         totalErrorTypes: errorMetrics.length,
@@ -57,9 +62,9 @@ async function performanceHandler() {
         'Cache-Control': 'no-cache, no-store, must-revalidate',
         'Content-Type': 'application/json'
       }
-    })
+    }))
   } catch (error) {
-    return NextResponse.json({
+    return withCors(NextResponse.json({
       error: error instanceof Error ? error.message : 'Unknown error'
     }, {
       status: 500,
@@ -67,7 +72,7 @@ async function performanceHandler() {
         'Cache-Control': 'no-cache, no-store, must-revalidate',
         'Content-Type': 'application/json'
       }
-    })
+    }))
   }
 }
 

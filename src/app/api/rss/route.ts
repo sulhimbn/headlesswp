@@ -4,8 +4,13 @@ import type { WordPressPost } from '@/types/wordpress';
 import { createMainRSSFeed, createRSSFeed } from '@/lib/utils/rss';
 import { CACHE_TIMES } from '@/lib/api/config';
 import { logger } from '@/lib/utils/logger';
+import { withCors, corsOptionsResponse } from '@/lib/api/cors';
 
 export const dynamic = 'force-dynamic';
+
+export async function OPTIONS() {
+  return corsOptionsResponse()
+}
 
 export async function GET() {
   try {
@@ -20,14 +25,15 @@ export async function GET() {
     const feed = createMainRSSFeed(posts);
     const rssXML = createRSSFeed(feed);
 
-    return new NextResponse(rssXML, {
+    const rssResponse = new NextResponse(rssXML, {
       headers: {
         'Content-Type': 'application/rss+xml; charset=utf-8',
         'Cache-Control': `public, max-age=${CACHE_TIMES.MEDIUM_SHORT / 1000}, s-maxage=${CACHE_TIMES.MEDIUM_SHORT / 1000}`,
       },
     });
+    return withCors(rssResponse)
   } catch (error) {
     logger.error('Error generating RSS feed', error, { module: 'RSSFeed' });
-    return new NextResponse('Error generating RSS feed', { status: 500 });
+    return withCors(new NextResponse('Error generating RSS feed', { status: 500 }));
   }
 }
