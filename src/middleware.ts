@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { RATE_LIMIT_MAX_REQUESTS, RATE_LIMIT_WINDOW_MS } from '@/lib/api/config'
 
 const BOT_UA_PATTERNS = [
   /googlebot/i,
@@ -22,6 +23,43 @@ const BOT_UA_PATTERNS = [
 
 const CRITICAL_ROUTES = ['/berita', '/kategori', '/tag', '/author', '/cari']
 
+interface RateLimitState {
+  requestTimes: number[]
+}
+
+const rateLimitMap: Map<string, RateLimitState> = new Map()
+
+function getClientIp(request: NextRequest): string {
+  const forwarded = request.headers.get('x-forwarded-for')
+  if (forwarded) {
+    return forwarded.split(',')[0].trim()
+  }
+  return request.headers.get('x-real-ip') || 'unknown'
+}
+
+function checkRateLimit(clientIp: string): { allowed: boolean; remaining: number; resetTime: number; retryAfter?: number } {
+  const now = Date.now()
+  let state = rateLimitMap.get(clientIp)
+
+  if (!state || now - state.requestTimes[0] >= RATE_LIMIT_WINDOW_MS) {
+    state = { requestTimes: [] }
+    rateLimitMap.set(clientIp, state)
+  }
+
+  state.requestTimes = state.requestTimes.filter(timestamp => now - timestamp < RATE_LIMIT_WINDOW_MS)
+
+  if (state.requestTimes.length >= RATE_LIMIT_MAX_REQUESTS) {
+    const oldestRequest = state.requestTimes[0]
+    const waitTime = Math.ceil((oldestRequest + RATE_LIMIT_WINDOW_MS - now) / 1000)
+    return { allowed: false, remaining: 0, resetTime: oldestRequest + RATE_LIMIT_WINDOW_MS, retryAfter: waitTime }
+  }
+
+  state.requestTimes.push(now)
+  const resetTime = state.requestTimes[0] + RATE_LIMIT_WINDOW_MS
+
+  return { allowed: true, remaining: RATE_LIMIT_MAX_REQUESTS - state.requestTimes.length, resetTime }
+}
+
 function isBotUserAgent(userAgent: string | null): boolean {
   if (!userAgent) return false
   return BOT_UA_PATTERNS.some((pattern) => pattern.test(userAgent))
@@ -44,11 +82,11 @@ function setBotOptimizationHeaders(response: NextResponse, isBot: boolean): void
   }
 }
 
-function setRateLimitHeaders(response: NextResponse): void {
-  response.headers.set('X-RateLimit-Policy', '60;w=60')
-  response.headers.set('X-RateLimit-Limit', '60')
-  response.headers.set('X-RateLimit-Remaining', '59')
-  response.headers.set('X-RateLimit-Reset', Math.ceil(Date.now() / 60000).toString())
+function setRateLimitHeaders(response: NextResponse, remaining: number, resetTime: number): void {
+  response.headers.set('X-RateLimit-Policy', `${RATE_LIMIT_MAX_REQUESTS};w=${RATE_LIMIT_WINDOW_MS / 1000}`)
+  response.headers.set('X-RateLimit-Limit', RATE_LIMIT_MAX_REQUESTS.toString())
+  response.headers.set('X-RateLimit-Remaining', remaining.toString())
+  response.headers.set('X-RateLimit-Reset', resetTime.toString())
 }
 
 function setPrefetchHints(response: NextResponse): void {
@@ -59,12 +97,27 @@ function setPrefetchHints(response: NextResponse): void {
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
+  const clientIp = getClientIp(request)
+  const rateLimitResult = checkRateLimit(clientIp)
+
+  if (!rateLimitResult.allowed) {
+    const errorResponse = NextResponse.json(
+      { error: 'Too Many Requests', message: 'Rate limit exceeded. Please try again later.' },
+      { status: 429 }
+    )
+    setRateLimitHeaders(errorResponse, rateLimitResult.remaining, rateLimitResult.resetTime)
+    if (rateLimitResult.retryAfter) {
+      errorResponse.headers.set('Retry-After', rateLimitResult.retryAfter.toString())
+    }
+    return errorResponse
+  }
+
   const isBot = isBotUserAgent(request.headers.get('user-agent'))
   const response = NextResponse.next()
 
   setSecurityHeaders(response)
   setBotOptimizationHeaders(response, isBot)
-  setRateLimitHeaders(response)
+  setRateLimitHeaders(response, rateLimitResult.remaining, rateLimitResult.resetTime)
   setPrefetchHints(response)
 
   if (pathname === '/') {
