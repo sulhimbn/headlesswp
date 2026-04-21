@@ -1,7 +1,19 @@
-export const WORDPRESS_API_BASE_URL = process.env.NEXT_PUBLIC_WORDPRESS_API_URL || 'https://mitrabantennews.com/wp-json'
-export const WORDPRESS_SITE_URL = process.env.NEXT_PUBLIC_WORDPRESS_URL || 'https://mitrabantennews.com'
-export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://mitrabantennews.com'
-export const SITE_URL_WWW = process.env.NEXT_PUBLIC_SITE_URL_WWW || 'https://www.mitrabantennews.com'
+const WORDPRESS_API_URL = process.env.NEXT_PUBLIC_WORDPRESS_API_URL
+const WORDPRESS_URL = process.env.NEXT_PUBLIC_WORDPRESS_URL
+const _SITE_URL = process.env.NEXT_PUBLIC_SITE_URL
+const _SITE_URL_WWW = process.env.NEXT_PUBLIC_SITE_URL_WWW
+
+if (process.env.NODE_ENV === 'production') {
+  if (!WORDPRESS_API_URL) throw new Error('NEXT_PUBLIC_WORDPRESS_API_URL is required in production')
+  if (!WORDPRESS_URL) throw new Error('NEXT_PUBLIC_WORDPRESS_URL is required in production')
+  if (!_SITE_URL) throw new Error('NEXT_PUBLIC_SITE_URL is required in production')
+  if (!_SITE_URL_WWW) throw new Error('NEXT_PUBLIC_SITE_URL_WWW is required in production')
+}
+
+export const WORDPRESS_API_BASE_URL = WORDPRESS_API_URL ?? 'http://localhost:8080/wp-json'
+export const WORDPRESS_SITE_URL = WORDPRESS_URL ?? 'http://localhost:8080'
+export const SITE_URL = _SITE_URL ?? 'http://localhost:3000'
+export const SITE_URL_WWW = _SITE_URL_WWW ?? 'http://localhost:3000'
 
 export const TIME_CONSTANTS = {
   SECOND_IN_MS: 1000,
