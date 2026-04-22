@@ -7,7 +7,8 @@ import {
 import { ApiErrorImpl, ApiErrorType } from './errors'
 import { TIME_CONSTANTS } from './config'
 
-export { RateLimitOptions, RateLimitInfo, IRateLimitAdapter, InMemoryRateLimitAdapter }
+export type { RateLimitOptions, RateLimitInfo, IRateLimitAdapter }
+export { InMemoryRateLimitAdapter }
 
 export class RateLimiter {
   private lastRefill: number
