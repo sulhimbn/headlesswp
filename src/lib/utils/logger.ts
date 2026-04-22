@@ -75,6 +75,10 @@ class Logger {
   }
 
   private getConsoleMethod(level: LogLevel): (...args: unknown[]) => void {
+    if (process.env.NODE_ENV === 'production') {
+      return () => {}
+    }
+
     switch (level) {
       case LogLevel.DEBUG:
         return console.debug

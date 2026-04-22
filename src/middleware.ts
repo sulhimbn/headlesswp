@@ -22,12 +22,12 @@ const BOT_UA_PATTERNS = [
 
 const CRITICAL_ROUTES = ['/berita', '/kategori', '/tag', '/author', '/cari']
 
-function isBotUserAgent(userAgent: string | null): boolean {
+export function isBotUserAgent(userAgent: string | null): boolean {
   if (!userAgent) return false
   return BOT_UA_PATTERNS.some((pattern) => pattern.test(userAgent))
 }
 
-function setSecurityHeaders(response: NextResponse): void {
+export function setSecurityHeaders(response: NextResponse): void {
   response.headers.set('X-DNS-Prefetch-Control', 'on')
   response.headers.set('X-Frame-Options', 'DENY')
   response.headers.set('X-Content-Type-Options', 'nosniff')

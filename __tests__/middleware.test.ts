@@ -3,11 +3,16 @@ import { proxy as middleware } from '@/proxy'
 let mockHeaders: Record<string, string> = {}
 
 jest.mock('next/server', () => ({
-  NextRequest: jest.fn().mockImplementation(() => ({
-    url: 'http://localhost:3000/test',
-    method: 'GET',
-    headers: new Map()
-  })),
+  NextRequest: jest.fn().mockImplementation((url: string, init?: { headers?: Record<string, string> }) => {
+    return {
+      url: url || 'http://localhost:3000/test',
+      method: 'GET',
+      headers: new Map(Object.entries(init?.headers || {})),
+      nextUrl: {
+        pathname: url ? new URL(url).pathname : '/test'
+      }
+    }
+  }),
   NextResponse: {
     next: jest.fn(() => ({
       headers: {
@@ -19,6 +24,10 @@ jest.mock('next/server', () => ({
         })
       },
       status: 200
+    })),
+    redirect: jest.fn((url: URL, status: number) => ({
+      status,
+      headers: new Map()
     }))
   }
 }))
@@ -442,6 +451,257 @@ describe('Middleware', () => {
       directives.forEach(directive => {
         expect(directive).toMatch(/^[a-z-]+/)
       })
+    })
+  })
+
+  describe('Additional Security Headers', () => {
+    it('should set X-DNS-Prefetch-Control to on', async () => {
+      const { NextRequest } = require('next/server')
+      const request = new NextRequest()
+      
+      await middleware(request)
+      
+      expect(mockHeaders['X-DNS-Prefetch-Control']).toBe('on')
+    })
+
+    it('should set Cross-Origin-Opener-Policy header', async () => {
+      const { NextRequest } = require('next/server')
+      const request = new NextRequest()
+      
+      await middleware(request)
+      
+      expect(mockHeaders['Cross-Origin-Opener-Policy']).toBe('same-origin')
+    })
+
+    it('should set Cross-Origin-Resource-Policy header', async () => {
+      const { NextRequest } = require('next/server')
+      const request = new NextRequest()
+      
+      await middleware(request)
+      
+      expect(mockHeaders['Cross-Origin-Resource-Policy']).toBe('same-origin')
+    })
+
+    it('should set Cross-Origin-Embedder-Policy header', async () => {
+      const { NextRequest } = require('next/server')
+      const request = new NextRequest()
+      
+      await middleware(request)
+      
+      expect(mockHeaders['Cross-Origin-Embedder-Policy']).toBe('require-corp')
+    })
+
+    it('should set X-Permitted-Cross-Domain-Policies header', async () => {
+      const { NextRequest } = require('next/server')
+      const request = new NextRequest()
+      
+      await middleware(request)
+      
+      expect(mockHeaders['X-Permitted-Cross-Domain-Policies']).toBe('none')
+    })
+  })
+
+  describe('Bot Detection Headers', () => {
+    it('should set bot detection headers for human users', async () => {
+      const { NextRequest } = require('next/server')
+      const request = new NextRequest()
+      
+      await middleware(request)
+      
+      expect(mockHeaders['X-Robots-Tag']).toBe('index, follow')
+      expect(mockHeaders['X-SEO-Crawler']).toBe('human')
+    })
+
+    it('should set bot detection headers for Googlebot', async () => {
+      const { NextRequest } = require('next/server')
+      const request = new NextRequest('http://localhost:3000/test', {
+        headers: { 'user-agent': 'Googlebot/2.1' }
+      })
+      
+      await middleware(request)
+      
+      expect(mockHeaders['X-Robots-Tag']).toBe('index, follow')
+      expect(mockHeaders['X-SEO-Crawler']).toBe('bot')
+    })
+
+    it('should set bot detection headers for Bingbot', async () => {
+      const { NextRequest } = require('next/server')
+      const request = new NextRequest('http://localhost:3000/test', {
+        headers: { 'user-agent': 'bingbot/2.0' }
+      })
+      
+      await middleware(request)
+      
+      expect(mockHeaders['X-SEO-Crawler']).toBe('bot')
+    })
+
+    it('should set bot detection headers for Facebookexternalhit', async () => {
+      const { NextRequest } = require('next/server')
+      const request = new NextRequest('http://localhost:3000/test', {
+        headers: { 'user-agent': 'facebookexternalhit/1.1' }
+      })
+      
+      await middleware(request)
+      
+      expect(mockHeaders['X-SEO-Crawler']).toBe('bot')
+    })
+
+    it('should set bot detection headers for ClaudeBot', async () => {
+      const { NextRequest } = require('next/server')
+      const request = new NextRequest('http://localhost:3000/test', {
+        headers: { 'user-agent': 'ClaudeBot/1.0' }
+      })
+      
+      await middleware(request)
+      
+      expect(mockHeaders['X-SEO-Crawler']).toBe('bot')
+    })
+
+    it('should set bot detection headers for GPTBot', async () => {
+      const { NextRequest } = require('next/server')
+      const request = new NextRequest('http://localhost:3000/test', {
+        headers: { 'user-agent': 'GPTBot/1.0' }
+      })
+      
+      await middleware(request)
+      
+      expect(mockHeaders['X-SEO-Crawler']).toBe('bot')
+    })
+  })
+
+  describe('Rate Limit Headers', () => {
+    it('should set X-RateLimit-Policy header', async () => {
+      const { NextRequest } = require('next/server')
+      const request = new NextRequest()
+      
+      await middleware(request)
+      
+      expect(mockHeaders['X-RateLimit-Policy']).toBeDefined()
+      expect(mockHeaders['X-RateLimit-Policy']).toMatch(/\d+;w=\d+/)
+    })
+
+    it('should set X-RateLimit-Limit header', async () => {
+      const { NextRequest } = require('next/server')
+      const request = new NextRequest()
+      
+      await middleware(request)
+      
+      expect(mockHeaders['X-RateLimit-Limit']).toBeDefined()
+      expect(parseInt(mockHeaders['X-RateLimit-Limit'], 10)).toBeGreaterThan(0)
+    })
+
+    it('should set X-RateLimit-Remaining header', async () => {
+      const { NextRequest } = require('next/server')
+      const request = new NextRequest()
+      
+      await middleware(request)
+      
+      expect(mockHeaders['X-RateLimit-Remaining']).toBeDefined()
+      expect(parseInt(mockHeaders['X-RateLimit-Remaining'], 10)).toBeGreaterThanOrEqual(0)
+    })
+
+    it('should set X-RateLimit-Reset header', async () => {
+      const { NextRequest } = require('next/server')
+      const request = new NextRequest()
+      
+      await middleware(request)
+      
+      expect(mockHeaders['X-RateLimit-Reset']).toBeDefined()
+      expect(parseInt(mockHeaders['X-RateLimit-Reset'], 10)).toBeGreaterThan(0)
+    })
+  })
+
+  describe('Root Redirect', () => {
+    it('should redirect root path to /berita', async () => {
+      const { NextRequest, NextResponse: MockNextResponse } = require('next/server')
+      
+      const originalNext = MockNextResponse.next
+      
+      MockNextResponse.next = jest.fn().mockImplementation(() => {
+        return {
+          ...originalNext(),
+          headers: {
+            get: (key: string) => mockHeaders[key] || null,
+            set: (key: string, value: string) => { mockHeaders[key] = value }
+          }
+        } as unknown as typeof MockNextResponse
+      })
+      
+      const redirectHeaders = new Map<string, string>()
+      redirectHeaders.get = ((_key: string): string | undefined => undefined) as unknown as (key: string) => string | undefined
+      redirectHeaders.set = ((_key: string, _value: string): Map<string, string> => redirectHeaders) as unknown as (key: string, value: string) => Map<string, string>
+      
+      MockNextResponse.redirect = jest.fn((url: URL, status: number) => {
+        return {
+          ...originalNext(),
+          status,
+          headers: redirectHeaders
+        } as unknown as typeof MockNextResponse
+      })
+      
+      const request = new NextRequest('http://localhost:3000/')
+      await middleware(request)
+      
+      MockNextResponse.next = originalNext
+      
+      expect(MockNextResponse.redirect).toHaveBeenCalled()
+    })
+  })
+
+  describe('Prefetch Hints', () => {
+    it('should set Link header with prefetch for critical routes', async () => {
+      const { NextRequest } = require('next/server')
+      const request = new NextRequest()
+      
+      await middleware(request)
+      
+      expect(mockHeaders['Link']).toBeDefined()
+      expect(mockHeaders['Link']).toContain('rel="prefetch"')
+    })
+
+    it('should include /berita in prefetch hints', async () => {
+      const { NextRequest } = require('next/server')
+      const request = new NextRequest()
+      
+      await middleware(request)
+      
+      expect(mockHeaders['Link']).toContain('/berita')
+    })
+
+    it('should include /kategori in prefetch hints', async () => {
+      const { NextRequest } = require('next/server')
+      const request = new NextRequest()
+      
+      await middleware(request)
+      
+      expect(mockHeaders['Link']).toContain('/kategori')
+    })
+
+    it('should include /tag in prefetch hints', async () => {
+      const { NextRequest } = require('next/server')
+      const request = new NextRequest()
+      
+      await middleware(request)
+      
+      expect(mockHeaders['Link']).toContain('/tag')
+    })
+
+    it('should include /author in prefetch hints', async () => {
+      const { NextRequest } = require('next/server')
+      const request = new NextRequest()
+      
+      await middleware(request)
+      
+      expect(mockHeaders['Link']).toContain('/author')
+    })
+
+    it('should include /cari in prefetch hints', async () => {
+      const { NextRequest } = require('next/server')
+      const request = new NextRequest()
+      
+      await middleware(request)
+      
+      expect(mockHeaders['Link']).toContain('/cari')
     })
   })
 })

@@ -95,13 +95,11 @@ describe('Standardized API - Edge Cases and Critical Paths', () => {
     });
 
     test('handles empty search query', async () => {
-      const mockPosts = [{ id: 1, title: { rendered: 'Post 1' } }] as any[];
-      mockedWordpressAPI.search.mockResolvedValue({ posts: mockPosts, totalPages: 1 });
-
       const result = await standardizedAPI.searchPosts('');
 
-      expect(isApiResultSuccessful(result)).toBe(true);
-      expect(wordpressAPI.search).toHaveBeenCalledWith('', 1, 12);
+      expect(isApiResultSuccessful(result)).toBe(false);
+      expect(result.data).toEqual([]);
+      expect(result.error).not.toBeNull();
     });
 
     test('handles special characters in search query', async () => {
@@ -111,7 +109,7 @@ describe('Standardized API - Edge Cases and Critical Paths', () => {
       const result = await standardizedAPI.searchPosts('test & special@chars#');
 
       expect(isApiResultSuccessful(result)).toBe(true);
-      expect(wordpressAPI.search).toHaveBeenCalledWith('test & special@chars#', 1, 12);
+      expect(wordpressAPI.search).toHaveBeenCalledWith('test specialchars', 1, 12);
     });
 
     test('handles search API error', async () => {

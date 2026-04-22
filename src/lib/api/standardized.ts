@@ -101,9 +101,30 @@ export async function getAllPosts(
   }
 }
 
+const MAX_QUERY_LENGTH = 100
+
+function sanitizeSearchQuery(query: string): string {
+  return query
+    .replace(/[<>'"&@#]/g, '')
+    .replace(/[^\w\s]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, MAX_QUERY_LENGTH)
+}
+
 export async function searchPosts(query: string, page: number = 1, perPage: number = 12): Promise<ApiListResult<WordPressPost>> {
+  if (!query || typeof query !== 'string' || query.trim().length === 0) {
+    return createErrorListResult('/wp/v2/search', { cacheHit: false }, { perPage: 0, page: 1, total: 0, totalPages: 0 }, new Error('Invalid query'))
+  }
+
+  const sanitizedQuery = sanitizeSearchQuery(query)
+
+  if (sanitizedQuery.length === 0) {
+    return createErrorListResult('/wp/v2/search', { cacheHit: false }, { perPage: 0, page: 1, total: 0, totalPages: 0 }, new Error('Invalid query'))
+  }
+
   try {
-    const result = await wordpressAPI.search(query, page, perPage);
+    const result = await wordpressAPI.search(sanitizedQuery, page, perPage);
     const pagination: ApiPaginationMetadata = {
       page,
       perPage,

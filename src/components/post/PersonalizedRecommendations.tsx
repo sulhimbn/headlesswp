@@ -42,14 +42,16 @@ async function fetchRecommendationsByCategories(categoryIds: number[], excludeId
   }
 }
 
-async function fetchMediaUrl(mediaId: number): Promise<string | null> {
+async function fetchMediaUrlsBatch(mediaIds: number[]): Promise<Map<number, string | null>> {
+  if (mediaIds.length === 0) return new Map()
+
   try {
-    const response = await fetch(`/api/media/${mediaId}`)
-    if (!response.ok) return null
-    const media = await response.json()
-    return media.source_url || null
+    const response = await fetch(`/api/media/batch?ids=${mediaIds.join(',')}`)
+    if (!response.ok) return new Map()
+    const data: Record<number, string | null> = await response.json()
+    return new Map(Object.entries(data).map(([id, url]) => [parseInt(id, 10), url]))
   } catch {
-    return null
+    return new Map()
   }
 }
 
@@ -97,15 +99,14 @@ export default function PersonalizedRecommendations({ currentPostId, currentCate
         }
       }
 
-      const postsWithMedia = await Promise.all(
-        posts.slice(0, RECOMMENDATION_CONFIG.MAX_RECOMMENDATIONS).map(async (post) => {
-          if (post.featured_media > 0) {
-            const mediaUrl = await fetchMediaUrl(post.featured_media)
-            return { ...post, mediaUrl }
-          }
-          return post
-        })
-      )
+      const postsToShow = posts.slice(0, RECOMMENDATION_CONFIG.MAX_RECOMMENDATIONS)
+      const mediaIds = postsToShow.map(post => post.featured_media).filter(id => id > 0)
+      const mediaUrls = await fetchMediaUrlsBatch(mediaIds)
+
+      const postsWithMedia = postsToShow.map(post => ({
+        ...post,
+        mediaUrl: post.featured_media > 0 ? mediaUrls.get(post.featured_media) || null : null
+      }))
 
       setRecommendations(postsWithMedia)
       setLoading(false)
