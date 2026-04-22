@@ -22,6 +22,7 @@ import SocialShare from '@/components/ui/SocialShare'
 import ReadingProgress from '@/components/ui/ReadingProgress'
 import TableOfContents from '@/components/ui/TableOfContents'
 import { extractHeadings, shouldShowToc, addIdsToHeadings } from '@/lib/utils/tableOfContents'
+import PredictivePrefetch from '@/components/post/PredictivePrefetch'
 
 const Footer = dynamic(() => import('@/components/layout/Footer'), {
   loading: () => <div className="h-64 bg-[hsl(var(--color-background-dark))] mt-12" aria-hidden="true" />
@@ -139,6 +140,11 @@ export default async function PostPage({ params }: { params: { slug: string } })
           postId={post.id}
           slug={post.slug}
           title={post.title.rendered}
+          categoryIds={post.categories}
+          tagIds={post.tags}
+        />
+        <PredictivePrefetch
+          postId={post.id}
           categoryIds={post.categories}
           tagIds={post.tags}
         />
