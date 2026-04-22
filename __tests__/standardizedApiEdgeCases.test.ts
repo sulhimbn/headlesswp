@@ -95,13 +95,12 @@ describe('Standardized API - Edge Cases and Critical Paths', () => {
     });
 
     test('handles empty search query', async () => {
-      const mockPosts = [{ id: 1, title: { rendered: 'Post 1' } }] as any[];
-      mockedWordpressAPI.search.mockResolvedValue({ posts: mockPosts, totalPages: 1 });
-
       const result = await standardizedAPI.searchPosts('');
 
-      expect(isApiResultSuccessful(result)).toBe(true);
-      expect(wordpressAPI.search).toHaveBeenCalledWith('', 1, 12);
+      expect(isApiResultSuccessful(result)).toBe(false);
+      expect(result.data).toEqual([]);
+      expect(result.error).not.toBeNull();
+      expect(result.error?.message).toContain('validation failed');
     });
 
     test('handles special characters in search query', async () => {

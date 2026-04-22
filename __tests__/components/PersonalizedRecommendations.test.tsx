@@ -29,6 +29,19 @@ jest.mock('@/lib/constants/uiText', () => ({
   },
 }))
 
+jest.mock('@/lib/cache', () => ({
+  cacheManager: {
+    get: jest.fn(),
+    set: jest.fn(),
+  },
+  CACHE_TTL: {
+    MEDIA: 3600000,
+  },
+  cacheKeys: {
+    media: jest.fn((id: number) => `media:${id}`),
+  },
+}))
+
 jest.mock('next/link', () => {
   return function MockLink({ children, href, onClick, 'aria-label': ariaLabel }: any) {
     return (

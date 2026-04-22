@@ -7,6 +7,8 @@ import { sanitizeHTML } from '@/lib/utils/sanitizeHTML'
 import { getTopCategories, trackRecommendationClick, type ReadingHistoryItem } from '@/lib/utils/readingHistory'
 import { FEATURE_FLAGS, RECOMMENDATION_CONFIG } from '@/lib/api/config'
 import { UI_TEXT } from '@/lib/constants/uiText'
+import { cacheManager, CACHE_TTL, cacheKeys } from '@/lib/cache'
+import { createBatchOperation } from '@/lib/api/batchOperations'
 import type { WordPressPost } from '@/types/wordpress'
 
 interface PersonalizedRecommendation {
@@ -16,7 +18,7 @@ interface PersonalizedRecommendation {
   slug: string
   featured_media: number
   date: string
-  mediaUrl?: string | null
+  mediaUrl?: string
 }
 
 async function fetchRecommendationsByCategories(categoryIds: number[], excludeId: number): Promise<PersonalizedRecommendation[]> {
@@ -36,21 +38,35 @@ async function fetchRecommendationsByCategories(categoryIds: number[], excludeId
     return posts
       .filter(post => post.id !== excludeId)
       .slice(0, RECOMMENDATION_CONFIG.MAX_RECOMMENDATIONS)
-      .map(post => ({ ...post, mediaUrl: null }))
+      .map(post => ({ ...post, mediaUrl: undefined }))
   } catch {
     return []
   }
 }
 
-async function fetchMediaUrl(mediaId: number): Promise<string | null> {
-  try {
-    const response = await fetch(`/api/media/${mediaId}`)
-    if (!response.ok) return null
-    const media = await response.json()
-    return media.source_url || null
-  } catch {
-    return null
-  }
+async function fetchMediaUrlsBatch(mediaIds: number[]): Promise<Map<number, string>> {
+  const uniqueIds = [...new Set(mediaIds.filter(id => id > 0))];
+  if (uniqueIds.length === 0) return new Map();
+
+  const result = await createBatchOperation({
+    ids: uniqueIds,
+    cacheKeyFn: cacheKeys.media,
+    cacheManager,
+    cacheTtl: CACHE_TTL.MEDIA,
+    fetchFn: async (idsToFetch) => {
+      const response = await fetch(`/api/media?include=${idsToFetch.join(',')}&_fields=id,source_url`);
+      if (!response.ok) throw new Error('Failed to fetch media');
+      return response.json();
+    },
+    extractIdFn: (media: { id: number; source_url: string }) => media.id,
+    skipZero: false,
+  });
+
+  const stringMap = new Map<number, string>();
+  result.forEach((value, key) => {
+    if (value) stringMap.set(key, value.source_url);
+  });
+  return stringMap;
 }
 
 interface PersonalizedRecommendationsProps {
@@ -97,15 +113,29 @@ export default function PersonalizedRecommendations({ currentPostId, currentCate
         }
       }
 
-      const postsWithMedia = await Promise.all(
-        posts.slice(0, RECOMMENDATION_CONFIG.MAX_RECOMMENDATIONS).map(async (post) => {
+      const postsWithMedia: PersonalizedRecommendation[] = posts.slice(0, RECOMMENDATION_CONFIG.MAX_RECOMMENDATIONS).map(post => ({
+        id: post.id,
+        title: post.title,
+        excerpt: post.excerpt,
+        slug: post.slug,
+        featured_media: post.featured_media,
+        date: post.date,
+        mediaUrl: undefined
+      }));
+
+      const mediaIds = postsWithMedia
+        .filter(post => post.featured_media > 0)
+        .map(post => post.featured_media);
+
+      if (mediaIds.length > 0) {
+        const mediaUrlMap = await fetchMediaUrlsBatch(mediaIds);
+        for (const post of postsWithMedia) {
           if (post.featured_media > 0) {
-            const mediaUrl = await fetchMediaUrl(post.featured_media)
-            return { ...post, mediaUrl }
+            const url = mediaUrlMap.get(post.featured_media);
+            if (url) post.mediaUrl = url;
           }
-          return post
-        })
-      )
+        }
+      }
 
       setRecommendations(postsWithMedia)
       setLoading(false)
