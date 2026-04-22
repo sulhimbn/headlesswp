@@ -1,6 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { ApiErrorType } from './errors'
 import { RATE_LIMIT } from '@/lib/constants/appConstants'
+import {
+  RateLimitState,
+  cleanupOldRequests,
+  calculateRemainingRequests,
+  calculateResetTime,
+  createRateLimitState,
+} from './rateLimitCore'
 
 export interface ApiRouteRateLimitOptions {
   key: string
@@ -16,37 +23,29 @@ const API_ROUTE_RATE_LIMITS: Record<string, ApiRouteRateLimitOptions> = {
   cspReport: { key: 'csp-report', maxRequests: RATE_LIMIT.CSP_REPORT_MAX_REQUESTS, windowMs: RATE_LIMIT.DEFAULT_WINDOW_MS },
 }
 
-interface RateLimitState {
-  requestTimes: number[]
-  lastReset: number
-}
-
 const rateLimitState: Record<string, RateLimitState> = {}
 
 function getRateLimitState(key: string): RateLimitState {
   if (!rateLimitState[key]) {
-    rateLimitState[key] = { requestTimes: [], lastReset: Date.now() }
+    rateLimitState[key] = createRateLimitState()
   }
   return rateLimitState[key]
 }
 
-function cleanupOldRequests(state: RateLimitState, windowMs: number): void {
-  const now = Date.now()
-  state.requestTimes = state.requestTimes.filter(
-    timestamp => now - timestamp < windowMs
-  )
+function cleanupOldRequestsInState(state: RateLimitState, windowMs: number): void {
+  cleanupOldRequests(state, Date.now(), windowMs)
 }
 
 async function checkRateLimit(key: string, options: ApiRouteRateLimitOptions): Promise<void> {
   const state = getRateLimitState(key)
   const now = Date.now()
 
-  if (now - state.lastReset >= options.windowMs) {
+  if (now - state.lastRefill >= options.windowMs) {
     state.requestTimes = []
-    state.lastReset = now
+    state.lastRefill = now
   }
 
-  cleanupOldRequests(state, options.windowMs)
+  cleanupOldRequestsInState(state, options.windowMs)
 
   if (state.requestTimes.length >= options.maxRequests) {
     const oldestRequest = state.requestTimes[0]
@@ -74,8 +73,13 @@ export function withApiRateLimit(
 
       const response = await handler(request, context)
       const state = getRateLimitState(options.key)
-      const remaining = Math.max(0, options.maxRequests - state.requestTimes.length)
-      const resetTime = state.lastReset + options.windowMs
+      const remaining = calculateRemainingRequests(
+        state,
+        Date.now(),
+        options.windowMs,
+        options.maxRequests
+      )
+      const resetTime = calculateResetTime(state, options.windowMs)
       const resetSeconds = Math.ceil((resetTime - Date.now()) / 1000)
 
       response.headers.set('X-RateLimit-Limit', options.maxRequests.toString())
@@ -116,7 +120,7 @@ export function withApiRateLimit(
 export function resetRateLimitState(key: string): void {
   if (rateLimitState[key]) {
     rateLimitState[key].requestTimes = []
-    rateLimitState[key].lastReset = 0
+    rateLimitState[key].lastRefill = 0
   }
 }
 
