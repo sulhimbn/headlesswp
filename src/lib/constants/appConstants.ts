@@ -2,6 +2,8 @@ export const TELEMETRY = {
   RECENT_EVENT_COUNT: 10,
 } as const
 
+export const CACHE_CLEANUP_INTERVAL_MS = 3600000 as const
+
 export const PARSING = {
   BASE64_RADIX: 10,
   DECIMAL_RADIX: 10,

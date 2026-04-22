@@ -55,6 +55,10 @@ class DataValidator {
     return `${word}s`;
   }
 
+  private isValidResult<T>(result: ValidationResult<T>): result is { valid: true; data: T; errors: [] } {
+    return result.valid && result.data !== undefined;
+  }
+
   private validateArray<T>(
     data: unknown,
     itemName: string,
@@ -73,8 +77,8 @@ class DataValidator {
       if (!result.valid) {
         errors.push(...result.errors);
         errors.push({ field: itemName, rule: 'type', message: `${itemName} at index ${i}: ${result.errors.map(e => e.message).join(', ')}`, value: data[i] });
-      } else {
-        validItems.push(result.data!);
+      } else if (this.isValidResult(result)) {
+        validItems.push(result.data);
       }
     }
 
@@ -367,3 +371,10 @@ export function unwrapValidationResultSafe<T>(result: ValidationResult<T>, fallb
 }
 
 export type { ValidationError };
+
+export function validateType<T>(value: unknown, typeGuard: (val: unknown) => val is T, typeName: string): ValidationResult<T> {
+  if (typeGuard(value)) {
+    return { valid: true, data: value, errors: [] };
+  }
+  return { valid: false, errors: [{ field: 'value', rule: 'type', message: `Expected ${typeName}`, value }] };
+}
