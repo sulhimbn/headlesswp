@@ -42,14 +42,24 @@ async function fetchRecommendationsByCategories(categoryIds: number[], excludeId
   }
 }
 
-async function fetchMediaUrl(mediaId: number): Promise<string | null> {
+async function fetchMediaUrlsBatch(mediaIds: number[]): Promise<Map<number, string | null>> {
   try {
-    const response = await fetch(`/api/media/${mediaId}`)
-    if (!response.ok) return null
-    const media = await response.json()
-    return media.source_url || null
+    const idsParam = mediaIds.filter(id => id > 0).join(',')
+    if (!idsParam) return new Map()
+
+    const response = await fetch(`/api/media/batch?ids=${idsParam}`)
+    if (!response.ok) return new Map()
+
+    const data = await response.json()
+    const urlMap = new Map<number, string | null>()
+
+    for (const [id, url] of Object.entries(data.urls || {})) {
+      urlMap.set(parseInt(id, 10), url as string | null)
+    }
+
+    return urlMap
   } catch {
-    return null
+    return new Map()
   }
 }
 
@@ -97,15 +107,20 @@ export default function PersonalizedRecommendations({ currentPostId, currentCate
         }
       }
 
-      const postsWithMedia = await Promise.all(
-        posts.slice(0, RECOMMENDATION_CONFIG.MAX_RECOMMENDATIONS).map(async (post) => {
-          if (post.featured_media > 0) {
-            const mediaUrl = await fetchMediaUrl(post.featured_media)
-            return { ...post, mediaUrl }
-          }
-          return post
-        })
-      )
+      const postsSlice = posts.slice(0, RECOMMENDATION_CONFIG.MAX_RECOMMENDATIONS)
+      const mediaIds = postsSlice
+        .filter(p => p.featured_media > 0)
+        .map(p => p.featured_media)
+      
+      let urlMap = new Map<number, string | null>()
+      if (mediaIds.length > 0) {
+        urlMap = await fetchMediaUrlsBatch(mediaIds)
+      }
+
+      const postsWithMedia = postsSlice.map(post => ({
+        ...post,
+        mediaUrl: post.featured_media > 0 ? urlMap.get(post.featured_media) || null : null
+      }))
 
       setRecommendations(postsWithMedia)
       setLoading(false)
