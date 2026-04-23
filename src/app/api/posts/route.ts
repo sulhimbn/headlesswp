@@ -3,15 +3,31 @@ import { standardizedAPI } from '@/lib/api/standardized'
 import { isApiResultSuccessful } from '@/lib/api/response'
 import { logger } from '@/lib/utils/logger'
 import { CACHE_TIMES } from '@/lib/api/config'
+import { API_VALIDATION } from '@/lib/constants/appConstants'
 
 const CACHE_CONTROL = `public, max-age=${CACHE_TIMES.MEDIUM_SHORT / 1000}, s-maxage=${CACHE_TIMES.MEDIUM_SHORT / 1000}, stale-while-revalidate=${CACHE_TIMES.MEDIUM}`
+
+function validateInput(perPage: number, page: number): { valid: boolean; error?: string } {
+  if (perPage < 1 || perPage > API_VALIDATION.MAX_PER_PAGE) {
+    return { valid: false, error: `per_page must be between 1 and ${API_VALIDATION.MAX_PER_PAGE}` }
+  }
+  if (page < 1 || page > API_VALIDATION.MAX_PAGE) {
+    return { valid: false, error: `page must be between 1 and ${API_VALIDATION.MAX_PAGE}` }
+  }
+  return { valid: true }
+}
 
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url)
     const categories = searchParams.get('categories')
-    const perPage = parseInt(searchParams.get('per_page') || '10', 10)
-    const page = parseInt(searchParams.get('page') || '1', 10)
+    const perPage = parseInt(searchParams.get('per_page') || String(API_VALIDATION.DEFAULT_PER_PAGE), 10)
+    const page = parseInt(searchParams.get('page') || String(API_VALIDATION.DEFAULT_PAGE), 10)
+
+    const validation = validateInput(perPage, page)
+    if (!validation.valid) {
+      return NextResponse.json({ error: validation.error }, { status: 400 })
+    }
 
     const queryParams: Record<string, string | number> = {
       per_page: perPage,

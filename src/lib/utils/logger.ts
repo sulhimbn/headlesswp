@@ -22,6 +22,9 @@ const DEFAULT_OPTIONS: LoggerOptions = {
   enableColors: process.env.NODE_ENV !== 'production'
 }
 
+const isProduction = process.env.NODE_ENV === 'production'
+const noop = () => {}
+
 class Logger {
   private options: LoggerOptions
 
@@ -75,6 +78,9 @@ class Logger {
   }
 
   private getConsoleMethod(level: LogLevel): (...args: unknown[]) => void {
+    if (isProduction) {
+      return noop
+    }
     switch (level) {
       case LogLevel.DEBUG:
         return console.debug

@@ -1,5 +1,6 @@
 import { enhancedPostService } from '@/lib/services/enhancedPostService'
 import { cacheInitializer } from '@/lib/services/cacheInitializer'
+import { logger } from '@/lib/utils/logger'
 import Header from '@/components/layout/Header'
 import PostCard from '@/components/post/PostCard'
 import SectionHeading from '@/components/ui/SectionHeading'
@@ -13,7 +14,9 @@ const Footer = dynamic(() => import('@/components/layout/Footer'), {
 export const revalidate = 300 // 5 minutes
 
 export default async function HomePage() {
-  cacheInitializer.initialize().catch(() => {})
+  cacheInitializer.initialize().catch(error => {
+    logger.error('Failed to initialize cache', error, { module: 'cacheInitializer' })
+  })
 
   const [latestPosts, categoryPosts] = await Promise.all([
     enhancedPostService.getLatestPosts(),
