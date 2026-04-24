@@ -12,7 +12,8 @@ import {
   CIRCUIT_BREAKER_SUCCESS_THRESHOLD,
   RETRY_INITIAL_DELAY,
   RETRY_MAX_DELAY,
-  RETRY_BACKOFF_MULTIPLIER
+  RETRY_BACKOFF_MULTIPLIER,
+  ALLOWED_DOMAINS
 } from './config'
 import { CircuitBreaker, CircuitState } from './circuitBreaker'
 import { RetryStrategy } from './retryStrategy'
@@ -47,6 +48,22 @@ const rateLimiterManager = new RateLimiterManager({
   windowMs: RATE_LIMIT_WINDOW_MS,
 })
 
+function isAllowedUrl(url: string): boolean {
+  try {
+    const parsedUrl = new URL(url)
+    const hostname = parsedUrl.hostname.toLowerCase()
+    
+    for (const domain of ALLOWED_DOMAINS) {
+      if (hostname === domain.toLowerCase() || hostname.endsWith('.' + domain.toLowerCase())) {
+        return true
+      }
+    }
+    return false
+  } catch {
+    return false
+  }
+}
+
 // Placeholder for health checker functions - will be set after apiClient is created
 let checkApiHealthFn: (() => Promise<HealthCheckResult | null>) | null = null;
 
@@ -64,6 +81,12 @@ const createApiClient = (): AxiosInstance => {
       if (!config.signal) {
         const controller = new AbortController()
         config.signal = controller.signal
+      }
+
+      const requestUrl = config.url ? new URL(config.url, config.baseURL).toString() : ''
+      if (requestUrl && !isAllowedUrl(requestUrl)) {
+        logger.warn(`SSRF protection: blocked request to disallowed URL: ${requestUrl}`, undefined, { module: 'APIClient' })
+        return Promise.reject(new Error('SSRF protection: Request to disallowed domain'))
       }
 
       try {
