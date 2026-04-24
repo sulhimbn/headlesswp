@@ -4,6 +4,17 @@ import { stripHtml } from '@/lib/utils/stripHtml';
 
 export type SummaryProvider = 'openai' | 'anthropic' | 'local';
 
+const ALLOWED_API_HOSTNAMES = new Set([
+  'api.openai.com',
+  'api.anthropic.com',
+]);
+
+function validateApiEndpointHostname(hostname: string): void {
+  if (!ALLOWED_API_HOSTNAMES.has(hostname)) {
+    throw new Error(`SSRF protection: Invalid API endpoint hostname "${hostname}"`);
+  }
+}
+
 export interface SummarizationConfig {
   provider: SummaryProvider;
   apiKey?: string;
@@ -49,6 +60,9 @@ async function generateSummaryWithOpenAI(
     throw new Error('OpenAI API key not configured');
   }
 
+  const apiHostname = new URL('https://api.openai.com/v1/chat/completions').hostname;
+  validateApiEndpointHostname(apiHostname);
+
   const response = await fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
     headers: {
@@ -90,6 +104,9 @@ async function generateSummaryWithAnthropic(
   if (!config.apiKey) {
     throw new Error('Anthropic API key not configured');
   }
+
+  const apiHostname = new URL('https://api.anthropic.com/v1/messages').hostname;
+  validateApiEndpointHostname(apiHostname);
 
   const response = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
