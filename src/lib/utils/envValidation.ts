@@ -1,3 +1,5 @@
+import { logger } from './logger'
+
 export interface EnvValidationResult {
   valid: boolean
   errors: string[]
@@ -71,16 +73,11 @@ export function logEnvironmentValidation(): void {
   const result = validateEnvironment()
 
   if (result.errors.length > 0) {
-    console.error('[Environment] Validation failed:')
-    result.errors.forEach((error) => console.error(`  - ${error}`))
+    logger.error('[Environment] Validation failed:', undefined, { module: 'envValidation' })
+    result.errors.forEach((error) => logger.error(`  - ${error}`, undefined, { module: 'envValidation' }))
   }
 
   if (result.warnings.length > 0) {
-    console.warn('[Environment] Validation warnings:')
-    result.warnings.forEach((warning) => console.warn(`  - ${warning}`))
-  }
-
-  if (result.valid && result.errors.length === 0 && result.warnings.length === 0) {
-    // Silent success - no need to log in production
+    result.warnings.forEach((warning) => logger.warn(`[Environment] ${warning}`, undefined, { module: 'envValidation' }))
   }
 }
