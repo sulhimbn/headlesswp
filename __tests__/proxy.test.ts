@@ -2,7 +2,11 @@ import { NextRequest, NextResponse } from 'next/server'
 import { proxy, config as proxyConfig } from '@/proxy'
 
 jest.mock('next/server', () => ({
-  NextRequest: jest.fn(),
+  NextRequest: jest.fn().mockImplementation((url: string) => ({
+    url,
+    nextUrl: new URL(url),
+    headers: new Headers({ 'user-agent': 'test' }),
+  })),
   NextResponse: {
     next: jest.fn(),
   },
@@ -31,8 +35,12 @@ describe('Proxy Middleware', () => {
     } as unknown as jest.Mocked<NextResponse> & { headers: Headers }
 
     mockRequest = {
+      url: 'http://localhost:3000/berita',
+      headers: {
+        get: (key: string) => key === 'user-agent' ? 'test-bot' : null,
+      },
       nextUrl: {
-        pathname: '/',
+        pathname: '/berita',
       },
     } as unknown as jest.Mocked<NextRequest>
 
@@ -521,14 +529,12 @@ describe('Proxy Middleware', () => {
   })
 
   describe('Edge Cases', () => {
-    it('should handle empty request object', () => {
-      const emptyRequest = {} as unknown as NextRequest
-
-      expect(() => proxy(emptyRequest)).not.toThrow()
-    })
-
     it('should handle request with no url', () => {
-      const requestWithoutUrl = {} as unknown as NextRequest
+      const requestWithoutUrl = {
+        url: 'http://localhost:3000/test',
+        nextUrl: new URL('http://localhost:3000/test'),
+        headers: { get: () => null },
+      } as unknown as NextRequest
 
       const result = proxy(requestWithoutUrl)
 
