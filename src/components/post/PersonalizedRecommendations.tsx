@@ -7,6 +7,7 @@ import { sanitizeHTML } from '@/lib/utils/sanitizeHTML'
 import { getTopCategories, trackRecommendationClick, type ReadingHistoryItem } from '@/lib/utils/readingHistory'
 import { FEATURE_FLAGS, RECOMMENDATION_CONFIG } from '@/lib/api/config'
 import { UI_TEXT } from '@/lib/constants/uiText'
+import { logger } from '@/lib/utils/logger'
 import type { WordPressPost } from '@/types/wordpress'
 
 interface PersonalizedRecommendation {
@@ -37,7 +38,8 @@ async function fetchRecommendationsByCategories(categoryIds: number[], excludeId
       .filter(post => post.id !== excludeId)
       .slice(0, RECOMMENDATION_CONFIG.MAX_RECOMMENDATIONS)
       .map(post => ({ ...post, mediaUrl: null }))
-  } catch {
+  } catch (error) {
+    logger.warn('Failed to fetch recommendations', { error, context: 'PersonalizedRecommendations' })
     return []
   }
 }
@@ -48,7 +50,8 @@ async function fetchMediaUrl(mediaId: number): Promise<string | null> {
     if (!response.ok) return null
     const media = await response.json()
     return media.source_url || null
-  } catch {
+  } catch (error) {
+    logger.warn('Failed to fetch media URL', { error, mediaId, context: 'PersonalizedRecommendations' })
     return null
   }
 }

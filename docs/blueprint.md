@@ -1,7 +1,7 @@
 # Architecture Blueprint
 
-**Version**: 1.0.3
-**Last Updated**: 2026-03-21 (System Orchestrator - FIX-844: Restore missing middleware.ts, FIX-843: npm audit vulnerabilities resolved)
+**Version**: 1.0.4
+**Last Updated**: 2026-04-25 (System Orchestrator - FIX-1185: Merged middleware into proxy, FIX-1187: Upgraded axios, FIX-1188: Upgraded eslint, FIX-1189: Removed misleading rate limit headers, FIX-1196: Replaced empty catch blocks)
 
 ## System Architecture
 
@@ -21,10 +21,10 @@
 ## Technology Stack
 
 ### Frontend
-- **Framework**: Next.js 16.1 (App Router)
+- **Framework**: Next.js 16.2 (App Router)
 - **Language**: TypeScript 5.9
 - **Styling**: CSS Modules (to be confirmed)
-- **HTTP Client**: Axios 1.13.5
+- **HTTP Client**: Axios 1.15.2
 - **Security**: DOMPurify 3.3
 
 ### Backend
@@ -35,7 +35,7 @@
 
 ### Development
 - **Testing**: Jest 30 + React Testing Library 16
-- **Linting**: ESLint 8 with Next.js config
+- **Linting**: ESLint 9 with Next.js config
 - **Version Control**: Git
 
 ## Design System
