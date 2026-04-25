@@ -1,4 +1,4 @@
-import { proxy as middleware } from '@/proxy'
+import { proxy } from '@/proxy'
 
 let mockHeaders: Record<string, string> = {}
 
@@ -6,7 +6,10 @@ jest.mock('next/server', () => ({
   NextRequest: jest.fn().mockImplementation(() => ({
     url: 'http://localhost:3000/test',
     method: 'GET',
-    headers: new Map()
+    headers: new Map(),
+    nextUrl: {
+      pathname: '/test'
+    }
   })),
   NextResponse: {
     next: jest.fn(() => ({
@@ -34,7 +37,7 @@ describe('Middleware', () => {
       const { NextResponse, NextRequest } = require('next/server')
       const request = new NextRequest()
       
-      const response = await middleware(request)
+      const response = await proxy(request)
       
       expect(mockHeaders['Content-Security-Policy']).toBeDefined()
       expect(typeof mockHeaders['Content-Security-Policy']).toBe('string')
@@ -45,7 +48,7 @@ describe('Middleware', () => {
       const { NextRequest } = require('next/server')
       const request = new NextRequest()
       
-      await middleware(request)
+      await proxy(request)
       
       expect(mockHeaders['Content-Security-Policy']).toContain("default-src 'self'")
     })
@@ -54,7 +57,7 @@ describe('Middleware', () => {
       const { NextRequest } = require('next/server')
       const request = new NextRequest()
       
-      await middleware(request)
+      await proxy(request)
       
       expect(mockHeaders['Content-Security-Policy']).toContain("script-src 'self'")
       expect(mockHeaders['Content-Security-Policy']).toMatch(/nonce-[a-zA-Z0-9+/=]+/)
@@ -64,7 +67,7 @@ describe('Middleware', () => {
       const { NextRequest } = require('next/server')
       const request = new NextRequest()
       
-      await middleware(request)
+      await proxy(request)
       
       expect(mockHeaders['Content-Security-Policy']).toContain("style-src 'self'")
       expect(mockHeaders['Content-Security-Policy']).toMatch(/style-src 'self' 'nonce-[a-zA-Z0-9+/=]+/)
@@ -74,7 +77,7 @@ describe('Middleware', () => {
       const { NextRequest } = require('next/server')
       const request = new NextRequest()
       
-      await middleware(request)
+      await proxy(request)
       
       expect(mockHeaders['Content-Security-Policy']).toContain('img-src')
       expect(mockHeaders['Content-Security-Policy']).toContain('data:')
@@ -85,7 +88,7 @@ describe('Middleware', () => {
       const { NextRequest } = require('next/server')
       const request = new NextRequest()
       
-      await middleware(request)
+      await proxy(request)
       
       expect(mockHeaders['Content-Security-Policy']).toContain("font-src 'self' data:")
     })
@@ -94,7 +97,7 @@ describe('Middleware', () => {
       const { NextRequest } = require('next/server')
       const request = new NextRequest()
       
-      await middleware(request)
+      await proxy(request)
       
       expect(mockHeaders['Content-Security-Policy']).toContain("connect-src 'self'")
     })
@@ -103,7 +106,7 @@ describe('Middleware', () => {
       const { NextRequest } = require('next/server')
       const request = new NextRequest()
       
-      await middleware(request)
+      await proxy(request)
       
       expect(mockHeaders['Content-Security-Policy']).toContain("media-src 'self'")
     })
@@ -112,7 +115,7 @@ describe('Middleware', () => {
       const { NextRequest } = require('next/server')
       const request = new NextRequest()
       
-      await middleware(request)
+      await proxy(request)
       
       expect(mockHeaders['Content-Security-Policy']).toContain("object-src 'none'")
     })
@@ -121,7 +124,7 @@ describe('Middleware', () => {
       const { NextRequest } = require('next/server')
       const request = new NextRequest()
       
-      await middleware(request)
+      await proxy(request)
       
       expect(mockHeaders['Content-Security-Policy']).toContain("base-uri 'self'")
     })
@@ -130,7 +133,7 @@ describe('Middleware', () => {
       const { NextRequest } = require('next/server')
       const request = new NextRequest()
       
-      await middleware(request)
+      await proxy(request)
       
       expect(mockHeaders['Content-Security-Policy']).toContain("form-action 'self'")
     })
@@ -139,7 +142,7 @@ describe('Middleware', () => {
       const { NextRequest } = require('next/server')
       const request = new NextRequest()
       
-      await middleware(request)
+      await proxy(request)
       
       expect(mockHeaders['Content-Security-Policy']).toContain("frame-ancestors 'none'")
     })
@@ -148,7 +151,7 @@ describe('Middleware', () => {
       const { NextRequest } = require('next/server')
       const request = new NextRequest()
       
-      await middleware(request)
+      await proxy(request)
       
       expect(mockHeaders['Content-Security-Policy']).toContain('upgrade-insecure-requests')
     })
@@ -159,7 +162,7 @@ describe('Middleware', () => {
       const { NextRequest } = require('next/server')
       const request = new NextRequest()
       
-      await middleware(request)
+      await proxy(request)
       
       expect(mockHeaders['x-nonce']).toBeDefined()
       expect(typeof mockHeaders['x-nonce']).toBe('string')
@@ -169,7 +172,7 @@ describe('Middleware', () => {
       const { NextRequest } = require('next/server')
       const request = new NextRequest()
       
-      await middleware(request)
+      await proxy(request)
       
       const nonce = mockHeaders['x-nonce']
       expect(() => atob(nonce)).not.toThrow()
@@ -179,7 +182,7 @@ describe('Middleware', () => {
       const { NextRequest } = require('next/server')
       const request = new NextRequest()
       
-      await middleware(request)
+      await proxy(request)
       
       const nonce = mockHeaders['x-nonce']
       expect(mockHeaders['Content-Security-Policy']).toContain(`nonce-${nonce}`)
@@ -191,11 +194,11 @@ describe('Middleware', () => {
       const request2 = new NextRequest()
       
       mockHeaders = {}
-      await middleware(request1)
+      await proxy(request1)
       const nonce1 = mockHeaders['x-nonce']
       
       mockHeaders = {}
-      await middleware(request2)
+      await proxy(request2)
       const nonce2 = mockHeaders['x-nonce']
       
       expect(nonce1).not.toBe(nonce2)
@@ -207,7 +210,7 @@ describe('Middleware', () => {
       const { NextRequest } = require('next/server')
       const request = new NextRequest()
       
-      await middleware(request)
+      await proxy(request)
       
       expect(mockHeaders['Strict-Transport-Security']).toBeDefined()
       expect(mockHeaders['Strict-Transport-Security']).toContain('max-age=31536000')
@@ -219,7 +222,7 @@ describe('Middleware', () => {
       const { NextRequest } = require('next/server')
       const request = new NextRequest()
       
-      await middleware(request)
+      await proxy(request)
       
       expect(mockHeaders['X-Frame-Options']).toBe('DENY')
     })
@@ -228,7 +231,7 @@ describe('Middleware', () => {
       const { NextRequest } = require('next/server')
       const request = new NextRequest()
       
-      await middleware(request)
+      await proxy(request)
       
       expect(mockHeaders['X-Content-Type-Options']).toBe('nosniff')
     })
@@ -237,7 +240,7 @@ describe('Middleware', () => {
       const { NextRequest } = require('next/server')
       const request = new NextRequest()
       
-      await middleware(request)
+      await proxy(request)
       
       expect(mockHeaders['X-XSS-Protection']).toBe('1; mode=block')
     })
@@ -246,7 +249,7 @@ describe('Middleware', () => {
       const { NextRequest } = require('next/server')
       const request = new NextRequest()
       
-      await middleware(request)
+      await proxy(request)
       
       expect(mockHeaders['Referrer-Policy']).toBe('strict-origin-when-cross-origin')
     })
@@ -255,7 +258,7 @@ describe('Middleware', () => {
       const { NextRequest } = require('next/server')
       const request = new NextRequest()
       
-      await middleware(request)
+      await proxy(request)
       
       expect(mockHeaders['Permissions-Policy']).toBeDefined()
       expect(mockHeaders['Permissions-Policy']).toContain('camera=()')
@@ -288,7 +291,7 @@ describe('Middleware', () => {
       const { NextRequest } = require('next/server')
       const request = new NextRequest()
       
-      await middleware(request)
+      await proxy(request)
       
       expect(mockHeaders['Content-Security-Policy']).toContain("'unsafe-inline'")
       expect(mockHeaders['Content-Security-Policy']).toContain("'unsafe-eval'")
@@ -304,7 +307,7 @@ describe('Middleware', () => {
       const { NextRequest } = require('next/server')
       const request = new NextRequest()
       
-      await middleware(request)
+      await proxy(request)
       
       expect(mockHeaders['Content-Security-Policy']).not.toContain("'unsafe-inline'")
       expect(mockHeaders['Content-Security-Policy']).not.toContain("'unsafe-eval'")
@@ -320,7 +323,7 @@ describe('Middleware', () => {
       const { NextRequest } = require('next/server')
       const request = new NextRequest()
       
-      await middleware(request)
+      await proxy(request)
       
       expect(mockHeaders['Content-Security-Policy']).toContain('report-uri /api/csp-report')
     })
@@ -335,7 +338,7 @@ describe('Middleware', () => {
       const { NextRequest } = require('next/server')
       const request = new NextRequest()
       
-      await middleware(request)
+      await proxy(request)
       
       expect(mockHeaders['Content-Security-Policy']).not.toContain('report-uri')
     })
@@ -346,7 +349,7 @@ describe('Middleware', () => {
       const { NextRequest } = require('next/server')
       const request = new NextRequest()
       
-      await middleware(request)
+      await proxy(request)
       
       const requiredHeaders = [
         'Content-Security-Policy',
@@ -370,7 +373,7 @@ describe('Middleware', () => {
       for (let i = 0; i < 10; i++) {
         mockHeaders = {}
         const request = new NextRequest()
-        await middleware(request)
+        await proxy(request)
         
         expect(mockHeaders['Content-Security-Policy']).toBeDefined()
         expect(mockHeaders['x-nonce']).toBeDefined()
@@ -386,7 +389,7 @@ describe('Middleware', () => {
       for (let i = 0; i < 5; i++) {
         mockHeaders = {}
         const request = new NextRequest()
-        await middleware(request)
+        await proxy(request)
         cspHeaders.push(mockHeaders['Content-Security-Policy'])
       }
       
@@ -404,7 +407,7 @@ describe('Middleware', () => {
       const { NextRequest } = require('next/server')
       const request = new NextRequest()
       
-      await middleware(request)
+      await proxy(request)
       
       const hsts = mockHeaders['Strict-Transport-Security']
       const maxAgeMatch = hsts.match(/max-age=(\d+)/)
@@ -417,7 +420,7 @@ describe('Middleware', () => {
       const { NextRequest } = require('next/server')
       const request = new NextRequest()
       
-      await middleware(request)
+      await proxy(request)
       
       const permissions = mockHeaders['Permissions-Policy']
       const policies = permissions.split(', ')
@@ -433,7 +436,7 @@ describe('Middleware', () => {
       const { NextRequest } = require('next/server')
       const request = new NextRequest()
       
-      await middleware(request)
+      await proxy(request)
       
       const csp = mockHeaders['Content-Security-Policy']
       const directives = csp.split('; ')

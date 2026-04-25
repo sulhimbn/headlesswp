@@ -1,6 +1,7 @@
 import { cacheManager } from '@/lib/cache';
 import { logger } from '@/lib/utils/logger';
 import { stripHtml } from '@/lib/utils/stripHtml';
+import { validateExternalURL } from '@/lib/utils/urlValidator';
 
 export type SummaryProvider = 'openai' | 'anthropic' | 'local';
 
@@ -49,7 +50,10 @@ async function generateSummaryWithOpenAI(
     throw new Error('OpenAI API key not configured');
   }
 
-  const response = await fetch('https://api.openai.com/v1/chat/completions', {
+  const apiUrl = 'https://api.openai.com/v1/chat/completions';
+  await validateExternalURL(apiUrl);
+
+  const response = await fetch(apiUrl, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -91,7 +95,10 @@ async function generateSummaryWithAnthropic(
     throw new Error('Anthropic API key not configured');
   }
 
-  const response = await fetch('https://api.anthropic.com/v1/messages', {
+  const apiUrl = 'https://api.anthropic.com/v1/messages';
+  await validateExternalURL(apiUrl);
+
+  const response = await fetch(apiUrl, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
