@@ -3,15 +3,19 @@ import { standardizedAPI } from '@/lib/api/standardized'
 import { isApiResultSuccessful } from '@/lib/api/response'
 import { logger } from '@/lib/utils/logger'
 import { CACHE_TIMES } from '@/lib/api/config'
+import { withApiRateLimit } from '@/lib/api/rateLimitMiddleware'
 
 const CACHE_CONTROL = `public, max-age=${CACHE_TIMES.MEDIUM_SHORT / 1000}, s-maxage=${CACHE_TIMES.MEDIUM_SHORT / 1000}, stale-while-revalidate=${CACHE_TIMES.MEDIUM}`
 
-export async function GET(request: Request) {
+const MAX_PER_PAGE = 50
+const MAX_PAGE = 100
+
+async function handler(request: Request) {
   try {
     const { searchParams } = new URL(request.url)
     const categories = searchParams.get('categories')
-    const perPage = parseInt(searchParams.get('per_page') || '10', 10)
-    const page = parseInt(searchParams.get('page') || '1', 10)
+    const perPage = Math.min(parseInt(searchParams.get('per_page') || '10', 10), MAX_PER_PAGE)
+    const page = Math.min(parseInt(searchParams.get('page') || '1', 10), MAX_PAGE)
 
     const queryParams: Record<string, string | number> = {
       per_page: perPage,
@@ -48,3 +52,5 @@ export async function GET(request: Request) {
     return NextResponse.json([], { status: 200 })
   }
 }
+
+export const GET = withApiRateLimit(handler, 'metrics')
