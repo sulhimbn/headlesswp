@@ -4,7 +4,7 @@ import { Component, ReactNode } from 'react'
 import * as Sentry from '@sentry/nextjs'
 
 interface Props {
-  children: ReactNode
+  children?: ReactNode
   fallback?: ReactNode
 }
 
@@ -39,7 +39,7 @@ export default class ErrorBoundary extends Component<Props, State> {
 
       return (
         <div style={{
-          padding: '2rem',
+          padding: 'var(--spacing-xl)',
           textAlign: 'center',
           minHeight: '400px',
           display: 'flex',
@@ -47,10 +47,10 @@ export default class ErrorBoundary extends Component<Props, State> {
           alignItems: 'center',
           justifyContent: 'center'
         }}>
-          <h2 style={{ marginBottom: '1rem', color: '#dc2626' }}>
+          <h2 style={{ marginBottom: 'var(--spacing-md)', color: '#dc2626' }}>
             Terjadi kesalahan
           </h2>
-          <p style={{ color: '#6b7280', marginBottom: '1.5rem' }}>
+          <p style={{ color: '#6b7280', marginBottom: 'var(--spacing-lg)' }}>
             Kami sedang memperbaiki masalah ini. Silakan coba lagi nanti.
           </p>
           <button
@@ -59,11 +59,11 @@ export default class ErrorBoundary extends Component<Props, State> {
               Sentry.captureMessage('User recovered from error')
             }}
             style={{
-              padding: '0.75rem 1.5rem',
+              padding: '0.75rem var(--spacing-md)',
               backgroundColor: '#2563eb',
               color: 'white',
               border: 'none',
-              borderRadius: '0.375rem',
+              borderRadius: 'var(--radius-md)',
               cursor: 'pointer'
             }}
           >

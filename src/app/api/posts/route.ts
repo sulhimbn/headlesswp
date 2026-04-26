@@ -10,8 +10,25 @@ export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url)
     const categories = searchParams.get('categories')
-    const perPage = parseInt(searchParams.get('per_page') || '10', 10)
-    const page = parseInt(searchParams.get('page') || '1', 10)
+    const perPageRaw = searchParams.get('per_page') || '10'
+    const pageRaw = searchParams.get('page') || '1'
+
+    const perPage = parseInt(perPageRaw, 10)
+    const page = parseInt(pageRaw, 10)
+
+    if (!Number.isInteger(perPage) || perPage < 1 || perPage > 100) {
+      return NextResponse.json(
+        { error: 'Invalid per_page: must be an integer between 1 and 100' },
+        { status: 400 }
+      )
+    }
+
+    if (!Number.isInteger(page) || page < 1) {
+      return NextResponse.json(
+        { error: 'Invalid page: must be a positive integer' },
+        { status: 400 }
+      )
+    }
 
     const queryParams: Record<string, string | number> = {
       per_page: perPage,

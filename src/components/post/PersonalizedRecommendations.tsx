@@ -130,7 +130,7 @@ export default function PersonalizedRecommendations({ currentPostId, currentCate
         <h2 id="personalized-heading" className="text-2xl font-bold text-[hsl(var(--color-text-primary))] mb-6">
           {UI_TEXT.homePage.personalizedRecommendations || 'Rekomendasi Untuk Anda'}
         </h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-[var(--spacing-lg)]">
           {[1, 2, 3].map(i => (
             <div key={i} className="bg-[hsl(var(--color-surface))] rounded-[var(--radius-lg)] h-64 animate-pulse" />
           ))}
@@ -148,7 +148,7 @@ export default function PersonalizedRecommendations({ currentPostId, currentCate
       <h2 id="personalized-heading" className="text-2xl font-bold text-[hsl(var(--color-text-primary))] mb-6">
         {UI_TEXT.homePage.personalizedRecommendations || 'Rekomendasi Untuk Anda'}
       </h2>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-[var(--spacing-lg)]">
         {recommendations.map((post) => (
           <article 
             key={post.id} 
@@ -170,7 +170,7 @@ export default function PersonalizedRecommendations({ currentPostId, currentCate
                 />
               </Link>
             )}
-            <div className="p-4">
+            <div className="p-[var(--spacing-md)]">
               <h3 className="text-lg font-semibold mb-2 line-clamp-2">
                 <Link
                   href={`/berita/${post.slug}`}
