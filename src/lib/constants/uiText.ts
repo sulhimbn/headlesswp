@@ -115,7 +115,11 @@ export const UI_TEXT = {
     news: 'Memuat berita',
     article: 'Memuat artikel',
     articleDetail: 'Memuat detail artikel',
-    articleCard: 'Memuat kartu artikel'
+    articleCard: 'Memuat kartu artikel',
+    search: 'Mencari berita',
+    category: 'Memuat kategori',
+    tag: 'Memuat tag',
+    author: 'Memuat profil penulis'
   },
   header: {
     siteName: 'Mitra Banten News',
