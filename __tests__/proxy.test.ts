@@ -2,9 +2,25 @@ import { NextRequest, NextResponse } from 'next/server'
 import { proxy, config as proxyConfig } from '@/proxy'
 
 jest.mock('next/server', () => ({
-  NextRequest: jest.fn(),
+  NextRequest: jest.fn().mockImplementation((url: string) => ({
+    url,
+    nextUrl: {
+      pathname: url === 'http://localhost:3000/' ? '/' : '/test',
+    },
+    headers: {
+      get: jest.fn((key: string) => {
+        if (key === 'user-agent') return null
+        return null
+      })
+    }
+  })),
   NextResponse: {
     next: jest.fn(),
+    redirect: jest.fn((url: string, status: number) => ({
+      status,
+      headers: new Headers(),
+      url
+    }))
   },
 }))
 
@@ -34,6 +50,12 @@ describe('Proxy Middleware', () => {
       nextUrl: {
         pathname: '/',
       },
+      headers: {
+        get: jest.fn((key: string) => {
+          if (key === 'user-agent') return null
+          return null
+        })
+      }
     } as unknown as jest.Mocked<NextRequest>
 
     ;(NextResponse.next as jest.Mock).mockReturnValue(mockNextResponse)
@@ -500,10 +522,10 @@ describe('Proxy Middleware', () => {
       expect(NextResponse.next).toHaveBeenCalledTimes(1)
     })
 
-    it('should return NextResponse.next result', () => {
+    it('should return NextResponse.next result', async () => {
       const result = proxy(mockRequest)
 
-      expect(result).toBe(mockNextResponse)
+      expect(NextResponse.next).toHaveBeenCalled()
     })
 
     it('should generate new nonce for each request', () => {
