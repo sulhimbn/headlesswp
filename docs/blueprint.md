@@ -774,6 +774,29 @@ interface ApiListResult<T> extends ApiResult<T[]> {
 
 **See Also**: [Task REFACTOR-033](./task.md#refactor-033)
 
+**ARCH-REFACTOR-001: Timestamp Utility Factory**:
+- Created `createTimestamp()` utility (src/lib/utils/timestamp.ts, 3 lines)
+- Replaced all 12 instances of `new Date().toISOString()` in 5 files:
+  - response.ts (3 instances: lines 37, 52, 85)
+  - errors.ts (1 instance: line 45)
+  - telemetry.ts (1 instance: line 45)
+  - healthCheck.ts (5 instances: lines 35, 51, 68, 90, 123)
+  - standardized.ts (1 instance: line 42)
+- Added comprehensive tests (3 tests covering ISO format, valid date parsing, and proximity to current time)
+- Test results: 3 tests passing, 0 failures
+- Lint: 0 errors, 0 warnings
+- TypeScript: 0 errors (pre-existing cache.test.ts issue unrelated to this refactor)
+
+**Benefits**:
+1. **DRY Principle**: Timestamp generation logic defined once in reusable utility
+2. **Consistency**: All API methods follow same timestamp pattern
+3. **Maintainability**: Single source of truth for timestamp format
+4. **Testability**: Timestamp utility tested once, not per method
+5. **Extensibility**: Can add custom timestamp logic in one place
+6. **Code Clarity**: API layer code focuses on business logic, not date formatting
+
+**See Also**: [Task #1257](https://github.com/sulhimbn/headlesswp/issues/1257)
+
 ## Integration Resilience Patterns
 
 **Last Updated**: 2026-01-10 (Senior Integration Engineer)

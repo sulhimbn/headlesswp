@@ -1,4 +1,5 @@
 import { logger } from '@/lib/utils/logger'
+import { createTimestamp } from '@/lib/utils/timestamp'
 
 export interface TelemetryEvent {
   timestamp: string
@@ -42,7 +43,7 @@ export class TelemetryCollector {
 
     const telemetryEvent: TelemetryEvent = {
       ...event,
-      timestamp: new Date().toISOString()
+      timestamp: createTimestamp()
     }
 
     this.events.push(telemetryEvent)
