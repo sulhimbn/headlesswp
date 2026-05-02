@@ -1,7 +1,7 @@
 # Architecture Blueprint
 
-**Version**: 1.0.3
-**Last Updated**: 2026-03-21 (System Orchestrator - FIX-844: Restore missing middleware.ts, FIX-843: npm audit vulnerabilities resolved)
+**Version**: 1.0.4
+**Last Updated**: 2026-05-02 (System Orchestrator - FIX-844: Merged middleware.ts into proxy.ts, removed duplicate middleware file)
 
 ## System Architecture
 
