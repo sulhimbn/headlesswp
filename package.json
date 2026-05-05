@@ -66,8 +66,9 @@
     "caniuse-lite": "^1.0.30001774",
     "baseline-browser-mapping": "^2.10.0",
     "undici": "^7.24.5",
-    "serialize-javascript": "^7.0.3",
+    "serialize-javascript": "^7.0.5",
     "flatted": "^3.4.2",
-    "dompurify": "^3.3.3"
+    "dompurify": "^3.3.3",
+    "postcss": "^8.5.11"
   }
 }
