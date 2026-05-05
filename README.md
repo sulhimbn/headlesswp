@@ -224,6 +224,45 @@ Test coverage:
 - Integration tests for resilience patterns
 - Component tests for React components
 
+## Pre-Commit Hooks
+
+This project uses **husky** and **lint-staged** to prevent broken code from being committed.
+
+### What Runs on Commit
+
+Before every commit, the following checks run on staged files:
+
+- **ESLint** - Fixes linting issues automatically
+- **TypeScript** - Type checking with `tsc --noEmit`
+
+If any check fails, the commit is blocked until issues are resolved.
+
+### Enabling Hooks
+
+Hooks are automatically installed when you run:
+
+```bash
+npm install
+```
+
+The `prepare` script in `package.json` runs `husky install` automatically after `npm install`.
+
+### Manual Setup (if needed)
+
+If hooks were not installed, run:
+
+```bash
+npx husky install
+```
+
+### Bypassing Hooks (not recommended)
+
+```bash
+git commit --no-verify
+```
+
+**Note:** Only bypass when absolutely necessary.
+
 ## Contributing
 
 1. Create a feature branch: `git checkout -b feature/your-feature`
