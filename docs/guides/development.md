@@ -468,6 +468,53 @@ export async function GET(request: NextRequest) {
 }
 ```
 
+## Pre-Commit Hooks
+
+This project uses **husky** and **lint-staged** to automatically run code quality checks before each commit. This prevents bad code from entering the repository and ensures consistent code quality.
+
+### How It Works
+
+When you run `git commit`, the pre-commit hook automatically runs:
+
+1. **ESLint** on staged `.ts` and `.tsx` files (with auto-fix)
+2. **TypeScript** type checking on staged files
+
+If any check fails, the commit is blocked and you must fix the issues before committing.
+
+### Configuration
+
+The pre-commit hooks are configured in:
+
+- **Package.json**: `lint-staged` configuration defines the checks to run
+- **.husky/pre-commit**: The husky hook script
+
+```json
+"lint-staged": {
+  "**/*.{ts,tsx}": [
+    "eslint --fix",
+    "tsc --noEmit"
+  ]
+}
+```
+
+### Skipping Hooks
+
+If you need to skip the pre-commit hooks (not recommended), use:
+
+```bash
+git commit --no-verify -m "feat: your commit"
+```
+
+### First-Time Setup
+
+The husky setup is automatic via the `prepare` script in package.json:
+
+```json
+"prepare": "husky"
+```
+
+This runs automatically when you install dependencies with `npm install`.
+
 ## Pre-Commit Checklist
 
 Before committing changes, ensure:
