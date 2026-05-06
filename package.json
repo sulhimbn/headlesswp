@@ -18,7 +18,9 @@
     "deps:check": "npm outdated",
     "deps:update": "npm update",
     "size-check": "node scripts/bundle-size-check.js",
-    "check": "npm run lint && npm run typecheck && npm test"
+    "check": "node scripts/enhanced-check.js",
+    "check:watch": "node scripts/enhanced-check.js --watch",
+    "lhci": "lhci autorun --config=lighthouserc.json"
   },
   "dependencies": {
     "@sentry/nextjs": "^10.40.0",
@@ -31,6 +33,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@lhci/cli": "0.15.1",
     "@next/bundle-analyzer": "^16.1.6",
     "@size-limit/file": "^12.0.0",
     "@size-limit/preset-app": "^12.0.0",

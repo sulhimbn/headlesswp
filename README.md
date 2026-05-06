@@ -146,15 +146,20 @@ npm run start        # Start production server
 npm run lint         # Run ESLint
 npm run typecheck    # Run TypeScript type checking
 npm run test         # Run Jest tests
-npm run test:watch    # Run tests in watch mode
-npm run check         # Run lint, typecheck, and test
-npm run analyze       # Analyze bundle size
-npm run deps:check    # Check for outdated dependencies
-npm run deps:update   # Update dependencies to latest
+npm run test:watch   # Run tests in watch mode
+npm run check        # Run lint, typecheck, and test (with pretty output)
+npm run check:watch  # Run check with tests in watch mode
+npm run analyze      # Analyze bundle size
+npm run deps:check   # Check for outdated dependencies
+npm run deps:update  # Update dependencies to latest
 npm run audit:security # Check for security vulnerabilities
-npm run audit:full    # Full security audit
-npm run size-check    # Check bundle size against thresholds
+npm run audit:full   # Full security audit
+npm run size-check  # Check bundle size against thresholds
 ```
+
+The `check` script runs lint, typecheck, and test in sequence, stopping on first failure.
+It provides pretty formatted output with progress indicators and a summary.
+Use `npm run check:watch` to run tests in watch mode.
 
 ## Project Structure
 

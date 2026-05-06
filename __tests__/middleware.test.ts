@@ -1,4 +1,4 @@
-import { proxy as middleware } from '@/proxy'
+import { middleware } from '@/middleware'
 
 let mockHeaders: Record<string, string> = {}
 
@@ -6,7 +6,14 @@ jest.mock('next/server', () => ({
   NextRequest: jest.fn().mockImplementation(() => ({
     url: 'http://localhost:3000/test',
     method: 'GET',
-    headers: new Map()
+    nextUrl: {
+      pathname: '/test'
+    },
+    headers: {
+      get: (key: string) => {
+        return null
+      }
+    }
   })),
   NextResponse: {
     next: jest.fn(() => ({
