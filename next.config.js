@@ -18,12 +18,20 @@ const nextConfig = {
   output: 'standalone',
   compress: true,
   images: {
-    remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: '**.your-domain.com',
-      },
-    ],
+    remotePatterns: (() => {
+      const wpUrl = process.env.NEXT_PUBLIC_WORDPRESS_URL || process.env.WORDPRESS_URL || ''
+      const hostname = wpUrl.replace(/^https?:\/\//, '').replace(/\/$/, '')
+      return hostname ? [
+        {
+          protocol: 'https',
+          hostname: `**.${hostname}`,
+        },
+        {
+          protocol: 'https',
+          hostname: hostname,
+        },
+      ] : []
+    })(),
   },
   env: {
     WORDPRESS_URL: process.env.WORDPRESS_URL,
