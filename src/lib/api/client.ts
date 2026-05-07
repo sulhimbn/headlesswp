@@ -1,4 +1,4 @@
-import axios, { AxiosInstance, InternalAxiosRequestConfig, AxiosError } from 'axios'
+import axios, { AxiosInstance, InternalAxiosRequestConfig, AxiosError, AxiosRequestHeaders } from 'axios'
 import {
   WORDPRESS_API_BASE_URL,
   WORDPRESS_SITE_URL,
@@ -20,6 +20,7 @@ import { RateLimiterManager } from './rateLimiter'
 import { createApiError, ApiError, shouldTriggerCircuitBreaker } from './errors'
 import { HealthChecker, HealthCheckResult } from './healthCheck'
 import { logger } from '@/lib/utils/logger'
+import { createMiddlewareManager, RequestMiddleware, ResponseMiddleware, RequestContext, ResponseContext } from './middleware'
 
 function getApiUrl(path: string): string {
   return `${WORDPRESS_SITE_URL}/index.php?rest_route=${path}`
@@ -49,6 +50,8 @@ const rateLimiterManager = new RateLimiterManager({
 
 // Placeholder for health checker functions - will be set after apiClient is created
 let checkApiHealthFn: (() => Promise<HealthCheckResult | null>) | null = null;
+
+const middlewareManager = createMiddlewareManager();
 
 const createApiClient = (): AxiosInstance => {
   const api = axios.create({
@@ -91,14 +94,46 @@ const createApiClient = (): AxiosInstance => {
         }
       }
 
+      const startTime = Date.now();
+      const requestContext: RequestContext = {
+        url: config.url || '',
+        method: config.method?.toUpperCase() || 'GET',
+        headers: config.headers as Record<string, string> || {},
+        timestamp: startTime
+      };
+
+      const processedContext = await middlewareManager.executeRequestMiddlewares(requestContext);
+
+      if (processedContext.headers) {
+        Object.entries(processedContext.headers).forEach(([key, value]) => {
+          if (config.headers instanceof axios.AxiosHeaders) {
+            config.headers.set(key, value);
+          } else {
+            (config.headers as Record<string, string>)[key] = value;
+          }
+        });
+      }
+
       return config
     },
     (error: AxiosError) => Promise.reject(error)
   )
 
   api.interceptors.response.use(
-    (response) => {
+    async (response) => {
       circuitBreaker.recordSuccess()
+
+      const duration = Date.now() - (parseInt(response.config.headers['X-Request-Start-Time'] as string) || Date.now());
+      const responseContext: ResponseContext = {
+        status: response.status,
+        data: response.data,
+        headers: response.headers as Record<string, string>,
+        duration,
+        timestamp: Date.now()
+      };
+
+      await middlewareManager.executeResponseMiddlewares(responseContext);
+
       return response
     },
     async (error: AxiosError) => {
@@ -177,3 +212,22 @@ export function getLastHealthCheck() {
 
 export { getApiUrl, circuitBreaker, retryStrategy, rateLimiterManager, healthChecker }
 export type { ApiError }
+export { createLoggingMiddleware, createCachingHeaderMiddleware, createRequestTimingMiddleware } from './middleware'
+export { createMiddlewareManager } from './middleware'
+export type { RequestMiddleware, ResponseMiddleware, RequestContext, ResponseContext } from './middleware'
+
+export function registerRequestMiddleware(middleware: RequestMiddleware, name?: string) {
+  middlewareManager.registerRequestMiddleware(middleware, name);
+}
+
+export function registerResponseMiddleware(middleware: ResponseMiddleware, name?: string) {
+  middlewareManager.registerResponseMiddleware(middleware, name);
+}
+
+export function clearMiddlewares() {
+  middlewareManager.clearMiddlewares();
+}
+
+export function getRegisteredMiddlewares() {
+  return middlewareManager.getRegisteredMiddlewares();
+}

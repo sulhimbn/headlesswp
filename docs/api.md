@@ -2070,6 +2070,101 @@ const response = await fetch('http://localhost:3000/api/cache?pattern=search:', 
 
 ---
 
+## Middleware Pattern
+
+The API client supports a middleware pattern for extensibility, allowing custom request/response transformations, logging, and authentication without modifying core client code.
+
+### Middleware Interface
+
+```typescript
+import { RequestMiddleware, ResponseMiddleware, createMiddlewareManager } from '@/lib/api/middleware';
+
+interface RequestMiddlewareContext {
+  url: string;
+  method: string;
+  headers: Record<string, string>;
+  timestamp: number;
+}
+
+interface ResponseMiddlewareContext {
+  status: number;
+  data: unknown;
+  headers: Record<string, string>;
+  duration: number;
+  timestamp: number;
+}
+```
+
+### Registration
+
+```typescript
+import { registerRequestMiddleware, registerResponseMiddleware } from '@/lib/api/client';
+
+// Register request middleware
+registerRequestMiddleware(async (context) => {
+  console.log(`Request: ${context.method} ${context.url}`);
+  return {
+    ...context,
+    headers: { ...context.headers, 'X-Custom-Header': 'value' }
+  };
+});
+
+// Register response middleware
+registerResponseMiddleware(async (context) => {
+  console.log(`Response: ${context.status} (${context.duration}ms)`);
+  return context;
+});
+```
+
+### Built-in Middlewares
+
+```typescript
+import { createLoggingMiddleware, createCachingHeaderMiddleware } from '@/lib/api/middleware';
+
+const { request: loggingRequest, response: loggingResponse } = createLoggingMiddleware();
+registerRequestMiddleware(loggingRequest);
+registerResponseMiddleware(loggingResponse);
+
+const { request: cachingRequest } = createCachingHeaderMiddleware();
+registerRequestMiddleware(cachingRequest);
+```
+
+### Execution Order
+
+Middleware executes in registration order:
+1. First registered middleware runs first
+2. Each middleware receives the output of the previous
+3. Errors propagate and stop execution
+
+### Clearing Middlewares
+
+```typescript
+import { clearMiddlewares, getRegisteredMiddlewares } from '@/lib/api/client';
+
+// Get current registered middlewares
+const registered = getRegisteredMiddlewares();
+console.log('Request middlewares:', registered.request);
+console.log('Response middlewares:', registered.response);
+
+// Clear all middlewares
+clearMiddlewares();
+```
+
+### TypeScript Types
+
+Export middleware types for type-safe implementations:
+
+```typescript
+import { RequestMiddleware, ResponseMiddleware } from '@/lib/api/client';
+
+const myRequestMiddleware: RequestMiddleware = async (context) => {
+  // context is fully typed
+  return context;
+};
+```
+
+---
+
 ## Performance Tips
 
 ### 1. Use ISR Caching
