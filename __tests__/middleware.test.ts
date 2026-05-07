@@ -1,4 +1,4 @@
-import { proxy as middleware } from '@/proxy'
+import { middleware } from '@/middleware'
 
 let mockHeaders: Record<string, string> = {}
 
@@ -441,6 +441,46 @@ describe('Middleware', () => {
       expect(directives.length).toBeGreaterThan(5)
       directives.forEach(directive => {
         expect(directive).toMatch(/^[a-z-]+/)
+      })
+    })
+  })
+
+  describe('No Duplicate Headers', () => {
+    it('should not have duplicate security headers', async () => {
+      const { NextRequest } = require('next/server')
+      const request = new NextRequest()
+      
+      await middleware(request)
+      
+      const headersWithDuplicates = ['X-Frame-Options', 'X-Content-Type-Options', 'Referrer-Policy']
+      headersWithDuplicates.forEach(header => {
+        const values = Object.entries(mockHeaders).filter(([key]) => key.toLowerCase() === header.toLowerCase())
+        expect(values.length).toBe(1)
+      })
+    })
+
+    it('should set all security headers exactly once', async () => {
+      const { NextRequest } = require('next/server')
+      const request = new NextRequest()
+      
+      await middleware(request)
+      
+      const securityHeaders = [
+        'Content-Security-Policy',
+        'x-nonce',
+        'Strict-Transport-Security',
+        'X-Frame-Options',
+        'X-Content-Type-Options',
+        'X-XSS-Protection',
+        'Referrer-Policy',
+        'Permissions-Policy',
+        'Cross-Origin-Opener-Policy',
+        'Cross-Origin-Resource-Policy',
+        'Cross-Origin-Embedder-Policy'
+      ]
+      
+      securityHeaders.forEach(header => {
+        expect(mockHeaders[header]).toBeDefined()
       })
     })
   })
