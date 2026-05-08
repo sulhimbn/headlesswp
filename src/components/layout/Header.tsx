@@ -6,8 +6,8 @@ import { useState, useEffect, useRef, useCallback, memo, Suspense } from 'react'
 import dynamic from 'next/dynamic'
 import Icon from '@/components/ui/Icon'
 import ServiceStatus from '@/components/ui/ServiceStatus'
+import DarkModeToggle from '@/components/ui/DarkModeToggle'
 import { UI_TEXT } from '@/lib/constants/uiText'
-import { useDarkMode } from '@/lib/hooks/useDarkMode'
 
 const SearchBar = dynamic(() => import('@/components/ui/SearchBar'), { ssr: false })
 
@@ -20,7 +20,6 @@ export default memo(function Header() {
   const router = useRouter()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isSearchOpen, setIsSearchOpen] = useState(false)
-  const { isDark, toggleDarkMode } = useDarkMode()
   const menuButtonRef = useRef<HTMLButtonElement>(null)
   const searchButtonRef = useRef<HTMLButtonElement>(null)
   const searchRef = useRef<HTMLDivElement>(null)
@@ -110,14 +109,7 @@ export default memo(function Header() {
               <span className="sr-only">{UI_TEXT.header.openSearch}</span>
               <Icon type="search" className="h-5 w-5" />
             </button>
-            <button
-              type="button"
-              className="inline-flex items-center justify-center p-2 rounded-[var(--radius-md)] text-[hsl(var(--color-text-primary))] hover:text-[hsl(var(--color-primary))] hover:bg-[hsl(var(--color-secondary-dark))] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--color-primary))] focus:ring-offset-2"
-              onClick={toggleDarkMode}
-              aria-label={isDark ? UI_TEXT.header.darkMode.enableLight : UI_TEXT.header.darkMode.enableDark}
-            >
-              <Icon type={isDark ? 'sun' : 'moon'} className="h-5 w-5" />
-            </button>
+            <DarkModeToggle />
             <nav>
               {NAVIGATION_ITEMS.map((item) => (
                 <Link
@@ -143,14 +135,7 @@ export default memo(function Header() {
               <span className="sr-only">{UI_TEXT.header.openSearch}</span>
               <Icon type="search" className="h-5 w-5" />
             </button>
-            <button
-              type="button"
-              className="inline-flex items-center justify-center p-3 min-w-[44px] min-h-[44px] rounded-[var(--radius-md)] text-[hsl(var(--color-text-primary))] hover:text-[hsl(var(--color-primary))] hover:bg-[hsl(var(--color-secondary-dark))] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--color-primary))] focus:ring-offset-2"
-              onClick={toggleDarkMode}
-              aria-label={isDark ? UI_TEXT.header.darkMode.enableLight : UI_TEXT.header.darkMode.enableDark}
-            >
-              <Icon type={isDark ? 'sun' : 'moon'} className="h-5 w-5" />
-            </button>
+            <DarkModeToggle />
             <button
               ref={menuButtonRef}
               type="button"
