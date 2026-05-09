@@ -1,9 +1,13 @@
 import { CacheMetricsCalculator } from './cache/cacheMetricsCalculator';
 import { CacheCleanup } from './cache/cacheCleanup';
 import { CacheDependencyManager } from './cache/cacheDependencyManager';
+import { CacheKeyFactory, cacheKeys } from './cache/cacheKeyFactory';
+import { cacheDependencies } from './cache/cacheDependencies';
 import type { ICacheManager } from '@/lib/api/ICacheManager';
 import type { CacheEntry, CacheTelemetry } from './cache/types';
 export type { CacheEntry, CacheTelemetry } from './cache/types';
+
+export { cacheKeys, cacheDependencies, CacheKeyFactory };
 
 /**
  * Advanced cache manager with dependency-aware cascade invalidation.
@@ -571,6 +575,7 @@ export { CACHE_CONFIG } from './cache/cacheConfig';
 
 /**
  * Cache key factory for type-safe cache key generation.
+ * Re-exported from ./cache/cacheKeyFactory for backward compatibility.
  * 
  * @remarks
  * Factory pattern ensures consistent key format across the application.
@@ -584,89 +589,14 @@ export { CACHE_CONFIG } from './cache/cacheConfig';
  * CacheKeyFactory.createBySlug('category', 'news'); // 'category:news'
  * ```
  */
-class CacheKeyFactory {
-  private static readonly SEPARATOR = ':'
-
-  static create(
-    entity: 'posts' | 'post' | 'categories' | 'category' | 'tags' | 'tag' | 'media' | 'author' | 'search' | 'sitemap',
-    params?: string | number
-  ): string {
-    return params ? `${entity}${this.SEPARATOR}${params}` : entity
-  }
-
-  static createById(entity: 'post' | 'media' | 'author', id: number): string {
-    return this.create(entity, id)
-  }
-
-  static createBySlug(entity: 'post' | 'category' | 'tag', slug: string): string {
-    return this.create(entity, slug)
-  }
-}
-
-/**
- * Cache key generators using factory pattern.
- * 
- * @remarks
- * Use these functions to generate cache keys consistently:
- * - Prevents key typos
- * - Ensures predictable cache structure
- * - Makes debugging easier
- * - Type-safe key generation
- * 
- * Key format: `{entity}:{identifier}`
- * Examples: 'post:123', 'category:news', 'posts:default'
- * 
- * @example
- * ```typescript
- * // Good - Use key generators
- * cacheManager.set(cacheKeys.post(123), postData, CACHE_TTL.POST);
- * 
- * // Bad - String literals (prone to typos)
- * cacheManager.set('post-123', postData, 60000);
- * ```
- */
-export const cacheKeys = {
-  posts: (params?: string) => CacheKeyFactory.create('posts', params || 'default'),
-  post: (slug: string) => CacheKeyFactory.createBySlug('post', slug),
-  postById: (id: number) => CacheKeyFactory.createById('post', id),
-  categories: () => CacheKeyFactory.create('categories'),
-  category: (slug: string) => CacheKeyFactory.createBySlug('category', slug),
-  tags: () => CacheKeyFactory.create('tags'),
-  tag: (slug: string) => CacheKeyFactory.createBySlug('tag', slug),
-  media: (id: number) => CacheKeyFactory.createById('media', id),
-  author: (id: number) => CacheKeyFactory.createById('author', id),
-  search: (query: string) => CacheKeyFactory.create('search', query),
-  sitemap: () => CacheKeyFactory.create('sitemap'),
-}
 
 /**
  * Dependency helpers for defining cache relationships.
+ * Re-exported from ./cache/cacheDependencies for backward compatibility.
  * 
  * @remarks
  * These helpers generate dependency arrays for cache entries.
  * Use them when caching data that depends on other cached entities.
- * 
- * Dependency Graph Structure:
- * 
- * ```
- * category:5 (leaf node)
- *     ↑
- *     | (dependency)
- *     |
- * post:123
- *     ↑
- *     | (dependent)
- *     |
- * posts-list:cat5
- * ```
- * 
- * When `category:5` is invalidated, `post:123` is automatically invalidated.
- * When `post:123` is invalidated, `posts-list:cat5` is automatically invalidated.
- * 
- * Leaf nodes (no dependencies):
- * - Media: Images/videos don't depend on other entities
- * - Author: Author profiles don't depend on other entities
- * - Categories/Tags: Taxonomy terms don't depend on posts
  * 
  * @example
  * ```typescript
@@ -678,104 +608,5 @@ export const cacheKeys = {
  *   456                 // Media ID
  * );
  * cacheManager.set(cacheKeys.post(123), postData, CACHE_TTL.POST, dependencies);
- * 
- * // Later, when category 5 is updated...
- * cacheManager.invalidate(cacheKeys.category('5'));
- * // post:123 is automatically invalidated!
  * ```
- */
-export const cacheDependencies = {
-  /**
-   * Post dependencies: categories, tags, and media.
-   * 
-   * @param postId - Post ID (for key generation)
-   * @param categories - Array of category IDs
-   * @param tags - Array of tag IDs
-   * @param mediaId - Featured media ID (0 if none)
-   * @returns Array of dependency cache keys
-   * 
-   * @remarks
-   * Posts depend on:
-   * - Categories: Post belongs to categories
-   * - Tags: Post has tags
-   * - Media: Post has featured image
-   * 
-   * When any of these change, post should be invalidated.
-   */
-  post: (_postId: number | string, categories: number[], tags: number[], mediaId: number): string[] => {
-    const deps: string[] = []
-    categories.forEach(catId => deps.push(cacheKeys.category(catId.toString())))
-    tags.forEach(tagId => deps.push(cacheKeys.tag(tagId.toString())))
-    if (mediaId > 0) deps.push(cacheKeys.media(mediaId))
-    return deps
-  },
-
-  /**
-   * Posts list dependencies: categories and tags.
-   * 
-   * @param categories - Array of category IDs (for filtered lists)
-   * @param tags - Array of tag IDs (for filtered lists)
-   * @returns Array of dependency cache keys
-   * 
-   * @remarks
-   * Posts lists (e.g., posts in a category) depend on:
-   * - Categories: Filtered by category
-   * - Tags: Filtered by tag
-   * 
-   * When category/tag metadata changes, list should be invalidated.
-   */
-  postsList: (categories: number[] = [], tags: number[] = []): string[] => {
-    const deps: string[] = []
-    categories.forEach(catId => deps.push(cacheKeys.category(catId.toString())))
-    tags.forEach(tagId => deps.push(cacheKeys.tag(tagId.toString())))
-    return deps
-  },
-
-  /**
-   * Media dependencies: none (leaf node).
-   * 
-   * @returns Empty array
-   * 
-   * @remarks
-   * Media (images, videos) don't depend on other entities.
-   * They are leaf nodes in dependency graph.
-   * 
-   * Other entities depend on media, but media doesn't depend on anything.
-   */
-  media: () => [],
-
-  /**
-   * Author dependencies: none (leaf node).
-   * 
-   * @returns Empty array
-   * 
-   * @remarks
-   * Author profiles don't depend on other entities.
-   * They are leaf nodes in dependency graph.
-   */
-  author: () => [],
-
-  /**
-   * Categories dependencies: none (leaf node).
-   * 
-   * @returns Empty array
-   * 
-   * @remarks
-   * Categories are taxonomy terms.
-   * Posts depend on categories, but categories don't depend on posts.
-   */
-  categories: () => [],
-
-  /**
-   * Tags dependencies: none (leaf node).
-   * 
-   * @returns Empty array
-   * 
-   * @remarks
-   * Tags are taxonomy terms.
-   * Posts depend on tags, but tags don't depend on posts.
-   */
-  tags: () => [],
-}
-
-export { CacheCleanup };
+*/
