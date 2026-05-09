@@ -32,6 +32,13 @@ function setSecurityHeaders(response: NextResponse): void {
   response.headers.set('X-Frame-Options', 'DENY')
   response.headers.set('X-Content-Type-Options', 'nosniff')
   response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin')
+  response.headers.set('Cross-Origin-Opener-Policy', 'same-origin')
+  response.headers.set('Cross-Origin-Embedder-Policy', 'require-corp')
+  response.headers.set('Cross-Origin-Resource-Policy', 'same-origin')
+  response.headers.set(
+    'Permissions-Policy',
+    'accelerometer=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()'
+  )
 }
 
 function setBotOptimizationHeaders(response: NextResponse, isBot: boolean): void {
