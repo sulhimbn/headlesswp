@@ -212,6 +212,21 @@ NODE_ENV=production
 
 See `.env.example` for all available configuration options.
 
+### Pre-commit Hooks
+
+This project uses [Husky](https://typicode.github.io/husky/) and [lint-staged](https://lint-staged.boot-start.com/) for pre-commit validation.
+
+On first install, hooks are automatically set up via the `prepare` script. To manually set up:
+```bash
+npm run prepare
+```
+
+Pre-commit hooks run automatically before each commit:
+- ESLint with auto-fix on staged `.ts` and `.tsx` files
+- TypeScript type checking on staged `.ts` and `.tsx` files
+
+To bypass hooks temporarily: `git commit --no-verify -m "your message"`
+
 ## Testing
 
 ```bash
