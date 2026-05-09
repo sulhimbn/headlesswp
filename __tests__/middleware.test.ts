@@ -3,11 +3,19 @@ import { proxy as middleware } from '@/proxy'
 let mockHeaders: Record<string, string> = {}
 
 jest.mock('next/server', () => ({
-  NextRequest: jest.fn().mockImplementation(() => ({
-    url: 'http://localhost:3000/test',
-    method: 'GET',
-    headers: new Map()
-  })),
+  NextRequest: jest.fn().mockImplementation((url?: string | URL) => {
+    const urlObj = url ? (typeof url === 'string' ? new URL(url) : url) : new URL('http://localhost/test')
+    return {
+      url: urlObj.href,
+      nextUrl: {
+        pathname: urlObj.pathname,
+        search: urlObj.search,
+        origin: urlObj.origin,
+      },
+      method: 'GET',
+      headers: new Map()
+    }
+  }),
   NextResponse: {
     next: jest.fn(() => ({
       headers: {
@@ -19,6 +27,17 @@ jest.mock('next/server', () => ({
         })
       },
       status: 200
+    })),
+    redirect: jest.fn((url: URL, status?: number) => ({
+      headers: {
+        get: (key: string) => {
+          return mockHeaders[key] || null
+        },
+        set: jest.fn((key: string, value: string) => {
+          mockHeaders[key] = value
+        })
+      },
+      status: status || 307
     }))
   }
 }))
@@ -32,7 +51,7 @@ describe('Middleware', () => {
   describe('Content Security Policy', () => {
     it('should set Content-Security-Policy header', async () => {
       const { NextResponse, NextRequest } = require('next/server')
-      const request = new NextRequest()
+      const request = new NextRequest(new URL('http://localhost/test'))
       
       const response = await middleware(request)
       
@@ -43,7 +62,7 @@ describe('Middleware', () => {
 
     it('should include default-src in CSP', async () => {
       const { NextRequest } = require('next/server')
-      const request = new NextRequest()
+      const request = new NextRequest(new URL('http://localhost/test'))
       
       await middleware(request)
       
@@ -52,7 +71,7 @@ describe('Middleware', () => {
 
     it('should include script-src with nonce in CSP', async () => {
       const { NextRequest } = require('next/server')
-      const request = new NextRequest()
+      const request = new NextRequest(new URL('http://localhost/test'))
       
       await middleware(request)
       
@@ -62,7 +81,7 @@ describe('Middleware', () => {
 
     it('should include style-src with nonce in CSP', async () => {
       const { NextRequest } = require('next/server')
-      const request = new NextRequest()
+      const request = new NextRequest(new URL('http://localhost/test'))
       
       await middleware(request)
       
@@ -72,7 +91,7 @@ describe('Middleware', () => {
 
     it('should include img-src with data: and blob: in CSP', async () => {
       const { NextRequest } = require('next/server')
-      const request = new NextRequest()
+      const request = new NextRequest(new URL('http://localhost/test'))
       
       await middleware(request)
       
@@ -83,7 +102,7 @@ describe('Middleware', () => {
 
     it('should include font-src in CSP', async () => {
       const { NextRequest } = require('next/server')
-      const request = new NextRequest()
+      const request = new NextRequest(new URL('http://localhost/test'))
       
       await middleware(request)
       
@@ -92,7 +111,7 @@ describe('Middleware', () => {
 
     it('should include connect-src in CSP', async () => {
       const { NextRequest } = require('next/server')
-      const request = new NextRequest()
+      const request = new NextRequest(new URL('http://localhost/test'))
       
       await middleware(request)
       
@@ -101,7 +120,7 @@ describe('Middleware', () => {
 
     it('should include media-src in CSP', async () => {
       const { NextRequest } = require('next/server')
-      const request = new NextRequest()
+      const request = new NextRequest(new URL('http://localhost/test'))
       
       await middleware(request)
       
@@ -110,7 +129,7 @@ describe('Middleware', () => {
 
     it('should include object-src none in CSP', async () => {
       const { NextRequest } = require('next/server')
-      const request = new NextRequest()
+      const request = new NextRequest(new URL('http://localhost/test'))
       
       await middleware(request)
       
@@ -119,7 +138,7 @@ describe('Middleware', () => {
 
     it('should include base-uri in CSP', async () => {
       const { NextRequest } = require('next/server')
-      const request = new NextRequest()
+      const request = new NextRequest(new URL('http://localhost/test'))
       
       await middleware(request)
       
@@ -128,7 +147,7 @@ describe('Middleware', () => {
 
     it('should include form-action in CSP', async () => {
       const { NextRequest } = require('next/server')
-      const request = new NextRequest()
+      const request = new NextRequest(new URL('http://localhost/test'))
       
       await middleware(request)
       
@@ -137,7 +156,7 @@ describe('Middleware', () => {
 
     it('should include frame-ancestors none in CSP', async () => {
       const { NextRequest } = require('next/server')
-      const request = new NextRequest()
+      const request = new NextRequest(new URL('http://localhost/test'))
       
       await middleware(request)
       
@@ -146,7 +165,7 @@ describe('Middleware', () => {
 
     it('should include upgrade-insecure-requests in CSP', async () => {
       const { NextRequest } = require('next/server')
-      const request = new NextRequest()
+      const request = new NextRequest(new URL('http://localhost/test'))
       
       await middleware(request)
       
@@ -157,7 +176,7 @@ describe('Middleware', () => {
   describe('Nonce Generation', () => {
     it('should set x-nonce header', async () => {
       const { NextRequest } = require('next/server')
-      const request = new NextRequest()
+      const request = new NextRequest(new URL('http://localhost/test'))
       
       await middleware(request)
       
@@ -167,7 +186,7 @@ describe('Middleware', () => {
 
     it('should generate valid base64 nonce', async () => {
       const { NextRequest } = require('next/server')
-      const request = new NextRequest()
+      const request = new NextRequest(new URL('http://localhost/test'))
       
       await middleware(request)
       
@@ -177,7 +196,7 @@ describe('Middleware', () => {
 
     it('should use same nonce in CSP and x-nonce header', async () => {
       const { NextRequest } = require('next/server')
-      const request = new NextRequest()
+      const request = new NextRequest(new URL('http://localhost/test'))
       
       await middleware(request)
       
@@ -205,7 +224,7 @@ describe('Middleware', () => {
   describe('Security Headers', () => {
     it('should set Strict-Transport-Security header', async () => {
       const { NextRequest } = require('next/server')
-      const request = new NextRequest()
+      const request = new NextRequest(new URL('http://localhost/test'))
       
       await middleware(request)
       
@@ -217,7 +236,7 @@ describe('Middleware', () => {
 
     it('should set X-Frame-Options to DENY', async () => {
       const { NextRequest } = require('next/server')
-      const request = new NextRequest()
+      const request = new NextRequest(new URL('http://localhost/test'))
       
       await middleware(request)
       
@@ -226,7 +245,7 @@ describe('Middleware', () => {
 
     it('should set X-Content-Type-Options to nosniff', async () => {
       const { NextRequest } = require('next/server')
-      const request = new NextRequest()
+      const request = new NextRequest(new URL('http://localhost/test'))
       
       await middleware(request)
       
@@ -235,7 +254,7 @@ describe('Middleware', () => {
 
     it('should set X-XSS-Protection header', async () => {
       const { NextRequest } = require('next/server')
-      const request = new NextRequest()
+      const request = new NextRequest(new URL('http://localhost/test'))
       
       await middleware(request)
       
@@ -244,7 +263,7 @@ describe('Middleware', () => {
 
     it('should set Referrer-Policy header', async () => {
       const { NextRequest } = require('next/server')
-      const request = new NextRequest()
+      const request = new NextRequest(new URL('http://localhost/test'))
       
       await middleware(request)
       
@@ -253,7 +272,7 @@ describe('Middleware', () => {
 
     it('should set Permissions-Policy header', async () => {
       const { NextRequest } = require('next/server')
-      const request = new NextRequest()
+      const request = new NextRequest(new URL('http://localhost/test'))
       
       await middleware(request)
       
@@ -286,7 +305,7 @@ describe('Middleware', () => {
       })
       
       const { NextRequest } = require('next/server')
-      const request = new NextRequest()
+      const request = new NextRequest(new URL('http://localhost/test'))
       
       await middleware(request)
       
@@ -302,7 +321,7 @@ describe('Middleware', () => {
       })
       
       const { NextRequest } = require('next/server')
-      const request = new NextRequest()
+      const request = new NextRequest(new URL('http://localhost/test'))
       
       await middleware(request)
       
@@ -318,7 +337,7 @@ describe('Middleware', () => {
       })
       
       const { NextRequest } = require('next/server')
-      const request = new NextRequest()
+      const request = new NextRequest(new URL('http://localhost/test'))
       
       await middleware(request)
       
@@ -333,7 +352,7 @@ describe('Middleware', () => {
       })
       
       const { NextRequest } = require('next/server')
-      const request = new NextRequest()
+      const request = new NextRequest(new URL('http://localhost/test'))
       
       await middleware(request)
       
@@ -344,7 +363,7 @@ describe('Middleware', () => {
   describe('Integration Tests', () => {
     it('should set all required security headers', async () => {
       const { NextRequest } = require('next/server')
-      const request = new NextRequest()
+      const request = new NextRequest(new URL('http://localhost/test'))
       
       await middleware(request)
       
@@ -369,7 +388,7 @@ describe('Middleware', () => {
       
       for (let i = 0; i < 10; i++) {
         mockHeaders = {}
-        const request = new NextRequest()
+        const request = new NextRequest(new URL('http://localhost/test'))
         await middleware(request)
         
         expect(mockHeaders['Content-Security-Policy']).toBeDefined()
@@ -385,7 +404,7 @@ describe('Middleware', () => {
       
       for (let i = 0; i < 5; i++) {
         mockHeaders = {}
-        const request = new NextRequest()
+        const request = new NextRequest(new URL('http://localhost/test'))
         await middleware(request)
         cspHeaders.push(mockHeaders['Content-Security-Policy'])
       }
@@ -402,7 +421,7 @@ describe('Middleware', () => {
   describe('Header Value Validation', () => {
     it('should have valid HSTS max-age', async () => {
       const { NextRequest } = require('next/server')
-      const request = new NextRequest()
+      const request = new NextRequest(new URL('http://localhost/test'))
       
       await middleware(request)
       
@@ -415,7 +434,7 @@ describe('Middleware', () => {
 
     it('should have properly formatted Permissions-Policy', async () => {
       const { NextRequest } = require('next/server')
-      const request = new NextRequest()
+      const request = new NextRequest(new URL('http://localhost/test'))
       
       await middleware(request)
       
@@ -431,7 +450,7 @@ describe('Middleware', () => {
 
     it('should have CSP with semicolon-separated directives', async () => {
       const { NextRequest } = require('next/server')
-      const request = new NextRequest()
+      const request = new NextRequest(new URL('http://localhost/test'))
       
       await middleware(request)
       

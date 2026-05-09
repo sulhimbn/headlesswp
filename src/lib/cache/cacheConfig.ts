@@ -108,6 +108,24 @@ export const CACHE_CONFIG = {
    * - sitemap.xml generation
    */
   SITEMAP: CACHE_TIMES.SITEMAP,
+
+  /**
+   * Sanitize HTML cache TTL - 1 hour.
+   * 
+   * Sanitized HTML output is cached to improve performance.
+   * Used for:
+   * - HTML sanitization results
+   */
+  SANITIZE_HTML: CACHE_TIMES.LONG,
+
+  /**
+   * Summary cache TTL - 7 days.
+   * 
+   * AI-generated summaries are cached for longer periods.
+   * Used for:
+   * - Post summaries
+   */
+  SUMMARY: 7 * CACHE_TIMES.DAY,
 } as const;
 
 /**

@@ -1,4 +1,5 @@
 import DOMPurify from 'isomorphic-dompurify'
+import { CACHE_TTL } from '@/lib/cache'
 
 export type SanitizeConfig = 'excerpt' | 'full'
 
@@ -18,7 +19,6 @@ const SANITIZE_CONFIGS: Record<SanitizeConfig, { ALLOWED_TAGS: string[]; ALLOWED
 }
 
 const CACHE_MAX_SIZE = 500;
-const CACHE_TTL = 60 * 60 * 1000;
 
 interface CacheEntry {
   result: string;
@@ -32,7 +32,7 @@ export function sanitizeHTML(html: string, config: SanitizeConfig = 'full'): str
   
   const cached = sanitizeCache.get(cacheKey)
   
-  if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+  if (cached && Date.now() - cached.timestamp < CACHE_TTL.SANITIZE_HTML) {
     return cached.result;
   }
   

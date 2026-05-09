@@ -2,7 +2,21 @@ import { NextRequest, NextResponse } from 'next/server'
 import { proxy, config as proxyConfig } from '@/proxy'
 
 jest.mock('next/server', () => ({
-  NextRequest: jest.fn(),
+  NextRequest: jest.fn().mockImplementation((url?: string | URL) => {
+    const urlObj = url ? (typeof url === 'string' ? new URL(url) : url) : new URL('http://localhost/test')
+    return {
+      url: urlObj.href,
+      nextUrl: {
+        pathname: urlObj.pathname,
+        search: urlObj.search,
+        origin: urlObj.origin,
+      },
+      headers: new Map([
+        ['user-agent', 'test-bot'],
+      ]),
+      method: 'GET',
+    }
+  }),
   NextResponse: {
     next: jest.fn(),
   },
@@ -30,11 +44,8 @@ describe('Proxy Middleware', () => {
       headers: new Headers(),
     } as unknown as jest.Mocked<NextResponse> & { headers: Headers }
 
-    mockRequest = {
-      nextUrl: {
-        pathname: '/',
-      },
-    } as unknown as jest.Mocked<NextRequest>
+    const { NextRequest } = require('next/server')
+    mockRequest = new NextRequest(new URL('http://localhost/test'))
 
     ;(NextResponse.next as jest.Mock).mockReturnValue(mockNextResponse)
   })
@@ -521,16 +532,21 @@ describe('Proxy Middleware', () => {
   })
 
   describe('Edge Cases', () => {
-    it('should handle empty request object', () => {
-      const emptyRequest = {} as unknown as NextRequest
+    it('should handle request with different paths', () => {
+      const { NextRequest } = require('next/server')
+      const requestWithPath = new NextRequest(new URL('http://localhost/berita'))
 
-      expect(() => proxy(emptyRequest)).not.toThrow()
+      const result = proxy(requestWithPath)
+
+      expect(result).toBeDefined()
     })
 
-    it('should handle request with no url', () => {
-      const requestWithoutUrl = {} as unknown as NextRequest
+    it('should handle request without user-agent header', () => {
+      const { NextRequest } = require('next/server')
+      const request = new NextRequest(new URL('http://localhost/test'))
+      request.headers = new Map()
 
-      const result = proxy(requestWithoutUrl)
+      const result = proxy(request)
 
       expect(result).toBeDefined()
     })

@@ -1,4 +1,4 @@
-import { cacheManager } from '@/lib/cache';
+import { cacheManager, CACHE_TTL } from '@/lib/cache';
 import { logger } from '@/lib/utils/logger';
 import { stripHtml } from '@/lib/utils/stripHtml';
 
@@ -21,7 +21,6 @@ export interface SummarizationResult {
 }
 
 const DEFAULT_SUMMARY_LENGTH = 150;
-const CACHE_TTL_SUMMARY = 7 * 24 * 60 * 60 * 1000;
 
 function getConfig(): SummarizationConfig {
   return {
@@ -197,7 +196,7 @@ export async function summarizePost(
   try {
     const summary = await generateSummary(text, config);
     
-    cacheManager.set(cacheKey, summary, CACHE_TTL_SUMMARY);
+    cacheManager.set(cacheKey, summary, CACHE_TTL.SUMMARY);
     
     logger.info('Summary generated', { postId, length: summary.length, module: 'summarizer' });
     
