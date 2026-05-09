@@ -216,43 +216,43 @@ async function fetchAndValidateSinglePost(options: FetchAndValidateSinglePostOpt
   return await enrichPostWithDetails(validation.data);
 }
 
-export const enhancedPostService: IPostService = {
-  getLatestPosts: async (): Promise<PostWithMediaUrl[]> => {
+export class EnhancedPostService implements IPostService {
+  async getLatestPosts(): Promise<PostWithMediaUrl[]> {
     return fetchAndValidatePosts({
       apiCall: () => standardizedAPI.getAllPosts({ per_page: PAGINATION_LIMITS.LATEST_POSTS }),
       operationName: 'fetch latest posts',
       fallbackKey: 'LATEST'
     });
-  },
+  }
 
-  getCategoryPosts: async (): Promise<PostWithMediaUrl[]> => {
+  async getCategoryPosts(): Promise<PostWithMediaUrl[]> {
     return fetchAndValidatePosts({
       apiCall: () => standardizedAPI.getAllPosts({ per_page: PAGINATION_LIMITS.CATEGORY_POSTS }),
       operationName: 'fetch category posts',
       fallbackKey: 'CATEGORY'
     });
-  },
+  }
 
-  getAllPosts: async (): Promise<PostWithMediaUrl[]> => {
+  async getAllPosts(): Promise<PostWithMediaUrl[]> {
     return fetchAndValidatePosts({
       apiCall: () => standardizedAPI.getAllPosts({ per_page: PAGINATION_LIMITS.ALL_POSTS }),
       operationName: 'fetch all posts',
       returnEmptyOnError: true
     });
-  },
+  }
 
-  getPaginatedPosts: async (page: number = 1, perPage: number = 10): Promise<PaginatedPostsResult> => {
+  async getPaginatedPosts(page: number = 1, perPage: number = 10): Promise<PaginatedPostsResult> {
     const result = await standardizedAPI.getAllPosts({ page, per_page: perPage }) as { data?: WordPressPost[]; pagination?: { total?: number; totalPages?: number } };
 
     if (!result || (result as { error?: unknown }).error) {
-      logger.warn(`Failed to fetch paginated posts`, undefined, { module: 'enhancedPostService' });
+      logger.warn(`Failed to fetch paginated posts`, undefined, { module: 'EnhancedPostService' });
       return { posts: [], totalPosts: 0, totalPages: 0 };
     }
 
     const validation = dataValidator.validatePosts((result as { data: WordPressPost[] }).data);
     
     if (!isValidationResultValid(validation)) {
-      logger.error('Invalid paginated posts data', undefined, { module: 'enhancedPostService', errors: validation.errors });
+      logger.error('Invalid paginated posts data', undefined, { module: 'EnhancedPostService', errors: validation.errors });
       return { posts: [], totalPosts: 0, totalPages: 0 };
     }
 
@@ -263,35 +263,35 @@ export const enhancedPostService: IPostService = {
       totalPosts: result.pagination?.total ?? 0,
       totalPages: result.pagination?.totalPages ?? 0
     };
-  },
+  }
 
-  getPostBySlug: async (slug: string): Promise<PostWithDetails | null> => {
+  async getPostBySlug(slug: string): Promise<PostWithDetails | null> {
     return fetchAndValidateSinglePost({
       apiCall: () => standardizedAPI.getPostBySlug(slug),
       operationName: 'fetch post by slug',
       identifier: slug
     });
-  },
+  }
 
-  getPostById: async (id: number): Promise<PostWithDetails | null> => {
+  async getPostById(id: number): Promise<PostWithDetails | null> {
     return fetchAndValidateSinglePost({
       apiCall: () => standardizedAPI.getPostById(id),
       operationName: 'fetch post by id',
       identifier: id
     });
-  },
+  }
 
-  getCategories: async (): Promise<WordPressCategory[]> => {
+  async getCategories(): Promise<WordPressCategory[]> {
     const map = await getCategoriesMap();
     return Array.from(map.values());
-  },
+  }
 
-  getTags: async (): Promise<WordPressTag[]> => {
+  async getTags(): Promise<WordPressTag[]> {
     const map = await getTagsMap();
     return Array.from(map.values());
-  },
+  }
 
-  searchPosts: async (query: string, page: number = 1, perPage: number = PAGINATION_LIMITS.SEARCH_POSTS): Promise<PaginatedPostsResult> => {
+  async searchPosts(query: string, page: number = 1, perPage: number = PAGINATION_LIMITS.SEARCH_POSTS): Promise<PaginatedPostsResult> {
     const { posts, totalPages } = await wordpressAPI.search(query, page, perPage);
     
     const postsWithMedia = await enrichPostsWithMediaUrls(posts);
@@ -301,9 +301,9 @@ export const enhancedPostService: IPostService = {
       totalPosts: posts.length,
       totalPages
     };
-  },
+  }
 
-  getRelatedPosts: async (categoryIds: number[], excludeId: number): Promise<PostWithMediaUrl[]> => {
+  async getRelatedPosts(categoryIds: number[], excludeId: number): Promise<PostWithMediaUrl[]> {
     if (categoryIds.length === 0) {
       return [];
     }
@@ -324,9 +324,9 @@ export const enhancedPostService: IPostService = {
       .slice(0, PAGINATION_LIMITS.RELATED_POSTS);
 
     return enrichPostsWithMediaUrls(filteredPosts);
-  },
+  }
 
-  getPostsByCategory: async (categoryId: number, page: number = 1, perPage: number = 12): Promise<PaginatedPostsResult> => {
+  async getPostsByCategory(categoryId: number, page: number = 1, perPage: number = 12): Promise<PaginatedPostsResult> {
     const result = await standardizedAPI.getAllPosts({ 
       page,
       per_page: perPage,
@@ -340,7 +340,7 @@ export const enhancedPostService: IPostService = {
     const validation = dataValidator.validatePosts(result.data);
     
     if (!isValidationResultValid(validation)) {
-      logger.error('Invalid category posts data', undefined, { module: 'enhancedPostService', errors: validation.errors });
+      logger.error('Invalid category posts data', undefined, { module: 'EnhancedPostService', errors: validation.errors });
       return { posts: [], totalPosts: 0, totalPages: 0 };
     }
 
@@ -351,9 +351,9 @@ export const enhancedPostService: IPostService = {
       totalPosts: result.pagination?.total ?? 0,
       totalPages: result.pagination?.totalPages ?? 0
     };
-  },
+  }
 
-  getPostsByAuthor: async (authorId: number, page: number = 1, perPage: number = 12): Promise<PaginatedPostsResult> => {
+  async getPostsByAuthor(authorId: number, page: number = 1, perPage: number = 12): Promise<PaginatedPostsResult> {
     const result = await standardizedAPI.getAllPosts({ 
       page,
       per_page: perPage,
@@ -367,7 +367,7 @@ export const enhancedPostService: IPostService = {
     const validation = dataValidator.validatePosts(result.data);
     
     if (!isValidationResultValid(validation)) {
-      logger.error('Invalid author posts data', undefined, { module: 'enhancedPostService', errors: validation.errors });
+      logger.error('Invalid author posts data', undefined, { module: 'EnhancedPostService', errors: validation.errors });
       return { posts: [], totalPosts: 0, totalPages: 0 };
     }
 
@@ -379,6 +379,6 @@ export const enhancedPostService: IPostService = {
       totalPages: result.pagination?.totalPages ?? 0
     };
   }
-};
+}
 
-export default enhancedPostService;
+export const enhancedPostService: IPostService = new EnhancedPostService();
