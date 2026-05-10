@@ -101,6 +101,24 @@ export const wordpressAPI: IWordPressAPI = {
     return url ?? null;
   },
 
+  // New method: Get media with dimensions for responsive images
+  getMediaMetadata: async (mediaId: number, signal?: AbortSignal): Promise<{ url: string | null; width: number; height: number } | null> => {
+    if (mediaId === 0) return null;
+
+    try {
+      const response = await apiClient.get(getApiUrl(`/wp/v2/media/${mediaId}`), { signal });
+      const data = response.data;
+      return {
+        url: data.source_url || null,
+        width: data.media_details?.width || data.width || 0,
+        height: data.media_details?.height || data.height || 0,
+      };
+    } catch (error) {
+      logger.warn(`Failed to fetch media metadata for ID ${mediaId}`, error, { module: 'wordpressAPI' });
+      return null;
+    }
+  },
+
   getMediaUrlsBatch: async (mediaIds: number[], signal?: AbortSignal): Promise<Map<number, string | null>> => {
     return createBatchOperation<{ id: number; source_url: string }>({
       ids: mediaIds,

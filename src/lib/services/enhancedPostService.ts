@@ -104,13 +104,28 @@ function validatePostRelationships(
 }
 
 async function enrichPostWithDetails(post: WordPressPost): Promise<PostWithDetails> {
-  let mediaUrl: string | null;
+  let mediaUrl: string | null = null;
+  let mediaDimensions: { width: number; height: number } | null = undefined;
 
+  // Try getMediaMetadata first for full info with dimensions  
   try {
-    mediaUrl = await wordpressAPI.getMediaUrl(post.featured_media);
+    const metadata = await wordpressAPI.getMediaMetadata(post.featured_media);
+    if (metadata?.url) {
+      mediaUrl = metadata.url;
+      if (metadata.width > 0 && metadata.height > 0) {
+        mediaDimensions = { width: metadata.width, height: metadata.height };
+      }
+    } else if (!metadata) {
+      // getMediaMetadata not available/returns falsy, fallback to getMediaUrl
+      mediaUrl = await wordpressAPI.getMediaUrl(post.featured_media);
+    }
   } catch (error) {
-    logger.warn(`Failed to fetch media for post ${post.id}, using fallback`, error, { module: 'enhancedPostService' });
-    mediaUrl = null;
+    // Fallback to getMediaUrl if getMediaMetadata fails completely
+    try {
+      mediaUrl = await wordpressAPI.getMediaUrl(post.featured_media);
+    } catch (e) {
+      logger.warn(`Failed to fetch media for post ${post.id}, using fallback`, e, { module: 'enhancedPostService' });
+    }
   }
 
   const [categoriesMap, tagsMap] = await Promise.all([
@@ -147,14 +162,15 @@ async function enrichPostWithDetails(post: WordPressPost): Promise<PostWithDetai
   return {
     ...post,
     mediaUrl,
+    mediaDimensions,
     categoriesDetails,
     tagsDetails,
     authorDetails
   };
 }
 
-function createFallbackPostsWithMediaUrls(fallbacks: Array<{ id: string; title: string }>): PostWithMediaUrl[] {
-  return fallbacks.map(({ id, title }) => ({ ...createFallbackPost(id, title), mediaUrl: null }));
+function createFallbackPostsWithMediaUrls(fallbacks: Array<{ id: string; title: string }>): any {
+  return fallbacks.map(({ id, title }) => ({ ...createFallbackPost(id, title), mediaUrl: null, mediaDimensions: null }));
 }
 
 interface FetchAndValidatePostsOptions {

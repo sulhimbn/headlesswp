@@ -10,19 +10,26 @@ import { createArePropsEqual } from '@/lib/utils/memoization'
 interface PostCardProps {
   post: WordPressPost
   mediaUrl?: string | null
+  mediaDimensions?: { width: number; height: number } | null
   priority?: boolean
 }
 
 const POSTCARD_PROPS: (keyof PostCardProps)[] = [
   'post',
   'mediaUrl',
+  'mediaDimensions',
   'priority',
 ];
 
 const arePropsEqual = createArePropsEqual<PostCardProps>(POSTCARD_PROPS);
 
-function PostCardComponent({ post, mediaUrl, priority = false }: PostCardProps) {
+function PostCardComponent({ post, mediaUrl, mediaDimensions, priority = false }: PostCardProps) {
   const postTitleId = `post-title-${post.id}`
+  
+  // Generate responsive sizes based on available dimensions
+  const sizes = mediaDimensions?.width 
+    ? `(max-width: 768px) 100vw, (max-width: 1200px) 50vw, ${Math.min(mediaDimensions.width, 400)}px`
+    : "(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw";
 
   return (
     <article aria-labelledby={postTitleId} className="bg-[hsl(var(--color-surface))] rounded-[var(--radius-lg)] shadow-[var(--shadow-md)] overflow-hidden hover:shadow-[var(--shadow-lg)] transition-all duration-[var(--transition-normal)] focus-within:ring-2 focus-within:ring-[hsl(var(--color-primary))] focus-within:ring-offset-2">
@@ -33,7 +40,7 @@ function PostCardComponent({ post, mediaUrl, priority = false }: PostCardProps) 
             alt={UI_TEXT.postCard.altText(post.title.rendered)}
             fill
             className="object-cover"
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            sizes={sizes}
             priority={priority}
             placeholder={priority ? "blur" : "empty"}
             {...(priority ? {
