@@ -38,19 +38,11 @@ export default class ErrorBoundary extends Component<Props, State> {
       }
 
       return (
-        <div style={{
-          padding: '2rem',
-          textAlign: 'center',
-          minHeight: '400px',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center'
-        }}>
-          <h2 style={{ marginBottom: '1rem', color: '#dc2626' }}>
+        <div className="p-[--spacing-xl] text-center min-h-[400px] flex flex-col items-center justify-center">
+          <h2 className="mb-[--spacing-md] text-[hsl(var(--color-error))]">
             Terjadi kesalahan
           </h2>
-          <p style={{ color: '#6b7280', marginBottom: '1.5rem' }}>
+          <p className="text-[hsl(var(--color-text-muted))] mb-[--spacing-lg]">
             Kami sedang memperbaiki masalah ini. Silakan coba lagi nanti.
           </p>
           <button
@@ -58,14 +50,7 @@ export default class ErrorBoundary extends Component<Props, State> {
               this.setState({ hasError: false, error: null })
               Sentry.captureMessage('User recovered from error')
             }}
-            style={{
-              padding: '0.75rem 1.5rem',
-              backgroundColor: '#2563eb',
-              color: 'white',
-              border: 'none',
-              borderRadius: '0.375rem',
-              cursor: 'pointer'
-            }}
+            className="px-6 py-3 bg-[hsl(var(--color-primary))] text-white border-none rounded-[var(--radius-md)] cursor-pointer hover:bg-[hsl(var(--color-primary-dark))] transition-colors duration-[var(--transition-normal)]"
           >
             Coba Lagi
           </button>
