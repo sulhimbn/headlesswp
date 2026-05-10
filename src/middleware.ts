@@ -51,11 +51,10 @@ function setBotOptimizationHeaders(response: NextResponse, isBot: boolean): void
 
 function setRateLimitHeaders(response: NextResponse): void {
   const { MAX_REQUESTS, WINDOW_SECONDS } = MIDDLEWARE_RATE_LIMIT
-  const windowMs = WINDOW_SECONDS * 1000
   response.headers.set('X-RateLimit-Policy', `${MAX_REQUESTS};w=${WINDOW_SECONDS}`)
   response.headers.set('X-RateLimit-Limit', MAX_REQUESTS.toString())
   response.headers.set('X-RateLimit-Remaining', (MAX_REQUESTS - 1).toString())
-  response.headers.set('X-RateLimit-Reset', Math.ceil(Date.now() / windowMs).toString())
+  response.headers.set('X-RateLimit-Reset', Math.ceil(Date.now() / (WINDOW_SECONDS * 1000)).toString())
 }
 
 function setPrefetchHints(response: NextResponse): void {
