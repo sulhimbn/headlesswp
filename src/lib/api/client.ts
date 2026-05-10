@@ -20,10 +20,15 @@ import { RateLimiterManager } from './rateLimiter'
 import { createApiError, ApiError, shouldTriggerCircuitBreaker } from './errors'
 import { HealthChecker, HealthCheckResult } from './healthCheck'
 import { logger } from '@/lib/utils/logger'
+import { initOpenTelemetry, createWordPressApiSpan, getTracer, Span } from './opentelemetry'
 
 function getApiUrl(path: string): string {
   return `${WORDPRESS_SITE_URL}/index.php?rest_route=${path}`
 }
+
+// Initialize OpenTelemetry
+const otelEnabled = process.env.OTEL_ENABLED !== 'false' && process.env.NODE_ENV !== 'test'
+const tracer = otelEnabled ? initOpenTelemetry() : null
 
 const circuitBreaker = new CircuitBreaker({
   failureThreshold: CIRCUIT_BREAKER_FAILURE_THRESHOLD,
@@ -50,6 +55,14 @@ const rateLimiterManager = new RateLimiterManager({
 // Placeholder for health checker functions - will be set after apiClient is created
 let checkApiHealthFn: (() => Promise<HealthCheckResult | null>) | null = null;
 
+// Track active spans for requests
+interface SpanTracker {
+  span: Span
+  startTime: number
+}
+
+const activeSpans = new Map<string, SpanTracker>()
+
 const createApiClient = (): AxiosInstance => {
   const api = axios.create({
     baseURL: WORDPRESS_API_BASE_URL,
@@ -66,9 +79,55 @@ const createApiClient = (): AxiosInstance => {
         config.signal = controller.signal
       }
 
+      // Inject trace context into request headers
+      if (tracer) {
+        const headers: Record<string, string> = {}
+        tracer.injectContext(headers)
+        if (headers.traceparent) {
+          config.headers.set('traceparent', headers.traceparent)
+        }
+        if (headers.tracestate) {
+          config.headers.set('tracestate', headers.tracestate)
+        }
+        
+        // Extract incoming trace context if present
+        const incomingHeaders: Record<string, string> = {}
+        const traceparent = config.headers.get('traceparent') as string | null
+        const tracestate = config.headers.get('tracestate') as string | null
+        if (traceparent) incomingHeaders.traceparent = traceparent
+        if (tracestate) incomingHeaders.tracestate = tracestate
+        const parentContext = tracer.extractContext(incomingHeaders)
+        
+        // Start custom span for WordPress API call
+        const url = config.url || ''
+        const method = config.method?.toUpperCase() || 'GET'
+        const spanResult = createWordPressApiSpan(method, url)
+        
+        if (spanResult) {
+          if (parentContext) {
+            tracer.setAttribute(spanResult.span, 'trace.parent_id', parentContext.spanId)
+          }
+          activeSpans.set(config.url || '', { 
+            span: spanResult.span, 
+            startTime: Date.now() 
+          })
+        }
+      }
+
       try {
         await rateLimiterManager.checkLimit()
       } catch (error) {
+        // End span with error if rate limit rejected
+        if (tracer) {
+          const tracker = activeSpans.get(config.url || '')
+          if (tracker) {
+            tracer.endSpan(tracker.span, 'error', { 
+              'error.type': 'RATE_LIMIT_ERROR',
+              'error.message': 'Rate limit exceeded'
+            })
+            activeSpans.delete(config.url || '')
+          }
+        }
         return Promise.reject(error)
       }
 
@@ -79,6 +138,19 @@ const createApiClient = (): AxiosInstance => {
         const healthResult = await checkApiHealthFn?.()
         if (healthResult && !healthResult.healthy) {
           logger.warn('Health check failed, preventing request', undefined, { module: 'APIClient' })
+          
+          // End span with error
+          if (tracer) {
+            const tracker = activeSpans.get(config.url || '')
+            if (tracker) {
+              tracer.endSpan(tracker.span, 'error', { 
+                'error.type': 'CIRCUIT_BREAKER_ERROR',
+                'error.message': 'Health check failed, circuit breaker open'
+              })
+              activeSpans.delete(config.url || '')
+            }
+          }
+          
           const healthError = createApiError(
             new Error(`Health check failed: ${healthResult.message}. Service still recovering.`),
             config.url
@@ -98,12 +170,38 @@ const createApiClient = (): AxiosInstance => {
 
   api.interceptors.response.use(
     (response) => {
+      // End span successfully
+      if (tracer) {
+        const tracker = activeSpans.get(response.config.url || '')
+        if (tracker) {
+          const duration = Date.now() - tracker.startTime
+          tracer.endSpan(tracker.span, 'ok', { 
+            'http.status_code': response.status,
+            'http.response_time': duration
+          })
+          activeSpans.delete(response.config.url || '')
+        }
+      }
+      
       circuitBreaker.recordSuccess()
       return response
     },
     async (error: AxiosError) => {
       const endpoint = error.config?.url
       const apiError = createApiError(error, endpoint)
+
+      // End span with error
+      if (tracer && endpoint) {
+        const tracker = activeSpans.get(endpoint)
+        if (tracker) {
+          tracer.endSpan(tracker.span, 'error', { 
+            'http.status_code': error.response?.status || 0,
+            'error.type': apiError.type,
+            'error.message': apiError.message
+          })
+          activeSpans.delete(endpoint)
+        }
+      }
 
       if (shouldTriggerCircuitBreaker(apiError)) {
         circuitBreaker.recordFailure()
@@ -138,6 +236,23 @@ const createApiClient = (): AxiosInstance => {
           undefined,
           { module: 'APIClient' }
         )
+
+        // Record retry in telemetry using global tracer
+        if (tracer && endpoint) {
+          const tracker = activeSpans.get(endpoint)
+          if (tracker) {
+            tracer.addEvent(tracker.span, 'retry', {
+              'retry.attempt': config._retryCount,
+              'retry.max_retries': MAX_RETRIES,
+              'retry.delay': delay
+            })
+            // Reset start time for retry
+            const newTracker = activeSpans.get(endpoint)
+            if (newTracker) {
+              newTracker.startTime = Date.now()
+            }
+          }
+        }
 
         await new Promise(resolve => setTimeout(resolve, delay))
         return api(config)
