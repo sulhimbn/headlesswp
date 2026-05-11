@@ -8,6 +8,7 @@ import Icon from '@/components/ui/Icon'
 import ServiceStatus from '@/components/ui/ServiceStatus'
 import { UI_TEXT } from '@/lib/constants/uiText'
 import { useDarkMode } from '@/lib/hooks/useDarkMode'
+import { getRecentBookmarks } from '@/lib/utils/bookmarks'
 
 const SearchBar = dynamic(() => import('@/components/ui/SearchBar'), { ssr: false })
 
@@ -16,10 +17,12 @@ const NAVIGATION_ITEMS = [
   { href: '/berita', label: UI_TEXT.header.navigation.news },
 ] as const
 
-export default memo(function Header() {
+function HeaderComponent() {
   const router = useRouter()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isSearchOpen, setIsSearchOpen] = useState(false)
+  const [isBookmarksOpen, setIsBookmarksOpen] = useState(false)
+  const [recentBookmarks, setRecentBookmarks] = useState<{ postId: number; slug: string; title: string }[]>([])
   const { isDark, toggleDarkMode } = useDarkMode()
   const menuButtonRef = useRef<HTMLButtonElement>(null)
   const searchButtonRef = useRef<HTMLButtonElement>(null)
@@ -27,6 +30,7 @@ export default memo(function Header() {
   const firstMenuItemRef = useRef<HTMLAnchorElement>(null)
   const lastMenuItemRef = useRef<HTMLAnchorElement>(null)
   const menuRef = useRef<HTMLDivElement>(null)
+  const bookmarksDropdownRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (isMenuOpen) {
@@ -42,10 +46,34 @@ export default memo(function Header() {
     }
   }, [isMenuOpen])
 
+  useEffect(() => {
+    if (isBookmarksOpen) {
+      const bookmarks = getRecentBookmarks(5)
+      setRecentBookmarks(bookmarks)
+    }
+  }, [isBookmarksOpen])
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (bookmarksDropdownRef.current && !bookmarksDropdownRef.current.contains(event.target as Node)) {
+        setIsBookmarksOpen(false)
+      }
+    }
+
+    if (isBookmarksOpen) {
+      document.addEventListener('mousedown', handleClickOutside)
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [isBookmarksOpen])
+
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Escape') {
       setIsMenuOpen(false)
       setIsSearchOpen(false)
+      setIsBookmarksOpen(false)
     }
     if (e.key === 'Tab' && !e.shiftKey && document.activeElement === lastMenuItemRef.current) {
       e.preventDefault()
@@ -74,12 +102,20 @@ export default memo(function Header() {
   const toggleSearch = useCallback(() => {
     setIsSearchOpen(!isSearchOpen)
     setIsMenuOpen(false)
+    setIsBookmarksOpen(false)
   }, [isSearchOpen])
 
   const toggleMenu = useCallback(() => {
     setIsMenuOpen(!isMenuOpen)
     setIsSearchOpen(false)
+    setIsBookmarksOpen(false)
   }, [isMenuOpen])
+
+  const toggleBookmarks = useCallback(() => {
+    setIsBookmarksOpen(!isBookmarksOpen)
+    setIsSearchOpen(false)
+    setIsMenuOpen(false)
+  }, [isBookmarksOpen])
 
   const closeMenu = useCallback(() => {
     setIsMenuOpen(false)
@@ -110,6 +146,56 @@ export default memo(function Header() {
               <span className="sr-only">{UI_TEXT.header.openSearch}</span>
               <Icon type="search" className="h-5 w-5" />
             </button>
+            <div ref={bookmarksDropdownRef} className="relative">
+              <button
+                type="button"
+                className="inline-flex items-center justify-center p-2 rounded-[var(--radius-md)] text-[hsl(var(--color-text-primary))] hover:text-[hsl(var(--color-primary))] hover:bg-[hsl(var(--color-secondary-dark))] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--color-primary))] focus:ring-offset-2"
+                onClick={toggleBookmarks}
+                aria-expanded={isBookmarksOpen}
+                aria-haspopup="true"
+                aria-label={UI_TEXT.header.bookmarks.button}
+              >
+                <Icon type="bookmarkOutline" className="h-5 w-5" />
+              </button>
+              {isBookmarksOpen && (
+                <div className="absolute right-0 mt-2 w-72 bg-[hsl(var(--color-surface))] rounded-[var(--radius-lg)] shadow-[var(--shadow-lg)] border border-[hsl(var(--color-border))] z-50">
+                  <div className="p-3 border-b border-[hsl(var(--color-border))]">
+                    <h3 className="text-sm font-semibold text-[hsl(var(--color-text-primary))]">
+                      {UI_TEXT.header.bookmarks.recent}
+                    </h3>
+                  </div>
+                  {recentBookmarks.length > 0 ? (
+                    <div className="py-1 max-h-80 overflow-y-auto">
+                      {recentBookmarks.map((bookmark) => (
+                        <Link
+                          key={bookmark.postId}
+                          href={`/berita/${bookmark.slug}`}
+                          className="block px-4 py-2 text-sm text-[hsl(var(--color-text-primary))] hover:bg-[hsl(var(--color-secondary-dark))] truncate"
+                          onClick={() => setIsBookmarksOpen(false)}
+                        >
+                          {bookmark.title}
+                        </Link>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="px-4 py-4 text-sm text-[hsl(var(--color-text-muted))]">
+                      {UI_TEXT.bookmark.emptyDescription}
+                    </div>
+                  )}
+                  {recentBookmarks.length > 0 && (
+                    <div className="p-3 border-t border-[hsl(var(--color-border))]">
+                      <Link
+                        href="/bookmark"
+                        className="text-sm text-[hsl(var(--color-primary))] hover:text-[hsl(var(--color-primary-dark))] font-medium"
+                        onClick={() => setIsBookmarksOpen(false)}
+                      >
+                        {UI_TEXT.header.bookmarks.viewAll} →
+                      </Link>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
             <button
               type="button"
               className="inline-flex items-center justify-center p-2 rounded-[var(--radius-md)] text-[hsl(var(--color-text-primary))] hover:text-[hsl(var(--color-primary))] hover:bg-[hsl(var(--color-secondary-dark))] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--color-primary))] focus:ring-offset-2"
@@ -210,9 +296,18 @@ export default memo(function Header() {
                 {item.label}
               </Link>
             ))}
+            <Link
+              href="/bookmark"
+              className="block px-4 py-3 min-h-[44px] flex items-center rounded-[var(--radius-md)] text-base font-medium text-[hsl(var(--color-text-primary))] hover:text-[hsl(var(--color-primary))] hover:bg-[hsl(var(--color-secondary-dark))] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--color-primary))] focus:ring-offset-2"
+              onClick={closeMenu}
+            >
+              {UI_TEXT.header.bookmarks.button}
+            </Link>
           </div>
         </div>
       )}
     </header>
   )
-})
+}
+
+export default memo(HeaderComponent)

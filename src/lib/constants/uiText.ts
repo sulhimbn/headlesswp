@@ -130,9 +130,23 @@ export const UI_TEXT = {
     navigation: {
       home: 'Beranda',
       news: 'Berita'
+    },
+    bookmarks: {
+      button: 'Buku markah',
+      recent: 'Artikel Terbaru',
+      viewAll: 'Lihat Semua'
     }
   },
   icon: {
     loading: 'Memuat'
+  },
+  bookmark: {
+    pageTitle: 'Artikel Tersimpan',
+    emptyTitle: 'Belum ada artikel tersimpan',
+    emptyDescription: 'Klik ikon markah pada artikel untuk menyimpannya.',
+    remove: 'Hapus dari markah',
+    save: 'Simpan ke markah',
+    recentBookmarks: 'Artikel Terbaru',
+    viewAll: 'Lihat Semua'
   }
 } as const
