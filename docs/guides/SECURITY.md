@@ -41,3 +41,41 @@ This project implements several security measures:
 - Enable security headers in production
 - Regular security audits
 - Follow principle of least privilege
+
+## Security.txt Endpoint
+
+This project implements RFC 9116 security.txt specification to provide security researchers with a standardized way to contact the security team.
+
+### Endpoints
+
+- `/.well-known/security.txt` - Main security.txt file (preferred location per RFC 9116)
+- `/security.txt` - Redirects to `/.well-known/security.txt`
+
+### Configuration
+
+The following environment variables can be used to configure the security.txt endpoint:
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `SECURITY_TXT_CONTACT` | Contact email for security researchers | `security@mitrabantennews.com` |
+| `SECURITY_TXT_ENCRYPTION` | URL to public encryption key (PGP, etc.) | (none) |
+| `SECURITY_TXT_LANGUAGES` | Preferred languages (comma-separated) | `en` |
+| `SECURITY_TXT_POLICY` | URL to security policy | (none) |
+| `SECURITY_TXT_EXPIRES` | Expiration date (ISO 8601 format) | (none) |
+
+### Example
+
+```
+Contact: security@example.com
+Encryption: https://example.com/pgp-key.txt
+Preferred-Languages: en, id
+Policy: https://example.com/security-policy
+Expires: 2026-12-31T23:59:59Z
+```
+
+### Implementation
+
+- Endpoint is dynamic and not cached
+- Returns `Content-Type: text/plain`
+- Accessible at `/.well-known/security.txt` (RFC 9116 recommended path)
+- `/security.txt` redirects to the canonical location
