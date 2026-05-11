@@ -25,8 +25,16 @@ export async function GET(request: Request) {
     const result = await standardizedAPI.getAllPosts(queryParams)
 
     if (!isApiResultSuccessful(result) || !result.data) {
-      logger.warn('Failed to fetch posts from API', undefined, { module: 'api/posts' })
-      return NextResponse.json([], { status: 200 })
+      const errorDetail = result.error?.message || 'Failed to fetch posts from API'
+      logger.warn('Failed to fetch posts from API', undefined, { 
+        module: 'api/posts',
+        error: errorDetail,
+        statusCode: result.error?.statusCode
+      })
+      return NextResponse.json(
+        { error: errorDetail, statusCode: result.error?.statusCode || 500 },
+        { status: result.error?.statusCode || 500 }
+      )
     }
 
     const posts = result.data.map(post => ({
@@ -44,7 +52,14 @@ export async function GET(request: Request) {
     response.headers.set('Cache-Control', CACHE_CONTROL)
     return response
   } catch (error) {
-    logger.error('Error in /api/posts', error, { module: 'api/posts' })
-    return NextResponse.json([], { status: 200 })
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred'
+    logger.error('Error in /api/posts', error, { 
+      module: 'api/posts',
+      error: errorMessage 
+    })
+    return NextResponse.json(
+      { error: errorMessage, statusCode: 500 },
+      { status: 500 }
+    )
   }
 }
