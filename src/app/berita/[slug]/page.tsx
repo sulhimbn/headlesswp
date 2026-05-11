@@ -19,6 +19,7 @@ import PersonalizedRecommendations from '@/components/post/PersonalizedRecommend
 import ReadingTracker from '@/components/post/ReadingTracker'
 import { calculateReadingTime } from '@/lib/utils/readingTime'
 import SocialShare from '@/components/ui/SocialShare'
+import BookmarkButton from '@/components/ui/BookmarkButton'
 import ReadingProgress from '@/components/ui/ReadingProgress'
 import TableOfContents from '@/components/ui/TableOfContents'
 import { extractHeadings, shouldShowToc, addIdsToHeadings } from '@/lib/utils/tableOfContents'
@@ -234,10 +235,17 @@ export default async function PostPage({ params }: { params: { slug: string } })
               {post.title.rendered}
             </h1>
 
-            <div className="mb-6">
+            <div className="mb-6 flex items-center gap-3">
               <SocialShare
                 title={stripHtml(post.title.rendered)}
                 url={`/berita/${post.slug}`}
+              />
+              <BookmarkButton
+                postId={post.id}
+                slug={post.slug}
+                title={post.title}
+                featured_media={post.featured_media}
+                categories={post.categories}
               />
             </div>
 

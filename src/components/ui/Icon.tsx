@@ -1,7 +1,7 @@
 import { memo } from 'react'
 import { UI_TEXT } from '@/lib/constants/uiText'
 
-export type IconType = 'facebook' | 'twitter' | 'instagram' | 'close' | 'menu' | 'search' | 'loading' | 'sun' | 'moon'
+export type IconType = 'facebook' | 'twitter' | 'instagram' | 'close' | 'menu' | 'search' | 'loading' | 'sun' | 'moon' | 'bookmark' | 'bookmarkFilled'
 
 export interface IconProps {
   type: IconType
@@ -66,6 +66,18 @@ function IconComponent({ type, className, 'aria-hidden': ariaHidden = true }: Ic
       return (
         <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden={shouldHideFromScreenReader}>
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+        </svg>
+      )
+    case 'bookmark':
+      return (
+        <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden={shouldHideFromScreenReader}>
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+        </svg>
+      )
+    case 'bookmarkFilled':
+      return (
+        <svg className={className} fill="currentColor" viewBox="0 0 24 24" aria-hidden={shouldHideFromScreenReader}>
+          <path d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
         </svg>
       )
     default:
