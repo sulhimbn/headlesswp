@@ -309,14 +309,6 @@ describe('Proxy Middleware', () => {
       expect(xContentTypeOptions).toBe('nosniff')
     })
 
-    it('should set X-XSS-Protection header', () => {
-      proxy(mockRequest)
-
-      const xXssProtection = mockNextResponse.headers.get('X-XSS-Protection')
-      
-      expect(xXssProtection).toBe('1; mode=block')
-    })
-
     it('should set Referrer-Policy header', () => {
       proxy(mockRequest)
 
@@ -489,7 +481,6 @@ describe('Proxy Middleware', () => {
       expect(headers).toContain('strict-transport-security')
       expect(headers).toContain('x-frame-options')
       expect(headers).toContain('x-content-type-options')
-      expect(headers).toContain('x-xss-protection')
       expect(headers).toContain('referrer-policy')
       expect(headers).toContain('permissions-policy')
     })

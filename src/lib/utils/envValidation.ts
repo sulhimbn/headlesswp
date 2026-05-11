@@ -14,17 +14,17 @@ export interface EnvVariable {
 const REQUIRED_ENV_VARS: EnvVariable[] = [
   {
     name: 'NEXT_PUBLIC_WORDPRESS_API_URL',
-    required: false,
+    required: true,
     pattern: /^https?:\/\/.+/,
   },
   {
     name: 'NEXT_PUBLIC_WORDPRESS_URL',
-    required: false,
+    required: true,
     pattern: /^https?:\/\/.+/,
   },
   {
     name: 'NEXT_PUBLIC_SITE_URL',
-    required: false,
+    required: true,
     pattern: /^https?:\/\/.+/,
   },
 ]
@@ -54,16 +54,24 @@ export function validateEnvironment(): EnvValidationResult {
     }
   }
 
-  if (!process.env.NEXT_PUBLIC_WORDPRESS_API_URL) {
-    warnings.push(
-      `NEXT_PUBLIC_WORDPRESS_API_URL not set, using default fallback`
-    )
-  }
-
   return {
     valid: errors.length === 0,
     errors,
     warnings,
+  }
+}
+
+export function assertEnvironment(): void {
+  const result = validateEnvironment()
+  if (!result.valid) {
+    throw new Error(
+      `Environment validation failed: ${result.errors.join(', ')}`
+    )
+  }
+  if (result.errors.length > 0) {
+    throw new Error(
+      `Required environment variables are missing: ${result.errors.join(', ')}`
+    )
   }
 }
 

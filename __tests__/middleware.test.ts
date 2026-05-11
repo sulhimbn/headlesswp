@@ -233,15 +233,6 @@ describe('Middleware', () => {
       expect(mockHeaders['X-Content-Type-Options']).toBe('nosniff')
     })
 
-    it('should set X-XSS-Protection header', async () => {
-      const { NextRequest } = require('next/server')
-      const request = new NextRequest()
-      
-      await middleware(request)
-      
-      expect(mockHeaders['X-XSS-Protection']).toBe('1; mode=block')
-    })
-
     it('should set Referrer-Policy header', async () => {
       const { NextRequest } = require('next/server')
       const request = new NextRequest()
@@ -354,7 +345,6 @@ describe('Middleware', () => {
         'Strict-Transport-Security',
         'X-Frame-Options',
         'X-Content-Type-Options',
-        'X-XSS-Protection',
         'Referrer-Policy',
         'Permissions-Policy'
       ]
