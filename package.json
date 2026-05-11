@@ -21,6 +21,12 @@
     "check": "npm run lint && npm run typecheck && npm test"
   },
   "dependencies": {
+    "@opentelemetry/api": "1.9.1",
+    "@opentelemetry/auto-instrumentations-node": "0.75.0",
+    "@opentelemetry/exporter-trace-otlp-http": "0.217.0",
+    "@opentelemetry/resources": "2.7.1",
+    "@opentelemetry/sdk-node": "0.217.0",
+    "@opentelemetry/semantic-conventions": "1.40.0",
     "@sentry/nextjs": "^10.40.0",
     "axios": "^1.13.5",
     "isomorphic-dompurify": "^2.36.0",
