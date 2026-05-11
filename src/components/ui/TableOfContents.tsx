@@ -1,4 +1,4 @@
-import { memo } from 'react'
+import { memo, useState, useEffect, useRef } from 'react'
 import { UI_TEXT } from '@/lib/constants/uiText'
 import type { TocHeading } from '@/lib/utils/tableOfContents'
 
@@ -8,7 +8,41 @@ interface TableOfContentsProps {
 }
 
 function TableOfContentsComponent({ headings, className = '' }: TableOfContentsProps) {
-  if (headings.length === 0) return null
+  const [activeId, setActiveId] = useState<string>('')
+  const observerRef = useRef<IntersectionObserver | null>(null)
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visibleEntries = entries.filter((entry) => entry.isIntersecting)
+        if (visibleEntries.length > 0) {
+          const topEntry = visibleEntries.reduce((prev, current) => {
+            return prev.boundingClientRect.top < current.boundingClientRect.top ? prev : current
+          })
+          setActiveId(topEntry.target.id)
+        }
+      },
+      {
+        rootMargin: '-80px 0px -70% 0px',
+        threshold: 0,
+      }
+    )
+
+    observerRef.current = observer
+
+    headings.forEach((heading) => {
+      const element = document.getElementById(heading.id)
+      if (element) {
+        observer.observe(element)
+      }
+    })
+
+    return () => {
+      if (observerRef.current) {
+        observerRef.current.disconnect()
+      }
+    }
+  }, [headings])
 
   const handleClick = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
     e.preventDefault()
@@ -22,6 +56,7 @@ function TableOfContentsComponent({ headings, className = '' }: TableOfContentsP
         top: offsetPosition,
         behavior: 'smooth'
       })
+      setActiveId(id)
     }
   }
 
@@ -36,9 +71,16 @@ function TableOfContentsComponent({ headings, className = '' }: TableOfContentsP
     return indentMap[level] || 'pl-0'
   }
 
+  const getActiveClass = (id: string): string => {
+    if (activeId === id) {
+      return 'text-[hsl(var(--color-primary))] font-medium border-l-2 border-[hsl(var(--color-primary))] -ml-[2px]'
+    }
+    return ''
+  }
+
   return (
     <nav 
-      className={`bg-[hsl(var(--color-surface))] rounded-[var(--radius-lg)] p-4 shadow-[var(--shadow-md)] ${className}`}
+      className={`sticky top-20 bg-[hsl(var(--color-surface))] rounded-[var(--radius-lg)] p-4 shadow-[var(--shadow-md)] ${className}`}
       aria-label={UI_TEXT.postDetail.tableOfContents}
     >
       <h2 className="text-sm font-semibold text-[hsl(var(--color-text-primary))] mb-3">
@@ -50,7 +92,7 @@ function TableOfContentsComponent({ headings, className = '' }: TableOfContentsP
             <a
               href={`#${heading.id}`}
               onClick={(e) => handleClick(e, heading.id)}
-              className={`block text-sm text-[hsl(var(--color-text-secondary))] hover:text-[hsl(var(--color-primary))] transition-colors duration-[var(--transition-fast)] ${getIndentClass(heading.level)}`}
+              className={`block text-sm text-[hsl(var(--color-text-secondary))] hover:text-[hsl(var(--color-primary))] transition-colors duration-[var(--transition-fast)] ${getIndentClass(heading.level)} ${getActiveClass(heading.id)}`}
             >
               {heading.text}
             </a>
