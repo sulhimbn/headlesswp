@@ -66,6 +66,7 @@ export interface WordPressAuthor {
 export interface WordPressPostWithDetails extends WordPressPost {
   author_details?: WordPressAuthor;
   featured_media_details?: WordPressMedia;
+  media_dimensions?: { width: number; height: number } | null;
   categories_details?: WordPressCategory[];
   tags_details?: WordPressTag[];
 }

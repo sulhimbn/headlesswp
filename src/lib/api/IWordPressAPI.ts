@@ -33,6 +33,7 @@ export interface IWordPressAPI {
   
   getMedia(id: number, signal?: AbortSignal): Promise<WordPressMedia>;
   getMediaUrl(mediaId: number, signal?: AbortSignal): Promise<string | null>;
+  getMediaMetadata(mediaId: number, signal?: AbortSignal): Promise<{ url: string | null; width: number; height: number } | null>;
   getMediaBatch(ids: number[], signal?: AbortSignal): Promise<Map<number, WordPressMedia>>;
   getMediaUrlsBatch(ids: number[], signal?: AbortSignal): Promise<Map<number, string | null>>;
   

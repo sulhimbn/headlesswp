@@ -6,6 +6,7 @@ export interface PostWithMediaUrl extends WordPressPost {
 
 export interface PostWithDetails extends WordPressPost {
   mediaUrl: string | null;
+  mediaDimensions?: { width: number; height: number } | null;
   categoriesDetails: WordPressCategory[];
   tagsDetails: WordPressTag[];
   authorDetails: WordPressAuthor | null;
