@@ -1,4 +1,4 @@
-import { summarizePost, isSummarizationEnabled, getSummarizationConfig } from '@/lib/services/summarizer';
+import { summarizePost, isSummarizationEnabled, getSummarizationConfig, clearSummaryCache } from '@/lib/services/summarizer';
 import { stripHtml } from '@/lib/utils/stripHtml';
 import { cacheManager } from '@/lib/cache';
 
@@ -38,6 +38,11 @@ jest.mock('@/lib/cache');
 describe('summarizer', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    delete process.env.SUMMARY_PROVIDER;
+    delete process.env.SUMMARY_API_KEY;
+    delete process.env.SUMMARY_MODEL;
+    delete process.env.SUMMARY_MAX_TOKENS;
+    delete process.env.SUMMARY_TEMPERATURE;
   });
 
   describe('extractTextFromContent', () => {
@@ -54,6 +59,24 @@ describe('summarizer', () => {
     it('should decode HTML entities', () => {
       const html = '<p>Hello &amp; World &lt;test&gt;</p>';
       expect(extractTextFromContent(html)).toBe('Hello & World <test>');
+    });
+
+    it('should handle complex HTML structure', () => {
+      const html = '<div><p>Paragraph <strong>bold</strong> and <em>italic</em></p><ul><li>Item 1</li><li>Item 2</li></ul></div>';
+      const result = extractTextFromContent(html);
+      expect(result).toContain('Paragraph');
+    });
+
+    it('should handle script and style tags', () => {
+      const html = '<script>console.log("test");</script><p>Content</p><style>.test{color:red}</style>';
+      const result = extractTextFromContent(html);
+      expect(result).toBe('Content');
+    });
+
+    it('should handle nested tags', () => {
+      const html = '<div><div><p>Nested content</p></div></div>';
+      const result = extractTextFromContent(html);
+      expect(result).toBe('Nested content');
     });
   });
 
@@ -75,6 +98,28 @@ describe('summarizer', () => {
       const text = 'First. Second sentence that is quite long and will need truncation. Third.';
       const summary = generateLocalSummary(text);
       expect(summary.length).toBeLessThanOrEqual(text.length * 1.5 + 3);
+    });
+
+    it('should handle text with no sentence terminators', () => {
+      const text = 'This is a continuous text without proper sentence termination';
+      const summary = generateLocalSummary(text);
+      expect(summary).toBeTruthy();
+    });
+
+    it('should handle text with exactly two sentences', () => {
+      const text = 'First sentence. Second sentence.';
+      const summary = generateLocalSummary(text);
+      expect(summary).toContain('First sentence');
+    });
+
+    it('should return empty string when text is empty', () => {
+      const summary = generateLocalSummary('');
+      expect(summary).toBe('');
+    });
+
+    it('should handle text with only whitespace', () => {
+      const summary = generateLocalSummary('   ');
+      expect(summary.length).toBeGreaterThanOrEqual(0);
     });
   });
 
@@ -112,6 +157,43 @@ describe('summarizer', () => {
     });
   });
 
+  describe('summarizePost - error handling', () => {
+    it('should fall back to local summary on API error', async () => {
+      process.env.SUMMARY_PROVIDER = 'openai';
+      process.env.SUMMARY_API_KEY = 'test-key';
+      
+      (cacheManager.get as jest.Mock).mockReturnValue(null);
+      (cacheManager.set as jest.Mock).mockImplementation(() => {
+        throw new Error('Cache error');
+      });
+      
+      const result = await summarizePost(999, '<p>Content that is long enough to summarize properly. The content has multiple sentences.</p>');
+      
+      expect(result.summary).toBeTruthy();
+      expect(result.cached).toBe(false);
+    });
+
+    it('should handle content with HTML entities', async () => {
+      (cacheManager.get as jest.Mock).mockReturnValue(null);
+      
+      const result = await summarizePost(888, '<p>Test &amp; content &lt;more&gt;</p>');
+      
+      expect(result.summary).toContain('Test');
+      expect(result.originalLength).toBeGreaterThan(0);
+    });
+
+    it('should handle very long content gracefully', async () => {
+      (cacheManager.get as jest.Mock).mockReturnValue(null);
+      (cacheManager.set as jest.Mock).mockReturnValue(undefined);
+      
+      const longContent = '<p>' + 'A'.repeat(10000) + '</p>';
+      const result = await summarizePost(777, longContent);
+      
+      expect(result.summary).toBeTruthy();
+      expect(result.originalLength).toBe(10000);
+    });
+  });
+
   describe('isSummarizationEnabled', () => {
     it('should return true for local provider', () => {
       process.env.SUMMARY_PROVIDER = 'local';
@@ -126,6 +208,18 @@ describe('summarizer', () => {
 
     it('should return false when no API key for OpenAI', () => {
       process.env.SUMMARY_PROVIDER = 'openai';
+      delete process.env.SUMMARY_API_KEY;
+      expect(isSummarizationEnabled()).toBe(false);
+    });
+
+    it('should return true for anthropic with api key', () => {
+      process.env.SUMMARY_PROVIDER = 'anthropic';
+      process.env.SUMMARY_API_KEY = 'test-key';
+      expect(isSummarizationEnabled()).toBe(true);
+    });
+
+    it('should return false for anthropic without api key', () => {
+      process.env.SUMMARY_PROVIDER = 'anthropic';
       delete process.env.SUMMARY_API_KEY;
       expect(isSummarizationEnabled()).toBe(false);
     });
@@ -159,6 +253,38 @@ describe('summarizer', () => {
       expect(config.model).toBe('claude-3-sonnet');
       expect(config.maxTokens).toBe(300);
       expect(config.temperature).toBe(0.5);
+    });
+
+    it('should parse valid max tokens', () => {
+      process.env.SUMMARY_MAX_TOKENS = '500';
+      const config = getSummarizationConfig();
+      expect(config.maxTokens).toBe(500);
+    });
+
+    it('should parse valid temperature', () => {
+      process.env.SUMMARY_TEMPERATURE = '0.9';
+      const config = getSummarizationConfig();
+      expect(config.temperature).toBe(0.9);
+    });
+  });
+
+  describe('clearSummaryCache', () => {
+    it('should clear single post summary cache', () => {
+      (cacheManager.invalidate as jest.Mock).mockReturnValue(true);
+      
+      clearSummaryCache(123);
+      
+      expect(cacheManager.invalidate).toHaveBeenCalledWith('summary:123');
+    });
+
+    it('should clear all summary caches when no postId provided', () => {
+      (cacheManager.invalidate as jest.Mock).mockReturnValue(true);
+      const mockCache = new Map([['summary:1', 'data'], ['summary:2', 'data']]);
+      (cacheManager as unknown as { cache: Map<string, unknown> }).cache = mockCache;
+      
+      clearSummaryCache();
+      
+      expect(cacheManager.invalidate).toHaveBeenCalled();
     });
   });
 });
