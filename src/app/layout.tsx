@@ -2,7 +2,7 @@ import './globals.css'
 import type { Metadata, Viewport } from 'next'
 import { Inter } from 'next/font/google'
 import { SITE_URL, SITE_URL_WWW } from '@/lib/api/config'
-import { assertEnvironment } from '@/lib/config/envValidation'
+import { assertEnvironment } from '@/lib/utils/envValidation'
 import ServiceWorkerRegistration from '@/components/ServiceWorkerRegistration'
 import ErrorBoundary from '@/components/ErrorBoundary'
 

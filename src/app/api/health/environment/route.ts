@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { getEnvironmentStatus } from '@/lib/config/envValidation'
+import { getEnvironmentStatus } from '@/lib/utils/envValidation'
 
 export const dynamic = 'force-dynamic'
 

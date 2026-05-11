@@ -2,6 +2,7 @@ export interface EnvValidationResult {
   valid: boolean
   errors: string[]
   warnings: string[]
+  missing?: string[]
 }
 
 export interface EnvVariable {
@@ -9,29 +10,57 @@ export interface EnvVariable {
   required: boolean
   pattern?: RegExp
   defaultValue?: string
+  description?: string
 }
 
 const REQUIRED_ENV_VARS: EnvVariable[] = [
   {
-    name: 'NEXT_PUBLIC_WORDPRESS_API_URL',
-    required: false,
+    name: 'NEXT_PUBLIC_WORDPRESS_URL',
+    required: true,
     pattern: /^https?:\/\/.+/,
+    description: 'The public URL of the WordPress site',
   },
   {
-    name: 'NEXT_PUBLIC_WORDPRESS_URL',
-    required: false,
+    name: 'NEXT_PUBLIC_WORDPRESS_API_URL',
+    required: true,
     pattern: /^https?:\/\/.+/,
+    description: 'The WordPress REST API URL',
   },
+]
+
+const OPTIONAL_ENV_VARS: EnvVariable[] = [
   {
     name: 'NEXT_PUBLIC_SITE_URL',
     required: false,
     pattern: /^https?:\/\/.+/,
+    description: 'The public URL of this Next.js site',
+  },
+  {
+    name: 'NEXT_PUBLIC_SITE_URL_WWW',
+    required: false,
+    description: 'The www URL of this Next.js site',
+  },
+  {
+    name: 'NEXT_PUBLIC_FEATURE_PERSONALIZED_RECOMMENDATIONS',
+    required: false,
+    description: 'Enable personalized recommendations feature',
+  },
+  {
+    name: 'NEXT_PUBLIC_FEATURE_RECOMMENDATION_ANALYTICS',
+    required: false,
+    description: 'Enable recommendation analytics feature',
+  },
+  {
+    name: 'SKIP_RETRIES',
+    required: false,
+    description: 'Skip retries for API requests',
   },
 ]
 
 export function validateEnvironment(): EnvValidationResult {
   const errors: string[] = []
   const warnings: string[] = []
+  const missing: string[] = []
 
   for (const envVar of REQUIRED_ENV_VARS) {
     const value = process.env[envVar.name]
@@ -39,10 +68,7 @@ export function validateEnvironment(): EnvValidationResult {
     if (!value) {
       if (envVar.required) {
         errors.push(`Required environment variable ${envVar.name} is not set`)
-      } else if (envVar.defaultValue) {
-        warnings.push(
-          `Environment variable ${envVar.name} not set, using default: ${envVar.defaultValue}`
-        )
+        missing.push(envVar.name)
       }
       continue
     }
@@ -54,16 +80,69 @@ export function validateEnvironment(): EnvValidationResult {
     }
   }
 
-  if (!process.env.NEXT_PUBLIC_WORDPRESS_API_URL) {
-    warnings.push(
-      `NEXT_PUBLIC_WORDPRESS_API_URL not set, using default fallback`
-    )
+  for (const envVar of OPTIONAL_ENV_VARS) {
+    const value = process.env[envVar.name]
+
+    if (!value) {
+      warnings.push(`${envVar.name} is not set (optional)`)
+      continue
+    }
+
+    if (envVar.pattern && !envVar.pattern.test(value)) {
+      errors.push(
+        `Environment variable ${envVar.name} has invalid format: ${value}`
+      )
+    }
   }
 
   return {
     valid: errors.length === 0,
     errors,
     warnings,
+    missing,
+  }
+}
+
+export function getEnvironmentStatus() {
+  const validation = validateEnvironment()
+
+  return {
+    valid: validation.valid,
+    timestamp: new Date().toISOString(),
+    required: REQUIRED_ENV_VARS.map((env) => ({
+      name: env.name,
+      required: env.required,
+      description: env.description,
+      value: process.env[env.name] ? '***SET***' : 'NOT_SET',
+    })),
+    optional: OPTIONAL_ENV_VARS.map((env) => ({
+      name: env.name,
+      required: env.required,
+      description: env.description,
+      value: process.env[env.name] ? '***SET***' : 'NOT_SET',
+    })),
+    missing: validation.missing || [],
+    warnings: validation.warnings,
+  }
+}
+
+export function assertEnvironment(): void {
+  const validation = validateEnvironment()
+
+  if (!validation.valid) {
+    const missingList = (validation.missing || validation.errors.filter(e => e.includes('not set'))).join(', ')
+    const errorMessage = [
+      `Missing required environment variables: ${missingList}`,
+      '',
+      'Please set the following environment variables:',
+      ...REQUIRED_ENV_VARS.filter((v) => (validation.missing || []).includes(v.name)).map(
+        (v) => `  - ${v.name}: ${v.description}`
+      ),
+      '',
+      'Add these variables to your .env.local file or deployment environment.',
+    ].join('\n')
+
+    throw new Error(errorMessage)
   }
 }
 
@@ -81,6 +160,14 @@ export function logEnvironmentValidation(): void {
   }
 
   if (result.valid && result.errors.length === 0 && result.warnings.length === 0) {
-    // Silent success - no need to log in production
+    // Silent success - no logging needed in production
   }
+}
+
+export function getRequiredEnvVars(): EnvVariable[] {
+  return REQUIRED_ENV_VARS
+}
+
+export function getOptionalEnvVars(): EnvVariable[] {
+  return OPTIONAL_ENV_VARS
 }
