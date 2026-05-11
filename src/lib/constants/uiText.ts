@@ -123,6 +123,10 @@ export const UI_TEXT = {
     openSearch: 'Buka pencarian',
     closeMenu: 'Tutup menu',
     openMenu: 'Buka menu',
+    bookmarks: 'Bookmark',
+    recentBookmarks: 'Bookmark Terbaru',
+    viewAllBookmarks: 'Lihat Semua Bookmark',
+    noRecentBookmarks: 'Belum ada bookmark',
     darkMode: {
       enableLight: 'Aktifkan mode terang',
       enableDark: 'Aktifkan mode gelap'
@@ -131,6 +135,13 @@ export const UI_TEXT = {
       home: 'Beranda',
       news: 'Berita'
     }
+  },
+  bookmarkPage: {
+    heading: 'Bookmark Saya',
+    clearAll: 'Hapus semua',
+    emptyTitle: 'Belum ada bookmark',
+    emptyDescription: 'Simpan artikel untuk dibaca nanti dengan mengklik ikon bookmark.',
+    browseNews: 'Jelajahi Berita'
   },
   icon: {
     loading: 'Memuat'

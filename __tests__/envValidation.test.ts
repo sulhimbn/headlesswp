@@ -24,19 +24,21 @@ describe('envValidation', () => {
       expect(result.errors).toHaveLength(0)
     })
 
-    it('should return warnings when optional env vars are not set', () => {
+    it('should return errors when required env vars are not set', () => {
       delete process.env.NEXT_PUBLIC_WORDPRESS_API_URL
       delete process.env.NEXT_PUBLIC_WORDPRESS_URL
       delete process.env.NEXT_PUBLIC_SITE_URL
 
       const result = validateEnvironment()
 
-      expect(result.valid).toBe(true)
-      expect(result.warnings.length).toBeGreaterThan(0)
+      expect(result.valid).toBe(false)
+      expect(result.errors.length).toBeGreaterThan(0)
     })
 
     it('should return error when env var has invalid format', () => {
       process.env.NEXT_PUBLIC_WORDPRESS_API_URL = 'not-a-url'
+      process.env.NEXT_PUBLIC_WORDPRESS_URL = 'https://example.com'
+      process.env.NEXT_PUBLIC_SITE_URL = 'https://example.com'
 
       const result = validateEnvironment()
 
@@ -48,6 +50,8 @@ describe('envValidation', () => {
 
     it('should accept http URLs', () => {
       process.env.NEXT_PUBLIC_WORDPRESS_API_URL = 'http://example.com/wp-json'
+      process.env.NEXT_PUBLIC_WORDPRESS_URL = 'https://example.com'
+      process.env.NEXT_PUBLIC_SITE_URL = 'https://example.com'
 
       const result = validateEnvironment()
 
@@ -56,6 +60,8 @@ describe('envValidation', () => {
 
     it('should accept https URLs', () => {
       process.env.NEXT_PUBLIC_WORDPRESS_API_URL = 'https://example.com/wp-json'
+      process.env.NEXT_PUBLIC_WORDPRESS_URL = 'https://example.com'
+      process.env.NEXT_PUBLIC_SITE_URL = 'https://example.com'
 
       const result = validateEnvironment()
 
@@ -64,7 +70,11 @@ describe('envValidation', () => {
   })
 
   describe('logEnvironmentValidation', () => {
-    it('should not throw when called', () => {
+    it('should not throw when called with valid env vars', () => {
+      process.env.NEXT_PUBLIC_WORDPRESS_API_URL = 'https://example.com/wp-json'
+      process.env.NEXT_PUBLIC_WORDPRESS_URL = 'https://example.com'
+      process.env.NEXT_PUBLIC_SITE_URL = 'https://example.com'
+
       expect(() => {
         logEnvironmentValidation()
       }).not.toThrow()
