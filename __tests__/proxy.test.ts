@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { proxy, config as proxyConfig } from '@/proxy'
+import { middleware, config as proxyConfig } from '@/middleware'
 
 jest.mock('next/server', () => ({
   NextRequest: jest.fn(),
@@ -32,8 +32,12 @@ describe('Proxy Middleware', () => {
 
     mockRequest = {
       nextUrl: {
-        pathname: '/',
+        pathname: '/test',
       },
+      headers: {
+        get: (key: string) => null
+      },
+      url: 'http://localhost:3000/test'
     } as unknown as jest.Mocked<NextRequest>
 
     ;(NextResponse.next as jest.Mock).mockReturnValue(mockNextResponse)
@@ -45,7 +49,7 @@ describe('Proxy Middleware', () => {
 
   describe('Nonce Generation', () => {
     it('should generate a nonce for each request', () => {
-      proxy(mockRequest)
+      middleware(mockRequest)
 
       expect(mockNextResponse.headers.get('x-nonce')).toBe('test-nonce-12345')
     })
@@ -53,13 +57,13 @@ describe('Proxy Middleware', () => {
     it('should call generateNonce once per request', () => {
       const { generateNonce } = require('@/lib/utils/cspUtils')
       
-      proxy(mockRequest)
+      middleware(mockRequest)
 
       expect(generateNonce).toHaveBeenCalledTimes(1)
     })
 
     it('should set x-nonce header', () => {
-      proxy(mockRequest)
+      middleware(mockRequest)
 
       const nonce = mockNextResponse.headers.get('x-nonce')
       
@@ -71,7 +75,7 @@ describe('Proxy Middleware', () => {
 
   describe('Content Security Policy (CSP)', () => {
     it('should set Content-Security-Policy header', () => {
-      proxy(mockRequest)
+      middleware(mockRequest)
 
       const csp = mockNextResponse.headers.get('Content-Security-Policy')
       
@@ -80,7 +84,7 @@ describe('Proxy Middleware', () => {
     })
 
     it('should include default-src self', () => {
-      proxy(mockRequest)
+      middleware(mockRequest)
 
       const csp = mockNextResponse.headers.get('Content-Security-Policy') as string
       
@@ -88,7 +92,7 @@ describe('Proxy Middleware', () => {
     })
 
     it('should include script-src with nonce', () => {
-      proxy(mockRequest)
+      middleware(mockRequest)
 
       const csp = mockNextResponse.headers.get('Content-Security-Policy') as string
       
@@ -97,7 +101,7 @@ describe('Proxy Middleware', () => {
     })
 
     it('should include style-src with nonce', () => {
-      proxy(mockRequest)
+      middleware(mockRequest)
 
       const csp = mockNextResponse.headers.get('Content-Security-Policy') as string
       
@@ -106,7 +110,7 @@ describe('Proxy Middleware', () => {
     })
 
     it('should include img-src with data and blob', () => {
-      proxy(mockRequest)
+      middleware(mockRequest)
 
       const csp = mockNextResponse.headers.get('Content-Security-Policy') as string
       
@@ -116,7 +120,7 @@ describe('Proxy Middleware', () => {
     })
 
     it('should include connect-src', () => {
-      proxy(mockRequest)
+      middleware(mockRequest)
 
       const csp = mockNextResponse.headers.get('Content-Security-Policy') as string
       
@@ -124,7 +128,7 @@ describe('Proxy Middleware', () => {
     })
 
     it('should include media-src', () => {
-      proxy(mockRequest)
+      middleware(mockRequest)
 
       const csp = mockNextResponse.headers.get('Content-Security-Policy') as string
       
@@ -132,7 +136,7 @@ describe('Proxy Middleware', () => {
     })
 
     it('should set object-src none', () => {
-      proxy(mockRequest)
+      middleware(mockRequest)
 
       const csp = mockNextResponse.headers.get('Content-Security-Policy') as string
       
@@ -140,7 +144,7 @@ describe('Proxy Middleware', () => {
     })
 
     it('should include base-uri self', () => {
-      proxy(mockRequest)
+      middleware(mockRequest)
 
       const csp = mockNextResponse.headers.get('Content-Security-Policy') as string
       
@@ -148,7 +152,7 @@ describe('Proxy Middleware', () => {
     })
 
     it('should include form-action self', () => {
-      proxy(mockRequest)
+      middleware(mockRequest)
 
       const csp = mockNextResponse.headers.get('Content-Security-Policy') as string
       
@@ -156,7 +160,7 @@ describe('Proxy Middleware', () => {
     })
 
     it('should include frame-ancestors none', () => {
-      proxy(mockRequest)
+      middleware(mockRequest)
 
       const csp = mockNextResponse.headers.get('Content-Security-Policy') as string
       
@@ -164,7 +168,7 @@ describe('Proxy Middleware', () => {
     })
 
     it('should include upgrade-insecure-requests', () => {
-      proxy(mockRequest)
+      middleware(mockRequest)
 
       const csp = mockNextResponse.headers.get('Content-Security-Policy') as string
       
@@ -190,7 +194,7 @@ describe('Proxy Middleware', () => {
     })
 
     it('should include unsafe-inline in script-src in development', () => {
-      proxy(mockRequest)
+      middleware(mockRequest)
 
       const csp = mockNextResponse.headers.get('Content-Security-Policy') as string
       
@@ -199,7 +203,7 @@ describe('Proxy Middleware', () => {
     })
 
     it('should include unsafe-eval in script-src in development', () => {
-      proxy(mockRequest)
+      middleware(mockRequest)
 
       const csp = mockNextResponse.headers.get('Content-Security-Policy') as string
       
@@ -207,7 +211,7 @@ describe('Proxy Middleware', () => {
     })
 
     it('should include unsafe-inline in style-src in development', () => {
-      proxy(mockRequest)
+      middleware(mockRequest)
 
       const csp = mockNextResponse.headers.get('Content-Security-Policy') as string
       
@@ -216,7 +220,7 @@ describe('Proxy Middleware', () => {
     })
 
     it('should include report-uri in development', () => {
-      proxy(mockRequest)
+      middleware(mockRequest)
 
       const csp = mockNextResponse.headers.get('Content-Security-Policy') as string
       
@@ -242,7 +246,7 @@ describe('Proxy Middleware', () => {
     })
 
     it('should NOT include unsafe-inline in script-src in production', () => {
-      proxy(mockRequest)
+      middleware(mockRequest)
 
       const csp = mockNextResponse.headers.get('Content-Security-Policy') as string
       
@@ -251,7 +255,7 @@ describe('Proxy Middleware', () => {
     })
 
     it('should NOT include unsafe-eval in production', () => {
-      proxy(mockRequest)
+      middleware(mockRequest)
 
       const csp = mockNextResponse.headers.get('Content-Security-Policy') as string
       
@@ -259,7 +263,7 @@ describe('Proxy Middleware', () => {
     })
 
     it('should NOT include unsafe-inline in style-src in production', () => {
-      proxy(mockRequest)
+      middleware(mockRequest)
 
       const csp = mockNextResponse.headers.get('Content-Security-Policy') as string
       
@@ -268,7 +272,7 @@ describe('Proxy Middleware', () => {
     })
 
     it('should NOT include report-uri in production', () => {
-      proxy(mockRequest)
+      middleware(mockRequest)
 
       const csp = mockNextResponse.headers.get('Content-Security-Policy') as string
       
@@ -276,7 +280,7 @@ describe('Proxy Middleware', () => {
     })
 
     it('should still include nonce in production', () => {
-      proxy(mockRequest)
+      middleware(mockRequest)
 
       const csp = mockNextResponse.headers.get('Content-Security-Policy') as string
       
@@ -286,7 +290,7 @@ describe('Proxy Middleware', () => {
 
   describe('Security Headers', () => {
     it('should set Strict-Transport-Security header', () => {
-      proxy(mockRequest)
+      middleware(mockRequest)
 
       const hsts = mockNextResponse.headers.get('Strict-Transport-Security')
       
@@ -294,7 +298,7 @@ describe('Proxy Middleware', () => {
     })
 
     it('should set X-Frame-Options header to DENY', () => {
-      proxy(mockRequest)
+      middleware(mockRequest)
 
       const xFrameOptions = mockNextResponse.headers.get('X-Frame-Options')
       
@@ -302,7 +306,7 @@ describe('Proxy Middleware', () => {
     })
 
     it('should set X-Content-Type-Options header', () => {
-      proxy(mockRequest)
+      middleware(mockRequest)
 
       const xContentTypeOptions = mockNextResponse.headers.get('X-Content-Type-Options')
       
@@ -310,7 +314,7 @@ describe('Proxy Middleware', () => {
     })
 
     it('should set X-XSS-Protection header', () => {
-      proxy(mockRequest)
+      middleware(mockRequest)
 
       const xXssProtection = mockNextResponse.headers.get('X-XSS-Protection')
       
@@ -318,7 +322,7 @@ describe('Proxy Middleware', () => {
     })
 
     it('should set Referrer-Policy header', () => {
-      proxy(mockRequest)
+      middleware(mockRequest)
 
       const referrerPolicy = mockNextResponse.headers.get('Referrer-Policy')
       
@@ -326,7 +330,7 @@ describe('Proxy Middleware', () => {
     })
 
     it('should set Permissions-Policy header', () => {
-      proxy(mockRequest)
+      middleware(mockRequest)
 
       const permissionsPolicy = mockNextResponse.headers.get('Permissions-Policy')
       
@@ -337,7 +341,7 @@ describe('Proxy Middleware', () => {
 
   describe('Permissions Policy', () => {
     it('should restrict camera access', () => {
-      proxy(mockRequest)
+      middleware(mockRequest)
 
       const permissionsPolicy = mockNextResponse.headers.get('Permissions-Policy') as string
       
@@ -345,7 +349,7 @@ describe('Proxy Middleware', () => {
     })
 
     it('should restrict microphone access', () => {
-      proxy(mockRequest)
+      middleware(mockRequest)
 
       const permissionsPolicy = mockNextResponse.headers.get('Permissions-Policy') as string
       
@@ -353,7 +357,7 @@ describe('Proxy Middleware', () => {
     })
 
     it('should restrict geolocation access', () => {
-      proxy(mockRequest)
+      middleware(mockRequest)
 
       const permissionsPolicy = mockNextResponse.headers.get('Permissions-Policy') as string
       
@@ -361,7 +365,7 @@ describe('Proxy Middleware', () => {
     })
 
     it('should restrict payment access', () => {
-      proxy(mockRequest)
+      middleware(mockRequest)
 
       const permissionsPolicy = mockNextResponse.headers.get('Permissions-Policy') as string
       
@@ -369,7 +373,7 @@ describe('Proxy Middleware', () => {
     })
 
     it('should restrict USB access', () => {
-      proxy(mockRequest)
+      middleware(mockRequest)
 
       const permissionsPolicy = mockNextResponse.headers.get('Permissions-Policy') as string
       
@@ -377,7 +381,7 @@ describe('Proxy Middleware', () => {
     })
 
     it('should restrict magnetometer access', () => {
-      proxy(mockRequest)
+      middleware(mockRequest)
 
       const permissionsPolicy = mockNextResponse.headers.get('Permissions-Policy') as string
       
@@ -385,7 +389,7 @@ describe('Proxy Middleware', () => {
     })
 
     it('should restrict gyroscope access', () => {
-      proxy(mockRequest)
+      middleware(mockRequest)
 
       const permissionsPolicy = mockNextResponse.headers.get('Permissions-Policy') as string
       
@@ -393,7 +397,7 @@ describe('Proxy Middleware', () => {
     })
 
     it('should restrict accelerometer access', () => {
-      proxy(mockRequest)
+      middleware(mockRequest)
 
       const permissionsPolicy = mockNextResponse.headers.get('Permissions-Policy') as string
       
@@ -403,7 +407,7 @@ describe('Proxy Middleware', () => {
 
   describe('CSP Site URLs', () => {
     it('should include SITE_URL in script-src', () => {
-      proxy(mockRequest)
+      middleware(mockRequest)
 
       const csp = mockNextResponse.headers.get('Content-Security-Policy') as string
       
@@ -411,7 +415,7 @@ describe('Proxy Middleware', () => {
     })
 
     it('should include SITE_URL_WWW in script-src', () => {
-      proxy(mockRequest)
+      middleware(mockRequest)
 
       const csp = mockNextResponse.headers.get('Content-Security-Policy') as string
       
@@ -419,7 +423,7 @@ describe('Proxy Middleware', () => {
     })
 
     it('should include SITE_URL in style-src', () => {
-      proxy(mockRequest)
+      middleware(mockRequest)
 
       const csp = mockNextResponse.headers.get('Content-Security-Policy') as string
       
@@ -427,7 +431,7 @@ describe('Proxy Middleware', () => {
     })
 
     it('should include SITE_URL in img-src', () => {
-      proxy(mockRequest)
+      middleware(mockRequest)
 
       const csp = mockNextResponse.headers.get('Content-Security-Policy') as string
       
@@ -435,7 +439,7 @@ describe('Proxy Middleware', () => {
     })
 
     it('should include SITE_URL in connect-src', () => {
-      proxy(mockRequest)
+      middleware(mockRequest)
 
       const csp = mockNextResponse.headers.get('Content-Security-Policy') as string
       
@@ -443,7 +447,7 @@ describe('Proxy Middleware', () => {
     })
 
     it('should include SITE_URL in media-src', () => {
-      proxy(mockRequest)
+      middleware(mockRequest)
 
       const csp = mockNextResponse.headers.get('Content-Security-Policy') as string
       
@@ -453,7 +457,7 @@ describe('Proxy Middleware', () => {
 
   describe('CSP Format', () => {
     it('should use semicolon as directive separator', () => {
-      proxy(mockRequest)
+      middleware(mockRequest)
 
       const csp = mockNextResponse.headers.get('Content-Security-Policy') as string
       
@@ -462,7 +466,7 @@ describe('Proxy Middleware', () => {
     })
 
     it('should not have trailing semicolon', () => {
-      proxy(mockRequest)
+      middleware(mockRequest)
 
       const csp = mockNextResponse.headers.get('Content-Security-Policy') as string
       
@@ -470,7 +474,7 @@ describe('Proxy Middleware', () => {
     })
 
     it('should not have extra whitespace between directives', () => {
-      proxy(mockRequest)
+      middleware(mockRequest)
 
       const csp = mockNextResponse.headers.get('Content-Security-Policy') as string
       
@@ -480,7 +484,7 @@ describe('Proxy Middleware', () => {
 
   describe('Integration', () => {
     it('should set all required headers in one call', () => {
-      proxy(mockRequest)
+      middleware(mockRequest)
 
       const headers = Array.from(mockNextResponse.headers.keys())
       
@@ -495,13 +499,13 @@ describe('Proxy Middleware', () => {
     })
 
     it('should call NextResponse.next once', () => {
-      proxy(mockRequest)
+      middleware(mockRequest)
 
       expect(NextResponse.next).toHaveBeenCalledTimes(1)
     })
 
     it('should return NextResponse.next result', () => {
-      const result = proxy(mockRequest)
+      const result = middleware(mockRequest)
 
       expect(result).toBe(mockNextResponse)
     })
@@ -509,10 +513,10 @@ describe('Proxy Middleware', () => {
     it('should generate new nonce for each request', () => {
       const { generateNonce } = require('@/lib/utils/cspUtils')
       generateNonce.mockReturnValue('nonce-1')
-      proxy(mockRequest)
+      middleware(mockRequest)
       
       generateNonce.mockReturnValue('nonce-2')
-      proxy(mockRequest)
+      middleware(mockRequest)
 
       const calls = generateNonce.mock.calls
       expect(calls.length).toBe(2)
@@ -524,19 +528,19 @@ describe('Proxy Middleware', () => {
     it('should handle empty request object', () => {
       const emptyRequest = {} as unknown as NextRequest
 
-      expect(() => proxy(emptyRequest)).not.toThrow()
+      expect(() => middleware(emptyRequest)).not.toThrow()
     })
 
     it('should handle request with no url', () => {
       const requestWithoutUrl = {} as unknown as NextRequest
 
-      const result = proxy(requestWithoutUrl)
+      const result = middleware(requestWithoutUrl)
 
       expect(result).toBeDefined()
     })
 
     it('should maintain header order consistency', () => {
-      proxy(mockRequest)
+      middleware(mockRequest)
 
       const headers = Array.from(mockNextResponse.headers.entries())
       
@@ -548,9 +552,9 @@ describe('Proxy Middleware', () => {
     })
 
     it('should handle multiple proxy calls', () => {
-      proxy(mockRequest)
-      proxy(mockRequest)
-      proxy(mockRequest)
+      middleware(mockRequest)
+      middleware(mockRequest)
+      middleware(mockRequest)
 
       expect(NextResponse.next).toHaveBeenCalledTimes(3)
     })
