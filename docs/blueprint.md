@@ -1511,12 +1511,19 @@ startResourceMonitoring(30000)
      - **Dependency-aware caching** (automatic cascade invalidation)
      - Type-safe enriched data (PostWithMediaUrl, PostWithDetails)
      - **Implements `IPostService` interface** for contract definition
-   - **cacheWarmer.ts**: Orchestration service for cache warming:
-     - Decouples cache warming from API services
-     - Removes circular dependency between wordpressAPI and enhancedPostService
-     - Provides cache statistics (hits, misses, hit rate)
-     - Parallel cache warming for optimal performance
-     - Detailed results tracking (success/failure, latency per endpoint)
+- **cacheWarmer.ts**: Orchestration service for cache warming:
+      - Decouples cache warming from API services
+      - Removes circular dependency between wordpressAPI and enhancedPostService
+      - Provides cache statistics (hits, misses, hit rate)
+      - Parallel cache warming for optimal performance
+      - Detailed results tracking (success/failure, latency per endpoint)
+   - **smartPrefetch.ts**: AI-native smart cache prefetch engine:
+      - Analyzes user reading patterns from readingHistory
+      - Predicts next likely pages based on category/tag preferences
+      - Uses confidence scoring to determine prefetch priority (high/medium/low)
+      - Prefetches content in background without blocking user interaction
+      - Limits to 5 simultaneous prefetches to avoid resource exhaustion
+      - Graceful degradation when prediction confidence is below threshold (0.3)
 
 3. **Cache Layer** (`cache.ts`): Cache management with dependency tracking
    - In-memory cache with TTL and dependency-aware invalidation
