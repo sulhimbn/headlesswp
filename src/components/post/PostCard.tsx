@@ -6,6 +6,7 @@ import { UI_TEXT } from '@/lib/constants/uiText'
 import { formatDate } from '@/lib/utils/dateFormat'
 import { memo } from 'react'
 import { createArePropsEqual } from '@/lib/utils/memoization'
+import BookmarkButton from '@/components/ui/BookmarkButton'
 
 interface PostCardProps {
   post: WordPressPost
@@ -33,7 +34,8 @@ function PostCardComponent({ post, mediaUrl, mediaDimensions, priority = false }
 
   return (
     <article aria-labelledby={postTitleId} className="bg-[hsl(var(--color-surface))] rounded-[var(--radius-lg)] shadow-[var(--shadow-md)] overflow-hidden hover:shadow-[var(--shadow-lg)] transition-all duration-[var(--transition-normal)] focus-within:ring-2 focus-within:ring-[hsl(var(--color-primary))] focus-within:ring-offset-2">
-      {post.featured_media > 0 && (
+      <div className="relative">
+        {post.featured_media > 0 && (
         <Link href={`/berita/${post.slug}`} className="relative block h-48 sm:h-56 md:h-48 focus:outline-none" aria-label={`${UI_TEXT.postCard.readArticle(post.title.rendered)}`}>
           <Image
             src={mediaUrl || '/placeholder-image.jpg'}
@@ -48,7 +50,18 @@ function PostCardComponent({ post, mediaUrl, mediaDimensions, priority = false }
             } : {})}
           />
         </Link>
-      )}
+        )}
+        <div className="absolute top-2 right-2">
+          <BookmarkButton
+            postId={post.id}
+            slug={post.slug}
+            title={post.title}
+            featured_media={post.featured_media}
+            categories={post.categories}
+            size="sm"
+          />
+        </div>
+      </div>
       <div className="p-4 sm:p-5 md:p-4">
         <h3 id={postTitleId} className="text-lg sm:text-xl md:text-lg font-semibold mb-2">
           <Link

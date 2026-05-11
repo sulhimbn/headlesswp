@@ -19,19 +19,17 @@ import PersonalizedRecommendations from '@/components/post/PersonalizedRecommend
 import ReadingTracker from '@/components/post/ReadingTracker'
 import { calculateReadingTime } from '@/lib/utils/readingTime'
 import SocialShare from '@/components/ui/SocialShare'
+import BookmarkButton from '@/components/ui/BookmarkButton'
 import ReadingProgress from '@/components/ui/ReadingProgress'
 import TableOfContents from '@/components/ui/TableOfContents'
 import { extractHeadings, shouldShowToc, addIdsToHeadings } from '@/lib/utils/tableOfContents'
+import { stripHtml } from '@/lib/utils/stripHtml'
 
 const Footer = dynamic(() => import('@/components/layout/Footer'), {
   loading: () => <div className="h-64 bg-[hsl(var(--color-background-dark))] mt-12" aria-hidden="true" />
 })
 
 export const revalidate = 3600 // 60 minutes (1 hour)
-
-function stripHtml(html: string): string {
-  return html.replace(/<[^>]*>?/gm, '').trim()
-}
 
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
   const post = await enhancedPostService.getPostBySlug(params.slug)
@@ -234,10 +232,17 @@ export default async function PostPage({ params }: { params: { slug: string } })
               {post.title.rendered}
             </h1>
 
-            <div className="mb-6">
+            <div className="mb-6 flex items-center gap-3">
               <SocialShare
                 title={stripHtml(post.title.rendered)}
                 url={`/berita/${post.slug}`}
+              />
+              <BookmarkButton
+                postId={post.id}
+                slug={post.slug}
+                title={post.title}
+                featured_media={post.featured_media}
+                categories={post.categories}
               />
             </div>
 

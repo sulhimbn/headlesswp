@@ -8,6 +8,7 @@ import Icon from '@/components/ui/Icon'
 import ServiceStatus from '@/components/ui/ServiceStatus'
 import { UI_TEXT } from '@/lib/constants/uiText'
 import { useDarkMode } from '@/lib/hooks/useDarkMode'
+import { getRecentBookmarks } from '@/lib/services/bookmarkService'
 
 const SearchBar = dynamic(() => import('@/components/ui/SearchBar'), { ssr: false })
 
@@ -20,10 +21,13 @@ export default memo(function Header() {
   const router = useRouter()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isSearchOpen, setIsSearchOpen] = useState(false)
+  const [isBookmarkOpen, setIsBookmarkOpen] = useState(false)
+  const [recentBookmarks, setRecentBookmarks] = useState<{ postId: number; slug: string; title: string }[]>([])
   const { isDark, toggleDarkMode } = useDarkMode()
   const menuButtonRef = useRef<HTMLButtonElement>(null)
   const searchButtonRef = useRef<HTMLButtonElement>(null)
   const searchRef = useRef<HTMLDivElement>(null)
+  const bookmarkRef = useRef<HTMLDivElement>(null)
   const firstMenuItemRef = useRef<HTMLAnchorElement>(null)
   const lastMenuItemRef = useRef<HTMLAnchorElement>(null)
   const menuRef = useRef<HTMLDivElement>(null)
@@ -41,6 +45,29 @@ export default memo(function Header() {
       document.body.style.overflow = ''
     }
   }, [isMenuOpen])
+
+  useEffect(() => {
+    if (isBookmarkOpen) {
+      const bookmarks = getRecentBookmarks(5)
+      setRecentBookmarks(bookmarks)
+    }
+  }, [isBookmarkOpen])
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (bookmarkRef.current && !bookmarkRef.current.contains(event.target as Node)) {
+        setIsBookmarkOpen(false)
+      }
+    }
+
+    if (isBookmarkOpen) {
+      document.addEventListener('mousedown', handleClickOutside)
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [isBookmarkOpen])
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Escape') {
@@ -118,6 +145,56 @@ export default memo(function Header() {
             >
               <Icon type={isDark ? 'sun' : 'moon'} className="h-5 w-5" />
             </button>
+            <div ref={bookmarkRef} className="relative">
+              <button
+                type="button"
+                className="inline-flex items-center justify-center p-2 rounded-[var(--radius-md)] text-[hsl(var(--color-text-primary))] hover:text-[hsl(var(--color-primary))] hover:bg-[hsl(var(--color-secondary-dark))] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--color-primary))] focus:ring-offset-2"
+                onClick={() => setIsBookmarkOpen(!isBookmarkOpen)}
+                aria-expanded={isBookmarkOpen}
+                aria-haspopup="true"
+              >
+                <span className="sr-only">{UI_TEXT.header.bookmarks}</span>
+                <Icon type="bookmark" className="h-5 w-5" />
+              </button>
+              {isBookmarkOpen && (
+                <div className="absolute right-0 mt-2 w-64 bg-[hsl(var(--color-surface))] rounded-[var(--radius-md)] shadow-[var(--shadow-lg)] border border-[hsl(var(--color-border))] z-50">
+                  <div className="p-3 border-b border-[hsl(var(--color-border))]">
+                    <span className="text-sm font-semibold text-[hsl(var(--color-text-primary))]">
+                      {UI_TEXT.header.recentBookmarks}
+                    </span>
+                  </div>
+                  {recentBookmarks.length > 0 ? (
+                    <div className="py-1 max-h-64 overflow-y-auto">
+                      {recentBookmarks.map((bookmark) => (
+                        <Link
+                          key={bookmark.postId}
+                          href={`/berita/${bookmark.slug}`}
+                          className="block px-4 py-2 text-sm text-[hsl(var(--color-text-secondary))] hover:bg-[hsl(var(--color-secondary-dark))] hover:text-[hsl(var(--color-text-primary))] transition-colors duration-[var(--transition-fast)]"
+                          onClick={() => setIsBookmarkOpen(false)}
+                        >
+                          {bookmark.title.length > 40
+                            ? `${bookmark.title.substring(0, 40)}...`
+                            : bookmark.title}
+                        </Link>
+                      ))}
+                      <div className="border-t border-[hsl(var(--color-border))] mt-1 pt-1">
+                        <Link
+                          href="/bookmark"
+                          className="block px-4 py-2 text-sm text-[hsl(var(--color-primary))] hover:bg-[hsl(var(--color-secondary-dark))] transition-colors duration-[var(--transition-fast)] font-medium"
+                          onClick={() => setIsBookmarkOpen(false)}
+                        >
+                          {UI_TEXT.header.viewAllBookmarks}
+                        </Link>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="px-4 py-3 text-sm text-[hsl(var(--color-text-muted))]">
+                      {UI_TEXT.header.noRecentBookmarks}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
             <nav>
               {NAVIGATION_ITEMS.map((item) => (
                 <Link
@@ -151,6 +228,13 @@ export default memo(function Header() {
             >
               <Icon type={isDark ? 'sun' : 'moon'} className="h-5 w-5" />
             </button>
+            <Link
+              href="/bookmark"
+              className="inline-flex items-center justify-center p-3 min-w-[44px] min-h-[44px] rounded-[var(--radius-md)] text-[hsl(var(--color-text-primary))] hover:text-[hsl(var(--color-primary))] hover:bg-[hsl(var(--color-secondary-dark))] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--color-primary))] focus:ring-offset-2"
+              aria-label={UI_TEXT.header.bookmarks}
+            >
+              <Icon type="bookmark" className="h-5 w-5" />
+            </Link>
             <button
               ref={menuButtonRef}
               type="button"
