@@ -1,3 +1,5 @@
+'use client'
+
 import type { WordPressPost } from '@/types/wordpress'
 import Link from 'next/link'
 import Image from 'next/image'
@@ -6,6 +8,7 @@ import { UI_TEXT } from '@/lib/constants/uiText'
 import { formatDate } from '@/lib/utils/dateFormat'
 import { memo } from 'react'
 import { createArePropsEqual } from '@/lib/utils/memoization'
+import BookmarkButton from '@/components/ui/BookmarkButton'
 
 interface PostCardProps {
   post: WordPressPost
@@ -26,10 +29,11 @@ const arePropsEqual = createArePropsEqual<PostCardProps>(POSTCARD_PROPS);
 function PostCardComponent({ post, mediaUrl, mediaDimensions, priority = false }: PostCardProps) {
   const postTitleId = `post-title-${post.id}`
   
-  // Generate responsive sizes based on available dimensions
   const sizes = mediaDimensions?.width 
     ? `(max-width: 768px) 100vw, (max-width: 1200px) 50vw, ${Math.min(mediaDimensions.width, 400)}px`
     : "(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw";
+
+  const plainTitle = post.title.rendered.replace(/<[^>]*>?/gm, '').trim()
 
   return (
     <article aria-labelledby={postTitleId} className="bg-[hsl(var(--color-surface))] rounded-[var(--radius-lg)] shadow-[var(--shadow-md)] overflow-hidden hover:shadow-[var(--shadow-lg)] transition-all duration-[var(--transition-normal)] focus-within:ring-2 focus-within:ring-[hsl(var(--color-primary))] focus-within:ring-offset-2">
@@ -50,14 +54,22 @@ function PostCardComponent({ post, mediaUrl, mediaDimensions, priority = false }
         </Link>
       )}
       <div className="p-4 sm:p-5 md:p-4">
-        <h3 id={postTitleId} className="text-lg sm:text-xl md:text-lg font-semibold mb-2">
-          <Link
-            href={`/berita/${post.slug}`}
-            className="text-[hsl(var(--color-text-primary))] hover:text-[hsl(var(--color-primary))] transition-colors duration-[var(--transition-fast)] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--color-primary))] focus:ring-offset-2 rounded-[var(--radius-sm)]"
-          >
-            {post.title.rendered}
-          </Link>
-        </h3>
+        <div className="flex justify-between items-start gap-2 mb-2">
+          <h3 id={postTitleId} className="text-lg sm:text-xl md:text-lg font-semibold flex-1">
+            <Link
+              href={`/berita/${post.slug}`}
+              className="text-[hsl(var(--color-text-primary))] hover:text-[hsl(var(--color-primary))] transition-colors duration-[var(--transition-fast)] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--color-primary))] focus:ring-offset-2 rounded-[var(--radius-sm)]"
+            >
+              {post.title.rendered}
+            </Link>
+          </h3>
+          <BookmarkButton
+            postId={post.id}
+            slug={post.slug}
+            title={plainTitle}
+            thumbnail={mediaUrl}
+          />
+        </div>
         <div
           className="text-sm sm:text-base text-[hsl(var(--color-text-secondary))] mb-3 line-clamp-3"
           dangerouslySetInnerHTML={{ __html: sanitizeHTML(post.excerpt.rendered, 'excerpt') }}

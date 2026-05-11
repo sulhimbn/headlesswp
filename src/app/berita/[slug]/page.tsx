@@ -22,6 +22,7 @@ import SocialShare from '@/components/ui/SocialShare'
 import ReadingProgress from '@/components/ui/ReadingProgress'
 import TableOfContents from '@/components/ui/TableOfContents'
 import { extractHeadings, shouldShowToc, addIdsToHeadings } from '@/lib/utils/tableOfContents'
+import ArticleActions from '@/components/post/ArticleActions'
 
 const Footer = dynamic(() => import('@/components/layout/Footer'), {
   loading: () => <div className="h-64 bg-[hsl(var(--color-background-dark))] mt-12" aria-hidden="true" />
@@ -234,10 +235,17 @@ export default async function PostPage({ params }: { params: { slug: string } })
               {post.title.rendered}
             </h1>
 
-            <div className="mb-6">
+            <div className="mb-6 flex items-center justify-between">
               <SocialShare
                 title={stripHtml(post.title.rendered)}
                 url={`/berita/${post.slug}`}
+              />
+              <ArticleActions
+                postId={post.id}
+                slug={post.slug}
+                title={stripHtml(post.title.rendered)}
+                thumbnail={mediaUrl}
+                category={categoriesDetails[0]?.name || null}
               />
             </div>
 

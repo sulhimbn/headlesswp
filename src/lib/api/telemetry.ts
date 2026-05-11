@@ -1,10 +1,13 @@
 import { logger } from '@/lib/utils/logger'
+import { getCurrentTraceId, getCurrentSpanId } from '@/lib/telemetry/otel'
 
 export interface TelemetryEvent {
   timestamp: string
   type: string
   category: 'circuit-breaker' | 'retry' | 'rate-limit' | 'health-check' | 'api-request' | 'performance'
   data: Record<string, unknown>
+  traceId?: string
+  spanId?: string
 }
 
 export interface TelemetryConfig {
@@ -37,12 +40,17 @@ export class TelemetryCollector {
     }
   }
 
-  record(event: Omit<TelemetryEvent, 'timestamp'>): void {
+  record(event: Omit<TelemetryEvent, 'timestamp' | 'traceId' | 'spanId'>): void {
     if (!this.config.enabled) return
+
+    const traceId = getCurrentTraceId()
+    const spanId = getCurrentSpanId()
 
     const telemetryEvent: TelemetryEvent = {
       ...event,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
+      traceId,
+      spanId,
     }
 
     this.events.push(telemetryEvent)
@@ -106,6 +114,8 @@ export interface CircuitBreakerTelemetry {
   lastFailureTime: number | null
   nextAttemptTime: number | null
   endpoint?: string
+  traceId?: string
+  spanId?: string
 }
 
 export interface RetryTelemetry {
@@ -114,6 +124,8 @@ export interface RetryTelemetry {
   delay: number
   errorType: string
   endpoint?: string
+  traceId?: string
+  spanId?: string
 }
 
 export interface RateLimitTelemetry {
@@ -122,6 +134,8 @@ export interface RateLimitTelemetry {
   resetTime: number
   windowMs: number
   key?: string
+  traceId?: string
+  spanId?: string
 }
 
 export interface HealthCheckTelemetry {
@@ -130,6 +144,8 @@ export interface HealthCheckTelemetry {
   endpoint?: string
   version?: string
   error?: string
+  traceId?: string
+  spanId?: string
 }
 
 export interface ApiRequestTelemetry {
@@ -140,4 +156,17 @@ export interface ApiRequestTelemetry {
   cacheHit?: boolean
   retryCount?: number
   errorType?: string
+  traceId?: string
+  spanId?: string
+}
+
+export function enrichWithTraceContext(data: Record<string, unknown>): Record<string, unknown> {
+  const traceId = getCurrentTraceId()
+  const spanId = getCurrentSpanId()
+
+  return {
+    ...data,
+    ...(traceId && { traceId }),
+    ...(spanId && { spanId }),
+  }
 }

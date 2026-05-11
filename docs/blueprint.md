@@ -2195,6 +2195,62 @@ function SearchPage() {
 
 **Tests**: 45 tests covering rendering, user input, clear button, loading state, form submission, accessibility, design tokens, responsive design, focus management, keyboard navigation, edge cases, and custom debounce
 
+### OpenTelemetry Distributed Tracing
+
+**Last Updated**: 2026-05-11 (Backend Engineer)
+
+**Purpose**: End-to-end distributed tracing for observability across services
+
+**Implementation Files**:
+- `src/lib/telemetry/otel.ts` - OpenTelemetry SDK setup
+- `src/lib/telemetry/tracing.ts` - Custom span creation
+- `src/lib/telemetry/index.ts` - Public API exports
+
+**Status**: ✅ Implemented per Issue #1371
+
+**Features**:
+- **Custom Spans**: WordPress API calls, cache operations, resilience patterns, page rendering
+- **Trace Context Propagation**: Trace IDs added to all API requests, propagated through WordPress API calls
+- **Multiple Backend Support**: Jaeger, Zipkin, DataDog OTLP via configurable endpoints
+
+**Environment Variables**:
+```bash
+OTEL_ENABLED=true                  # Enable/disable (default: true)
+OTEL_SERVICE_NAME=headlesswp       # Service identifier
+OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318  # OTLP endpoint
+```
+
+**Custom Span Types**:
+| Span | Purpose | Attributes |
+|------|---------|------------|
+| `WordPress.API.{method}` | WordPress REST API calls | method, endpoint, statusCode, duration, cacheHit |
+| `Cache.{operation}` | Cache get/set/delete/invalidate | operation, key, ttl, cacheHit |
+| `Resilience.CircuitBreaker.{op}` | Circuit breaker operations | state, endpoint, success |
+| `Resilience.Retry.{op}` | Retry strategy execution | maxRetries, currentRetry, success |
+| `Resilience.RateLimit.{op}` | Rate limiting checks | success, rateLimited |
+| `Page.Rendering.{route}` | Page rendering time | route, params, revalidate |
+
+**Usage**:
+```typescript
+import { traceWordPressAPI, traceCacheOperation, getTraceId } from '@/lib/telemetry'
+
+// Wrap WordPress API calls
+const posts = await traceWordPressAPI('GET', '/wp/v2/posts', () => fetchPosts())
+
+// Wrap cache operations
+const cached = traceCacheOperation('get', 'post:123', () => cacheManager.get('post:123'))
+
+// Get current trace ID for error logging
+const traceId = getTraceId()
+```
+
+**Integration with Existing Telemetry**:
+- OpenTelemetry spans bridge to existing `TelemetryCollector`
+- Trace IDs included in error responses
+- Backward compatible with existing telemetry
+
+**Documentation**: [OpenTelemetry Setup Guide](./OPENTELEMETRY.md)
+
 ### Sanitization Standards
 
 - All user-generated content must be sanitized before rendering
