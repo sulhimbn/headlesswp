@@ -1,15 +1,12 @@
-# Dependabot configuration for automated dependency updates
-# See https://docs.github.com/en/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
-
 version: 2
 updates:
-  # Enable version updates for npm
   - package-ecosystem: "npm"
     directory: "/"
     schedule:
       interval: "weekly"
       day: "monday"
       time: "09:00"
+      timezone: "UTC"
     open-pull-requests-limit: 10
     reviewers:
       - "sulhimbn"
@@ -21,14 +18,54 @@ updates:
     labels:
       - "dependencies"
       - "npm"
+    allow:
+      - dependency-type: "production"
+      - dependency-type: "development"
+    groups:
+      production-dependencies:
+        dependency-type: "production"
+        update-types:
+          - "minor"
+          - "patch"
+      development-dependencies:
+        dependency-type: "development"
+        update-types:
+          - "minor"
+          - "patch"
+    # Security updates - automatically enabled
+    insecure-external-code-execution: "allow"
 
-  # Enable version updates for GitHub Actions
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+      day: "monday"
+      time: "09:00"
+      timezone: "UTC"
+    open-pull-requests-limit: 3
+    reviewers:
+      - "sulhimbn"
+    assignees:
+      - "sulhimbn"
+    commit-message:
+      prefix: "deps"
+      include: "scope"
+    labels:
+      - "dependencies"
+      - "npm"
+      - "major-update"
+    # Target only major version updates
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-patch", "version-update:semver-minor"]
+
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "weekly"
       day: "monday"
       time: "09:00"
+      timezone: "UTC"
     open-pull-requests-limit: 5
     reviewers:
       - "sulhimbn"
@@ -40,15 +77,19 @@ updates:
     labels:
       - "dependencies"
       - "github-actions"
+    groups:
+      github-actions:
+        patterns:
+          - "*"
 
-  # Enable version updates for Docker
   - package-ecosystem: "docker"
     directory: "/"
     schedule:
       interval: "weekly"
       day: "monday"
       time: "09:00"
-    open-pull-requests-limit: 5
+      timezone: "UTC"
+    open-pull-requests-limit: 3
     reviewers:
       - "sulhimbn"
     assignees:
@@ -60,13 +101,13 @@ updates:
       - "dependencies"
       - "docker"
 
-  # Enable version updates for Composer (WordPress dependencies)
   - package-ecosystem: "composer"
     directory: "/"
     schedule:
       interval: "weekly"
       day: "monday"
       time: "09:00"
+      timezone: "UTC"
     open-pull-requests-limit: 5
     reviewers:
       - "sulhimbn"
@@ -78,3 +119,7 @@ updates:
     labels:
       - "dependencies"
       - "composer"
+    groups:
+      php-dependencies:
+        patterns:
+          - "*"
