@@ -1,4 +1,4 @@
-import { proxy as middleware } from '@/proxy'
+import { middleware } from '@/middleware'
 
 let mockHeaders: Record<string, string> = {}
 
