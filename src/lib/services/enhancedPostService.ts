@@ -105,7 +105,7 @@ function validatePostRelationships(
 
 async function enrichPostWithDetails(post: WordPressPost): Promise<PostWithDetails> {
   let mediaUrl: string | null = null;
-  let mediaDimensions: { width: number; height: number } | null = undefined;
+  let mediaDimensions: { width: number; height: number } | null = null;
 
   // Try getMediaMetadata first for full info with dimensions  
   try {
