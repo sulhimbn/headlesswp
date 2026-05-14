@@ -276,6 +276,7 @@ export default async function PostPage({ params }: { params: { slug: string } })
                   key={relatedPost.id} 
                   post={relatedPost} 
                   mediaUrl={relatedPost.mediaUrl} 
+                  authorDetails={relatedPost.authorDetails}
                 />
               ))}
             </div>

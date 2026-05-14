@@ -1,5 +1,5 @@
 import { wordpressAPI } from '@/lib/wordpress';
-import type { WordPressPost, WordPressCategory, WordPressTag } from '@/types/wordpress';
+import type { WordPressPost, WordPressCategory, WordPressTag, WordPressAuthor } from '@/types/wordpress';
 import { PAGINATION_LIMITS } from '@/lib/api/config';
 import { cacheManager, CACHE_TTL, cacheKeys, cacheDependencies } from '@/lib/cache';
 import { dataValidator, isValidationResultValid, type ValidationResult } from '@/lib/validation/dataValidator';
@@ -82,9 +82,28 @@ async function enrichPostsWithMediaUrls(posts: WordPressPost[]): Promise<PostWit
     mediaUrls = new Map();
   }
 
+  const authorIds = [...new Set(posts.map(post => post.author).filter(id => id > 0))];
+  const authorDetailsMap = new Map<number, WordPressAuthor | null>();
+
+  if (authorIds.length > 0) {
+    const authorPromises = authorIds.map(async (authorId) => {
+      try {
+        const authorResult = await standardizedAPI.getAuthorById(authorId);
+        if (isApiResultSuccessful(authorResult)) {
+          authorDetailsMap.set(authorId, authorResult.data);
+        }
+      } catch (error) {
+        logger.warn(`Failed to fetch author ${authorId}`, error, { module: 'enhancedPostService' });
+        authorDetailsMap.set(authorId, null);
+      }
+    });
+    await Promise.all(authorPromises);
+  }
+
   return posts.map(post => ({
     ...post,
-    mediaUrl: mediaUrls.get(post.featured_media) || null
+    mediaUrl: mediaUrls.get(post.featured_media) || null,
+    authorDetails: post.author > 0 ? authorDetailsMap.get(post.author) || null : null
   }));
 }
 
@@ -105,7 +124,7 @@ function validatePostRelationships(
 
 async function enrichPostWithDetails(post: WordPressPost): Promise<PostWithDetails> {
   let mediaUrl: string | null = null;
-  let mediaDimensions: { width: number; height: number } | null = undefined;
+  let mediaDimensions: { width: number; height: number } | null = null;
 
   // Try getMediaMetadata first for full info with dimensions  
   try {
@@ -119,7 +138,7 @@ async function enrichPostWithDetails(post: WordPressPost): Promise<PostWithDetai
       // getMediaMetadata not available/returns falsy, fallback to getMediaUrl
       mediaUrl = await wordpressAPI.getMediaUrl(post.featured_media);
     }
-  } catch (error) {
+  } catch (_error) {
     // Fallback to getMediaUrl if getMediaMetadata fails completely
     try {
       mediaUrl = await wordpressAPI.getMediaUrl(post.featured_media);
@@ -169,7 +188,7 @@ async function enrichPostWithDetails(post: WordPressPost): Promise<PostWithDetai
   };
 }
 
-function createFallbackPostsWithMediaUrls(fallbacks: Array<{ id: string; title: string }>): any {
+function createFallbackPostsWithMediaUrls(fallbacks: Array<{ id: string; title: string }>): PostWithMediaUrl[] {
   return fallbacks.map(({ id, title }) => ({ ...createFallbackPost(id, title), mediaUrl: null, mediaDimensions: null }));
 }
 

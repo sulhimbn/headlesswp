@@ -42,7 +42,7 @@ export default async function BeritaPage({
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {posts.map((post, index) => (
-                <PostCard key={post.id} post={post} mediaUrl={post.mediaUrl} priority={index < 6} />
+                <PostCard key={post.id} post={post} mediaUrl={post.mediaUrl} priority={index < 6} authorDetails={post.authorDetails} />
               ))}
             </div>
 

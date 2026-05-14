@@ -2,6 +2,7 @@ import type { WordPressPost, WordPressCategory, WordPressTag, WordPressAuthor } 
 
 export interface PostWithMediaUrl extends WordPressPost {
   mediaUrl: string | null;
+  authorDetails?: WordPressAuthor | null;
 }
 
 export interface PostWithDetails extends WordPressPost {

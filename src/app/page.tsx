@@ -34,7 +34,7 @@ export default async function HomePage() {
           </SectionHeading>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {categoryPosts.map((post, index) => (
-              <PostCard key={post.id} post={post} mediaUrl={post.mediaUrl} priority={index < 3} />
+              <PostCard key={post.id} post={post} mediaUrl={post.mediaUrl} priority={index < 3} authorDetails={post.authorDetails} />
             ))}
           </div>
         </section>
@@ -45,7 +45,7 @@ export default async function HomePage() {
           </SectionHeading>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {latestPosts.map((post, index) => (
-              <PostCard key={post.id} post={post} mediaUrl={post.mediaUrl} priority={index < 3} />
+              <PostCard key={post.id} post={post} mediaUrl={post.mediaUrl} priority={index < 3} authorDetails={post.authorDetails} />
             ))}
           </div>
         </section>
