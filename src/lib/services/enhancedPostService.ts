@@ -105,7 +105,7 @@ function validatePostRelationships(
 
 async function enrichPostWithDetails(post: WordPressPost): Promise<PostWithDetails> {
   let mediaUrl: string | null = null;
-  let mediaDimensions: { width: number; height: number } | null = undefined;
+  let mediaDimensions: { width: number; height: number } | null = null;
 
   // Try getMediaMetadata first for full info with dimensions  
   try {
@@ -119,7 +119,7 @@ async function enrichPostWithDetails(post: WordPressPost): Promise<PostWithDetai
       // getMediaMetadata not available/returns falsy, fallback to getMediaUrl
       mediaUrl = await wordpressAPI.getMediaUrl(post.featured_media);
     }
-  } catch (error) {
+  } catch (_error) {
     // Fallback to getMediaUrl if getMediaMetadata fails completely
     try {
       mediaUrl = await wordpressAPI.getMediaUrl(post.featured_media);
@@ -169,7 +169,7 @@ async function enrichPostWithDetails(post: WordPressPost): Promise<PostWithDetai
   };
 }
 
-function createFallbackPostsWithMediaUrls(fallbacks: Array<{ id: string; title: string }>): any {
+function createFallbackPostsWithMediaUrls(fallbacks: Array<{ id: string; title: string }>): PostWithMediaUrl[] {
   return fallbacks.map(({ id, title }) => ({ ...createFallbackPost(id, title), mediaUrl: null, mediaDimensions: null }));
 }
 
