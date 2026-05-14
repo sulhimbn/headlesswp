@@ -23,7 +23,16 @@ const nextConfig = {
         protocol: 'https',
         hostname: '**.your-domain.com',
       },
+      {
+        protocol: 'https',
+        hostname: '**.wordpress.com',
+      },
+      {
+        protocol: 'https',
+        hostname: '**.wp.com',
+      },
     ],
+    dangerouslyAllowBlurDataURL: true,
   },
   env: {
     WORDPRESS_URL: process.env.WORDPRESS_URL,
