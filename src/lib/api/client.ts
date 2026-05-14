@@ -50,6 +50,45 @@ const rateLimiterManager = new RateLimiterManager({
 // Placeholder for health checker functions - will be set after apiClient is created
 let checkApiHealthFn: (() => Promise<HealthCheckResult | null>) | null = null;
 
+const PROTOTYPE_POLLUTION_PATTERNS = ['__proto__', 'constructor', 'prototype', 'hasOwnProperty']
+const DANGEROUS_CONFIG_KEYS = ['auth', 'baseURL', 'socketPath', 'beforeRedirect', 'insecureHTTPParser', 'transport', 'proxy', 'env', 'formSerializer']
+
+function sanitizeConfigAgainstPollution(obj: Record<string, unknown>, depth = 0): Record<string, unknown> {
+  if (depth > 5 || !obj || typeof obj !== 'object' || obj === null) {
+    return obj as Record<string, unknown>
+  }
+  const sanitized: Record<string, unknown> = Object.create(null)
+  for (const key of Object.keys(obj)) {
+    if (!Object.prototype.hasOwnProperty.call(obj, key)) continue
+    if (PROTOTYPE_POLLUTION_PATTERNS.includes(key)) continue
+    const value = obj[key]
+    if (value && typeof value === 'object') {
+      sanitized[key] = sanitizeConfigAgainstPollution(value as Record<string, unknown>, depth + 1)
+    } else {
+      sanitized[key] = value
+    }
+  }
+  return sanitized
+}
+
+function validateAndSanitizeUrl(url: string | undefined, baseURL: string | undefined): string | undefined {
+  if (!url) return url
+  try {
+    const targetUrl = url.startsWith('/') ? `${baseURL}${url}` : url
+    const parsed = new URL(targetUrl)
+    if (!['http:', 'https:'].includes(parsed.protocol)) {
+      throw new Error(`Invalid protocol: ${parsed.protocol}`)
+    }
+    const allowedHost = baseURL ? new URL(baseURL).host : null
+    if (allowedHost && parsed.host !== allowedHost) {
+      throw new Error(`Host mismatch: ${parsed.host} !== ${allowedHost}`)
+    }
+    return url
+  } catch {
+    throw new Error(`Invalid or disallowed URL: ${url}`)
+  }
+}
+
 const createApiClient = (): AxiosInstance => {
   const api = axios.create({
     baseURL: WORDPRESS_API_BASE_URL,
@@ -57,10 +96,22 @@ const createApiClient = (): AxiosInstance => {
       'Content-Type': 'application/json',
     },
     timeout: API_TIMEOUT,
+    validateStatus: (status) => status >= 200 && status < 300,
   })
 
   api.interceptors.request.use(
     async (config: InternalAxiosRequestConfig) => {
+      const configObj = config as unknown as Record<string, unknown>
+      for (const pattern of PROTOTYPE_POLLUTION_PATTERNS) {
+        delete configObj[pattern]
+      }
+      if (config.url) {
+        config.url = validateAndSanitizeUrl(config.url, config.baseURL as string | undefined)
+      }
+      for (const key of DANGEROUS_CONFIG_KEYS) {
+        delete configObj[key]
+      }
+
       if (!config.signal) {
         const controller = new AbortController()
         config.signal = controller.signal
@@ -91,7 +142,7 @@ const createApiClient = (): AxiosInstance => {
         }
       }
 
-      return config
+      return sanitizedConfig
     },
     (error: AxiosError) => Promise.reject(error)
   )
