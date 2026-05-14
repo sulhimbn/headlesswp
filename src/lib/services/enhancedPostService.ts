@@ -1,5 +1,5 @@
 import { wordpressAPI } from '@/lib/wordpress';
-import type { WordPressPost, WordPressCategory, WordPressTag } from '@/types/wordpress';
+import type { WordPressPost, WordPressCategory, WordPressTag, WordPressAuthor } from '@/types/wordpress';
 import { PAGINATION_LIMITS } from '@/lib/api/config';
 import { cacheManager, CACHE_TTL, cacheKeys, cacheDependencies } from '@/lib/cache';
 import { dataValidator, isValidationResultValid, type ValidationResult } from '@/lib/validation/dataValidator';
@@ -82,9 +82,28 @@ async function enrichPostsWithMediaUrls(posts: WordPressPost[]): Promise<PostWit
     mediaUrls = new Map();
   }
 
+  const authorIds = [...new Set(posts.map(post => post.author).filter(id => id > 0))];
+  const authorDetailsMap = new Map<number, WordPressAuthor | null>();
+
+  if (authorIds.length > 0) {
+    const authorPromises = authorIds.map(async (authorId) => {
+      try {
+        const authorResult = await standardizedAPI.getAuthorById(authorId);
+        if (isApiResultSuccessful(authorResult)) {
+          authorDetailsMap.set(authorId, authorResult.data);
+        }
+      } catch (error) {
+        logger.warn(`Failed to fetch author ${authorId}`, error, { module: 'enhancedPostService' });
+        authorDetailsMap.set(authorId, null);
+      }
+    });
+    await Promise.all(authorPromises);
+  }
+
   return posts.map(post => ({
     ...post,
-    mediaUrl: mediaUrls.get(post.featured_media) || null
+    mediaUrl: mediaUrls.get(post.featured_media) || null,
+    authorDetails: post.author > 0 ? authorDetailsMap.get(post.author) || null : null
   }));
 }
 
