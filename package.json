@@ -22,16 +22,16 @@
   },
   "dependencies": {
     "@sentry/nextjs": "^10.40.0",
-    "axios": "^1.13.5",
+    "axios": "1.16.1",
     "isomorphic-dompurify": "^2.36.0",
-    "next": "^16.2.1",
+    "next": "^16.2.6",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "web-vitals": "^5.1.0"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
-    "@next/bundle-analyzer": "^16.1.6",
+    "@next/bundle-analyzer": "^16.2.6",
     "@size-limit/file": "^12.0.0",
     "@size-limit/preset-app": "^12.0.0",
     "@size-limit/webpack": "^12.0.0",
@@ -61,13 +61,14 @@
   ],
   "author": "Mitra Banten News",
   "license": "MIT",
-  "overrides": {
+"overrides": {
     "js-yaml": "^4.1.1",
     "caniuse-lite": "^1.0.30001774",
     "baseline-browser-mapping": "^2.10.0",
     "undici": "^7.24.5",
-    "serialize-javascript": "^7.0.3",
+    "serialize-javascript": ">=7.0.5",
     "flatted": "^3.4.2",
-    "dompurify": "^3.3.3"
+    "dompurify": "^3.3.3",
+    "handlebars": ">=4.7.9"
   }
 }
