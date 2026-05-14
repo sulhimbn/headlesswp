@@ -1,4 +1,4 @@
-import type { WordPressPost } from '@/types/wordpress'
+import type { WordPressPost, WordPressAuthor } from '@/types/wordpress'
 import Link from 'next/link'
 import Image from 'next/image'
 import { sanitizeHTML } from '@/lib/utils/sanitizeHTML'
@@ -12,6 +12,7 @@ interface PostCardProps {
   mediaUrl?: string | null
   mediaDimensions?: { width: number; height: number } | null
   priority?: boolean
+  authorDetails?: WordPressAuthor | null
 }
 
 const POSTCARD_PROPS: (keyof PostCardProps)[] = [
@@ -23,10 +24,9 @@ const POSTCARD_PROPS: (keyof PostCardProps)[] = [
 
 const arePropsEqual = createArePropsEqual<PostCardProps>(POSTCARD_PROPS);
 
-function PostCardComponent({ post, mediaUrl, mediaDimensions, priority = false }: PostCardProps) {
+function PostCardComponent({ post, mediaUrl, mediaDimensions, priority = false, authorDetails }: PostCardProps) {
   const postTitleId = `post-title-${post.id}`
   
-  // Generate responsive sizes based on available dimensions
   const sizes = mediaDimensions?.width 
     ? `(max-width: 768px) 100vw, (max-width: 1200px) 50vw, ${Math.min(mediaDimensions.width, 400)}px`
     : "(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw";
@@ -63,10 +63,18 @@ function PostCardComponent({ post, mediaUrl, mediaDimensions, priority = false }
           dangerouslySetInnerHTML={{ __html: sanitizeHTML(post.excerpt.rendered, 'excerpt') }}
           aria-hidden="true"
         />
-         <div className="text-xs sm:text-sm text-[hsl(var(--color-text-muted))]">
+        <div className="flex items-center justify-between text-xs sm:text-sm text-[hsl(var(--color-text-muted))]">
           <time dateTime={post.date}>
             {formatDate(post.date, 'full')}
           </time>
+          {authorDetails && (
+            <Link
+              href={`/author/${authorDetails.id}`}
+              className="text-[hsl(var(--color-primary))] hover:text-[hsl(var(--color-primary-dark))] transition-colors font-medium"
+            >
+              {authorDetails.name}
+            </Link>
+          )}
         </div>
       </div>
     </article>

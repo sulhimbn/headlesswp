@@ -13,6 +13,9 @@
     "analyze": "ANALYZE=true next build",
     "test": "jest",
     "test:watch": "jest --watch",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:headed": "playwright test --headed",
     "audit:security": "npm audit --audit-level=moderate",
     "audit:full": "npm audit --audit-level=low",
     "deps:check": "npm outdated",
@@ -21,8 +24,9 @@
     "check": "npm run lint && npm run typecheck && npm test"
   },
   "dependencies": {
+    "@opentelemetry/sdk-node": "0.218.0",
     "@sentry/nextjs": "^10.40.0",
-    "axios": "^1.13.5",
+    "axios": "^1.16.0",
     "isomorphic-dompurify": "^2.36.0",
     "next": "^16.2.1",
     "react": "^19.2.4",
@@ -32,6 +36,7 @@
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@next/bundle-analyzer": "^16.1.6",
+    "@playwright/test": "1.60.0",
     "@size-limit/file": "^12.0.0",
     "@size-limit/preset-app": "^12.0.0",
     "@size-limit/webpack": "^12.0.0",
@@ -66,8 +71,10 @@
     "caniuse-lite": "^1.0.30001774",
     "baseline-browser-mapping": "^2.10.0",
     "undici": "^7.24.5",
-    "serialize-javascript": "^7.0.3",
+    "serialize-javascript": "^7.0.5",
     "flatted": "^3.4.2",
-    "dompurify": "^3.3.3"
+    "dompurify": "^3.3.3",
+    "handlebars": "^4.7.9",
+    "postcss": "^8.5.10"
   }
 }
