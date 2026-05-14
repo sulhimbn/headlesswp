@@ -5,6 +5,7 @@ process.env.WORDPRESS_URL = 'http://localhost:8080'
 process.env.WORDPRESS_API_URL = 'http://localhost:8080/wp-json'
 process.env.NEXT_PUBLIC_WORDPRESS_URL = 'http://localhost:8080'
 process.env.NEXT_PUBLIC_WORDPRESS_API_URL = 'http://localhost:8080/wp-json'
+process.env.NEXT_PUBLIC_SITE_URL = 'http://localhost:3000'
 process.env.NODE_ENV = 'test'
 
 const originalSetInterval = global.setInterval
@@ -76,3 +77,6 @@ Object.defineProperty(window, 'matchMedia', {
     dispatchEvent: jest.fn(),
   })),
 })
+
+// Mock document.execCommand for clipboard fallback tests
+document.execCommand = jest.fn().mockReturnValue(true)
