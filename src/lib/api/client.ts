@@ -1,4 +1,4 @@
-import axios, { AxiosInstance, InternalAxiosRequestConfig, AxiosError } from 'axios'
+import axios, { AxiosInstance, InternalAxiosRequestConfig, AxiosError, AxiosRequestConfig } from 'axios'
 import {
   WORDPRESS_API_BASE_URL,
   WORDPRESS_SITE_URL,
@@ -20,6 +20,13 @@ import { RateLimiterManager } from './rateLimiter'
 import { createApiError, ApiError, shouldTriggerCircuitBreaker } from './errors'
 import { HealthChecker, HealthCheckResult } from './healthCheck'
 import { logger } from '@/lib/utils/logger'
+import { addTraceAttribute, traceAsync } from '@/lib/utils/tracing'
+
+interface AxiosConfigWithMetadata extends AxiosRequestConfig {
+  metadata?: {
+    startTime?: number
+  }
+}
 
 function getApiUrl(path: string): string {
   return `${WORDPRESS_SITE_URL}/index.php?rest_route=${path}`
@@ -61,47 +68,77 @@ const createApiClient = (): AxiosInstance => {
 
   api.interceptors.request.use(
     async (config: InternalAxiosRequestConfig) => {
-      if (!config.signal) {
-        const controller = new AbortController()
-        config.signal = controller.signal
-      }
+      const configWithMetadata = config as AxiosConfigWithMetadata
+      const startTime = Date.now()
+      configWithMetadata.metadata = { startTime }
 
-      try {
-        await rateLimiterManager.checkLimit()
-      } catch (error) {
-        return Promise.reject(error)
-      }
+      return traceAsync(
+        `HTTP ${config.method?.toUpperCase() || 'GET'}`,
+        {
+          'http.method': config.method?.toUpperCase() || 'GET',
+          'http.url': config.url || '',
+          'http.target': config.url?.replace(WORDPRESS_API_BASE_URL, '') || '',
+          'service.name': 'headlesswp'
+        },
+        async () => {
+          if (!config.signal) {
+            const controller = new AbortController()
+            config.signal = controller.signal
+          }
 
-      const circuitBreakerState = circuitBreaker.getState()
-      if (circuitBreakerState === CircuitState.HALF_OPEN) {
-        logger.warn('Circuit in HALF_OPEN state, performing health check...', undefined, { module: 'APIClient' })
+          try {
+            await rateLimiterManager.checkLimit()
+          } catch (error) {
+            return Promise.reject(error)
+          }
 
-        const healthResult = await checkApiHealthFn?.()
-        if (healthResult && !healthResult.healthy) {
-          logger.warn('Health check failed, preventing request', undefined, { module: 'APIClient' })
-          const healthError = createApiError(
-            new Error(`Health check failed: ${healthResult.message}. Service still recovering.`),
-            config.url
-          )
-          return Promise.reject(healthError)
+          const circuitBreakerState = circuitBreaker.getState()
+          if (circuitBreakerState === CircuitState.HALF_OPEN) {
+            logger.warn('Circuit in HALF_OPEN state, performing health check...', undefined, { module: 'APIClient' })
+
+            const healthResult = await checkApiHealthFn?.()
+            if (healthResult && !healthResult.healthy) {
+              logger.warn('Health check failed, preventing request', undefined, { module: 'APIClient' })
+              const healthError = createApiError(
+                new Error(`Health check failed: ${healthResult.message}. Service still recovering.`),
+                config.url
+              )
+              return Promise.reject(healthError)
+            }
+
+            if (healthResult) {
+              logger.warn(`Health check passed (${healthResult.latency}ms), allowing request`, undefined, { module: 'APIClient' })
+            }
+          }
+
+          return config
         }
-
-        if (healthResult) {
-          logger.warn(`Health check passed (${healthResult.latency}ms), allowing request`, undefined, { module: 'APIClient' })
-        }
-      }
-
-      return config
+      )
     },
     (error: AxiosError) => Promise.reject(error)
   )
 
   api.interceptors.response.use(
     (response) => {
+      const configWithMetadata = response.config as AxiosConfigWithMetadata
+      const startTime = configWithMetadata.metadata?.startTime
+      if (startTime) {
+        const duration = Date.now() - startTime
+        addTraceAttribute('http.status_code', response.status)
+        addTraceAttribute('http.duration_ms', duration)
+      }
       circuitBreaker.recordSuccess()
       return response
     },
     async (error: AxiosError) => {
+      const configWithMetadata = error.config as AxiosConfigWithMetadata | undefined
+      const startTime = configWithMetadata?.metadata?.startTime
+      if (startTime) {
+        const duration = Date.now() - startTime
+        addTraceAttribute('http.status_code', error.response?.status || 0)
+        addTraceAttribute('http.duration_ms', duration)
+      }
+
       const endpoint = error.config?.url
       const apiError = createApiError(error, endpoint)
 
@@ -121,7 +158,7 @@ const createApiClient = (): AxiosInstance => {
         return Promise.reject(apiError)
       }
 
-      const config = error.config as InternalAxiosRequestConfig & { _retryCount?: number }
+      const config = error.config as InternalAxiosRequestConfig & { _retryCount?: number } & { metadata?: { startTime?: number } }
 
       if (!config._retryCount) {
         config._retryCount = 0
