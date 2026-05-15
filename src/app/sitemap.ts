@@ -4,6 +4,7 @@ import { standardizedAPI } from '@/lib/api/standardized'
 import { isApiResultSuccessful } from '@/lib/api/response'
 import { cacheManager, CACHE_TTL, cacheKeys } from '@/lib/cache'
 import { logger } from '@/lib/utils/logger'
+import type { WordPressPost, WordPressCategory, WordPressTag } from '@/types/wordpress'
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = SITE_URL
@@ -35,15 +36,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }
 
   try {
-    const [postsResult, categoriesResult] = await Promise.all([
+    const [postsResult, categoriesResult, tagsResult] = await Promise.all([
       standardizedAPI.getAllPosts({ per_page: 100 }),
       standardizedAPI.getAllCategories(),
+      standardizedAPI.getAllTags(),
     ])
 
     const sitemapEntries: MetadataRoute.Sitemap = [...staticPages]
 
     if (isApiResultSuccessful(categoriesResult)) {
-      const categoryUrls: MetadataRoute.Sitemap = categoriesResult.data.map((category) => ({
+      const categories = categoriesResult.data as WordPressCategory[]
+      const categoryUrls: MetadataRoute.Sitemap = categories.map((category) => ({
         url: `${baseUrl}/kategori/${category.slug}`,
         lastModified: new Date(),
         changeFrequency: 'weekly' as const,
@@ -52,8 +55,20 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       sitemapEntries.push(...categoryUrls)
     }
 
+    if (isApiResultSuccessful(tagsResult)) {
+      const tags = tagsResult.data as WordPressTag[]
+      const tagUrls: MetadataRoute.Sitemap = tags.map((tag) => ({
+        url: `${baseUrl}/tag/${tag.slug}`,
+        lastModified: new Date(),
+        changeFrequency: 'weekly' as const,
+        priority: 0.6,
+      }))
+      sitemapEntries.push(...tagUrls)
+    }
+
     if (isApiResultSuccessful(postsResult)) {
-      const postUrls: MetadataRoute.Sitemap = postsResult.data.map((post) => ({
+      const posts = postsResult.data as WordPressPost[]
+      const postUrls: MetadataRoute.Sitemap = posts.map((post) => ({
         url: `${baseUrl}/berita/${post.slug}`,
         lastModified: new Date(post.modified || post.date),
         changeFrequency: 'weekly' as const,
