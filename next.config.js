@@ -1,5 +1,8 @@
 import withBundleAnalyzer from '@next/bundle-analyzer'
 import { withSentryConfig } from '@sentry/nextjs'
+import { assertEnvironment } from './src/lib/config/envValidation'
+
+assertEnvironment()
 
 const withBundleAnalyzerConfig = withBundleAnalyzer({
   enabled: process.env.ANALYZE === 'true',
