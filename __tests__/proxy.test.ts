@@ -4,7 +4,18 @@ import { proxy, config as proxyConfig } from '@/proxy'
 jest.mock('next/server', () => ({
   NextRequest: jest.fn(),
   NextResponse: {
-    next: jest.fn(),
+    next: jest.fn(() => ({
+      headers: {
+        get: () => null,
+        set: jest.fn()
+      }
+    })),
+    redirect: jest.fn(() => ({
+      headers: {
+        get: () => null,
+        set: jest.fn()
+      }
+    })),
   },
 }))
 
@@ -31,6 +42,13 @@ describe('Proxy Middleware', () => {
     } as unknown as jest.Mocked<NextResponse> & { headers: Headers }
 
     mockRequest = {
+      url: 'http://localhost:3000/',
+      headers: {
+        get: (key: string) => {
+          if (key === 'user-agent') return 'Mozilla/5.0'
+          return null
+        }
+      },
       nextUrl: {
         pathname: '/',
       },
