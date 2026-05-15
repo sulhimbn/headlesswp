@@ -16,10 +16,12 @@ export interface LoggerOptions {
   enableColors?: boolean
 }
 
+const IS_PRODUCTION = process.env.NODE_ENV === 'production'
+
 const DEFAULT_OPTIONS: LoggerOptions = {
-  level: process.env.NODE_ENV === 'production' ? LogLevel.INFO : LogLevel.DEBUG,
+  level: IS_PRODUCTION ? LogLevel.ERROR : LogLevel.DEBUG,
   enableTimestamp: true,
-  enableColors: process.env.NODE_ENV !== 'production'
+  enableColors: !IS_PRODUCTION
 }
 
 class Logger {
@@ -75,6 +77,16 @@ class Logger {
   }
 
   private getConsoleMethod(level: LogLevel): (...args: unknown[]) => void {
+    if (IS_PRODUCTION) {
+      switch (level) {
+        case LogLevel.ERROR:
+          return console.error
+        case LogLevel.WARN:
+          return console.warn
+        default:
+          return () => {}
+      }
+    }
     switch (level) {
       case LogLevel.DEBUG:
         return console.debug

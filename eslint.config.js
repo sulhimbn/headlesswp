@@ -41,6 +41,7 @@ export default [
       'no-unused-vars': 'off',
       '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
       'no-console': ['warn', { allow: ['error', 'warn'] }],
+      'no-magic-numbers': ['warn', { ignore: [0, 1, -1], ignoreArrayIndexes: true, ignoreDefaultValues: true }],
       '@next/next/no-img-element': 'off',
       'react/no-unescaped-entities': 'off',
       'no-undef': 'off',

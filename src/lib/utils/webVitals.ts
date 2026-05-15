@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react'
 import { onCLS, onFCP, onINP, onLCP, onTTFB } from 'web-vitals'
+import { logger } from './logger'
 
 export interface WebVitalsReport {
   name: 'FCP' | 'LCP' | 'TTFB' | 'CLS' | 'INP'
@@ -57,7 +58,7 @@ export function useWebVitals(options: UseWebVitalsOptions = {}) {
           }),
           keepalive: true
         }).catch((error) => {
-          console.error('Failed to report web vital:', error)
+          logger.error('Failed to report web vital:', error)
         })
       }
     }

@@ -1030,6 +1030,23 @@ interface ApiListResult<T> extends ApiResult<T[]> {
 - **Implementation**: `src/lib/api/rateLimiter.ts`
 - **Status**: ✅ Production-ready, verified by INT-AUDIT-001
 
+### Rate Limit Core (ARCH-RATE-001)
+- **Purpose**: Shared core logic for rate limiting to eliminate duplication
+- **Architecture**: Extract common operations into shared utility module
+- **Core Operations**:
+  - `refillTokens()`: Token bucket refill logic
+  - `cleanupOldRequests()`: Remove expired timestamps from window
+  - `calculateRemainingRequests()`: Compute remaining requests
+  - `calculateResetTime()`: Compute window reset timestamp
+  - `createRateLimitState()`: Factory for rate limit state
+  - `waitForCheck()`: Reusable waiting utility for concurrent access
+- **Adapter Interface** (`IRateLimitAdapter`):
+  - `getState(key: string)`: Get state for a key (supports Redis for distributed)
+  - `setState(key: string, state: RateLimitState)`: Persist state
+- **Design**: Interface supports Redis adapter for distributed rate limiting
+- **Implementation**: `src/lib/api/rateLimitCore.ts`
+- **Status**: ✅ Production-ready, extracted in INT-1155
+
 ### API Route Rate Limiting
 - **Purpose**: Protect API routes from DoS attacks
 - **Configuration**:

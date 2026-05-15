@@ -1,25 +1,22 @@
+import {
+  RateLimitOptions,
+  RateLimitInfo,
+  IRateLimitAdapter,
+  InMemoryRateLimitAdapter,
+} from './rateLimitCore'
 import { ApiErrorImpl, ApiErrorType } from './errors'
 import { TIME_CONSTANTS } from './config'
 
-export interface RateLimiterOptions {
-  maxRequests: number
-  windowMs: number
-}
-
-export interface RateLimitInfo {
-  remainingRequests: number
-  resetTime: number
-  windowMs: number
-  maxRequests: number
-}
+export type { RateLimitOptions, RateLimitInfo, IRateLimitAdapter }
+export { InMemoryRateLimitAdapter }
 
 export class RateLimiter {
   private lastRefill: number
-  private options: RateLimiterOptions
+  private options: RateLimitOptions
   private requestTimes: number[]
   private checking: boolean
 
-  constructor(options: RateLimiterOptions) {
+  constructor(options: RateLimitOptions, _adapter?: IRateLimitAdapter) {
     this.options = options
     this.lastRefill = Date.now()
     this.requestTimes = []
@@ -109,9 +106,9 @@ export class RateLimiter {
 
 export class RateLimiterManager {
   private limiters: Map<string, RateLimiter>
-  private defaultOptions: RateLimiterOptions
+  private defaultOptions: RateLimitOptions
 
-  constructor(defaultOptions: RateLimiterOptions) {
+  constructor(defaultOptions: RateLimitOptions) {
     this.defaultOptions = defaultOptions
     this.limiters = new Map()
   }

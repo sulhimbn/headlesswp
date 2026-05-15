@@ -3,6 +3,7 @@ import { CacheCleanup } from './cache/cacheCleanup';
 import { CacheDependencyManager } from './cache/cacheDependencyManager';
 import type { ICacheManager } from '@/lib/api/ICacheManager';
 import type { CacheEntry, CacheTelemetry } from './cache/types';
+import { CACHE_CLEANUP_INTERVAL_MS } from './constants/appConstants';
 export type { CacheEntry, CacheTelemetry } from './cache/types';
 
 /**
@@ -327,12 +328,12 @@ class CacheManager implements ICacheManager {
    * Note: Entries are automatically invalidated on access if expired,
    * so this cleanup is optional for correctness but helpful for memory.
    * 
-    * @example
-    * ```typescript
-    * // Run cleanup every hour
-    * setInterval(() => {
-    *   const cleaned = cacheManager.cleanup();
-    * }, 3600000);
+* @example
+   * ```typescript
+   * // Run cleanup every hour
+   * setInterval(() => {
+   *   const cleaned = cacheManager.cleanup();
+   * }, CACHE_CLEANUP_INTERVAL_MS);
      * ```
     */
   cleanup(): number {
