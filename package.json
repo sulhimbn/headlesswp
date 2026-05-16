@@ -13,6 +13,7 @@
     "analyze": "ANALYZE=true next build",
     "test": "jest",
     "test:watch": "jest --watch",
+    "test:a11y": "jest --testPathPatterns=accessibility",
     "audit:security": "npm audit --audit-level=moderate",
     "audit:full": "npm audit --audit-level=low",
     "deps:check": "npm outdated",
