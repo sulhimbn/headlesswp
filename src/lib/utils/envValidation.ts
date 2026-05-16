@@ -14,12 +14,12 @@ export interface EnvVariable {
 const REQUIRED_ENV_VARS: EnvVariable[] = [
   {
     name: 'NEXT_PUBLIC_WORDPRESS_API_URL',
-    required: false,
+    required: true,
     pattern: /^https?:\/\/.+/,
   },
   {
     name: 'NEXT_PUBLIC_WORDPRESS_URL',
-    required: false,
+    required: true,
     pattern: /^https?:\/\/.+/,
   },
   {
