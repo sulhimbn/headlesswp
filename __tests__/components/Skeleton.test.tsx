@@ -23,6 +23,29 @@ describe('Skeleton Component', () => {
     })
   })
 
+  describe('Memoization', () => {
+    test('renders with consistent props', () => {
+      const { rerender } = render(<Skeleton className="test" variant="text" />)
+      rerender(<Skeleton className="test" variant="text" />)
+      const skeleton = document.querySelector('[role="presentation"]')
+      expect(skeleton).toBeInTheDocument()
+    })
+
+    test('renders when className changes', () => {
+      const { rerender } = render(<Skeleton className="old-class" variant="text" />)
+      rerender(<Skeleton className="new-class" variant="text" />)
+      const skeleton = document.querySelector('[role="presentation"]')
+      expect(skeleton).toBeInTheDocument()
+    })
+
+    test('renders when variant changes', () => {
+      const { rerender } = render(<Skeleton className="test" variant="text" />)
+      rerender(<Skeleton className="test" variant="circular" />)
+      const skeleton = document.querySelector('[role="presentation"]')
+      expect(skeleton).toBeInTheDocument()
+    })
+  })
+
   describe('Variants', () => {
     test('renders text variant', () => {
       const { container } = render(<Skeleton variant="text" />)
