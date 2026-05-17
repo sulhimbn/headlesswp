@@ -15,26 +15,22 @@ interface SharePlatform {
   name: string
   icon: 'facebook' | 'twitter' | 'whatsapp' | 'link' | 'check'
   getShareUrl: (title: string, url: string) => string
-  color: string
 }
 
 const platforms: SharePlatform[] = [
   {
     name: 'Facebook',
     icon: 'facebook',
-    color: 'hover:bg-[#1877F2]',
     getShareUrl: (title, url) => `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`,
   },
   {
     name: 'Twitter',
     icon: 'twitter',
-    color: 'hover:bg-[#1DA1F2]',
     getShareUrl: (title, url) => `https://twitter.com/intent/tweet?text=${encodeURIComponent(title)}&url=${encodeURIComponent(url)}`,
   },
   {
     name: 'WhatsApp',
     icon: 'whatsapp',
-    color: 'hover:bg-[#25D366]',
     getShareUrl: (title, url) => `https://wa.me/?text=${encodeURIComponent(title + ' ' + url)}`,
   },
 ]
@@ -72,7 +68,11 @@ function SocialShareComponent({ title, url, className = '' }: SocialShareProps) 
           <button
             key={platform.name}
             onClick={() => handleShare(platform)}
-            className={`p-2 rounded-full bg-[hsl(var(--color-surface))] text-[hsl(var(--color-text-secondary))] ${platform.color} transition-colors focus:outline-none focus:ring-2 focus:ring-[hsl(var(--color-primary))] focus:ring-offset-2`}
+            className={`p-2 rounded-full bg-[hsl(var(--color-surface))] text-[hsl(var(--color-text-secondary))] transition-colors focus:outline-none focus:ring-2 focus:ring-[hsl(var(--color-primary))] focus:ring-offset-2 ${
+            copied 
+              ? 'bg-[hsl(var(--color-success))] text-[hsl(var(--color-surface))]' 
+              : 'hover:bg-[hsl(var(--color-primary))] hover:text-[hsl(var(--color-surface))]'
+          }`}
             aria-label={`Bagikan ke ${platform.name}`}
             title={`Bagikan ke ${platform.name}`}
           >
@@ -83,8 +83,8 @@ function SocialShareComponent({ title, url, className = '' }: SocialShareProps) 
           onClick={handleCopyLink}
           className={`p-2 rounded-full bg-[hsl(var(--color-surface))] text-[hsl(var(--color-text-secondary))] transition-colors focus:outline-none focus:ring-2 focus:ring-[hsl(var(--color-primary))] focus:ring-offset-2 ${
             copied 
-              ? 'bg-[hsl(var(--color-success))] text-white' 
-              : 'hover:bg-[hsl(var(--color-primary))] hover:text-white'
+              ? 'bg-[hsl(var(--color-success))] text-[hsl(var(--color-surface))]' 
+              : 'hover:bg-[hsl(var(--color-primary))] hover:text-[hsl(var(--color-surface))]'
           }`}
           aria-label={copied ? 'Tautan disalin' : 'Salin tautan'}
           title={copied ? 'Tautan disalin' : 'Salin tautan'}
