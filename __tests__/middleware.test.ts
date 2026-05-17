@@ -6,7 +6,12 @@ jest.mock('next/server', () => ({
   NextRequest: jest.fn().mockImplementation(() => ({
     url: 'http://localhost:3000/test',
     method: 'GET',
-    headers: new Map()
+    headers: {
+      get: (key: string) => null
+    },
+    nextUrl: {
+      pathname: '/test'
+    }
   })),
   NextResponse: {
     next: jest.fn(() => ({
@@ -19,7 +24,8 @@ jest.mock('next/server', () => ({
         })
       },
       status: 200
-    }))
+    })),
+    redirect: jest.fn()
   }
 }))
 

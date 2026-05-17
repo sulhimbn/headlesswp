@@ -5,6 +5,7 @@ jest.mock('next/server', () => ({
   NextRequest: jest.fn(),
   NextResponse: {
     next: jest.fn(),
+    redirect: jest.fn(),
   },
 }))
 
@@ -31,8 +32,12 @@ describe('Proxy Middleware', () => {
     } as unknown as jest.Mocked<NextResponse> & { headers: Headers }
 
     mockRequest = {
+      url: 'http://localhost:3000/test',
       nextUrl: {
-        pathname: '/',
+        pathname: '/test',
+      },
+      headers: {
+        get: (key: string) => null
       },
     } as unknown as jest.Mocked<NextRequest>
 
