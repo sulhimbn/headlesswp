@@ -18,4 +18,13 @@ module.exports = {
     '**/__tests__/**/*test.(ts|tsx|js)',
   ],
   workerIdleMemoryLimit: '512KB',
+  collectCoverage: true,
+  coverageThreshold: {
+    global: {
+      statements: 80,
+      branches: 80,
+      functions: 80,
+      lines: 80,
+    },
+  },
 }
