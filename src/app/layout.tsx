@@ -4,6 +4,7 @@ import { Inter } from 'next/font/google'
 import { SITE_URL, SITE_URL_WWW } from '@/lib/api/config'
 import { assertEnvironment } from '@/lib/config/envValidation'
 import ServiceWorkerRegistration from '@/components/ServiceWorkerRegistration'
+import PageViewTracker from '@/components/PageViewTracker'
 import ErrorBoundary from '@/components/ErrorBoundary'
 
 assertEnvironment()
@@ -25,6 +26,17 @@ export const metadata: Metadata = {
   icons: {
     icon: '/favicon.ico',
     apple: '/apple-touch-icon.png',
+  },
+  alternates: {
+    canonical: SITE_URL,
+    languages: {
+      'id-ID': SITE_URL,
+      'id': SITE_URL,
+      'en': `${SITE_URL}/en`,
+    },
+    types: {
+      'application/rss+xml': `${SITE_URL}/api/rss`,
+    },
   },
   appleWebApp: {
     capable: true,
@@ -127,6 +139,7 @@ export default function RootLayout({
             Langsung ke konten utama
           </a>
           <ServiceWorkerRegistration />
+          <PageViewTracker />
           {children}
         </ErrorBoundary>
       </body>
