@@ -1,9 +1,38 @@
 # Architecture Blueprint
 
-**Version**: 1.0.3
-**Last Updated**: 2026-03-21 (System Orchestrator - FIX-844: Restore missing middleware.ts, FIX-843: npm audit vulnerabilities resolved)
+**Version**: 1.0.4
+**Last Updated**: 2026-04-15 (System Orchestrator - FIX-1095: Resolve issues 1086-1092 multiple bugs)
 
-## System Architecture
+## System Orchestrator Fixes
+
+### FIX-1095: Resolve Multiple Issues (2026-04-15)
+**Issues Fixed**: #1086, #1087, #1088, #1089, #1092
+
+**#1086 SECURITY: API keys exposed in summarizer.ts**
+- Added `assertServerSide()` function to detect client-side usage
+- Added server-side checks in `generateSummaryWithOpenAI` and `generateSummaryWithAnthropic`
+- Prevents API key leakage from client components
+
+**#1087 BUG: Empty catch blocks mask errors**
+- SocialShare.tsx: Added `logger.warn()` for clipboard fallback failure
+- ServiceStatus.tsx: Added `logger.warn()` for health check failures
+- Proper error logging for debugging
+
+**#1088 BUG: API routes return 200 on errors**
+- `/api/posts`: Returns 502 when upstream fails, 500 on internal errors
+- `/api/media/[id]`: Returns 400 (invalid ID), 404 (not found), 500 (internal errors)
+- Proper HTTP status codes for client error handling
+
+**#1089 PERF: useEffect dependency array performance**
+- Added `useMemo` to memoize category IDs string
+- Prevents unnecessary re-renders
+
+**#1092 BUG: localStorage access without error handling**
+- Extracted to `getReadingHistory()` helper function
+- Added try-catch for private browsing mode compatibility
+- Graceful degradation when localStorage unavailable
+
+**Test Results**: 2151 tests passing, ESLint 0 errors
 
 ```
 ┌─────────────┐     REST API      ┌──────────────┐

@@ -2,6 +2,12 @@ import { cacheManager } from '@/lib/cache';
 import { logger } from '@/lib/utils/logger';
 import { stripHtml } from '@/lib/utils/stripHtml';
 
+function assertServerSide(): void {
+  if (typeof window !== 'undefined') {
+    throw new Error('summarizer.ts can only be used on the server side');
+  }
+}
+
 export type SummaryProvider = 'openai' | 'anthropic' | 'local';
 
 export interface SummarizationConfig {
@@ -45,6 +51,7 @@ async function generateSummaryWithOpenAI(
   text: string,
   config: SummarizationConfig
 ): Promise<string> {
+  assertServerSide();
   if (!config.apiKey) {
     throw new Error('OpenAI API key not configured');
   }
@@ -87,6 +94,7 @@ async function generateSummaryWithAnthropic(
   text: string,
   config: SummarizationConfig
 ): Promise<string> {
+  assertServerSide();
   if (!config.apiKey) {
     throw new Error('Anthropic API key not configured');
   }
