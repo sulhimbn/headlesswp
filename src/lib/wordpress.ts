@@ -153,6 +153,11 @@ export const wordpressAPI: IWordPressAPI = {
     return response.data;
   },
 
+  getAuthors: async (signal?: AbortSignal): Promise<WordPressAuthor[]> => {
+    const response = await apiClient.get(getApiUrl('/wp/v2/users'), { signal });
+    return response.data;
+  },
+
   search: async (query: string, page: number = 1, perPage: number = 12, signal?: AbortSignal): Promise<{ posts: WordPressPost[], totalPages: number }> => {
     const cacheKey = cacheKeys.search(query);
 

@@ -236,13 +236,9 @@ export function clearSummaryCache(postId?: number): void {
   if (postId) {
     cacheManager.invalidate(getCacheKey(postId));
   } else {
-    const cache = (cacheManager as unknown as { cache: Map<string, unknown> }).cache;
-    if (cache) {
-      for (const key of cache.keys()) {
-        if (key.startsWith('summary:')) {
-          cacheManager.invalidate(key);
-        }
-      }
+    const summaryKeys = cacheManager.getKeysByPattern('^summary:');
+    for (const key of summaryKeys) {
+      cacheManager.invalidate(key);
     }
   }
 }
