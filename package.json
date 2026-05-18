@@ -22,7 +22,7 @@
   },
   "dependencies": {
     "@sentry/nextjs": "^10.40.0",
-    "axios": "^1.13.5",
+    "axios": "^1.15.2",
     "isomorphic-dompurify": "^2.36.0",
     "next": "^16.2.1",
     "react": "^19.2.4",
@@ -66,7 +66,8 @@
     "caniuse-lite": "^1.0.30001774",
     "baseline-browser-mapping": "^2.10.0",
     "undici": "^7.24.5",
-    "serialize-javascript": "^7.0.3",
+    "serialize-javascript": "^7.0.5",
+    "postcss": "^8.5.10",
     "flatted": "^3.4.2",
     "dompurify": "^3.3.3"
   }
