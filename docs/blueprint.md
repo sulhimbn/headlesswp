@@ -1,7 +1,7 @@
 # Architecture Blueprint
 
-**Version**: 1.0.3
-**Last Updated**: 2026-03-21 (System Orchestrator - FIX-844: Restore missing middleware.ts, FIX-843: npm audit vulnerabilities resolved)
+**Version**: 1.0.4
+**Last Updated**: 2026-03-23 (System Orchestrator - FIX-860: Merged middleware.ts into proxy.ts to resolve Next.js 16 build error)
 
 ## System Architecture
 
@@ -228,7 +228,7 @@ The UI supports Indonesian (Bahasa Indonesia) localization through `src/lib/cons
 
 ### Edge Middleware
 
-Edge middleware is implemented in `src/middleware.ts` for performance optimization and security.
+Edge middleware is implemented in `src/proxy.ts` for performance optimization and security.
 
 **Features**:
 - **Bot Detection**: Identifies search engine crawlers and social media bots
