@@ -2,16 +2,36 @@ import { NextResponse } from 'next/server'
 import { standardizedAPI } from '@/lib/api/standardized'
 import { isApiResultSuccessful } from '@/lib/api/response'
 import { logger } from '@/lib/utils/logger'
-import { CACHE_TIMES } from '@/lib/api/config'
+import { CACHE_TIMES, REVALIDATE_TIMES } from '@/lib/api/config'
 
 const CACHE_CONTROL = `public, max-age=${CACHE_TIMES.MEDIUM_SHORT / 1000}, s-maxage=${CACHE_TIMES.MEDIUM_SHORT / 1000}, stale-while-revalidate=${CACHE_TIMES.MEDIUM}`
+
+const API_QUERY_LIMITS = {
+  MAX_PER_PAGE: 100,
+  MAX_PAGE: 1000,
+} as const
+
+function sanitizeAndValidateParams(searchParams: URLSearchParams) {
+  const perPageRaw = searchParams.get('per_page')
+  const pageRaw = searchParams.get('page')
+
+  let perPage = parseInt(perPageRaw || '10', 10)
+  if (isNaN(perPage) || perPage < 1) perPage = 10
+  perPage = Math.min(perPage, API_QUERY_LIMITS.MAX_PER_PAGE)
+
+  let page = parseInt(pageRaw || '1', 10)
+  if (isNaN(page) || page < 1) page = 1
+  page = Math.min(page, API_QUERY_LIMITS.MAX_PAGE)
+
+  return { perPage, page }
+}
 
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url)
     const categories = searchParams.get('categories')
-    const perPage = parseInt(searchParams.get('per_page') || '10', 10)
-    const page = parseInt(searchParams.get('page') || '1', 10)
+
+    const { perPage, page } = sanitizeAndValidateParams(searchParams)
 
     const queryParams: Record<string, string | number> = {
       per_page: perPage,
@@ -19,14 +39,26 @@ export async function GET(request: Request) {
     }
 
     if (categories) {
-      queryParams.categories = categories
+      const sanitizedCategories = categories.replace(/[^0-9,]/g, '')
+      queryParams.categories = sanitizedCategories
     }
 
     const result = await standardizedAPI.getAllPosts(queryParams)
 
-    if (!isApiResultSuccessful(result) || !result.data) {
-      logger.warn('Failed to fetch posts from API', undefined, { module: 'api/posts' })
-      return NextResponse.json([], { status: 200 })
+    if (!isApiResultSuccessful(result)) {
+      const errorMsg = result.error?.message || 'Failed to fetch posts from WordPress API'
+      logger.warn('Failed to fetch posts from API', undefined, { module: 'api/posts', error: result.error })
+      return NextResponse.json(
+        { error: errorMsg, details: result.error },
+        { status: 503 }
+      )
+    }
+
+    if (!result.data || result.data.length === 0) {
+      return NextResponse.json(
+        { error: 'No posts found', posts: [] },
+        { status: 200 }
+      )
     }
 
     const posts = result.data.map(post => ({
@@ -45,6 +77,11 @@ export async function GET(request: Request) {
     return response
   } catch (error) {
     logger.error('Error in /api/posts', error, { module: 'api/posts' })
-    return NextResponse.json([], { status: 200 })
+    return NextResponse.json(
+      { error: 'Internal server error', message: error instanceof Error ? error.message : 'Unknown error' },
+      { status: 500 }
+    )
   }
 }
+
+export const revalidate = REVALIDATE_TIMES.POST_LIST
