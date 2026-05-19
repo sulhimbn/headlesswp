@@ -77,7 +77,12 @@ async function staleWhileRevalidateStrategy(request) {
     return networkResponse;
   }).catch(() => cachedResponse || caches.match('/offline.html'));
 
-  return cachedResponse || fetchPromise;
+  if (cachedResponse) {
+    fetchPromise;
+    return cachedResponse;
+  }
+
+  return fetchPromise;
 }
 
 self.addEventListener('install', event => {
