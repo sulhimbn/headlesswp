@@ -21,6 +21,7 @@
 ## Technology Stack
 
 ### Frontend
+
 - **Framework**: Next.js 16.1 (App Router)
 - **Language**: TypeScript 5.9
 - **Styling**: CSS Modules (to be confirmed)
@@ -28,12 +29,14 @@
 - **Security**: DOMPurify 3.3
 
 ### Backend
+
 - **CMS**: WordPress
 - **API Strategy**: REST API (wp-json/wp/v2/)
 - **Database**: MySQL
 - **Containerization**: Docker + Docker Compose
 
 ### Development
+
 - **Testing**: Jest 30 + React Testing Library 16
 - **Linting**: ESLint 8 with Next.js config
 - **Version Control**: Git
@@ -45,6 +48,7 @@
 Design tokens are CSS variables defined in `src/app/globals.css` that provide a single source of truth for visual design. All components should use design tokens instead of hardcoded Tailwind values.
 
 **Why Design Tokens?**
+
 - **Consistency**: Ensures visual consistency across all components
 - **Maintainability**: Change colors, spacing, typography in one place
 - **Theming**: Enables easy theme switching for dark mode or custom themes
@@ -53,55 +57,60 @@ Design tokens are CSS variables defined in `src/app/globals.css` that provide a 
 ### Available Tokens
 
 **Colors** (HSL values for CSS):
+
 ```css
---color-primary: 0 84% 40%;              /* Red-600 equivalent */
---color-primary-dark: 0 86% 38%;           /* Red-700 equivalent */
---color-primary-light: 0 96% 95%;           /* Red-50 equivalent */
---color-secondary: 220 10% 96%;             /* Gray-100 equivalent */
---color-secondary-dark: 220 12% 90%;         /* Gray-200 equivalent */
---color-text-primary: 220 13% 13%;         /* Gray-900 equivalent */
---color-text-secondary: 220 9% 46%;         /* Gray-600 equivalent */
---color-text-muted: 220 9% 60%;            /* Gray-500 equivalent */
---color-background: 220 13% 98%;           /* Gray-50 equivalent */
---color-surface: 0 0% 100%;                /* White */
---color-border: 220 13% 91%;              /* Gray-300 equivalent */
---color-background-dark: 220 13% 10%;     /* Gray-900 equivalent (dark theme) */
---color-surface-dark: 220 13% 15%;         /* Gray-800 equivalent (dark theme) */
---color-text-muted-dark: 220 9% 65%;       /* Gray-400 equivalent (dark theme) */
---color-text-faint-dark: 220 9% 45%;       /* Gray-500 equivalent (dark theme) */
+--color-primary: 0 84% 40%; /* Red-600 equivalent */
+--color-primary-dark: 0 86% 38%; /* Red-700 equivalent */
+--color-primary-light: 0 96% 95%; /* Red-50 equivalent */
+--color-secondary: 220 10% 96%; /* Gray-100 equivalent */
+--color-secondary-dark: 220 12% 90%; /* Gray-200 equivalent */
+--color-text-primary: 220 13% 13%; /* Gray-900 equivalent */
+--color-text-secondary: 220 9% 46%; /* Gray-600 equivalent */
+--color-text-muted: 220 9% 60%; /* Gray-500 equivalent */
+--color-background: 220 13% 98%; /* Gray-50 equivalent */
+--color-surface: 0 0% 100%; /* White */
+--color-border: 220 13% 91%; /* Gray-300 equivalent */
+--color-background-dark: 220 13% 10%; /* Gray-900 equivalent (dark theme) */
+--color-surface-dark: 220 13% 15%; /* Gray-800 equivalent (dark theme) */
+--color-text-muted-dark: 220 9% 65%; /* Gray-400 equivalent (dark theme) */
+--color-text-faint-dark: 220 9% 45%; /* Gray-500 equivalent (dark theme) */
 ```
 
 **Spacing**:
+
 ```css
---spacing-xs: 0.25rem;   /* 4px */
---spacing-sm: 0.5rem;    /* 8px */
---spacing-md: 1rem;       /* 16px */
---spacing-lg: 1.5rem;     /* 24px */
---spacing-xl: 2rem;       /* 32px */
---spacing-2xl: 3rem;      /* 48px */
---spacing-3xl: 4rem;      /* 64px */
+--spacing-xs: 0.25rem; /* 4px */
+--spacing-sm: 0.5rem; /* 8px */
+--spacing-md: 1rem; /* 16px */
+--spacing-lg: 1.5rem; /* 24px */
+--spacing-xl: 2rem; /* 32px */
+--spacing-2xl: 3rem; /* 48px */
+--spacing-3xl: 4rem; /* 64px */
 ```
 
 **Typography**:
+
 ```css
---text-xs: 0.75rem;       /* 12px */
---text-sm: 0.875rem;      /* 14px */
---text-base: 1rem;         /* 16px */
---text-lg: 1.125rem;      /* 18px */
---text-xl: 1.25rem;       /* 20px */
---text-2xl: 1.5rem;      /* 24px */
---text-3xl: 1.875rem;     /* 30px */
+--text-xs: 0.75rem; /* 12px */
+--text-sm: 0.875rem; /* 14px */
+--text-base: 1rem; /* 16px */
+--text-lg: 1.125rem; /* 18px */
+--text-xl: 1.25rem; /* 20px */
+--text-2xl: 1.5rem; /* 24px */
+--text-3xl: 1.875rem; /* 30px */
 ```
 
 **Border Radius**:
+
 ```css
---radius-sm: 0.25rem;     /* 4px */
---radius-md: 0.375rem;     /* 6px */
---radius-lg: 0.5rem;       /* 8px */
---radius-xl: 0.75rem;      /* 12px */
+--radius-sm: 0.25rem; /* 4px */
+--radius-md: 0.375rem; /* 6px */
+--radius-lg: 0.5rem; /* 8px */
+--radius-xl: 0.75rem; /* 12px */
 ```
 
 **Shadows**:
+
 ```css
 --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
 --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
@@ -110,6 +119,7 @@ Design tokens are CSS variables defined in `src/app/globals.css` that provide a 
 ```
 
 **Transitions**:
+
 ```css
 --transition-fast: 150ms;
 --transition-normal: 300ms;
@@ -119,13 +129,15 @@ Design tokens are CSS variables defined in `src/app/globals.css` that provide a 
 ### Usage Guidelines
 
 **Using Design Tokens in Components**:
-```tsx
-import { forwardRef } from 'react'
 
-const Button = forwardRef<HTMLButtonElement, ButtonProps>(({ children, ...props }, ref) => (
-  <button
-    ref={ref}
-    className={`
+```tsx
+import { forwardRef } from 'react';
+
+const Button = forwardRef<HTMLButtonElement, ButtonProps>(
+  ({ children, ...props }, ref) => (
+    <button
+      ref={ref}
+      className={`
       bg-[hsl(var(--color-primary))]
       text-white
       rounded-[var(--radius-md)]
@@ -137,14 +149,16 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(({ children, ...props 
       focus:ring-2
       focus:ring-[hsl(var(--color-primary))]
     `}
-    {...props}
-  >
-    {children}
-  </button>
-))
+      {...props}
+    >
+      {children}
+    </button>
+  )
+);
 ```
 
 **Token Mapping for Common Patterns**:
+
 - `bg-white` → `bg-[hsl(var(--color-surface))]`
 - `bg-gray-50` → `bg-[hsl(var(--color-background))]`
 - `bg-red-600` → `bg-[hsl(var(--color-primary))]`
@@ -166,6 +180,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(({ children, ...props 
 - `border-gray-800` → `border-[hsl(var(--color-surface-dark))]`
 
 **Button Variant Mappings** (extracted to `src/lib/constants/buttonStyles.ts`):
+
 - **Primary variant**: `bg-[hsl(var(--color-primary))] text-white hover:bg-[hsl(var(--color-primary-dark))]`
 - **Secondary variant**: `bg-[hsl(var(--color-secondary-dark))] text-[hsl(var(--color-text-primary))] hover:bg-[hsl(var(--color-secondary))]`
 - **Outline variant**: `border-[hsl(var(--color-primary))] text-[hsl(var(--color-primary))] hover:bg-[hsl(var(--color-primary-light))]`
@@ -174,22 +189,26 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(({ children, ...props 
 ### Accessibility Features
 
 **Skip-to-Content Link**:
+
 - Implemented in `src/app/layout.tsx`
 - Allows keyboard users to skip navigation
 - Hidden by default, visible on focus
 - Located at top of page
 
 **Focus Indicators**:
+
 - Global focus styles defined in `src/app/globals.css`
 - `*:focus-visible` uses `ring-2 ring-[hsl(var(--color-primary))]`
 - All interactive elements have visible focus states
 
 **Semantic HTML**:
+
 - Use appropriate HTML elements: `<header>`, `<nav>`, `<main>`, `<article>`, `<footer>`
 - ARIA attributes for screen readers
 - Keyboard navigation support (Tab, Escape, arrow keys)
 
 **Loading States**:
+
 - Skeleton components use `aria-busy="true"` to indicate loading state to screen readers
 - Section headings support optional `id` prop for anchor linking
 - Design tokens used consistently across all skeleton components
@@ -199,17 +218,20 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(({ children, ...props 
 The UI supports Indonesian (Bahasa Indonesia) localization through `src/lib/constants/uiText.ts`.
 
 **Implementation**:
+
 - All user-facing text is externalized in `UI_TEXT` constant object
 - Components import and use `UI_TEXT` for all text content
 - Indonesian translations provide localized experience for Indonesian users
 
 **Key Localized Text**:
+
 - Footer copyright: "Seluruh hak cipta" (All rights reserved)
 - Navigation: "Beranda" (Home), "Berita" (News)
 - Actions: "Baca artikel" (Read article), "Cari berita" (Search news)
 - Error messages, empty states, pagination all localized
 
 **Notes**:
+
 - UI text is designed for easy addition of new languages
 - Each text section (breadcrumb, postCard, footer, etc.) is a nested object
 - Dynamic values use function templates for proper grammar handling
@@ -217,11 +239,13 @@ The UI supports Indonesian (Bahasa Indonesia) localization through `src/lib/cons
 ### Responsive Design
 
 **Breakpoints**:
+
 - Mobile: < 640px (`sm:` prefix)
 - Tablet: 640px - 1024px (`md:` prefix)
 - Desktop: >= 1024px (`lg:` prefix)
 
 **Component Patterns**:
+
 - Mobile-first approach
 - Progressive enhancement
 - Touch-friendly tap targets (minimum 44x44px)
@@ -231,6 +255,7 @@ The UI supports Indonesian (Bahasa Indonesia) localization through `src/lib/cons
 Edge middleware is implemented in `src/middleware.ts` for performance optimization and security.
 
 **Features**:
+
 - **Bot Detection**: Identifies search engine crawlers and social media bots
 - **Security Headers**: X-DNS-Prefetch-Control, X-Frame-Options, X-Content-Type-Options, Referrer-Policy
 - **SEO Optimization**: X-Robots-Tag and X-SEO-Crawler headers for crawlers
@@ -253,20 +278,23 @@ Edge middleware is implemented in `src/middleware.ts` for performance optimizati
 ## API Standards
 
 ### Base URL
+
 ```
 Development: http://localhost:8080/wp-json/wp/v2/
 ```
 
 ### Standard Endpoints
-| Endpoint | Purpose | Usage | Optimization |
-|----------|---------|-------|-------------|
-| `/posts` | News articles | List/detail pages | Batch requests |
-| `/categories` | Categories | Navigation/filtering | Cached 30min |
-| `/tags` | Tags | Content organization | Cached 30min |
-| `/media` | Images/media | Media assets | Batch fetching |
-| `/users` | Authors | Author profiles | Cached 30min |
+
+| Endpoint      | Purpose       | Usage                | Optimization   |
+| ------------- | ------------- | -------------------- | -------------- |
+| `/posts`      | News articles | List/detail pages    | Batch requests |
+| `/categories` | Categories    | Navigation/filtering | Cached 30min   |
+| `/tags`       | Tags          | Content organization | Cached 30min   |
+| `/media`      | Images/media  | Media assets         | Batch fetching |
+| `/users`      | Authors       | Author profiles      | Cached 30min   |
 
 ### Batch Operations
+
 - **Media Batch**: `getMediaBatch(ids)` - Fetch multiple media items
 - **Media URL Batch**: `getMediaUrlsBatch(ids)` - Resolve URLs in batch with caching
 - Reduces API calls from N to 1 for N media items
@@ -274,25 +302,27 @@ Development: http://localhost:8080/wp-json/wp/v2/
 - **Performance Improvement**: First visit fetches URLs in batch, subsequent visits return from cache without API calls
 
 ### Response Format
+
 ```typescript
 interface Post {
-  id: number
-  title: { rendered: string }
-  content: { rendered: string }
-  excerpt: { rendered: string }
-  date: string
-  modified: string
-  author: number
-  categories: number[]
-  tags: number[]
-  featured_media: number
+  id: number;
+  title: { rendered: string };
+  content: { rendered: string };
+  excerpt: { rendered: string };
+  date: string;
+  modified: string;
+  author: number;
+  categories: number[];
+  tags: number[];
+  featured_media: number;
   // ... additional fields
 }
 ```
 
- ### API Standardization
+### API Standardization
 
- **Principles**:
+**Principles**:
+
 - **Backward Compatibility**: Never break existing API consumers
 - **Consistent Naming**: `getById<T>()`, `getBySlug<T>()`, `getAll<T>()`, `search<T>()`
 - **Consistent Error Handling**: All methods return `ApiResult<T>` or `ApiListResult<T>` with consistent error handling
@@ -304,20 +334,22 @@ interface Post {
 - **Pagination**: Page, perPage, total, totalPages
 
 **Standardized Response Wrapper** (`src/lib/api/response.ts`):
+
 ```typescript
 interface ApiResult<T> {
-  data: T
-  error: ApiError | null
-  metadata: ApiMetadata
-  pagination?: ApiPaginationMetadata
+  data: T;
+  error: ApiError | null;
+  metadata: ApiMetadata;
+  pagination?: ApiPaginationMetadata;
 }
 
 interface ApiListResult<T> extends ApiResult<T[]> {
-  pagination: ApiPaginationMetadata
+  pagination: ApiPaginationMetadata;
 }
 ```
 
 **Standardized Methods** (`src/lib/api/standardized.ts`):
+
 - **Posts**: `getPostById()`, `getPostBySlug()`, `getAllPosts()`, `searchPosts()`
 - **Categories**: `getCategoryById()`, `getCategoryBySlug()`, `getAllCategories()`
 - **Tags**: `getTagById()`, `getTagBySlug()`, `getAllTags()`
@@ -325,32 +357,34 @@ interface ApiListResult<T> extends ApiResult<T[]> {
 - **Authors**: `getAuthorById()`
 
 **Implementation Status**:
-  - ✅ **Phase 1 Complete**: Documentation and `ApiResult<T>` interface defined
-  - ✅ **Phase 2 Complete**: Standardized methods implemented in `src/lib/api/standardized.ts`
-     - 31 methods (getById, getBySlug, getAll, search)
-     - All methods return `ApiResult<T>` or `ApiListResult<T>` with consistent error handling
-  - ✅ **Phase 2 Complete**: Error result helper extracted for collection methods (REFACTOR-008)
-     - Created `createErrorListResult()` helper to eliminate 52 lines of duplicate error result structure
-     - Applied to `getAllPosts`, `searchPosts`, `getAllCategories`, `getAllTags`
-  - ✅ **Phase 3 Complete**: Try-catch pattern extraction (REFACTOR-010)
-     - Created `fetchAndHandleNotFound()` helper to eliminate 40 lines of duplicate error handling
-     - Applied to `getPostBySlug`, `getCategoryById`, `getCategoryBySlug`, `getTagById`, `getTagBySlug`
-  - ✅ **Phase 4 Complete**: Migrated service layer to use standardized API methods (INT-STD-004)
-     - Migrated `enhancedPostService` methods: getLatestPosts, getCategoryPosts, getAllPosts, getPaginatedPosts, getPostBySlug, getPostById
-     - All service methods now use `standardizedAPI` for consistent error handling and metadata tracking
-     - Resilience patterns (circuit breaker, retry strategy, rate limiting) now applied at service layer
-     - Preserved existing validation, enrichment, and caching behavior
-  - ⏳ **Phase 5**: Deprecate old methods in major version (future)
+
+- ✅ **Phase 1 Complete**: Documentation and `ApiResult<T>` interface defined
+- ✅ **Phase 2 Complete**: Standardized methods implemented in `src/lib/api/standardized.ts`
+  - 31 methods (getById, getBySlug, getAll, search)
+  - All methods return `ApiResult<T>` or `ApiListResult<T>` with consistent error handling
+- ✅ **Phase 2 Complete**: Error result helper extracted for collection methods (REFACTOR-008)
+  - Created `createErrorListResult()` helper to eliminate 52 lines of duplicate error result structure
+  - Applied to `getAllPosts`, `searchPosts`, `getAllCategories`, `getAllTags`
+- ✅ **Phase 3 Complete**: Try-catch pattern extraction (REFACTOR-010)
+  - Created `fetchAndHandleNotFound()` helper to eliminate 40 lines of duplicate error handling
+  - Applied to `getPostBySlug`, `getCategoryById`, `getCategoryBySlug`, `getTagById`, `getTagBySlug`
+- ✅ **Phase 4 Complete**: Migrated service layer to use standardized API methods (INT-STD-004)
+  - Migrated `enhancedPostService` methods: getLatestPosts, getCategoryPosts, getAllPosts, getPaginatedPosts, getPostBySlug, getPostById
+  - All service methods now use `standardizedAPI` for consistent error handling and metadata tracking
+  - Resilience patterns (circuit breaker, retry strategy, rate limiting) now applied at service layer
+  - Preserved existing validation, enrichment, and caching behavior
+- ⏳ **Phase 5**: Deprecate old methods in major version (future)
 
 **See Also**: [API Standardization Guidelines](./API_STANDARDIZATION.md)
 
 ### DRY Principle and Code Quality
 
- **Last Updated**: 2026-01-10 (Principal Data Architect)
+**Last Updated**: 2026-01-10 (Principal Data Architect)
 
 **DRY (Don't Repeat Yourself)** is a fundamental software design principle that eliminates code duplication and improves maintainability.
 
 **Extracted Helpers** (`src/lib/api/response.ts`):
+
 1. **`fetchAndHandleNotFound<T>()`** - Generic error handling for not-found scenarios
    - Eliminates duplicate try-catch patterns
    - Consistent error messages and response format
@@ -358,74 +392,80 @@ interface ApiListResult<T> extends ApiResult<T[]> {
    - Applied to 5 methods (getPostBySlug, getCategoryById, getCategoryBySlug, getTagById, getTagBySlug)
 
 **Service Layer Helpers** (`src/lib/services/enhancedPostService.ts`):
-1. **`fetchAndValidatePosts()`** - Unified fetch, error handling, and validation helper for post collections
-    - Merged duplicate error handling and validation patterns from 6 service methods
-    - Accepts `FetchAndValidatePostsOptions` interface for configuration
-    - Supports optional fallback key for fallback posts
-    - Supports configurable return empty on error flag
-    - Applied to 4 service methods (getLatestPosts, getCategoryPosts, getAllPosts, searchPosts)
-2. **`fetchAndValidateSinglePost()`** - Unified fetch, error handling, and validation helper for single post
-    - Merged duplicate error handling and validation patterns from 2 service methods
-    - Accepts `FetchAndValidateSinglePostOptions` interface for configuration
-    - Supports identifier for logging (string or number)
-    - Applied to 2 service methods (getPostBySlug, getPostById)
 
-2. **`getEntityMap<T>()`** - Generic entity map helper
+1. **`fetchAndValidatePosts()`** - Unified fetch, error handling, and validation helper for post collections
+   - Merged duplicate error handling and validation patterns from 6 service methods
+   - Accepts `FetchAndValidatePostsOptions` interface for configuration
+   - Supports optional fallback key for fallback posts
+   - Supports configurable return empty on error flag
+   - Applied to 4 service methods (getLatestPosts, getCategoryPosts, getAllPosts, searchPosts)
+2. **`fetchAndValidateSinglePost()`** - Unified fetch, error handling, and validation helper for single post
+   - Merged duplicate error handling and validation patterns from 2 service methods
+   - Accepts `FetchAndValidateSinglePostOptions` interface for configuration
+   - Supports identifier for logging (string or number)
+   - Applied to 2 service methods (getPostBySlug, getPostById)
+
+3. **`getEntityMap<T>()`** - Generic entity map helper
    - Merged duplicate `getCategoriesMap` and `getTagsMap` functions
    - Accepts `EntityMapOptions<T>` interface for configuration
    - Works with any entity type that has an `id: number` property
    - Applied to 2 service methods (getCategoriesMap, getTagsMap)
 
 **API Layer Helpers** (`src/lib/api/standardized.ts`):
+
 1. **`getAllEntities<T>()`** - Generic all entities helper
-    - Merged duplicate `getAllCategories` and `getAllTags` functions
-    - Accepts entities array and endpoint string
-    - Handles pagination metadata creation (page: 1, perPage: entities.length, total: entities.length, totalPages: 1)
-    - Applied to 2 API methods (getAllCategories, getAllTags)
+   - Merged duplicate `getAllCategories` and `getAllTags` functions
+   - Accepts entities array and endpoint string
+   - Handles pagination metadata creation (page: 1, perPage: entities.length, total: entities.length, totalPages: 1)
+   - Applied to 2 API methods (getAllCategories, getAllTags)
 
 **Data Validation Helpers** (`src/lib/validation/dataValidator.ts`):
+
 1. **`validateIdField()`** - Validates ID fields (positive integer)
-     - Used by all entity validation methods
-     - Eliminates duplicate ID validation logic
+   - Used by all entity validation methods
+   - Eliminates duplicate ID validation logic
 2. **`validateNamedObjectField()`** - Validates nested object fields with rendered property
-     - Used by Post, Media validation for title fields
-     - Eliminates duplicate nested object validation
+   - Used by Post, Media validation for title fields
+   - Eliminates duplicate nested object validation
 3. **`validateSlugField()`** - Validates slug fields (pattern + length)
-     - Used by Post, Category, Tag, Author validation
-     - Accepts validation rules for pattern and length
+   - Used by Post, Category, Tag, Author validation
+   - Accepts validation rules for pattern and length
 4. **`validateDateField()`** - Validates ISO 8601 date fields
-     - Used by Post validation for date and modified fields
-     - Centralizes date validation logic
+   - Used by Post validation for date and modified fields
+   - Centralizes date validation logic
 5. **`validateUrlField()`** - Validates URL fields
-     - Used by Category, Tag, Media, Author validation
-     - Centralizes URL validation logic
+   - Used by Category, Tag, Media, Author validation
+   - Centralizes URL validation logic
 6. **`validateEnumField()`** - Validates enum fields
-     - Used by Post (status, type) and Media (media_type) validation
-     - Centralizes enum validation logic
+   - Used by Post (status, type) and Media (media_type) validation
+   - Centralizes enum validation logic
 7. **`validateNumericField()`** - Validates numeric fields with custom validator
-     - Used for Category (parent, count) numeric validation
-     - Accepts custom validator for flexible numeric validation
+   - Used for Category (parent, count) numeric validation
+   - Accepts custom validator for flexible numeric validation
 
 **Relationship Validation Helpers** (`src/lib/validation/relationshipValidator.ts`):
+
 1. **`validatePostRelationships()`** - Validates post entity references
-     - Validates category, tag, and author references against available maps
-     - Detects invalid reference IDs with clear error messages
-     - Supports optional validation (can skip specific relationship types)
-     - Used by `enrichPostWithDetails()` for automatic validation
+   - Validates category, tag, and author references against available maps
+   - Detects invalid reference IDs with clear error messages
+   - Supports optional validation (can skip specific relationship types)
+   - Used by `enrichPostWithDetails()` for automatic validation
 2. **`validatePostsRelationships()`** - Validates post array relationships
-     - Validates relationships for multiple posts simultaneously
-     - Includes array index in error messages for easy debugging
-     - Non-blocking validation (logs warnings but continues)
+   - Validates relationships for multiple posts simultaneously
+   - Includes array index in error messages for easy debugging
+   - Non-blocking validation (logs warnings but continues)
 
 **Error Handling Helpers** (`src/lib/api/errors.ts`):
+
 1. **`handleStatusCodeError()`** - Status code error handling helper
-    - Merged duplicate status code handling from AxiosError and generic Error blocks
-    - Handles rate limit (429), server errors (5xx), and client errors (4xx)
-    - Supports retry-after header for rate limit errors
-    - Applied to 2 code paths in `createApiError` function
-    - Single source of truth for status code error logic
+   - Merged duplicate status code handling from AxiosError and generic Error blocks
+   - Handles rate limit (429), server errors (5xx), and client errors (4xx)
+   - Supports retry-after header for rate limit errors
+   - Applied to 2 code paths in `createApiError` function
+   - Single source of truth for status code error logic
 
 **Code Quality Improvements**:
+
 - **Before**: 252 lines with 40 duplicate lines across 5 API methods; 46 duplicate lines across 2 service functions; 36 duplicate lines across 2 API getAllX functions; 38 duplicate lines in `createApiError`
 - **After**: 213 lines (API layer) + 229 lines (service layer) + 207 lines (standardized API) + 187 lines (errors) + 104 lines (relationship validation) with reusable helpers
 - **Lines Eliminated**: 40 lines (API layer response.ts) + 23 lines (service layer) + 14 lines (standardized API) + 20 lines (fetchAndValidate merge) + 38 lines (errors) = 135 lines total (28% reduction)
@@ -435,6 +475,7 @@ interface ApiListResult<T> extends ApiResult<T[]> {
 - **Maintainability**: Changes to error handling or pagination only require updating one function
 
 **DATA-ARCH-009: Data Relationship Validation**:
+
 - Created `RelationshipValidator` class with 104 lines
 - Added `validatePostRelationships()` and `validatePostsRelationships()` methods
 - Added 21 comprehensive tests for all relationship scenarios
@@ -443,24 +484,28 @@ interface ApiListResult<T> extends ApiResult<T[]> {
 - Lines eliminated: N/A (new validation capability, no duplication removed)
 
 **REFACTOR-011: fetchAndValidate Merge**:
+
 - Merged `fetchAndValidate` and `fetchAndValidateSingle` into single generic function
 - Added configurable `logLevel` parameter with safer default (`'error'`)
 - Applied to 4 service methods (getLatestPosts, getCategoryPosts, getAllPosts, getPostById)
 - Lines eliminated: ~20
 
 **REFACTOR-012: Entity Map Generic Function**:
+
 - Created generic `getEntityMap<T>()` helper for category/tag map operations
 - Merged duplicate `getCategoriesMap` and `getTagsMap` functions
 - Configurable via `EntityMapOptions<T>` interface
 - Lines eliminated: ~23
 
 **REFACTOR-014: getAllX Generic Helper**:
+
 - Created generic `getAllEntities<T>()` helper for all-entities operations
 - Merged duplicate `getAllCategories` and `getAllTags` functions
 - Handles pagination metadata automatically
 - Lines eliminated: ~14
 
 **REFACTOR-018: CacheManager Metrics Extraction**:
+
 - Created `CacheMetricsCalculator` class (src/lib/cache/cacheMetricsCalculator.ts, 139 lines)
 - Extracted metrics methods: calculateStatistics, calculateAverageTtl, calculateEfficiencyLevel, calculatePerformanceMetrics, calculateMemoryUsage, formatMetricsForDisplay
 - Updated CacheManager to delegate metrics calls to CacheMetricsCalculator
@@ -469,6 +514,7 @@ interface ApiListResult<T> extends ApiResult<T[]> {
 - Clear separation of concerns: CacheMetricsCalculator handles metrics, CacheManager handles storage
 
 **REFACTOR-028: CacheManager Cleanup Extraction**:
+
 - Created `CacheCleanup` class (src/lib/cache/cacheCleanup.ts, 90 lines)
 - Extracted cleanup methods: cleanup(), cleanupOrphanDependencies(), cleanupAll()
 - Added `cleanupAll()` method for optimized single-pass combined cleanup (O(n) vs O(2n))
@@ -480,6 +526,7 @@ interface ApiListResult<T> extends ApiResult<T[]> {
 - Performance improvement: Combined cleanup in single iteration
 
 **REFACTOR-024: Extract Duplicate Validation Logic**:
+
 - Created 7 helper methods in DataValidator class for common validation patterns
 - Refactored 5 validation methods (validatePost, validateCategory, validateTag, validateMedia, validateAuthor)
 - Lines eliminated: ~165 (49% reduction in validation methods)
@@ -487,6 +534,7 @@ interface ApiListResult<T> extends ApiResult<T[]> {
 - All 45 dataValidator tests passing (no behavioral changes)
 
 **REFACTOR-017: Fix Revalidate Exports to Use Constants**:
+
 - Replaced inline revalidate values with REVALIDATE_TIMES constants in all page files
 - Affected files: src/app/page.tsx, src/app/berita/page.tsx, src/app/berita/[slug]/page.tsx, src/app/cari/page.tsx
 - Changed from: `export const revalidate = 300 // REVALIDATE_TIMES.HOMEPAGE (5 minutes)`
@@ -496,6 +544,7 @@ interface ApiListResult<T> extends ApiResult<T[]> {
 - Single source of truth for revalidation times
 
 **Benefits**:
+
 1. **Reduced Maintenance**: Bug fixes or improvements to validation only need to be made once
 2. **Consistency**: All validation logic defined once
 3. **Type Safety**: Generic TypeScript types ensure compile-time type checking
@@ -506,6 +555,7 @@ interface ApiListResult<T> extends ApiResult<T[]> {
 8. **Single Responsibility**: CacheMetricsCalculator focuses solely on metrics calculation
 
 **REFACTOR-026: Extract Complex Retry Delay Logic**:
+
 - Created `extractRetryAfterHeader()` helper (src/lib/api/retryStrategy.ts, lines 64-101)
 - Created `calculateBackoffDelay()` helper (src/lib/api/retryStrategy.ts, lines 103-111)
 - Simplified `getRetryDelay()` main method (src/lib/api/retryStrategy.ts, lines 113-120)
@@ -521,6 +571,7 @@ interface ApiListResult<T> extends ApiResult<T[]> {
 - File size: 142 → 162 lines
 
 **Benefits**:
+
 1. **Single Responsibility**: Each helper has one clear purpose
 2. **Separation of Concerns**: Header parsing separate from backoff calculation
 3. **Testability**: Each concern can be tested independently
@@ -532,6 +583,7 @@ interface ApiListResult<T> extends ApiResult<T[]> {
 **See Also**: [Task REFACTOR-026](./task.md#refactor-026)
 
 **REFACTOR-027: Cache Key Factory Pattern**:
+
 - Created `CacheKeyFactory` class (src/lib/cache.ts, lines 701-722)
 - Added three static methods: `create()`, `createById()`, `createBySlug()`
 - Enforced naming convention: `entity:param` format with colon separator
@@ -547,6 +599,7 @@ interface ApiListResult<T> extends ApiResult<T[]> {
 - Lines added: ~150 lines (factory class + tests)
 
 **Benefits**:
+
 1. **Type Safety**: Entity types validated at compile time (not runtime)
 2. **DRY Principle**: Key format logic defined once in CacheKeyFactory
 3. **Open/Closed**: Can add new entity types without modifying existing code
@@ -557,6 +610,7 @@ interface ApiListResult<T> extends ApiResult<T[]> {
 8. **Testability**: Factory pattern easily testable (18 new tests)
 
 **ARCH-UNUSED-001: Remove Unused Author Fetching**:
+
 - Removed `getAuthorsMap()` function from `enhancedPostService.ts` (19 lines eliminated)
 - Removed `WordPressAuthor` type import (no longer used in service layer)
 - Removed call to `getAuthorsMap()` from `enrichPostWithDetails()`
@@ -568,6 +622,7 @@ interface ApiListResult<T> extends ApiResult<T[]> {
 - File size: 304 → 285 lines (5.9% reduction)
 
 **Benefits**:
+
 1. **Performance**: Eliminates 5 unnecessary API calls per post detail page
 2. **Code Clarity**: Only fetches data that's actually used
 3. **Maintainability**: Less code to maintain, simpler data flow
@@ -575,6 +630,7 @@ interface ApiListResult<T> extends ApiResult<T[]> {
 5. **Simplicity**: Removed complexity without affecting functionality
 
 **REFACTOR-029: Component Memoization Pattern Consolidation**:
+
 - Created `memoization.ts` utility (src/lib/utils/memoization.ts, 25 lines)
 - Added `createArePropsEqual<P>()` factory for shallow prop comparison
 - Added `createDeepPropsEqual<P>()` factory for deep prop comparison
@@ -586,6 +642,7 @@ interface ApiListResult<T> extends ApiResult<T[]> {
 - Total: +25 lines (utility) + 18 tests - 5 component lines = +38 lines net
 
 **Benefits**:
+
 1. **DRY Principle**: Memoization logic defined once in reusable utility
 2. **Type Safety**: Prop keys validated at compile time with TypeScript
 3. **Maintainability**: Single source of truth for memoization pattern
@@ -596,6 +653,7 @@ interface ApiListResult<T> extends ApiResult<T[]> {
 **See Also**: [Task REFACTOR-010](./task.md#refactor-010), [Task REFACTOR-011](./task.md#refactor-011), [Task REFACTOR-012](./task.md#refactor-012), [Task REFACTOR-014](./task.md#refactor-014), [Task REFACTOR-018](./task.md#refactor-018), [Task ARCH-ERROR-002](./task.md#arch-error-002), [Task REFACTOR-026](./task.md#refactor-026), [Task REFACTOR-027](./task.md#refactor-027), [Task ARCH-UNUSED-001](./task.md#arch-unused-001), [Task REFACTOR-028](./task.md#refactor-028), [Task REFACTOR-029](./task.md#refactor-029), [Task REFACTOR-030](./task.md#refactor-030)
 
 **REFACTOR-030: WordPress API Method Factory**:
+
 - Created `wpMethodFactory.ts` (src/lib/api/wpMethodFactory.ts, 111 lines)
 - Added 5 factory methods: createCollectionMethod, createItemMethod, createIdMethod, createPostsMethod, createPostsWithHeadersMethod
 - Refactored 9 WordPress API methods to use factory patterns
@@ -608,6 +666,7 @@ interface ApiListResult<T> extends ApiResult<T[]> {
 - All tests passing, ESLint and TypeScript compilation pass with 0 errors
 
 **Benefits**:
+
 1. **DRY Principle**: Common API method pattern defined once in factory
 2. **Consistency**: All API methods follow same structure and patterns
 3. **Type Safety**: Factory methods enforce consistent types with generics
@@ -619,6 +678,7 @@ interface ApiListResult<T> extends ApiResult<T[]> {
 **See Also**: [Task REFACTOR-010](./task.md#refactor-010), [Task REFACTOR-011](./task.md#refactor-011), [Task REFACTOR-012](./task.md#refactor-012), [Task REFACTOR-014](./task.md#refactor-014), [Task REFACTOR-018](./task.md#refactor-018), [Task ARCH-ERROR-002](./task.md#arch-error-002), [Task REFACTOR-026](./task.md#refactor-026), [Task REFACTOR-027](./task.md#refactor-027), [Task ARCH-UNUSED-001](./task.md#arch-unused-001), [Task REFACTOR-028](./task.md#refactor-028), [Task REFACTOR-029](./task.md#refactor-029), [Task REFACTOR-030](./task.md#refactor-030), [Task REFACTOR-031](./task.md#refactor-031), [Task REFACTOR-032](./task.md#refactor-032)
 
 **REFACTOR-032: CacheManager Dependency Extraction**:
+
 - Created `CacheDependencyManager` class (src/lib/cache/cacheDependencyManager.ts, 167 lines)
 - Created `CacheConfig` module (src/lib/cache/cacheConfig.ts, 108 lines)
 - Extracted dependency tracking logic from CacheManager (registerDependencies, invalidate, getDependencies)
@@ -631,16 +691,19 @@ interface ApiListResult<T> extends ApiResult<T[]> {
 **Implementation Details**:
 
 **CacheDependencyManager** (167 lines):
+
 - `registerDependencies(key, dependencies, stats)` - Register bi-directional dependency relationships
 - `invalidate(key, onDelete, stats)` - Cascade invalidation with recursive dependent deletion
 - `getDependencies(key)` - Query dependencies and dependents for a key
 
 **CacheConfig** (108 lines):
+
 - `CACHE_CONFIG` object with all TTL constants (POSTS, POST, CATEGORIES, TAGS, MEDIA, SEARCH, AUTHOR)
 - Legacy `CACHE_TTL` export for backward compatibility
 - Comprehensive documentation for each TTL value
 
 **CacheManager Refactoring**:
+
 - Added `CacheDependencyManager` instance
 - Updated `set()` to delegate dependency registration to `CacheDependencyManager`
 - Updated `invalidate()` to delegate cascade invalidation to `CacheDependencyManager`
@@ -650,14 +713,15 @@ interface ApiListResult<T> extends ApiResult<T[]> {
 
 **Code Metrics**:
 
-| Metric | Before | After | Improvement |
-|--------|---------|-------|-------------|
-| **cache.ts** | 874 lines | 817 lines | -57 lines (6.5% reduction) |
-| **CacheDependencyManager** | N/A | 167 lines | +167 lines (new module) |
-| **CacheConfig** | N/A | 108 lines | +108 lines (new module) |
-| **Total** | 874 lines | 1092 lines (817 + 167 + 108) | Net: +218 lines (modular architecture) |
+| Metric                     | Before    | After                        | Improvement                            |
+| -------------------------- | --------- | ---------------------------- | -------------------------------------- |
+| **cache.ts**               | 874 lines | 817 lines                    | -57 lines (6.5% reduction)             |
+| **CacheDependencyManager** | N/A       | 167 lines                    | +167 lines (new module)                |
+| **CacheConfig**            | N/A       | 108 lines                    | +108 lines (new module)                |
+| **Total**                  | 874 lines | 1092 lines (817 + 167 + 108) | Net: +218 lines (modular architecture) |
 
 **Test Results**:
+
 - cache.test.ts: 69 tests passing (all dependency tracking tests pass)
 - cacheMetricsCalculator.test.ts: 18 tests passing
 - cacheCleanup.test.ts: 18 tests passing
@@ -666,6 +730,7 @@ interface ApiListResult<T> extends ApiResult<T[]> {
 - TypeScript: 0 errors
 
 **Benefits**:
+
 1. **Single Responsibility**: CacheManager focuses on core cache operations (get, set, delete)
 2. **Separation of Concerns**: Dependency tracking isolated in CacheDependencyManager
 3. **Configuration Management**: Cache TTL values centralized in CacheConfig module
@@ -676,6 +741,7 @@ interface ApiListResult<T> extends ApiResult<T[]> {
 8. **Modularity**: Dependencies and configuration can be reused or replaced independently
 
 **Anti-Patterns Avoided**:
+
 - ❌ No god class (CacheManager reduced from 874 to 817 lines)
 - ❌ No duplicate code (dependency logic defined once in CacheDependencyManager)
 - ❌ No mixed concerns (cache operations, dependency tracking, and configuration separated)
@@ -683,6 +749,7 @@ interface ApiListResult<T> extends ApiResult<T[]> {
 - ❌ No breaking changes (backward compatible exports maintained)
 
 **Architectural Principles Applied**:
+
 1. **Single Responsibility Principle**: Each module has one clear responsibility
 2. **Open/Closed Principle**: CacheDependencyManager can be extended without modifying CacheManager
 3. **Dependency Inversion**: CacheManager depends on CacheDependencyManager abstraction
@@ -693,6 +760,7 @@ interface ApiListResult<T> extends ApiResult<T[]> {
 **See Also**: [Task REFACTOR-032](./task.md#refactor-032)
 
 **REFACTOR-033: Batch Operation Pattern**:
+
 - Created `batchOperations.ts` utility (src/lib/api/batchOperations.ts, 92 lines)
 - Added `createBatchOperation<T>()` generic function for batch fetch operations
 - Added `createBatchOperationFactory<T>()` factory for pre-configured batch operations
@@ -708,6 +776,7 @@ interface ApiListResult<T> extends ApiResult<T[]> {
 **Implementation Details**:
 
 **createBatchOperation<T>()** Generic Function:
+
 - Accepts `BatchOperationOptions<T>` interface with configuration
 - Handles cache checking for each ID
 - Collects uncached IDs with deduplication (Set-based)
@@ -720,6 +789,7 @@ interface ApiListResult<T> extends ApiResult<T[]> {
 - Returns Map<number, T | null> with all results (cached, fetched, null for missing)
 
 **BatchOperationOptions<T> Interface**:
+
 - `ids: number[]` - List of IDs to fetch
 - `cacheKeyFn: (id: number) => string` - Function to generate cache keys
 - `cacheManager: ICacheManager` - Cache manager instance
@@ -733,14 +803,15 @@ interface ApiListResult<T> extends ApiResult<T[]> {
 
 **Code Metrics**:
 
-| Metric | Before | After | Improvement |
-|--------|---------|-------|-------------|
-| **wordpress.ts** | 211 lines | 172 lines | -39 lines (18.5% reduction) |
-| **batchOperations.ts** | N/A | 92 lines | +92 lines (new utility) |
-| **batchOperations.test.ts** | N/A | 330 lines | +330 lines (new tests) |
-| **Total** | 211 lines | 594 lines (172 + 92 + 330) | Net: +383 lines (modular architecture + tests) |
+| Metric                      | Before    | After                      | Improvement                                    |
+| --------------------------- | --------- | -------------------------- | ---------------------------------------------- |
+| **wordpress.ts**            | 211 lines | 172 lines                  | -39 lines (18.5% reduction)                    |
+| **batchOperations.ts**      | N/A       | 92 lines                   | +92 lines (new utility)                        |
+| **batchOperations.test.ts** | N/A       | 330 lines                  | +330 lines (new tests)                         |
+| **Total**                   | 211 lines | 594 lines (172 + 92 + 330) | Net: +383 lines (modular architecture + tests) |
 
 **Test Results**:
+
 - batchOperations.test.ts: 15 tests passing (all batch operation scenarios)
 - wordpressBatchOperations.test.ts: 33 tests passing (all refactored methods pass)
 - Total tests: 1983 passing (23 skipped)
@@ -748,6 +819,7 @@ interface ApiListResult<T> extends ApiResult<T[]> {
 - TypeScript: 0 errors
 
 **Benefits**:
+
 1. **DRY Principle**: Batch operation pattern defined once in reusable utility
 2. **Consistency**: All batch operations follow same structure and patterns
 3. **Type Safety**: Generic function enforces consistent types with TypeScript
@@ -758,6 +830,7 @@ interface ApiListResult<T> extends ApiResult<T[]> {
 8. **Code Clarity**: Smaller, focused wordpress.ts file with less duplication
 
 **Anti-Patterns Avoided**:
+
 - ❌ No duplicate code (batch operation pattern defined once)
 - ❌ No mixed concerns (batch logic separated from API implementation)
 - ❌ No tight coupling (batch operation utility is generic and reusable)
@@ -765,6 +838,7 @@ interface ApiListResult<T> extends ApiResult<T[]> {
 - ❌ No performance regressions (deduplication improves efficiency)
 
 **Architectural Principles Applied**:
+
 1. **Single Responsibility Principle**: batchOperations.ts focuses solely on batch operations
 2. **Open/Closed Principle**: Can add new batch operations without modifying utility
 3. **DRY Principle**: Batch operation logic defined once
@@ -781,6 +855,7 @@ interface ApiListResult<T> extends ApiResult<T[]> {
 **Integration Status**: ✅ Production-ready, all resilience patterns verified and tested
 
 **Audit Summary**:
+
 - ✅ All resilience patterns implemented and production-ready
 - ✅ Circuit breaker, retry strategy, rate limiting, health check operational
 - ✅ Comprehensive integration test coverage (21 tests)
@@ -788,6 +863,7 @@ interface ApiListResult<T> extends ApiResult<T[]> {
 - ✅ Configuration reviewed and validated for production
 
 ### Circuit Breaker
+
 - **Purpose**: Prevent cascading failures by stopping calls to failing services
 - **Configuration**:
   - Failure Threshold: 5 failures before opening circuit
@@ -798,6 +874,7 @@ interface ApiListResult<T> extends ApiResult<T[]> {
 - **Status**: ✅ Production-ready, verified by INT-AUDIT-001
 
 ### Retry Strategy
+
 - **Purpose**: Automatically retry failed requests with exponential backoff
 - **Configuration**:
   - Max Retries: 3 attempts
@@ -814,6 +891,7 @@ interface ApiListResult<T> extends ApiResult<T[]> {
 - **Status**: ✅ Production-ready, verified by INT-AUDIT-001
 
 ### Error Handling
+
 - **Error Types**:
   - `NETWORK_ERROR` - Connection issues
   - `TIMEOUT_ERROR` - Request timeouts
@@ -837,12 +915,14 @@ interface ApiListResult<T> extends ApiResult<T[]> {
 - **Status**: ✅ Production-ready, verified by INT-AUDIT-001
 
 ### Request Cancellation
+
 - **Purpose**: Cancel stale requests to prevent unnecessary processing
 - **Implementation**: AbortController integration in API client
 - **Usage**: All API methods accept optional `signal` parameter
 - **Status**: ✅ Production-ready, verified by INT-AUDIT-001
 
 ### Health Check
+
 - **Purpose**: Monitor WordPress API availability and verify service health
 - **Features**:
   - Simple health check to verify API responsiveness
@@ -869,6 +949,7 @@ interface ApiListResult<T> extends ApiResult<T[]> {
   - If health check fails → Request blocked with helpful error message
   - Prevents unnecessary API calls to recovering service
 - **Usage Examples**:
+
   ```typescript
   // Basic health check
   const result = await checkApiHealth();
@@ -887,6 +968,7 @@ interface ApiListResult<T> extends ApiResult<T[]> {
   ```
 
 ### Telemetry and Observability
+
 - **Purpose**: Centralized metrics collection for monitoring resilience patterns
 - **Implementation**: `src/lib/api/telemetry.ts`
 - **Status**: ✅ Production-ready, added for INT-001 through INT-005
@@ -905,22 +987,28 @@ interface ApiListResult<T> extends ApiResult<T[]> {
 - **Telemetry Event Structure**:
   ```typescript
   interface TelemetryEvent {
-    timestamp: string,      // ISO 8601 timestamp
-    type: string,         // Event type (e.g., 'state-change', 'retry')
-    category: 'circuit-breaker' | 'retry' | 'rate-limit' | 'health-check' | 'api-request',
-    data: Record<string, unknown>  // Event-specific data
+    timestamp: string; // ISO 8601 timestamp
+    type: string; // Event type (e.g., 'state-change', 'retry')
+    category:
+      | 'circuit-breaker'
+      | 'retry'
+      | 'rate-limit'
+      | 'health-check'
+      | 'api-request';
+    data: Record<string, unknown>; // Event-specific data
   }
   ```
 - **Configuration**:
   ```typescript
   const telemetryCollector = new TelemetryCollector({
-    enabled: true,        // Enable/disable via TELEMETRY_ENABLED env var
-    maxEvents: 1000,     // Max events before auto-flush
+    enabled: true, // Enable/disable via TELEMETRY_ENABLED env var
+    maxEvents: 1000, // Max events before auto-flush
     flushInterval: 60000, // Auto-flush interval (60 seconds)
-    onEvent: (event) => {  // Custom event callback
+    onEvent: (event) => {
+      // Custom event callback
       // Send to APM (DataDog, New Relic, etc.)
-    }
-  })
+    },
+  });
   ```
 - **Health Check API Endpoints**:
   - **GET /api/health** - WordPress API health check (load balancer probes)
@@ -982,6 +1070,7 @@ interface ApiListResult<T> extends ApiResult<T[]> {
     }
     ```
 - **Kubernetes Probes**:
+
   ```yaml
   # Liveness probe
   livenessProbe:
@@ -999,6 +1088,7 @@ interface ApiListResult<T> extends ApiResult<T[]> {
     initialDelaySeconds: 10
     periodSeconds: 5
   ```
+
 - **Key Metrics to Monitor**:
   - **Circuit Breaker**: State (should be CLOSED), failure rate, blocked requests
   - **Retry**: Retry rate (< 20%), retry success rate (> 80%), exhaustions (< 5%)
@@ -1017,6 +1107,7 @@ interface ApiListResult<T> extends ApiResult<T[]> {
 - **Tests**: 48 tests (28 telemetry tests + 20 API endpoint tests)
 
 ### Rate Limiting
+
 - **Purpose**: Protect API from overload by limiting request rate
 - **Configuration**:
   - Max Requests: 60 requests per window (WordPress API)
@@ -1031,6 +1122,7 @@ interface ApiListResult<T> extends ApiResult<T[]> {
 - **Status**: ✅ Production-ready, verified by INT-AUDIT-001
 
 ### API Route Rate Limiting
+
 - **Purpose**: Protect API routes from DoS attacks
 - **Configuration**:
   - Health endpoints: 300 requests/minute (5/sec)
@@ -1058,6 +1150,7 @@ interface ApiListResult<T> extends ApiResult<T[]> {
 **Last Updated**: 2026-01-11 (Senior Integration Engineer)
 
 **Audit Summary**:
+
 - ✅ All resilience patterns implemented and production-ready
 - ✅ Circuit breaker, retry strategy, rate limiting, health check operational
 - ✅ Comprehensive integration test coverage (21 tests)
@@ -1100,6 +1193,7 @@ interface ApiListResult<T> extends ApiResult<T[]> {
 **Gaps Identified**: None (all patterns production-ready)
 
 **Potential Future Enhancements** (Non-Critical):
+
 - Distributed tracing for request correlation
 - Performance testing for high-traffic scenarios
 - Chaos engineering for resilience validation
@@ -1114,6 +1208,7 @@ interface ApiListResult<T> extends ApiResult<T[]> {
 **Purpose**: Provide machine-readable API specification for automatic documentation generation and client code generation.
 
 **Implementation**:
+
 - File: `docs/openapi.yaml`
 - Format: OpenAPI 3.0.3
 - Endpoints documented:
@@ -1123,6 +1218,7 @@ interface ApiListResult<T> extends ApiResult<T[]> {
   - Security: POST /csp-report
 
 **Usage**:
+
 ```bash
 # Generate Swagger UI
 docker run -p 8080:8080 -e SWAGGER_JSON=/openapi.yaml -v $(pwd):/usr/share/nginx swaggerapi/swagger-ui
@@ -1136,6 +1232,7 @@ swagger-cli validate openapi.yaml
 ```
 
 **Features**:
+
 - Complete request/response schemas
 - Rate limit annotations
 - Tag organization (Health, Observability, Cache, Security)
@@ -1167,6 +1264,7 @@ swagger-cli validate openapi.yaml
 ### Security Configuration Details
 
 **Content Security Policy (CSP)**:
+
 - Configuration location: `src/proxy.ts`
 - Implementation: Nonce-based CSP generated per request
 - Script sources: Self, nonce, WordPress domains (mitrabantennews.com, www.mitrabantennews.com)
@@ -1176,6 +1274,7 @@ swagger-cli validate openapi.yaml
 - Report endpoint: `/api/csp-report` (development only)
 
 **XSS Protection**:
+
 - Configuration location: `src/lib/utils/sanitizeHTML.ts`
 - Implementation: DOMPurify with strict security policies
 - Config modes: 'excerpt' (minimal tags) and 'full' (rich content)
@@ -1183,6 +1282,7 @@ swagger-cli validate openapi.yaml
 - Forbidden attributes: onclick, onload, onerror, onmouseover
 
 **Input Validation**:
+
 - Configuration location: `src/lib/validation/dataValidator.ts`
 - Implementation: Runtime validation at API boundaries
 - Validated resources: Posts, Categories, Tags, Media, Authors
@@ -1190,6 +1290,7 @@ swagger-cli validate openapi.yaml
 - Graceful degradation with fallback data on validation failures
 
 **Rate Limiting**:
+
 - Configuration location: `src/lib/api/rateLimiter.ts`
 - Implementation: Token bucket algorithm with sliding window
 - Max requests: 60 per minute
@@ -1275,6 +1376,7 @@ swagger-cli validate openapi.yaml
 - **GET /api/observability/metrics** - Updated to include performance metrics
 
 **Performance Metrics API Response**:
+
 ```json
 {
   "summary": {
@@ -1361,28 +1463,28 @@ function MyApp({ Component, pageProps }) {
 For API response time tracking, use the `performanceMetricsCollector`:
 
 ```typescript
-import { performanceMetricsCollector } from '@/lib/api/performanceMetrics'
+import { performanceMetricsCollector } from '@/lib/api/performanceMetrics';
 
-const startTime = Date.now()
+const startTime = Date.now();
 try {
-  const response = await apiCall()
+  const response = await apiCall();
   performanceMetricsCollector.recordApiResponse({
     endpoint: '/api/posts',
     method: 'GET',
     duration: Date.now() - startTime,
     statusCode: response.status,
-    cacheHit: false
-  })
-  performanceMetricsCollector.recordSuccess('/api/posts', 'GET')
+    cacheHit: false,
+  });
+  performanceMetricsCollector.recordSuccess('/api/posts', 'GET');
 } catch (error) {
   performanceMetricsCollector.recordApiResponse({
     endpoint: '/api/posts',
     method: 'GET',
     duration: Date.now() - startTime,
     statusCode: 500,
-    cacheHit: false
-  })
-  performanceMetricsCollector.recordError('/api/posts', 'GET', 'NETWORK_ERROR')
+    cacheHit: false,
+  });
+  performanceMetricsCollector.recordError('/api/posts', 'GET', 'NETWORK_ERROR');
 }
 ```
 
@@ -1391,13 +1493,13 @@ try {
 Start automatic resource monitoring:
 
 ```typescript
-import { startResourceMonitoring } from '@/lib/api/performanceMetrics'
+import { startResourceMonitoring } from '@/lib/api/performanceMetrics';
 
 // Monitor resources every 60 seconds (default)
-startResourceMonitoring()
+startResourceMonitoring();
 
 // Custom interval (30 seconds)
-startResourceMonitoring(30000)
+startResourceMonitoring(30000);
 ```
 
 **Testing**:
@@ -1415,6 +1517,7 @@ startResourceMonitoring(30000)
 **Implementation Status**: ✅ Complete (PERF-MON-001)
 
 **See Also**:
+
 - [Task PERF-MON-001: Implement Core Performance Metrics Collection](./task.md#perf-mon-001)
 - [Task PERF-MON-002: Integrate APM Provider](./task.md#perf-mon-002)
 - [Integration Resilience Patterns](#integration-resilience-patterns)
@@ -1422,43 +1525,47 @@ startResourceMonitoring(30000)
 ## Data Architecture
 
 ### Data Models
+
 - All data fetched from WordPress REST API
 - TypeScript interfaces for type safety (compile-time)
 - Runtime validation at API boundaries (dataValidator.ts)
 - Enhanced data models with resolved relationships
 
 ### Data Validation
+
 - **Runtime Validation**: `src/lib/validation/dataValidator.ts` validates all API responses
-   - Posts, Categories, Tags, Media, Authors validated at boundaries
-   - Type checking, required field verification, array validation
-   - Graceful degradation with error logging
-   - **Type Guards**: TypeScript type-safe validation helpers
-     - `isValidationResultValid<T>()`: Type guard to narrow ValidationResult<T>
-     - `unwrapValidationResult<T>()`: Extract data with error throwing
-     - `unwrapValidationResultSafe<T>(): Extract data with fallback
+  - Posts, Categories, Tags, Media, Authors validated at boundaries
+  - Type checking, required field verification, array validation
+  - Graceful degradation with error logging
+  - **Type Guards**: TypeScript type-safe validation helpers
+    - `isValidationResultValid<T>()`: Type guard to narrow ValidationResult<T>
+    - `unwrapValidationResult<T>()`: Extract data with error throwing
+    - `unwrapValidationResultSafe<T>(): Extract data with fallback
 - **Relationship Validation**: `src/lib/validation/relationshipValidator.ts` validates entity references
-   - Validates post relationships (categories, tags, authors) against available data
-   - Detects invalid reference IDs with clear error messages
-   - Supports optional validation (can skip specific relationship types)
-   - Non-blocking validation (logs warnings but continues execution)
-   - Integrated into `enrichPostWithDetails()` for automatic validation
+  - Validates post relationships (categories, tags, authors) against available data
+  - Detects invalid reference IDs with clear error messages
+  - Supports optional validation (can skip specific relationship types)
+  - Non-blocking validation (logs warnings but continues execution)
+  - Integrated into `enrichPostWithDetails()` for automatic validation
 - **Compile-time Safety**: TypeScript provides static type checking
 - **Fallback Data**: Invalid data triggers fallback mechanisms
 
 ### Data Fetching Strategies
+
 - **Batch Operations**: Eliminates N+1 queries
   - `getMediaBatch()`: Fetch multiple media items in single request
   - `getMediaUrlsBatch()`: Batch URL resolution with caching
   - Reduces API calls by 80%+ for media assets
 - **Parallel Fetching**: Independent API calls executed concurrently
 - **Caching**: Three-tier caching strategy with advanced dependency tracking
-   - In-memory cache (cacheManager) for frequent queries
-   - **Dependency Tracking**: Bi-directional graph of cache relationships
-   - **Cascade Invalidation**: Automatic invalidation of dependent caches
-   - ISR for page-level caching
-   - HTTP caching headers
+  - In-memory cache (cacheManager) for frequent queries
+  - **Dependency Tracking**: Bi-directional graph of cache relationships
+  - **Cascade Invalidation**: Automatic invalidation of dependent caches
+  - ISR for page-level caching
+  - HTTP caching headers
 
 **Cache Architecture Enhancements**:
+
 - **Dependency-Aware Caching**: `cacheManager.set(key, data, ttl, dependencies)` supports explicit dependency tracking
 - **Automatic Cascade Invalidation**: When a dependency is invalidated, all dependents are automatically cleared
 - **Enhanced Telemetry**: Performance metrics, efficiency scoring, memory usage tracking
@@ -1467,11 +1574,13 @@ startResourceMonitoring(30000)
 - **Debug Tools**: `getDependencies()`, `getKeysByPattern()` for cache inspection
 
 **Cache Dependencies**:
+
 - Posts depend on: categories, tags, media
 - Posts lists depend on: categories, tags
 - Categories, tags, media, authors are leaf nodes (no dependencies)
 
 **Cache Performance Metrics**:
+
 - Hit rate tracking with efficiency scoring (high/medium/low)
 - Cascade invalidation count and rate
 - Dependency registration tracking
@@ -1479,6 +1588,7 @@ startResourceMonitoring(30000)
 - Memory usage estimation (bytes/MB)
 
 **Data Architecture Audit Status**: ✅ Verified (DATA-ARCH-008)
+
 - All data architecture principles verified and properly implemented
 - No critical issues found
 - 236+ data-related tests passing (215 + 21 relationship validation)
@@ -1495,6 +1605,7 @@ startResourceMonitoring(30000)
 **Principle**: Clear separation of concerns with single responsibility per module.
 
 **Layers**:
+
 1. **API Layer** (`wordpress.ts`): WordPress API wrapper
    - Focuses solely on WordPress API operations
    - Handles GET requests to WordPress REST API endpoints
@@ -1525,6 +1636,7 @@ startResourceMonitoring(30000)
    - **Not coupled to API layer** (clean separation)
 
 **Separation of Concerns** (ARCH-001):
+
 - API layer: WordPress REST API calls only
 - Service layer: Business logic, validation, enrichment
 - Cache layer: Cache storage, invalidation, telemetry
@@ -1534,15 +1646,17 @@ startResourceMonitoring(30000)
 **Principle**: Define contracts between modules for dependency inversion and improved testability.
 
 **Interfaces Created**:
+
 - `IWordPressAPI` (`src/lib/api/IWordPressAPI.ts`): WordPress API contract
   - Defines all WordPress API operations (posts, categories, tags, media, authors)
   - Includes optional `signal` parameter for request cancellation (AbortController)
-  - Returns types include `null` for potentially missing resources (get*, getTag, getCategory, getMediaUrl)
+  - Returns types include `null` for potentially missing resources (get\*, getTag, getCategory, getMediaUrl)
 - `IPostService` (`src/lib/services/IPostService.ts`): Post service contract
   - Defines post service operations (getLatest, getCategory, getAll, getPaginated, getBySlug, getById)
   - Includes enriched types (PostWithMediaUrl, PostWithDetails, PaginatedPostsResult)
 
 **Benefits**:
+
 1. **Dependency Inversion**: High-level modules depend on abstractions (interfaces), not low-level modules (API layer)
 2. **Testability**: Easy to mock interfaces for unit testing
 3. **Type Safety**: Explicit contracts documented in TypeScript interfaces
@@ -1554,6 +1668,7 @@ startResourceMonitoring(30000)
 **Principle**: Apply Dependency Injection to break circular dependencies and improve modularity.
 
 **Circular Dependency Cleanup**:
+
 - **Before**: `client.ts` imported `checkApiHealth` from `healthCheck.ts`, which imported `apiClient` from `client.ts` (circular)
 - **After**: `HealthChecker` accepts HTTP client via constructor parameter (Dependency Injection)
 - **Implementation**:
@@ -1562,6 +1677,7 @@ startResourceMonitoring(30000)
   - `healthCheck.ts` no longer imports `apiClient` directly, accepts `HttpClient` interface
 
 **Dependency Injection Applied**:
+
 ```typescript
 // HealthChecker accepts HTTP client via constructor (Dependency Injection)
 export class HealthChecker {
@@ -1573,13 +1689,14 @@ export class HealthChecker {
 }
 
 // client.ts creates healthChecker with apiClient injected
-const healthChecker = new HealthChecker(apiClient)
+const healthChecker = new HealthChecker(apiClient);
 export async function checkApiHealth() {
-  return healthChecker.check()
+  return healthChecker.check();
 }
 ```
 
 **Benefits**:
+
 1. **Circular Dependency Eliminated**: Zero circular dependencies in codebase
 2. **Testability**: Easy to mock HTTP client for health check tests
 3. **Loose Coupling**: `healthCheck.ts` no longer depends on concrete `apiClient` implementation
@@ -1587,12 +1704,13 @@ export async function checkApiHealth() {
 5. **SOLID Compliance**: Dependency Inversion Principle (DIP) applied
 
 **Cache Module Cleanup**:
+
 - **Removed**: `warmAll()` method from `cache.ts` that created circular dependency with `cacheWarmer.ts`
 - **Result**: Cache manager now has single responsibility (cache storage only)
 - **Orchestration**: Cache warming moved to `cacheWarmer.ts` as separate service
 
 **See Also**: [Task ARCH-DEP-001: Dependency Cleanup](./task.md#arch-dep-001)
- 
+
 ### Cache Fetch Utility (ARCH-CACHE-FETCH-001)
 
 **Principle**: DRY (Don't Repeat Yourself) - eliminate duplicate cache management patterns across API layer.
@@ -1600,6 +1718,7 @@ export async function checkApiHealth() {
 **Problem**: Cache management logic was duplicated in API layer methods (`getMediaBatch`, `getMediaUrl`, `search`), violating DRY principle and mixing concerns.
 
 **Solution**: Created generic `cacheFetch<T>()` utility function that provides consistent caching behavior:
+
 - Check cache first
 - Call fetch function on cache miss
 - Set cache with result
@@ -1608,6 +1727,7 @@ export async function checkApiHealth() {
 - Support optional data transformation
 
 **Implementation** (`src/lib/utils/cacheFetch.ts`):
+
 ```typescript
 interface CacheFetchOptions<T> {
   key: string;
@@ -1619,15 +1739,17 @@ interface CacheFetchOptions<T> {
 async function cacheFetch<T>(
   fetchFn: () => Promise<unknown>,
   options: CacheFetchOptions<T>
-): Promise<T | null>
+): Promise<T | null>;
 ```
 
 **Refactored Methods**:
+
 - **search** method: Now uses `cacheFetch()` (15 lines → 12 lines)
 - **getMediaUrl**: Kept original implementation (has special conditional caching logic)
 - **getMediaBatch**: Kept original implementation (has partial cache fill logic)
 
 **Benefits**:
+
 1. **DRY Principle**: Caching pattern defined once, used in multiple places
 2. **Single Responsibility**: API layer focuses on API calls, cacheFetch handles caching
 3. **Consistency**: All cache operations use same pattern
@@ -1637,6 +1759,7 @@ async function cacheFetch<T>(
 7. **Extensibility**: Easy to add new caching scenarios
 
 **Tests Created** (`__tests__/cacheFetch.test.ts`):
+
 - Cache hit scenario (2 tests)
 - Cache miss scenario (4 tests)
 - Error handling (3 tests)
@@ -1716,6 +1839,7 @@ export const cacheWarmer = new CacheWarmer();
 7. **Backward Compatibility**: Default parameters maintain existing behavior
 
 **Test Results**:
+
 - 1616 tests passing (no regressions)
 - 48 test suites passing
 - 1 test suite skipped (WORDPRESS_API_AVAILABLE)
@@ -1733,6 +1857,7 @@ export const cacheWarmer = new CacheWarmer();
 **Solution**: Removed error handling from API layer methods to let errors propagate to apiClient interceptors, where resilience patterns are applied. Service layer maintains graceful fallback behavior.
 
 **Before Refactoring**:
+
 ```typescript
 // getMediaBatch - Swallowed errors, bypassed resilience patterns
 try {
@@ -1754,6 +1879,7 @@ try {
 ```
 
 **After Refactoring**:
+
 ```typescript
 // getMediaBatch - Errors propagate to apiClient resilience patterns
 const response = await apiClient.get(getApiUrl('/wp/v2/media'), { params });
@@ -1770,6 +1896,7 @@ return url ?? null;
 ```
 
 **Service Layer Error Handling**:
+
 ```typescript
 // enrichPostsWithMediaUrls - Handles errors at service layer
 try {
@@ -1783,12 +1910,16 @@ try {
 try {
   mediaUrl = await wordpressAPI.getMediaUrl(post.featured_media);
 } catch (error) {
-  logger.warn(`Failed to fetch media for post ${post.id}, using fallback`, error);
+  logger.warn(
+    `Failed to fetch media for post ${post.id}, using fallback`,
+    error
+  );
   mediaUrl = null;
 }
 ```
 
 **Benefits**:
+
 1. **Consistent Error Handling**: All errors flow through apiClient's centralized resilience patterns
 2. **Circuit Breaker Integration**: Media API failures now tracked and trigger circuit opening
 3. **Retry Strategy Application**: Transient media failures automatically retried with backoff
@@ -1798,6 +1929,7 @@ try {
 7. **No Behavior Changes**: Service layer maintains graceful fallbacks (null media URLs, fallback posts)
 
 **Error Flow**:
+
 1. Component → Service Layer → API Layer (`getMediaBatch`/`getMediaUrl`)
 2. API Layer → apiClient → Network Request
 3. Error: apiClient interceptors handle error
@@ -1809,6 +1941,7 @@ try {
 6. Component: Renders fallback content
 
 **Files Modified**:
+
 - `src/lib/wordpress.ts` - Removed error handling from getMediaBatch and getMediaUrl
 - `src/lib/services/enhancedPostService.ts` - Added error handling in service layer methods
 - `__tests__/wordpressBatchOperations.test.ts` - Updated test expectations
@@ -1816,6 +1949,7 @@ try {
 **See Also**: [Task ARCH-ERROR-001: Error Handling Refactoring](./task.md#arch-error-001)
 
 ### Data Integrity
+
 - Validation ensures data structure matches expected schema
 - Fallback data provides graceful degradation
 - Single source of truth for pagination limits
@@ -1837,6 +1971,7 @@ try {
 **Purpose**: Verify that resilience patterns work together correctly
 
 **Test Categories**:
+
 1. Circuit Breaker + Retry Integration
 2. Rate Limiting + Error Handling Integration
 3. Retry Strategy + Error Classification Integration
@@ -1846,6 +1981,7 @@ try {
 7. Resilience Pattern Configuration Validation
 
 **Running Integration Tests**:
+
 ```bash
 # With WordPress API available
 export WORDPRESS_API_AVAILABLE=true
@@ -1917,6 +2053,7 @@ src/
 **Location**: `.github/workflows/ci.yml`
 
 **Pipeline Stages**:
+
 1. **Test Stage**:
    - Checkout code
    - Setup Node.js 20 with npm cache
@@ -1936,6 +2073,7 @@ src/
    - Upload build artifacts
 
 **Pipeline Optimizations**:
+
 - ✅ npm caching in both test and build jobs (reduces install time by 70%+)
 - ✅ Next.js build cache (speeds up rebuilds by 50%+)
 - ✅ Removed complex SWC binary handling (Next.js handles automatically)
@@ -1944,18 +2082,21 @@ src/
 ### Containerization
 
 **Docker Setup**:
+
 - **Dockerfile**: Multi-stage build for optimized production image
   - Stage 1 (deps): Install production dependencies
   - Stage 2 (builder): Build Next.js application with standalone output
   - Stage 3 (runner): Lightweight production runtime
 
 **Docker Compose Services**:
+
 - **wordpress**: WordPress CMS (port 8080) - 512M RAM, 1.0 CPU
 - **db**: MySQL 8.0 database - 1G RAM, 1.0 CPU
 - **phpmyadmin**: Database management UI (port 8081) - 256M RAM, 0.5 CPU
 - **frontend**: Next.js frontend (port 3000) - 1G RAM, 2.0 CPU
 
 **Resource Limits** (Added: 2026-01-10):
+
 - All containers have CPU and memory limits to prevent resource exhaustion
 - WordPress: 512MB memory limit, 1.0 CPU cores
 - MySQL: 1GB memory limit, 1.0 CPU cores
@@ -1965,6 +2106,7 @@ src/
 - Ensures fair resource allocation across services
 
 **Health Checks**:
+
 - WordPress: HTTP health check on port 80
 - MySQL: MySQL admin ping
 - Frontend: Depends on WordPress health
@@ -1972,11 +2114,13 @@ src/
 ### Deployment Architecture
 
 **Environment Parity**:
+
 - Development: `npm run dev` (local development)
 - Staging: Docker Compose (production-like environment)
 - Production: Docker container + load balancer (recommended)
 
 **Deployment Strategies**:
+
 1. **Blue-Green Deployment**: Zero-downtime deployments
 2. **Rollback Protocol**: Immediate rollback on production issues
 3. **Health Check**: Verify service health before routing traffic
@@ -1985,12 +2129,14 @@ src/
 ### Monitoring and Observability
 
 **Current Monitoring**:
+
 - ✅ CI/CD pipeline status (GitHub Actions)
 - ✅ Test results (795 tests passing)
 - ✅ Security audit (0 vulnerabilities)
 - ✅ Build time tracking
 
 **Recommended Monitoring**:
+
 - Application performance metrics (response time, error rate)
 - Resource usage (CPU, memory, disk)
 - Custom alerts (error rate > 5%, response time > 500ms)
@@ -2028,9 +2174,37 @@ docker-compose logs -f frontend   # Follow frontend logs
 docker-compose build frontend      # Rebuild frontend
 ```
 
+### Bundle Size Budget
+
+The project uses Next.js bundle analyzer and enforces size budgets to prevent performance regressions.
+
+**Budget Thresholds**:
+- **Single Chunk**: Max 250KB
+- **Total JS Bundle**: Max 850KB
+
+**Commands**:
+```bash
+# Analyze bundle
+npm run analyze
+
+# Check bundle size
+npm run size-check
+```
+
+**CI Integration**:
+- Bundle size is checked on every PR
+- Bundle report is uploaded as artifact
+- PR comment shows bundle size summary
+- Warning triggered if total JS exceeds 200KB
+
+**Files**:
+- `scripts/bundle-size-check.js`: Size validation script
+- `next.config.js`: Bundle analyzer configuration
+
 ### Rollback Protocol
 
 **Production Issues**:
+
 1. Immediate rollback to previous working version
 2. Root cause analysis (logs, metrics, error tracking)
 3. Fix forward (not in production)
@@ -2039,6 +2213,7 @@ docker-compose build frontend      # Rebuild frontend
 6. Document post-mortem (lessons learned)
 
 **Rollback Commands**:
+
 ```bash
 # Docker rollback
 docker-compose down
@@ -2067,35 +2242,38 @@ curl http://localhost:3000/health
    - `dateFormat.ts`: Date formatting utilities with locale support
 3. **Type Safety**: All utility functions properly typed
 4. **Configuration Management**: Centralize configuration constants
-    - `src/lib/constants/appConstants.ts`: Magic number constants (TELEMETRY, PARSING, MEMORY, CACHE_METRICS, RATE_LIMIT)
-    - `src/lib/constants/fallbackPosts.ts`: Fallback data constants
-    - `src/lib/constants/uiText.ts`: UI text constants for localization layer
-    - `src/lib/constants/buttonStyles.ts`: Button variant styles with design tokens
- 5. **Layer Separation**: Text and formatting separated from presentation
-    - UI text in `src/lib/constants/uiText.ts`
-    - Date formatting in `src/lib/utils/dateFormat.ts`
-    - Components import and use these utilities
- 6. **Component Optimization**: 
-    - **Server Components**: Do not use React.memo (server always re-renders)
-    - **Client Components**: Use React.memo for frequently-rendered components with stable props
-    - **Custom Comparison**: Provide custom comparison function when memoizing complex props
-    - **Example**: PostCard component uses React.memo with arePropsEqual to prevent unnecessary re-renders
+   - `src/lib/constants/appConstants.ts`: Magic number constants (TELEMETRY, PARSING, MEMORY, CACHE_METRICS, RATE_LIMIT)
+   - `src/lib/constants/fallbackPosts.ts`: Fallback data constants
+   - `src/lib/constants/uiText.ts`: UI text constants for localization layer
+   - `src/lib/constants/buttonStyles.ts`: Button variant styles with design tokens
+5. **Layer Separation**: Text and formatting separated from presentation
+   - UI text in `src/lib/constants/uiText.ts`
+   - Date formatting in `src/lib/utils/dateFormat.ts`
+   - Components import and use these utilities
+6. **Component Optimization**:
+   - **Server Components**: Do not use React.memo (server always re-renders)
+   - **Client Components**: Use React.memo for frequently-rendered components with stable props
+   - **Custom Comparison**: Provide custom comparison function when memoizing complex props
+   - **Example**: PostCard component uses React.memo with arePropsEqual to prevent unnecessary re-renders
 
 ### Rendering Optimization Guidelines
 
 **When to Use React.memo**:
+
 - Component renders frequently (list items, cards, grid items)
 - Parent components update frequently (Header, Footer, mobile menus)
 - Props change infrequently relative to re-renders
 - Expensive rendering operations (complex calculations, heavy DOM)
 
 **When NOT to Use React.memo**:
+
 - Server components (memoization has no effect)
 - Components that always re-render due to changing props
 - Simple components with minimal re-render cost
 - Components with frequent prop changes (memoization overhead > benefit)
 
 **Custom Comparison Function**:
+
 - Compare only props that affect rendering output
 - Use shallow comparison for primitive values
 - Compare nested properties explicitly for complex objects
@@ -2107,6 +2285,7 @@ curl http://localhost:3000/health
 A searchable input component with debouncing, loading states, and full accessibility support.
 
 **Features**:
+
 - Debounced input (configurable delay, default 300ms) to reduce API calls
 - Loading state with spinner indicator
 - Clear button to reset search query
@@ -2121,6 +2300,7 @@ A searchable input component with debouncing, loading states, and full accessibi
 SearchBar is integrated into Header navigation for easy access across all pages.
 
 **Features**:
+
 - Search button in desktop navigation (next to navigation items)
 - Search button in mobile toolbar (next to menu button)
 - Toggle visibility: Click search button to open/close search bar
@@ -2130,8 +2310,9 @@ SearchBar is integrated into Header navigation for easy access across all pages.
 - Responsive design: Search bar adapts to all screen sizes
 
 **Usage**:
+
 ```tsx
-import Header from '@/components/layout/Header'
+import Header from '@/components/layout/Header';
 
 // Header automatically includes search button
 // Click search button to open search bar
@@ -2140,12 +2321,14 @@ import Header from '@/components/layout/Header'
 ```
 
 **Design Tokens**:
+
 - Uses `--color-surface`, `--color-text-primary`, `--color-text-muted`, `--color-primary` for colors
 - Uses `--color-border` for borders
 - Uses `--radius-md`, `--radius-sm` for border radius
 - Uses `--transition-fast` for transitions
 
 **Accessibility**:
+
 - `role="search"` on form for landmark identification
 - Associated label with `sr-only` class
 - Search icon and loading indicator hidden with `aria-hidden="true"`
@@ -2154,30 +2337,33 @@ import Header from '@/components/layout/Header'
 - Full keyboard navigation (Tab, Enter)
 
 **Responsive Design**:
+
 - Mobile-first approach with responsive padding (`py-2 sm:py-3`)
 - Responsive font sizes (`text-sm sm:text-base`)
 - Full-width by default
 
 **Memoization**:
+
 - Uses `React.memo` with custom comparison function
 - Prevents unnecessary re-renders when props unchanged
 - Compares: `placeholder`, `isLoading`, `debounceMs`, `className`, `initialValue`, `ariaLabel`, `onSearch`
 
 **Usage Example**:
+
 ```tsx
-import SearchBar from '@/components/ui/SearchBar'
+import SearchBar from '@/components/ui/SearchBar';
 
 function SearchPage() {
-  const [query, setQuery] = useState('')
-  const [results, setResults] = useState([])
-  const [isLoading, setIsLoading] = useState(false)
+  const [query, setQuery] = useState('');
+  const [results, setResults] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleSearch = async (searchQuery: string) => {
-    setIsLoading(true)
-    const posts = await searchPosts(searchQuery)
-    setResults(posts)
-    setIsLoading(false)
-  }
+    setIsLoading(true);
+    const posts = await searchPosts(searchQuery);
+    setResults(posts);
+    setIsLoading(false);
+  };
 
   return (
     <div>
@@ -2189,7 +2375,7 @@ function SearchPage() {
         ariaLabel="Search articles"
       />
     </div>
-  )
+  );
 }
 ```
 

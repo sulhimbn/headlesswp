@@ -1,9 +1,11 @@
-import js from '@eslint/js'
-import typescriptEslint from '@typescript-eslint/eslint-plugin'
-import typescriptParser from '@typescript-eslint/parser'
+import js from '@eslint/js';
+import typescriptEslint from '@typescript-eslint/eslint-plugin';
+import typescriptParser from '@typescript-eslint/parser';
+import prettierConfig from 'eslint-config-prettier';
 
 export default [
   js.configs.recommended,
+  prettierConfig,
   {
     ignores: ['.next/', 'node_modules/', 'out/', 'wp-content/'],
   },
@@ -39,7 +41,10 @@ export default [
     rules: {
       ...typescriptEslint.configs.recommended.rules,
       'no-unused-vars': 'off',
-      '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
+      '@typescript-eslint/no-unused-vars': [
+        'warn',
+        { argsIgnorePattern: '^_' },
+      ],
       'no-console': ['warn', { allow: ['error', 'warn'] }],
       '@next/next/no-img-element': 'off',
       'react/no-unescaped-entities': 'off',
@@ -84,4 +89,4 @@ export default [
       'no-undef': 'off',
     },
   },
-]
+];
