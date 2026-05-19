@@ -1,9 +1,11 @@
 import js from '@eslint/js'
 import typescriptEslint from '@typescript-eslint/eslint-plugin'
 import typescriptParser from '@typescript-eslint/parser'
+import prettier from 'eslint-config-prettier'
 
 export default [
   js.configs.recommended,
+  prettier,
   {
     ignores: ['.next/', 'node_modules/', 'out/', 'wp-content/'],
   },
