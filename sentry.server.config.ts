@@ -4,5 +4,8 @@ Sentry.init({
   dsn: process.env.SENTRY_DSN,
   environment: process.env.NODE_ENV,
   enabled: Boolean(process.env.SENTRY_DSN),
-  tracesSampleRate: 1.0,
+  tracesSampleRate: 0.1,
+  maxBreadcrumbs: 50,
+  attachStacktrace: true,
+  normalizeDepth: 10,
 })

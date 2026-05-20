@@ -10,12 +10,54 @@ import dynamic from 'next/dynamic'
 import { UI_TEXT } from '@/lib/constants/uiText'
 import { PARSING } from '@/lib/constants/appConstants'
 import { isApiResultSuccessful } from '@/lib/api/response'
+import type { Metadata } from 'next'
+import { SITE_URL } from '@/lib/api/config'
+import { generateCollectionPageSchema, generateBreadcrumbSchemaForPage } from '@/lib/seo/structuredData'
 
 const Footer = dynamic(() => import('@/components/layout/Footer'), {
   loading: () => <div className="h-64 bg-[hsl(var(--color-background-dark))] mt-12" aria-hidden="true" />
 })
 
 export const revalidate = 300
+
+export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
+  const tagResult = await standardizedAPI.getTagBySlug(params.slug)
+  
+  if (!isApiResultSuccessful(tagResult)) {
+    return {
+      title: 'Tag Tidak Ditemukan',
+    }
+  }
+
+  const tag = tagResult.data
+  const title = `Tag: #${tag.name} - Mitra Banten News`
+  const description = tag.description 
+    ? `${tag.description} - Berita terkini dengan tag #${tag.name} di Mitra Banten News.`
+    : `Kumpulan berita terkini dengan tag #${tag.name} di Mitra Banten News.`
+
+  return {
+    title,
+    description,
+    alternates: {
+      canonical: `${SITE_URL}/tag/${params.slug}`,
+    },
+    openGraph: {
+      title,
+      description,
+      url: `${SITE_URL}/tag/${params.slug}`,
+      type: 'website',
+    },
+    twitter: {
+      card: 'summary',
+      title,
+      description,
+    },
+    robots: {
+      index: true,
+      follow: true,
+    },
+  }
+}
 
 export default async function TagPage({
   params,
@@ -51,8 +93,29 @@ export default async function TagPage({
     return enriched || { ...post, mediaUrl: null }
   })
 
+  const tagUrl = `${SITE_URL}/tag/${params.slug}`
+  const collectionPageSchema = generateCollectionPageSchema({
+    name: `Tag: #${tag.name}`,
+    description: tag.description || undefined,
+    url: tagUrl,
+    numberOfItems: posts.length,
+  })
+  const breadcrumbSchema = generateBreadcrumbSchemaForPage([
+    { label: 'Beranda', href: '/' },
+    { label: 'Tag', href: '/berita' },
+    { label: `#${tag.name}`, href: `/tag/${params.slug}` },
+  ])
+
   return (
     <div className="min-h-screen bg-[hsl(var(--color-background))]">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(collectionPageSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+      />
       <Header />
 
       <main id="main-content" aria-labelledby="page-heading" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
