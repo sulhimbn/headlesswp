@@ -5,6 +5,7 @@ let mockHeaders: Record<string, string> = {}
 jest.mock('next/server', () => ({
   NextRequest: jest.fn().mockImplementation(() => ({
     url: 'http://localhost:3000/test',
+    nextUrl: new URL('http://localhost:3000/test'),
     method: 'GET',
     headers: new Map()
   })),
