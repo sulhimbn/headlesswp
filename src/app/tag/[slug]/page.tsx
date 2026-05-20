@@ -10,6 +10,7 @@ import dynamic from 'next/dynamic'
 import { UI_TEXT } from '@/lib/constants/uiText'
 import { PARSING } from '@/lib/constants/appConstants'
 import { isApiResultSuccessful } from '@/lib/api/response'
+import { PAGINATION_LIMITS } from '@/lib/api/config'
 
 const Footer = dynamic(() => import('@/components/layout/Footer'), {
   loading: () => <div className="h-64 bg-[hsl(var(--color-background-dark))] mt-12" aria-hidden="true" />
@@ -25,7 +26,7 @@ export default async function TagPage({
   searchParams: { page?: string }
 }) {
   const page = parseInt(searchParams.page || '1', PARSING.DECIMAL_RADIX)
-  const perPage = 12
+  const perPage = PAGINATION_LIMITS.TAG_POSTS
 
   const tagResult = await standardizedAPI.getTagBySlug(params.slug)
 
@@ -35,21 +36,10 @@ export default async function TagPage({
 
   const tag = tagResult.data
 
-  const postsResult = await standardizedAPI.getAllPosts({
-    page,
-    per_page: perPage,
-    tag: tag.id
-  })
+  const postsResult = await enhancedPostService.getPostsByTag(tag.id, page, perPage)
 
-  const posts = postsResult.data
-  const totalPages = postsResult.pagination.totalPages ?? 0
-
-  const postsWithMedia = await enhancedPostService.getLatestPosts()
-
-  const enrichedPosts = posts.map(post => {
-    const enriched = postsWithMedia.find(p => p.id === post.id)
-    return enriched || { ...post, mediaUrl: null }
-  })
+  const enrichedPosts = postsResult.posts
+  const totalPages = postsResult.totalPages
 
   return (
     <div className="min-h-screen bg-[hsl(var(--color-background))]">
@@ -66,7 +56,7 @@ export default async function TagPage({
           <p className="text-[hsl(var(--color-text-secondary))] mb-8">{tag.description}</p>
         )}
 
-        {posts.length > 0 ? (
+        {enrichedPosts.length > 0 ? (
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {enrichedPosts.map((post, index) => (

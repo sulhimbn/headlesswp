@@ -75,7 +75,7 @@ describe('EmptyState Component', () => {
       render(<EmptyState title="No results" action={{ label: 'Go Home', href: '/' }} />)
       const actionLink = screen.getByRole('link', { name: 'Go Home' })
       expect(actionLink).toHaveClass('bg-[hsl(var(--color-primary))]')
-      expect(actionLink).toHaveClass('text-white')
+      expect(actionLink).toHaveClass('text-[hsl(var(--color-surface))]')
     })
 
     test('does not render action link when not provided', () => {

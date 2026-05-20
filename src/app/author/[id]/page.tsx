@@ -10,6 +10,7 @@ import dynamic from 'next/dynamic';
 import { UI_TEXT } from '@/lib/constants/uiText';
 import { PARSING } from '@/lib/constants/appConstants';
 import { isApiResultSuccessful } from '@/lib/api/response';
+import { PAGINATION_LIMITS } from '@/lib/api/config';
 
 const Footer = dynamic(() => import('@/components/layout/Footer'), {
   loading: () => <div className="h-64 bg-[hsl(var(--color-background-dark))] mt-12" aria-hidden="true" />
@@ -25,7 +26,7 @@ export default async function AuthorPage({
   searchParams: { page?: string }
 }) {
   const page = parseInt(searchParams.page || '1', PARSING.DECIMAL_RADIX);
-  const perPage = 12;
+  const perPage = PAGINATION_LIMITS.AUTHOR_POSTS;
   const authorId = parseInt(params.id, PARSING.DECIMAL_RADIX);
 
   if (isNaN(authorId)) {
