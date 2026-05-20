@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getCacheStats, clearCache } from '@/lib/cache';
+import { getCacheStats, clearCache, cacheManager } from '@/lib/cache';
 import { cacheWarmer } from '@/lib/services/cacheWarmer';
 import { logger } from '@/lib/utils/logger';
 import { withApiRateLimit } from '@/lib/api/rateLimitMiddleware';
@@ -77,6 +77,44 @@ async function cacheDeleteHandler(request: NextRequest) {
   }
 }
 
+async function cacheImportHandler(request: NextRequest) {
+  try {
+    const body = await request.json();
+    
+    if (!body.entries || !Array.isArray(body.entries)) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Invalid import data: missing or invalid entries array',
+          timestamp: new Date().toISOString(),
+        },
+        { status: 400 }
+      );
+    }
+
+    const result = cacheManager.importCache(body);
+
+    return NextResponse.json({
+      success: true,
+      message: `Imported ${result.imported} entries, skipped ${result.skipped} entries`,
+      data: result,
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error) {
+    logger.error('Error importing cache:', error, { module: 'cache' });
+    
+    return NextResponse.json(
+      {
+        success: false,
+        error: 'Failed to import cache',
+        timestamp: new Date().toISOString(),
+      },
+      { status: 500 }
+    );
+  }
+}
+
 export const GET = withApiRateLimit(cacheGetHandler, 'cache')
 export const POST = withApiRateLimit(cachePostHandler, 'cache')
 export const DELETE = withApiRateLimit(cacheDeleteHandler, 'cache')
+export const PUT = withApiRateLimit(cacheImportHandler, 'cache')
