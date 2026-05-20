@@ -184,3 +184,25 @@ export function shouldTriggerCircuitBreaker(error: ApiError): boolean {
 export function shouldRetryRateLimitError(error: ApiError): boolean {
   return error.type === ApiErrorType.RATE_LIMIT_ERROR
 }
+
+export function getHttpStatusCode(error: ApiError): number {
+  if (error.statusCode) {
+    return error.statusCode
+  }
+
+  switch (error.type) {
+    case ApiErrorType.RATE_LIMIT_ERROR:
+      return 429
+    case ApiErrorType.CLIENT_ERROR:
+      return 400
+    case ApiErrorType.SERVER_ERROR:
+      return 500
+    case ApiErrorType.TIMEOUT_ERROR:
+    case ApiErrorType.NETWORK_ERROR:
+    case ApiErrorType.CIRCUIT_BREAKER_OPEN:
+      return 503
+    case ApiErrorType.UNKNOWN_ERROR:
+    default:
+      return 500
+  }
+}

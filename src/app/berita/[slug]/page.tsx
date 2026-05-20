@@ -29,9 +29,7 @@ const Footer = dynamic(() => import('@/components/layout/Footer'), {
 
 export const revalidate = 3600 // 60 minutes (1 hour)
 
-function stripHtml(html: string): string {
-  return html.replace(/<[^>]*>?/gm, '').trim()
-}
+import { stripHtml } from '@/lib/utils/stripHtml'
 
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
   const post = await enhancedPostService.getPostBySlug(params.slug)

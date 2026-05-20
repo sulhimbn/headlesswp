@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { standardizedAPI } from '@/lib/api/standardized'
-import { isApiResultSuccessful } from '@/lib/api/response'
+import { isApiResultSuccessful, getHttpStatusCode } from '@/lib/api/response'
 import { logger } from '@/lib/utils/logger'
 import { CACHE_TIMES } from '@/lib/api/config'
 
@@ -26,7 +26,11 @@ export async function GET(request: Request) {
 
     if (!isApiResultSuccessful(result) || !result.data) {
       logger.warn('Failed to fetch posts from API', undefined, { module: 'api/posts' })
-      return NextResponse.json([], { status: 200 })
+      const statusCode = result.error ? getHttpStatusCode(result.error) : 500
+      return NextResponse.json(
+        { error: result.error?.message || 'Failed to fetch posts' },
+        { status: statusCode }
+      )
     }
 
     const posts = result.data.map(post => ({
@@ -45,6 +49,9 @@ export async function GET(request: Request) {
     return response
   } catch (error) {
     logger.error('Error in /api/posts', error, { module: 'api/posts' })
-    return NextResponse.json([], { status: 200 })
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    )
   }
 }
