@@ -53,7 +53,8 @@ function SocialShareComponent({ title, url, className = '' }: SocialShareProps) 
       await navigator.clipboard.writeText(fullUrl)
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
-    } catch {
+    } catch (err) {
+      console.warn('Clipboard API failed, using fallback:', err)
       const input = document.createElement('input')
       input.value = fullUrl
       document.body.appendChild(input)
@@ -65,15 +66,23 @@ function SocialShareComponent({ title, url, className = '' }: SocialShareProps) 
     }
   }
 
+  const handleKeyDown = (e: React.KeyboardEvent, action: () => void) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault()
+      action()
+    }
+  }
+
   return (
-    <div className={className}>
+    <div className={className} role="group" aria-label="Bagikan ke media sosial">
       <div className="flex items-center gap-3">
         {platforms.map((platform) => (
           <button
             key={platform.name}
             onClick={() => handleShare(platform)}
+            onKeyDown={(e) => handleKeyDown(e, () => handleShare(platform))}
             className={`p-2 rounded-full bg-[hsl(var(--color-surface))] text-[hsl(var(--color-text-secondary))] ${platform.color} transition-colors focus:outline-none focus:ring-2 focus:ring-[hsl(var(--color-primary))] focus:ring-offset-2`}
-            aria-label={`Bagikan ke ${platform.name}`}
+            aria-label={`Bagikan "${title}" ke ${platform.name}`}
             title={`Bagikan ke ${platform.name}`}
           >
             <SocialIcon type={platform.icon} />
@@ -81,16 +90,25 @@ function SocialShareComponent({ title, url, className = '' }: SocialShareProps) 
         ))}
         <button
           onClick={handleCopyLink}
+          onKeyDown={(e) => handleKeyDown(e, handleCopyLink)}
           className={`p-2 rounded-full bg-[hsl(var(--color-surface))] text-[hsl(var(--color-text-secondary))] transition-colors focus:outline-none focus:ring-2 focus:ring-[hsl(var(--color-primary))] focus:ring-offset-2 ${
             copied 
               ? 'bg-[hsl(var(--color-success))] text-white' 
               : 'hover:bg-[hsl(var(--color-primary))] hover:text-white'
           }`}
-          aria-label={copied ? 'Tautan disalin' : 'Salin tautan'}
+          aria-label={copied ? 'Tautan disalin ke clipboard' : `Salin tautan "${fullUrl}"`}
           title={copied ? 'Tautan disalin' : 'Salin tautan'}
         >
           <SocialIcon type={copied ? 'check' : 'link'} />
         </button>
+      </div>
+      <div
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+        className="sr-only"
+      >
+        {copied ? `Tautan berhasil disalin ke clipboard: ${fullUrl}` : ''}
       </div>
     </div>
   )
