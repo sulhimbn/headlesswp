@@ -327,13 +327,13 @@ class CacheManager implements ICacheManager {
    * Note: Entries are automatically invalidated on access if expired,
    * so this cleanup is optional for correctness but helpful for memory.
    * 
-    * @example
-    * ```typescript
-    * // Run cleanup every hour
-    * setInterval(() => {
-    *   const cleaned = cacheManager.cleanup();
-    * }, 3600000);
-     * ```
+* @example
+      * ```typescript
+      * // Run cleanup every hour
+      * setInterval(() => {
+      *   const cleaned = cacheManager.cleanup();
+      * }, 3600000);
+      * ```
     */
   cleanup(): number {
     const cleaned = this.cacheCleanup.cleanup();

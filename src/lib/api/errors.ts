@@ -15,6 +15,7 @@ export interface ApiError {
   message: string
   statusCode?: number
   retryable: boolean
+  retryAfter?: number
   originalError?: unknown
   timestamp: string
   endpoint?: string
@@ -24,6 +25,7 @@ export class ApiErrorImpl extends Error implements ApiError {
   type: ApiErrorType
   statusCode?: number
   retryable: boolean
+  retryAfter?: number
   originalError?: unknown
   timestamp: string
   endpoint?: string
@@ -34,13 +36,15 @@ export class ApiErrorImpl extends Error implements ApiError {
     statusCode?: number,
     retryable = false,
     originalError?: unknown,
-    endpoint?: string
+    endpoint?: string,
+    retryAfter?: number
   ) {
     super(message)
     this.name = 'ApiError'
     this.type = type
     this.statusCode = statusCode
     this.retryable = retryable
+    this.retryAfter = retryAfter
     this.originalError = originalError
     this.timestamp = new Date().toISOString()
     this.endpoint = endpoint

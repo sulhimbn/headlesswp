@@ -22,6 +22,22 @@ export interface ValidationResult<T> {
   errors: ValidationError[];
 }
 
+export type ValidValidationResult<T> = {
+  valid: true;
+  data: T;
+  errors: ValidationError[];
+};
+
+export type InvalidValidationResult = {
+  valid: false;
+  data?: undefined;
+  errors: ValidationError[];
+};
+
+export function hasValidationData<T>(result: ValidationResult<T>): result is ValidValidationResult<T> {
+  return result.valid && 'data' in result && result.data !== undefined;
+}
+
 class DataValidator {
   private isString(value: unknown): value is string {
     return typeof value === 'string';
@@ -29,6 +45,10 @@ class DataValidator {
 
   private isNumber(value: unknown): value is number {
     return typeof value === 'number' && !isNaN(value);
+  }
+
+  private isBoolean(value: unknown): value is boolean {
+    return typeof value === 'boolean';
   }
 
   private isArray(value: unknown): value is unknown[] {
@@ -39,7 +59,22 @@ class DataValidator {
     return typeof value === 'object' && value !== null && !this.isArray(value);
   }
 
-  private assertValidType<T>(value: Record<string, unknown>): T {
+  private isPositiveInteger(value: unknown): value is number {
+    return this.isNumber(value) && Number.isInteger(value) && value > 0;
+  }
+
+  private isNonNegativeInteger(value: unknown): value is number {
+    return this.isNumber(value) && Number.isInteger(value) && value >= 0;
+  }
+
+  private isRenderedString(value: unknown): value is { rendered: string } {
+    return this.isObject(value) && this.isString((value as Record<string, unknown>).rendered);
+  }
+
+  private assertValidType<T>(value: unknown): T {
+    if (!this.isObject(value)) {
+      throw new Error('Cannot cast non-object to typed value');
+    }
     return value as T;
   }
 
@@ -73,8 +108,8 @@ class DataValidator {
       if (!result.valid) {
         errors.push(...result.errors);
         errors.push({ field: itemName, rule: 'type', message: `${itemName} at index ${i}: ${result.errors.map(e => e.message).join(', ')}`, value: data[i] });
-      } else {
-        validItems.push(result.data!);
+      } else if (result.data !== undefined) {
+        validItems.push(result.data);
       }
     }
 
@@ -356,14 +391,17 @@ export function unwrapValidationResult<T>(result: ValidationResult<T>): T {
     const errorMessages = result.errors.map(e => `[${e.field}] ${e.message}`).join(', ');
     throw new Error(`Validation failed: ${errorMessages}`);
   }
-  return result.data!;
+  if (result.data === undefined) {
+    throw new Error('Validation result data is undefined');
+  }
+  return result.data;
 }
 
 export function unwrapValidationResultSafe<T>(result: ValidationResult<T>, fallback: T): T {
-  if (!result.valid) {
+  if (!result.valid || result.data === undefined) {
     return fallback;
   }
-  return result.data!;
+  return result.data;
 }
 
 export type { ValidationError };

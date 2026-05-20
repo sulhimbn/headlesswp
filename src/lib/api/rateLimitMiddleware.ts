@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { ApiErrorType } from './errors'
+import { ApiErrorType, ApiErrorImpl } from './errors'
 import { RATE_LIMIT } from '@/lib/constants/appConstants'
+import { RateLimitCoreOptions } from './rateLimitCore'
 
 export interface ApiRouteRateLimitOptions {
   key: string
@@ -37,26 +38,33 @@ function cleanupOldRequests(state: RateLimitState, windowMs: number): void {
   )
 }
 
-async function checkRateLimit(key: string, options: ApiRouteRateLimitOptions): Promise<void> {
-  const state = getRateLimitState(key)
+function refillIfNeeded(state: RateLimitState, options: RateLimitCoreOptions): void {
   const now = Date.now()
-
   if (now - state.lastReset >= options.windowMs) {
     state.requestTimes = []
     state.lastReset = now
   }
+}
 
+async function checkRateLimit(key: string, options: ApiRouteRateLimitOptions): Promise<void> {
+  const state = getRateLimitState(key)
+  const now = Date.now()
+
+  refillIfNeeded(state, options)
   cleanupOldRequests(state, options.windowMs)
 
   if (state.requestTimes.length >= options.maxRequests) {
     const oldestRequest = state.requestTimes[0]
     const waitTime = Math.ceil((oldestRequest + options.windowMs - now) / 1000)
-    throw {
-      type: ApiErrorType.RATE_LIMIT_ERROR,
-      message: `Rate limit exceeded. Please try again in ${waitTime} seconds.`,
-      statusCode: 429,
-      retryAfter: waitTime,
-    }
+    throw new ApiErrorImpl(
+      ApiErrorType.RATE_LIMIT_ERROR,
+      `Rate limit exceeded. Please try again in ${waitTime} seconds.`,
+      429,
+      true,
+      undefined,
+      undefined,
+      waitTime
+    )
   }
 
   state.requestTimes.push(now)
@@ -85,7 +93,7 @@ export function withApiRateLimit(
 
       return response
     } catch (error) {
-      const errorObj = error as { type?: string; statusCode?: number; message?: string; retryAfter?: number }
+      const errorObj = error as Error & { type?: string; statusCode?: number; message?: string; retryAfter?: number }
       
       if (errorObj.type === ApiErrorType.RATE_LIMIT_ERROR) {
         const retryAfter = errorObj.retryAfter || RATE_LIMIT.DEFAULT_RETRY_AFTER_SECONDS
