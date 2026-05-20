@@ -1,4 +1,42 @@
-import { ApiError, createApiError } from './errors';
+import { NextResponse } from 'next/server'
+import { ApiError, ApiErrorType, createApiError } from './errors'
+
+function mapApiErrorToHttpStatus(error: ApiError): number {
+  switch (error.type) {
+    case ApiErrorType.TIMEOUT_ERROR:
+      return 504
+    case ApiErrorType.RATE_LIMIT_ERROR:
+      return 429
+    case ApiErrorType.SERVER_ERROR:
+      return error.statusCode || 500
+    case ApiErrorType.CLIENT_ERROR:
+      return error.statusCode || 400
+    case ApiErrorType.CIRCUIT_BREAKER_OPEN:
+      return 503
+    case ApiErrorType.NETWORK_ERROR:
+      return 503
+    default:
+      return 500
+  }
+}
+
+function isApiError(error: unknown): error is ApiError {
+  return typeof error === 'object' && error !== null && 'type' in error
+}
+
+export function createErrorResponse(error: unknown, endpoint?: string): NextResponse {
+  const apiError = isApiError(error) ? error : createApiError(error, endpoint)
+  const status = mapApiErrorToHttpStatus(apiError)
+  const body = {
+    error: {
+      type: apiError.type,
+      message: apiError.message,
+      retryable: apiError.retryable,
+      timestamp: apiError.timestamp,
+    },
+  }
+  return NextResponse.json(body, { status })
+}
 
 export interface ApiMetadata {
   timestamp: string;
