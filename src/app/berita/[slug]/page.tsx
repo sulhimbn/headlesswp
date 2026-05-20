@@ -123,7 +123,7 @@ export default async function PostPage({ params }: { params: { slug: string } })
       {
         '@type': 'ListItem',
         position: 2,
-        name: post.title.rendered,
+        name: sanitizeHTML(post.title.rendered, 'excerpt'),
         item: `${SITE_URL}/berita/${post.slug}`,
       },
     ],
@@ -154,7 +154,7 @@ export default async function PostPage({ params }: { params: { slug: string } })
             __html: JSON.stringify({
               '@context': 'https://schema.org',
               '@type': 'NewsArticle',
-              headline: post.title.rendered,
+              headline: sanitizeHTML(post.title.rendered, 'excerpt'),
               image: [post.mediaUrl || `${SITE_URL}/og-image.jpg`],
               datePublished: post.date,
               dateModified: post.modified,
@@ -170,7 +170,7 @@ export default async function PostPage({ params }: { params: { slug: string } })
                   url: `${SITE_URL}/logo.png`,
                 },
               },
-              description: stripHtml(post.excerpt.rendered),
+              description: sanitizeHTML(stripHtml(post.excerpt.rendered), 'excerpt'),
               url: `${SITE_URL}/berita/${post.slug}`,
             })
           }}
