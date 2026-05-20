@@ -24,6 +24,12 @@ const DEFAULT_SUMMARY_LENGTH = 150;
 const CACHE_TTL_SUMMARY = 7 * 24 * 60 * 60 * 1000;
 
 function getConfig(): SummarizationConfig {
+  const isServerSide = typeof process !== 'undefined' && process.env?.NODE_ENV === 'production';
+
+  if (isServerSide && typeof window !== 'undefined') {
+    throw new Error('Summarizer can only be used on the server side');
+  }
+
   return {
     provider: (process.env.SUMMARY_PROVIDER as SummaryProvider) || 'local',
     apiKey: process.env.SUMMARY_API_KEY,

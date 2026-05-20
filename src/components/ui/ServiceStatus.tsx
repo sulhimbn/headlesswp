@@ -2,6 +2,7 @@
 
 import { useState, useEffect, memo } from 'react'
 import { UI_TEXT } from '@/lib/constants/uiText'
+import { logger } from '@/lib/utils/logger'
 
 type ServiceHealth = 'healthy' | 'degraded' | 'down'
 
@@ -46,7 +47,8 @@ function ServiceStatusComponent() {
         } else {
           setStatus('degraded')
         }
-      } catch {
+      } catch (error) {
+        logger.error('Health check failed', error, { module: 'ServiceStatus' })
         setStatus('down')
       }
     }

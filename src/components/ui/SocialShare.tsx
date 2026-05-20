@@ -2,6 +2,7 @@
 
 import { memo, useState } from 'react'
 import { SITE_URL } from '@/lib/api/config'
+import { logger } from '@/lib/utils/logger'
 
 export type SocialPlatform = 'facebook' | 'twitter' | 'whatsapp' | 'copy'
 
@@ -54,6 +55,7 @@ function SocialShareComponent({ title, url, className = '' }: SocialShareProps) 
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
     } catch {
+      logger.warn('Clipboard copy failed, using fallback', undefined, { module: 'SocialShare' })
       const input = document.createElement('input')
       input.value = fullUrl
       document.body.appendChild(input)

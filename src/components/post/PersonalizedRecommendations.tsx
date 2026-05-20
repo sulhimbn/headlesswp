@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { sanitizeHTML } from '@/lib/utils/sanitizeHTML'
@@ -62,6 +62,11 @@ export default function PersonalizedRecommendations({ currentPostId, currentCate
   const [recommendations, setRecommendations] = useState<PersonalizedRecommendation[]>([])
   const [loading, setLoading] = useState(true)
 
+  const categoryIdsKey = useMemo(
+    () => currentCategoryIds.join(','),
+    [currentCategoryIds]
+  )
+
   useEffect(() => {
     async function loadRecommendations() {
       if (!FEATURE_FLAGS.PERSONALIZED_RECOMMENDATIONS) {
@@ -76,10 +81,17 @@ export default function PersonalizedRecommendations({ currentPostId, currentCate
 
       let posts = await fetchRecommendationsByCategories(relevantCategories, currentPostId)
 
-      const readPostIds = new Set(
-        JSON.parse(localStorage.getItem('reading_history') || '{"items":[]}')
-          .items?.map((item: ReadingHistoryItem) => item.postId) || []
-      )
+      let readPostIds = new Set<number>([])
+      try {
+        const historyData = JSON.parse(localStorage.getItem('reading_history') || '{"items":[]}')
+        readPostIds = new Set(
+          Array.isArray(historyData?.items)
+            ? historyData.items.map((item: ReadingHistoryItem) => item.postId)
+            : []
+        )
+      } catch {
+        readPostIds = new Set([])
+      }
 
       posts = posts.filter(post => !readPostIds.has(post.id) && post.id !== currentPostId)
 
@@ -112,7 +124,7 @@ export default function PersonalizedRecommendations({ currentPostId, currentCate
     }
 
     loadRecommendations()
-  }, [currentPostId, currentCategoryIds.join(',')])
+  }, [currentPostId, categoryIdsKey])
 
   const handleRecommendationClick = (postId: number) => {
     if (FEATURE_FLAGS.RECOMMENDATION_ANALYTICS) {
