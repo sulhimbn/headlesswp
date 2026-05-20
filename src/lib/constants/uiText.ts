@@ -73,7 +73,9 @@ export const UI_TEXT = {
     noResults: 'Tidak ada hasil',
     noResultsDescription: (query: string) => `Tidak ada berita yang cocok dengan "${query}". Coba kata kunci lain.`,
     emptySearch: 'Masukkan kata kunci',
-    emptySearchDescription: 'Silakan masukkan kata kunci untuk mencari berita.'
+    emptySearchDescription: 'Silakan masukkan kata kunci untuk mencari berita.',
+    relatedQueries: 'Mungkin Anda mencari:',
+    searchResultCount: (count: number) => `${count} berita ditemukan`
   },
   footer: {
     about: 'Tentang Kami',
