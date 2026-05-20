@@ -5,6 +5,7 @@ import { SITE_URL, SITE_URL_WWW } from '@/lib/api/config'
 import { assertEnvironment } from '@/lib/config/envValidation'
 import ServiceWorkerRegistration from '@/components/ServiceWorkerRegistration'
 import ErrorBoundary from '@/components/ErrorBoundary'
+import WebVitalsReporter from '@/components/WebVitalsReporter'
 
 assertEnvironment()
 
@@ -38,7 +39,7 @@ export const metadata: Metadata = {
     siteName: 'Mitra Banten News',
     images: [
       {
-        url: '/og-image.jpg',
+        url: `${SITE_URL}/opengraph-image`,
         width: 1200,
         height: 630,
       },
@@ -50,7 +51,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Mitra Banten News',
     description: 'Portal berita terkini dan terpercaya dari Banten',
-    images: ['/og-image.jpg'],
+    images: [`${SITE_URL}/opengraph-image`],
     site: '@mitrabantennews',
     creator: '@mitrabantennews',
   },
@@ -127,6 +128,7 @@ export default function RootLayout({
             Langsung ke konten utama
           </a>
           <ServiceWorkerRegistration />
+          <WebVitalsReporter />
           {children}
         </ErrorBoundary>
       </body>

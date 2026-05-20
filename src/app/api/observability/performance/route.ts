@@ -71,4 +71,49 @@ async function performanceHandler() {
   }
 }
 
+async function postPerformanceHandler(request: Request) {
+  try {
+    const body = await request.json()
+    
+    if (body.type === 'web-vital' && body.data) {
+      const { name, value, rating, id, navigationType } = body.data
+      
+      performanceMetricsCollector.recordWebVital({
+        name,
+        value,
+        rating,
+        id,
+        navigationType
+      })
+      
+      return NextResponse.json({ success: true }, {
+        status: 201,
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Content-Type': 'application/json'
+        }
+      })
+    }
+    
+    return NextResponse.json({ error: 'Invalid payload' }, {
+      status: 400,
+      headers: {
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Content-Type': 'application/json'
+      }
+    })
+  } catch (error) {
+    return NextResponse.json({
+      error: error instanceof Error ? error.message : 'Unknown error'
+    }, {
+      status: 500,
+      headers: {
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Content-Type': 'application/json'
+      }
+    })
+  }
+}
+
 export const GET = withApiRateLimit(performanceHandler, 'performance')
+export const POST = withApiRateLimit(postPerformanceHandler, 'performance')
