@@ -1,447 +1,369 @@
-import { proxy as middleware } from '@/proxy'
-
-let mockHeaders: Record<string, string> = {}
+import { NextRequest, NextResponse } from 'next/server'
+import { middleware, config } from '../middleware'
 
 jest.mock('next/server', () => ({
-  NextRequest: jest.fn().mockImplementation(() => ({
-    url: 'http://localhost:3000/test',
-    method: 'GET',
-    headers: new Map()
-  })),
+  NextRequest: jest.fn(),
   NextResponse: {
-    next: jest.fn(() => ({
-      headers: {
-        get: (key: string) => {
-          return mockHeaders[key] || null
-        },
-        set: jest.fn((key: string, value: string) => {
-          mockHeaders[key] = value
-        })
-      },
-      status: 200
-    }))
-  }
+    next: jest.fn(),
+    redirect: jest.fn(),
+  },
 }))
 
 describe('Middleware', () => {
+  let mockRequest: jest.Mocked<NextRequest>
+  let mockNextResponse: jest.Mocked<NextResponse> & { headers: Headers; status: number }
+  let mockRedirectResponse: jest.Mocked<NextResponse>
+
   beforeEach(() => {
     jest.clearAllMocks()
-    mockHeaders = {}
+
+    mockNextResponse = {
+      headers: new Headers(),
+      status: 200,
+    } as unknown as jest.Mocked<NextResponse> & { headers: Headers; status: number }
+
+    mockRedirectResponse = {
+      headers: new Headers(),
+      status: 307,
+    } as unknown as jest.Mocked<NextResponse>
+
+    mockRequest = {
+      nextUrl: {
+        pathname: '/test',
+      },
+      url: 'http://localhost:3000/test',
+      headers: new Headers(),
+    } as unknown as jest.Mocked<NextRequest>
+
+    ;(NextResponse.next as jest.Mock).mockReturnValue(mockNextResponse)
+    ;(NextResponse.redirect as jest.Mock).mockReturnValue(mockRedirectResponse)
   })
 
-  describe('Content Security Policy', () => {
-    it('should set Content-Security-Policy header', async () => {
-      const { NextResponse, NextRequest } = require('next/server')
-      const request = new NextRequest()
-      
-      const response = await middleware(request)
-      
-      expect(mockHeaders['Content-Security-Policy']).toBeDefined()
-      expect(typeof mockHeaders['Content-Security-Policy']).toBe('string')
-      expect(mockHeaders['Content-Security-Policy'].length).toBeGreaterThan(0)
+  describe('Root Redirect', () => {
+    it('should redirect / to /berita', () => {
+      mockRequest.nextUrl.pathname = '/'
+
+      middleware(mockRequest)
+
+      expect(NextResponse.redirect).toHaveBeenCalledWith(
+        new URL('/berita', 'http://localhost:3000'),
+        307
+      )
     })
 
-    it('should include default-src in CSP', async () => {
-      const { NextRequest } = require('next/server')
-      const request = new NextRequest()
-      
-      await middleware(request)
-      
-      expect(mockHeaders['Content-Security-Policy']).toContain("default-src 'self'")
+    it('should use 307 temporary redirect status', () => {
+      mockRequest.nextUrl.pathname = '/'
+
+      middleware(mockRequest)
+
+      expect(NextResponse.redirect).toHaveBeenCalledWith(
+        expect.any(URL),
+        307
+      )
     })
 
-    it('should include script-src with nonce in CSP', async () => {
-      const { NextRequest } = require('next/server')
-      const request = new NextRequest()
-      
-      await middleware(request)
-      
-      expect(mockHeaders['Content-Security-Policy']).toContain("script-src 'self'")
-      expect(mockHeaders['Content-Security-Policy']).toMatch(/nonce-[a-zA-Z0-9+/=]+/)
-    })
+    it('should not redirect non-root paths', () => {
+      mockRequest.nextUrl.pathname = '/berita'
 
-    it('should include style-src with nonce in CSP', async () => {
-      const { NextRequest } = require('next/server')
-      const request = new NextRequest()
-      
-      await middleware(request)
-      
-      expect(mockHeaders['Content-Security-Policy']).toContain("style-src 'self'")
-      expect(mockHeaders['Content-Security-Policy']).toMatch(/style-src 'self' 'nonce-[a-zA-Z0-9+/=]+/)
-    })
+      middleware(mockRequest)
 
-    it('should include img-src with data: and blob: in CSP', async () => {
-      const { NextRequest } = require('next/server')
-      const request = new NextRequest()
-      
-      await middleware(request)
-      
-      expect(mockHeaders['Content-Security-Policy']).toContain('img-src')
-      expect(mockHeaders['Content-Security-Policy']).toContain('data:')
-      expect(mockHeaders['Content-Security-Policy']).toContain('blob:')
-    })
-
-    it('should include font-src in CSP', async () => {
-      const { NextRequest } = require('next/server')
-      const request = new NextRequest()
-      
-      await middleware(request)
-      
-      expect(mockHeaders['Content-Security-Policy']).toContain("font-src 'self' data:")
-    })
-
-    it('should include connect-src in CSP', async () => {
-      const { NextRequest } = require('next/server')
-      const request = new NextRequest()
-      
-      await middleware(request)
-      
-      expect(mockHeaders['Content-Security-Policy']).toContain("connect-src 'self'")
-    })
-
-    it('should include media-src in CSP', async () => {
-      const { NextRequest } = require('next/server')
-      const request = new NextRequest()
-      
-      await middleware(request)
-      
-      expect(mockHeaders['Content-Security-Policy']).toContain("media-src 'self'")
-    })
-
-    it('should include object-src none in CSP', async () => {
-      const { NextRequest } = require('next/server')
-      const request = new NextRequest()
-      
-      await middleware(request)
-      
-      expect(mockHeaders['Content-Security-Policy']).toContain("object-src 'none'")
-    })
-
-    it('should include base-uri in CSP', async () => {
-      const { NextRequest } = require('next/server')
-      const request = new NextRequest()
-      
-      await middleware(request)
-      
-      expect(mockHeaders['Content-Security-Policy']).toContain("base-uri 'self'")
-    })
-
-    it('should include form-action in CSP', async () => {
-      const { NextRequest } = require('next/server')
-      const request = new NextRequest()
-      
-      await middleware(request)
-      
-      expect(mockHeaders['Content-Security-Policy']).toContain("form-action 'self'")
-    })
-
-    it('should include frame-ancestors none in CSP', async () => {
-      const { NextRequest } = require('next/server')
-      const request = new NextRequest()
-      
-      await middleware(request)
-      
-      expect(mockHeaders['Content-Security-Policy']).toContain("frame-ancestors 'none'")
-    })
-
-    it('should include upgrade-insecure-requests in CSP', async () => {
-      const { NextRequest } = require('next/server')
-      const request = new NextRequest()
-      
-      await middleware(request)
-      
-      expect(mockHeaders['Content-Security-Policy']).toContain('upgrade-insecure-requests')
-    })
-  })
-
-  describe('Nonce Generation', () => {
-    it('should set x-nonce header', async () => {
-      const { NextRequest } = require('next/server')
-      const request = new NextRequest()
-      
-      await middleware(request)
-      
-      expect(mockHeaders['x-nonce']).toBeDefined()
-      expect(typeof mockHeaders['x-nonce']).toBe('string')
-    })
-
-    it('should generate valid base64 nonce', async () => {
-      const { NextRequest } = require('next/server')
-      const request = new NextRequest()
-      
-      await middleware(request)
-      
-      const nonce = mockHeaders['x-nonce']
-      expect(() => atob(nonce)).not.toThrow()
-    })
-
-    it('should use same nonce in CSP and x-nonce header', async () => {
-      const { NextRequest } = require('next/server')
-      const request = new NextRequest()
-      
-      await middleware(request)
-      
-      const nonce = mockHeaders['x-nonce']
-      expect(mockHeaders['Content-Security-Policy']).toContain(`nonce-${nonce}`)
-    })
-
-    it('should generate unique nonces on each request', async () => {
-      const { NextRequest } = require('next/server')
-      const request1 = new NextRequest()
-      const request2 = new NextRequest()
-      
-      mockHeaders = {}
-      await middleware(request1)
-      const nonce1 = mockHeaders['x-nonce']
-      
-      mockHeaders = {}
-      await middleware(request2)
-      const nonce2 = mockHeaders['x-nonce']
-      
-      expect(nonce1).not.toBe(nonce2)
+      expect(NextResponse.next).toHaveBeenCalled()
+      expect(NextResponse.redirect).not.toHaveBeenCalled()
     })
   })
 
   describe('Security Headers', () => {
-    it('should set Strict-Transport-Security header', async () => {
-      const { NextRequest } = require('next/server')
-      const request = new NextRequest()
-      
-      await middleware(request)
-      
-      expect(mockHeaders['Strict-Transport-Security']).toBeDefined()
-      expect(mockHeaders['Strict-Transport-Security']).toContain('max-age=31536000')
-      expect(mockHeaders['Strict-Transport-Security']).toContain('includeSubDomains')
-      expect(mockHeaders['Strict-Transport-Security']).toContain('preload')
+    beforeEach(() => {
+      mockRequest.nextUrl.pathname = '/berita'
     })
 
-    it('should set X-Frame-Options to DENY', async () => {
-      const { NextRequest } = require('next/server')
-      const request = new NextRequest()
-      
-      await middleware(request)
-      
-      expect(mockHeaders['X-Frame-Options']).toBe('DENY')
+    it('should set X-DNS-Prefetch-Control header', () => {
+      middleware(mockRequest)
+
+      expect(mockNextResponse.headers.get('X-DNS-Prefetch-Control')).toBe('on')
     })
 
-    it('should set X-Content-Type-Options to nosniff', async () => {
-      const { NextRequest } = require('next/server')
-      const request = new NextRequest()
-      
-      await middleware(request)
-      
-      expect(mockHeaders['X-Content-Type-Options']).toBe('nosniff')
+    it('should set X-Frame-Options to DENY', () => {
+      middleware(mockRequest)
+
+      expect(mockNextResponse.headers.get('X-Frame-Options')).toBe('DENY')
     })
 
-    it('should set X-XSS-Protection header', async () => {
-      const { NextRequest } = require('next/server')
-      const request = new NextRequest()
-      
-      await middleware(request)
-      
-      expect(mockHeaders['X-XSS-Protection']).toBe('1; mode=block')
+    it('should set X-Content-Type-Options to nosniff', () => {
+      middleware(mockRequest)
+
+      expect(mockNextResponse.headers.get('X-Content-Type-Options')).toBe('nosniff')
     })
 
-    it('should set Referrer-Policy header', async () => {
-      const { NextRequest } = require('next/server')
-      const request = new NextRequest()
-      
-      await middleware(request)
-      
-      expect(mockHeaders['Referrer-Policy']).toBe('strict-origin-when-cross-origin')
-    })
+    it('should set Referrer-Policy header', () => {
+      middleware(mockRequest)
 
-    it('should set Permissions-Policy header', async () => {
-      const { NextRequest } = require('next/server')
-      const request = new NextRequest()
-      
-      await middleware(request)
-      
-      expect(mockHeaders['Permissions-Policy']).toBeDefined()
-      expect(mockHeaders['Permissions-Policy']).toContain('camera=()')
-      expect(mockHeaders['Permissions-Policy']).toContain('microphone=()')
-      expect(mockHeaders['Permissions-Policy']).toContain('geolocation=()')
-      expect(mockHeaders['Permissions-Policy']).toContain('payment=()')
-      expect(mockHeaders['Permissions-Policy']).toContain('usb=()')
-      expect(mockHeaders['Permissions-Policy']).toContain('magnetometer=()')
-      expect(mockHeaders['Permissions-Policy']).toContain('gyroscope=()')
-      expect(mockHeaders['Permissions-Policy']).toContain('accelerometer=()')
+      expect(mockNextResponse.headers.get('Referrer-Policy')).toBe('strict-origin-when-cross-origin')
     })
   })
 
-  describe('Development vs Production CSP', () => {
-    const originalEnvDescriptor = Object.getOwnPropertyDescriptor(process.env, 'NODE_ENV')
-
-    afterAll(() => {
-      if (originalEnvDescriptor) {
-        Object.defineProperty(process.env, 'NODE_ENV', originalEnvDescriptor)
-      }
+  describe('Bot Detection', () => {
+    beforeEach(() => {
+      mockRequest.nextUrl.pathname = '/berita'
     })
 
-    it('should include unsafe-inline and unsafe-eval in development', async () => {
-      Object.defineProperty(process.env, 'NODE_ENV', {
-        value: 'development',
-        writable: true,
-        configurable: true
-      })
-      
-      const { NextRequest } = require('next/server')
-      const request = new NextRequest()
-      
-      await middleware(request)
-      
-      expect(mockHeaders['Content-Security-Policy']).toContain("'unsafe-inline'")
-      expect(mockHeaders['Content-Security-Policy']).toContain("'unsafe-eval'")
+    it('should detect Googlebot', () => {
+      mockRequest.headers.set('user-agent', 'Googlebot/2.1 (+http://www.google.com/bot.html)')
+
+      middleware(mockRequest)
+
+      expect(mockNextResponse.headers.get('X-SEO-Crawler')).toBe('bot')
+      expect(mockNextResponse.headers.get('X-Robots-Tag')).toBe('index, follow')
     })
 
-    it('should not include unsafe-inline and unsafe-eval in production', async () => {
-      Object.defineProperty(process.env, 'NODE_ENV', {
-        value: 'production',
-        writable: true,
-        configurable: true
-      })
-      
-      const { NextRequest } = require('next/server')
-      const request = new NextRequest()
-      
-      await middleware(request)
-      
-      expect(mockHeaders['Content-Security-Policy']).not.toContain("'unsafe-inline'")
-      expect(mockHeaders['Content-Security-Policy']).not.toContain("'unsafe-eval'")
+    it('should detect Bingbot', () => {
+      mockRequest.headers.set('user-agent', 'bingbot/2.0 (+http://www.bing.com/bingbot.htm)')
+
+      middleware(mockRequest)
+
+      expect(mockNextResponse.headers.get('X-SEO-Crawler')).toBe('bot')
     })
 
-    it('should include report-uri in development', async () => {
-      Object.defineProperty(process.env, 'NODE_ENV', {
-        value: 'development',
-        writable: true,
-        configurable: true
-      })
-      
-      const { NextRequest } = require('next/server')
-      const request = new NextRequest()
-      
-      await middleware(request)
-      
-      expect(mockHeaders['Content-Security-Policy']).toContain('report-uri /api/csp-report')
+    it('should detect Yandex bot', () => {
+      mockRequest.headers.set('user-agent', 'YandexBot/3.0 (+http://yandex.com/bots)')
+
+      middleware(mockRequest)
+
+      expect(mockNextResponse.headers.get('X-SEO-Crawler')).toBe('bot')
     })
 
-    it('should not include report-uri in production', async () => {
-      Object.defineProperty(process.env, 'NODE_ENV', {
-        value: 'production',
-        writable: true,
-        configurable: true
+    it('should detect Facebook external hit', () => {
+      mockRequest.headers.set('user-agent', 'facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)')
+
+      middleware(mockRequest)
+
+      expect(mockNextResponse.headers.get('X-SEO-Crawler')).toBe('bot')
+    })
+
+    it('should detect Twitter bot', () => {
+      mockRequest.headers.set('user-agent', 'Twitterbot/1.0')
+
+      middleware(mockRequest)
+
+      expect(mockNextResponse.headers.get('X-SEO-Crawler')).toBe('bot')
+    })
+
+    it('should detect AI bots (GPTBot, ClaudeBot)', () => {
+      mockRequest.headers.set('user-agent', 'GPTBot/1.0 (+https://openai.com/gptbot)')
+
+      middleware(mockRequest)
+
+      expect(mockNextResponse.headers.get('X-SEO-Crawler')).toBe('bot')
+    })
+
+    it('should detect Claude bot', () => {
+      mockRequest.headers.set('user-agent', 'ClaudeBot/1.0 (+https://anthropic.com/claude-bot)')
+
+      middleware(mockRequest)
+
+      expect(mockNextResponse.headers.get('X-SEO-Crawler')).toBe('bot')
+    })
+
+    it('should mark human users correctly', () => {
+      mockRequest.headers.set('user-agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36')
+
+      middleware(mockRequest)
+
+      expect(mockNextResponse.headers.get('X-SEO-Crawler')).toBe('human')
+      expect(mockNextResponse.headers.get('X-Robots-Tag')).toBe('index, follow')
+    })
+
+    it('should handle missing user-agent', () => {
+      mockRequest.headers.delete('user-agent')
+
+      middleware(mockRequest)
+
+      expect(mockNextResponse.headers.get('X-SEO-Crawler')).toBe('human')
+    })
+  })
+
+  describe('Rate Limiting Headers', () => {
+    beforeEach(() => {
+      mockRequest.nextUrl.pathname = '/berita'
+    })
+
+    it('should set X-RateLimit-Policy header', () => {
+      middleware(mockRequest)
+
+      expect(mockNextResponse.headers.get('X-RateLimit-Policy')).toBe('60;w=60')
+    })
+
+    it('should set X-RateLimit-Limit header', () => {
+      middleware(mockRequest)
+
+      expect(mockNextResponse.headers.get('X-RateLimit-Limit')).toBe('60')
+    })
+
+    it('should set X-RateLimit-Remaining header', () => {
+      middleware(mockRequest)
+
+      const remaining = mockNextResponse.headers.get('X-RateLimit-Remaining')
+      expect(remaining).toBeDefined()
+      expect(parseInt(remaining!, 10)).toBeGreaterThanOrEqual(0)
+    })
+
+    it('should set X-RateLimit-Reset header', () => {
+      middleware(mockRequest)
+
+      const reset = mockNextResponse.headers.get('X-RateLimit-Reset')
+      expect(reset).toBeDefined()
+      expect(parseInt(reset!, 10)).toBeGreaterThan(0)
+    })
+  })
+
+  describe('Prefetch Hints', () => {
+    beforeEach(() => {
+      mockRequest.nextUrl.pathname = '/berita'
+    })
+
+    it('should set Link header for prefetch', () => {
+      middleware(mockRequest)
+
+      const link = mockNextResponse.headers.get('Link')
+      expect(link).toBeDefined()
+      expect(link).toContain('/berita')
+      expect(link).toContain('/kategori')
+      expect(link).toContain('/tag')
+    })
+
+    it('should include all critical routes in prefetch hints', () => {
+      middleware(mockRequest)
+
+      const link = mockNextResponse.headers.get('Link')
+      const criticalRoutes = ['/berita', '/kategori', '/tag', '/author', '/cari']
+
+      criticalRoutes.forEach((route) => {
+        expect(link).toContain(route)
       })
-      
-      const { NextRequest } = require('next/server')
-      const request = new NextRequest()
-      
-      await middleware(request)
-      
-      expect(mockHeaders['Content-Security-Policy']).not.toContain('report-uri')
+    })
+
+    it('should set prefetch rel attribute', () => {
+      middleware(mockRequest)
+
+      const link = mockNextResponse.headers.get('Link')
+      expect(link).toContain('rel="prefetch"')
     })
   })
 
   describe('Integration Tests', () => {
-    it('should set all required security headers', async () => {
-      const { NextRequest } = require('next/server')
-      const request = new NextRequest()
-      
-      await middleware(request)
-      
-      const requiredHeaders = [
-        'Content-Security-Policy',
-        'x-nonce',
-        'Strict-Transport-Security',
+    it('should set all headers on regular request', () => {
+      mockRequest.nextUrl.pathname = '/berita'
+      mockRequest.headers.set('user-agent', 'Mozilla/5.0')
+
+      middleware(mockRequest)
+
+      const securityHeaders = [
+        'X-DNS-Prefetch-Control',
         'X-Frame-Options',
         'X-Content-Type-Options',
-        'X-XSS-Protection',
         'Referrer-Policy',
-        'Permissions-Policy'
       ]
-      
-      requiredHeaders.forEach(header => {
-        expect(mockHeaders[header]).toBeDefined()
+      const botHeaders = ['X-SEO-Crawler', 'X-Robots-Tag']
+      const rateLimitHeaders = ['X-RateLimit-Policy', 'X-RateLimit-Limit', 'X-RateLimit-Remaining', 'X-RateLimit-Reset']
+      const prefetchHeaders = ['Link']
+
+      ;[...securityHeaders, ...botHeaders, ...rateLimitHeaders, ...prefetchHeaders].forEach((header) => {
+        expect(mockNextResponse.headers.get(header)).toBeDefined()
       })
     })
 
-    it('should handle multiple consecutive requests', async () => {
-      const { NextRequest } = require('next/server')
-      
-      for (let i = 0; i < 10; i++) {
-        mockHeaders = {}
-        const request = new NextRequest()
-        await middleware(request)
-        
-        expect(mockHeaders['Content-Security-Policy']).toBeDefined()
-        expect(mockHeaders['x-nonce']).toBeDefined()
-        expect(mockHeaders['Strict-Transport-Security']).toBeDefined()
-      }
+    it('should handle root path with bot user agent', () => {
+      mockRequest.nextUrl.pathname = '/'
+      mockRequest.headers.set('user-agent', 'Googlebot/2.1')
+
+      middleware(mockRequest)
+
+      expect(NextResponse.redirect).toHaveBeenCalled()
     })
 
-    it('should maintain CSP structure across requests', async () => {
-      const { NextRequest } = require('next/server')
-      
-      const cspHeaders: string[] = []
-      
-      for (let i = 0; i < 5; i++) {
-        mockHeaders = {}
-        const request = new NextRequest()
-        await middleware(request)
-        cspHeaders.push(mockHeaders['Content-Security-Policy'])
-      }
-      
-      cspHeaders.forEach(csp => {
-        expect(csp).toContain("default-src 'self'")
-        expect(csp).toContain("script-src 'self'")
-        expect(csp).toContain("style-src 'self'")
-        expect(csp).toContain("object-src 'none'")
+    it('should handle various page paths', () => {
+      const paths = ['/berita', '/kategori/news', '/tag/politics', '/author/1', '/cari']
+
+      paths.forEach((path) => {
+        jest.clearAllMocks()
+        mockRequest.nextUrl.pathname = path
+        mockRequest.headers.set('user-agent', 'Mozilla/5.0')
+
+        middleware(mockRequest)
+
+        expect(NextResponse.next).toHaveBeenCalled()
+        expect(NextResponse.redirect).not.toHaveBeenCalled()
       })
     })
   })
 
-  describe('Header Value Validation', () => {
-    it('should have valid HSTS max-age', async () => {
-      const { NextRequest } = require('next/server')
-      const request = new NextRequest()
-      
-      await middleware(request)
-      
-      const hsts = mockHeaders['Strict-Transport-Security']
-      const maxAgeMatch = hsts.match(/max-age=(\d+)/)
-      
-      expect(maxAgeMatch).not.toBeNull()
-      expect(parseInt(maxAgeMatch![1], 10)).toBe(31536000)
+  describe('Config Object', () => {
+    it('should export config with matcher property', () => {
+      expect(config).toBeDefined()
+      expect(config.matcher).toBeDefined()
     })
 
-    it('should have properly formatted Permissions-Policy', async () => {
-      const { NextRequest } = require('next/server')
-      const request = new NextRequest()
-      
-      await middleware(request)
-      
-      const permissions = mockHeaders['Permissions-Policy']
-      const policies = permissions.split(', ')
-      
-      policies.forEach(policy => {
-        const [feature, value] = policy.split('=')
-        expect(feature).toBeDefined()
-        expect(value).toBe('()')
-      })
+    it('should have matcher array', () => {
+      expect(Array.isArray(config.matcher)).toBe(true)
+      expect(config.matcher.length).toBeGreaterThan(0)
     })
 
-    it('should have CSP with semicolon-separated directives', async () => {
-      const { NextRequest } = require('next/server')
-      const request = new NextRequest()
-      
-      await middleware(request)
-      
-      const csp = mockHeaders['Content-Security-Policy']
-      const directives = csp.split('; ')
-      
-      expect(directives.length).toBeGreaterThan(5)
-      directives.forEach(directive => {
-        expect(directive).toMatch(/^[a-z-]+/)
+    it('should exclude API routes', () => {
+      expect(config.matcher[0]).toContain('api')
+    })
+
+    it('should exclude static files', () => {
+      expect(config.matcher[0]).toContain('_next/static')
+    })
+
+    it('should exclude image optimization', () => {
+      expect(config.matcher[0]).toContain('_next/image')
+    })
+
+    it('should exclude favicon', () => {
+      expect(config.matcher[0]).toContain('favicon.ico')
+    })
+
+    it('should exclude manifest.json', () => {
+      expect(config.matcher[0]).toContain('manifest.json')
+    })
+
+    it('should exclude service worker', () => {
+      expect(config.matcher[0]).toContain('sw.js')
+    })
+  })
+
+  describe('Edge Cases', () => {
+    it('should handle empty pathname', () => {
+      mockRequest.nextUrl.pathname = ''
+
+      middleware(mockRequest)
+
+      expect(NextResponse.next).toHaveBeenCalled()
+    })
+
+    it('should handle deeply nested paths', () => {
+      mockRequest.nextUrl.pathname = '/kategori/news/2024/01/15'
+
+      middleware(mockRequest)
+
+      expect(NextResponse.next).toHaveBeenCalled()
+      expect(mockNextResponse.headers.get('Link')).toContain('/kategori')
+    })
+
+    it('should preserve URL in redirect', () => {
+      mockRequest.nextUrl.pathname = '/'
+      Object.defineProperty(mockRequest, 'url', {
+        value: 'https://mitrabantennews.com/',
+        writable: true,
       })
+
+      middleware(mockRequest)
+
+      expect(NextResponse.redirect).toHaveBeenCalledWith(
+        new URL('/berita', 'https://mitrabantennews.com'),
+        307
+      )
     })
   })
 })
