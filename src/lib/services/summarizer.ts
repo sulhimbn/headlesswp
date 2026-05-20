@@ -2,6 +2,12 @@ import { cacheManager } from '@/lib/cache';
 import { logger } from '@/lib/utils/logger';
 import { stripHtml } from '@/lib/utils/stripHtml';
 
+function assertServerSide(): void {
+  if (typeof window !== 'undefined' && process.env.NODE_ENV !== 'test') {
+    throw new Error('summarizer.ts can only be used server-side');
+  }
+}
+
 export type SummaryProvider = 'openai' | 'anthropic' | 'local';
 
 export interface SummarizationConfig {
@@ -167,6 +173,8 @@ export async function summarizePost(
   postId: number,
   content: string
 ): Promise<SummarizationResult> {
+  assertServerSide();
+  
   const config = getConfig();
   const cacheKey = getCacheKey(postId);
 
@@ -224,25 +232,27 @@ export async function summarizePost(
 }
 
 export function isSummarizationEnabled(): boolean {
+  assertServerSide();
+  
   const config = getConfig();
   return config.provider !== 'local' ? !!config.apiKey : true;
 }
 
 export function getSummarizationConfig(): SummarizationConfig {
+  assertServerSide();
+  
   return getConfig();
 }
 
 export function clearSummaryCache(postId?: number): void {
+  assertServerSide();
+  
   if (postId) {
     cacheManager.invalidate(getCacheKey(postId));
   } else {
-    const cache = (cacheManager as unknown as { cache: Map<string, unknown> }).cache;
-    if (cache) {
-      for (const key of cache.keys()) {
-        if (key.startsWith('summary:')) {
-          cacheManager.invalidate(key);
-        }
-      }
+    const summaryKeys = cacheManager.getKeysByPattern('^summary:');
+    for (const key of summaryKeys) {
+      cacheManager.invalidate(key);
     }
   }
 }
