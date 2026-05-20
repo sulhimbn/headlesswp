@@ -1,5 +1,29 @@
 import type { CacheStatistics, PerformanceMetrics } from '@/lib/cache/cacheMetricsCalculator';
 
+export interface CacheExportData {
+  version: string;
+  exportedAt: string;
+  entries: Array<{
+    key: string;
+    data: unknown;
+    timestamp: number;
+    ttl: number;
+    dependencies: string[];
+  }>;
+  stats: {
+    hits: number;
+    misses: number;
+    sets: number;
+    deletes: number;
+  };
+}
+
+export interface ImportCacheResult {
+  imported: number;
+  skipped: number;
+  errors: string[];
+}
+
 export interface ICacheManager {
   get<T>(key: string): T | null;
   set<T>(key: string, data: T, ttl: number, dependencies?: string[]): void;
@@ -17,4 +41,6 @@ export interface ICacheManager {
   getKeysByPattern(pattern: string): string[];
   getDependencies(key: string): { dependencies: string[]; dependents: string[] };
   clear(pattern?: string): void;
+  exportCache(): CacheExportData;
+  importCache(data: CacheExportData): ImportCacheResult;
 }

@@ -14,3 +14,21 @@ export interface CacheTelemetry {
   cascadeInvalidations: number;
   dependencyRegistrations: number;
 }
+
+export interface CacheExportData {
+  version: string;
+  exportedAt: string;
+  entries: Array<{
+    key: string;
+    data: unknown;
+    timestamp: number;
+    ttl: number;
+    dependencies: string[];
+  }>;
+  stats: {
+    hits: number;
+    misses: number;
+    sets: number;
+    deletes: number;
+  };
+}

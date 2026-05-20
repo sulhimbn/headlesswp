@@ -1,9 +1,33 @@
 import { CacheMetricsCalculator } from './cache/cacheMetricsCalculator';
 import { CacheCleanup } from './cache/cacheCleanup';
 import { CacheDependencyManager } from './cache/cacheDependencyManager';
-import type { ICacheManager } from '@/lib/api/ICacheManager';
 import type { CacheEntry, CacheTelemetry } from './cache/types';
+import type { ICacheManager } from './api/ICacheManager';
 export type { CacheEntry, CacheTelemetry } from './cache/types';
+
+type CacheExportData = {
+  version: string;
+  exportedAt: string;
+  entries: Array<{
+    key: string;
+    data: unknown;
+    timestamp: number;
+    ttl: number;
+    dependencies: string[];
+  }>;
+  stats: {
+    hits: number;
+    misses: number;
+    sets: number;
+    deletes: number;
+  };
+};
+
+type ImportCacheResult = {
+  imported: number;
+  skipped: number;
+  errors: string[];
+};
 
 /**
  * Advanced cache manager with dependency-aware cascade invalidation.
@@ -557,6 +581,125 @@ class CacheManager implements ICacheManager {
     } else {
       this.clearAll();
     }
+  }
+
+  /**
+   * Export all cache entries as JSON for debugging and backup.
+   * 
+   * @returns CacheExportData object containing all entries and stats
+   * 
+   * @remarks
+   * This method exports:
+   * - All cache entries with their data, timestamps, and TTLs
+   * - Dependency information for each entry
+   * - Current cache statistics
+   * 
+   * Use this for:
+   * - Debugging cache-related issues
+   * - Backing up cache state before deployments
+   * - Transferring cache to different environments
+   * 
+   * @example
+   * ```typescript
+   * const exportData = cacheManager.exportCache();
+   * fs.writeFileSync('cache-backup.json', JSON.stringify(exportData, null, 2));
+   * ```
+   */
+  exportCache(): CacheExportData {
+    const entries: Array<{
+      key: string;
+      data: unknown;
+      timestamp: number;
+      ttl: number;
+      dependencies: string[];
+    }> = [];
+
+    this.cache.forEach((entry, key) => {
+      entries.push({
+        key,
+        data: entry.data,
+        timestamp: entry.timestamp,
+        ttl: entry.ttl,
+        dependencies: entry.dependencies ? Array.from(entry.dependencies) : [],
+      });
+    });
+
+    return {
+      version: '1.0.0',
+      exportedAt: new Date().toISOString(),
+      entries,
+      stats: {
+        hits: this.stats.hits,
+        misses: this.stats.misses,
+        sets: this.stats.sets,
+        deletes: this.stats.deletes,
+      },
+    };
+  }
+
+  /**
+   * Import cache entries from exported JSON data.
+   * 
+   * @param data - CacheExportData to import
+   * @returns Object with import results (imported count, skipped count, errors)
+   * 
+   * @remarks
+   * This method:
+   * - Validates the export data version
+   * - Skips expired entries
+   * - Preserves dependencies for cascade invalidation
+   * - Handles version mismatches gracefully
+   * 
+   * Use this for:
+   * - Restoring cache from backup
+   * - Pre-populating cache in new environments
+   * - Cache warming scenarios
+   * 
+   * @example
+   * ```typescript
+   * const data = JSON.parse(fs.readFileSync('cache-backup.json', 'utf-8'));
+   * const result = cacheManager.importCache(data);
+   * console.log(`Imported ${result.imported} entries`);
+   * ```
+   */
+  importCache(data: CacheExportData): ImportCacheResult {
+    const result: ImportCacheResult = { imported: 0, skipped: 0, errors: [] };
+
+    if (!data.version || !data.entries) {
+      result.errors.push('Invalid export data: missing version or entries');
+      return result;
+    }
+
+    const now = Date.now();
+
+    for (const entry of data.entries) {
+      try {
+        if (entry.ttl > 0 && now - entry.timestamp > entry.ttl) {
+          result.skipped++;
+          continue;
+        }
+
+        const cacheEntry: CacheEntry<unknown> = {
+          data: entry.data,
+          timestamp: entry.timestamp,
+          ttl: entry.ttl,
+        };
+
+        if (entry.dependencies && entry.dependencies.length > 0) {
+          cacheEntry.dependencies = new Set(entry.dependencies);
+          this.dependencyManager.registerDependencies(entry.key, entry.dependencies, this.stats);
+        }
+
+        this.cache.set(entry.key, cacheEntry);
+        result.imported++;
+      } catch (error) {
+        result.errors.push(`Failed to import key "${entry.key}": ${error instanceof Error ? error.message : 'Unknown error'}`);
+      }
+    }
+
+    this.stats.sets += result.imported;
+
+    return result;
   }
 }
 
