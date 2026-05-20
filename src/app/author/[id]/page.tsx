@@ -10,12 +10,59 @@ import dynamic from 'next/dynamic';
 import { UI_TEXT } from '@/lib/constants/uiText';
 import { PARSING } from '@/lib/constants/appConstants';
 import { isApiResultSuccessful } from '@/lib/api/response';
+import { SITE_URL } from '@/lib/api/config';
+import { generatePageHreflang } from '@/lib/utils/hreflang';
+import type { Metadata } from 'next';
 
 const Footer = dynamic(() => import('@/components/layout/Footer'), {
   loading: () => <div className="h-64 bg-[hsl(var(--color-background-dark))] mt-12" aria-hidden="true" />
 });
 
 export const revalidate = 300;
+
+export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
+  const authorId = parseInt(params.id, PARSING.DECIMAL_RADIX);
+  const baseUrl = SITE_URL;
+
+  if (isNaN(authorId)) {
+    return {
+      title: 'Penulis Tidak Ditemukan',
+    }
+  }
+
+  const authorResult = await standardizedAPI.getAuthorById(authorId);
+
+  if (!isApiResultSuccessful(authorResult)) {
+    return {
+      title: 'Penulis Tidak Ditemukan',
+    }
+  }
+
+  const author = authorResult.data;
+  const authorUrl = `${baseUrl}/author/${author.id}`;
+  const hreflangEntries = generatePageHreflang(String(author.id), 'author');
+
+  const languages: Record<string, string> = {};
+  for (const entry of hreflangEntries) {
+    languages[entry.lang] = entry.url;
+  }
+
+  return {
+    title: `${author.name} - Mitra Banten News`,
+    description: author.description || `Artikel terbaru oleh ${author.name} di Mitra Banten News`,
+    alternates: {
+      canonical: authorUrl,
+      languages,
+    },
+    openGraph: {
+      title: `${author.name} - Mitra Banten News`,
+      description: author.description || `Artikel terbaru oleh ${author.name} di Mitra Banten News`,
+      url: authorUrl,
+      siteName: 'Mitra Banten News',
+      type: 'profile',
+    },
+  };
+}
 
 export default async function AuthorPage({
   params,

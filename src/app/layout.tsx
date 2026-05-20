@@ -54,6 +54,14 @@ export const metadata: Metadata = {
     site: '@mitrabantennews',
     creator: '@mitrabantennews',
   },
+  alternates: {
+    canonical: SITE_URL,
+    languages: {
+      'id-ID': SITE_URL,
+      'en-US': SITE_URL,
+      'x-default': SITE_URL,
+    },
+  },
 }
 
 const organizationSchema = {

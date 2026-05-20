@@ -22,6 +22,7 @@ import SocialShare from '@/components/ui/SocialShare'
 import ReadingProgress from '@/components/ui/ReadingProgress'
 import TableOfContents from '@/components/ui/TableOfContents'
 import { extractHeadings, shouldShowToc, addIdsToHeadings } from '@/lib/utils/tableOfContents'
+import { generatePageHreflang } from '@/lib/utils/hreflang'
 
 const Footer = dynamic(() => import('@/components/layout/Footer'), {
   loading: () => <div className="h-64 bg-[hsl(var(--color-background-dark))] mt-12" aria-hidden="true" />
@@ -45,12 +46,19 @@ export async function generateMetadata({ params }: { params: { slug: string } })
 
   const description = stripHtml(post.excerpt.rendered).substring(0, 160)
   const articleUrl = `${baseUrl}/berita/${post.slug}`
+  const hreflangEntries = generatePageHreflang(post.slug, 'berita')
+
+  const languages: Record<string, string> = {}
+  for (const entry of hreflangEntries) {
+    languages[entry.lang] = entry.url
+  }
 
   return {
     title: post.title.rendered,
     description,
     alternates: {
       canonical: articleUrl,
+      languages,
     },
     openGraph: {
       title: post.title.rendered,

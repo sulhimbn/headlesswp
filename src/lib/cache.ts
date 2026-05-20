@@ -558,13 +558,38 @@ class CacheManager implements ICacheManager {
       this.clearAll();
     }
   }
+
+  exportCache(): CacheExportData {
+    return {
+      version: '1.0',
+      exportedAt: new Date().toISOString(),
+      entries: exportCacheEntries(this.cache),
+    };
+  }
+
+  importCache(data: CacheExportData, merge: boolean = true): { success: boolean; imported: number; error?: string } {
+    if (!data || !data.version || !Array.isArray(data.entries)) {
+      return { success: false, imported: 0, error: 'Invalid cache data format' };
+    }
+
+    if (!merge) {
+      this.clearAll();
+    }
+
+    try {
+      const imported = importCacheEntries(this.cache, data.entries, this.dependencyManager);
+      return { success: true, imported };
+    } catch (error) {
+      return { success: false, imported: 0, error: error instanceof Error ? error.message : 'Unknown error' };
+    }
+  }
 }
 
 // Global cache instance - single source of truth for all caching operations
 export const cacheManager = new CacheManager();
 
 // Convenience exports for backward compatibility
-export const { getStats: getCacheStats, clear: clearCache } = cacheManager;
+export const { getStats: getCacheStats, clear: clearCache, exportCache: exportCacheData, importCache: importCacheData } = cacheManager;
 
 export { CACHE_CONFIG as CACHE_TTL } from './cache/cacheConfig';
 export { CACHE_CONFIG } from './cache/cacheConfig';
@@ -779,3 +804,64 @@ export const cacheDependencies = {
 }
 
 export { CacheCleanup };
+
+export interface CacheExportData {
+  version: string;
+  exportedAt: string;
+  entries: CacheExportEntry[];
+}
+
+export interface CacheExportEntry {
+  key: string;
+  data: unknown;
+  timestamp: number;
+  ttl: number;
+  dependencies: string[];
+  dependents: string[];
+}
+
+function exportCacheEntries(cache: Map<string, CacheEntry<unknown>>): CacheExportEntry[] {
+  const entries: CacheExportEntry[] = [];
+  cache.forEach((entry, key) => {
+    entries.push({
+      key,
+      data: entry.data,
+      timestamp: entry.timestamp,
+      ttl: entry.ttl,
+      dependencies: entry.dependencies ? Array.from(entry.dependencies) : [],
+      dependents: entry.dependents ? Array.from(entry.dependents) : [],
+    });
+  });
+  return entries;
+}
+
+function importCacheEntries(
+  cache: Map<string, CacheEntry<unknown>>,
+  entries: CacheExportEntry[],
+  dependencyManager: CacheDependencyManager
+): number {
+  let imported = 0;
+  const stats = {
+    hits: 0,
+    misses: 0,
+    sets: 0,
+    deletes: 0,
+    cascadeInvalidations: 0,
+    dependencyRegistrations: 0,
+  };
+
+  for (const entry of entries) {
+    const cacheEntry: CacheEntry<unknown> = {
+      data: entry.data,
+      timestamp: entry.timestamp,
+      ttl: entry.ttl,
+    };
+    cache.set(entry.key, cacheEntry);
+
+    if (entry.dependencies && entry.dependencies.length > 0) {
+      dependencyManager.registerDependencies(entry.key, entry.dependencies, stats);
+    }
+    imported++;
+  }
+  return imported;
+}
