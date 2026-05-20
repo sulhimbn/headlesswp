@@ -62,6 +62,7 @@
   "author": "Mitra Banten News",
   "license": "MIT",
   "overrides": {
+    "picomatch": ">=2.3.2 <4.0.0 || >=4.0.4",
     "js-yaml": "^4.1.1",
     "caniuse-lite": "^1.0.30001774",
     "baseline-browser-mapping": "^2.10.0",
