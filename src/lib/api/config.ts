@@ -48,6 +48,7 @@ export const REVALIDATE_TIMES = {
   HOMEPAGE: 5 * 60, // 300 seconds (5 minutes)
   POST_LIST: 5 * 60, // 300 seconds (5 minutes)
   POST_DETAIL: 60 * 60, // 3600 seconds (1 hour)
+  SEARCH_POSTS: 5 * 60, // 300 seconds (5 minutes)
 } as const
 
 export const PAGINATION = {

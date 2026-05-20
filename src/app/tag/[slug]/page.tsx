@@ -10,12 +10,13 @@ import dynamic from 'next/dynamic'
 import { UI_TEXT } from '@/lib/constants/uiText'
 import { PARSING } from '@/lib/constants/appConstants'
 import { isApiResultSuccessful } from '@/lib/api/response'
+import { REVALIDATE_TIMES } from '@/lib/api/config'
 
 const Footer = dynamic(() => import('@/components/layout/Footer'), {
   loading: () => <div className="h-64 bg-[hsl(var(--color-background-dark))] mt-12" aria-hidden="true" />
 })
 
-export const revalidate = 300
+export const revalidate = REVALIDATE_TIMES.POST_LIST
 
 export default async function TagPage({
   params,
