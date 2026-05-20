@@ -1,18 +1,14 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { summarizePost, isSummarizationEnabled, getSummarizationConfig } from '@/lib/services/summarizer';
 import { wordpressAPI } from '@/lib/wordpress';
 import { logger } from '@/lib/utils/logger';
 
 export const dynamic = 'force-dynamic';
 
-interface RouteParams {
-  params: Promise<{ id: string }>;
-}
-
 export async function GET(
-  request: NextRequest,
-  { params }: RouteParams
-): Promise<NextResponse> {
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
     const { id } = await params;
     const postId = parseInt(id, 10);

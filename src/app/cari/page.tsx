@@ -10,6 +10,7 @@ import { UI_TEXT } from '@/lib/constants/uiText'
 import { PARSING } from '@/lib/constants/appConstants'
 import Icon from '@/components/ui/Icon'
 import type { PostWithMediaUrl } from '@/lib/services/IPostService'
+import DOMPurify from 'dompurify'
 
 const Footer = dynamic(() => import('@/components/layout/Footer'), {
   loading: () => <div className="h-64 bg-[hsl(var(--color-background-dark))] mt-12" aria-hidden="true" />
@@ -22,7 +23,9 @@ interface SearchPageProps {
 }
 
 export default async function CariPage({ searchParams }: SearchPageProps) {
-  const query = searchParams.q?.trim() || ''
+  const rawQuery = searchParams.q || ''
+  const sanitizedQuery = DOMPurify.sanitize(rawQuery.trim(), { ALLOWED_TAGS: [] })
+  const query = sanitizedQuery.slice(0, 200)
   const page = parseInt(searchParams.page || '1', PARSING.DECIMAL_RADIX)
   const postsPerPage = PAGINATION_LIMITS.SEARCH_POSTS
 
