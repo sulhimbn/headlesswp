@@ -2,9 +2,30 @@ import { NextRequest, NextResponse } from 'next/server'
 import { proxy, config as proxyConfig } from '@/proxy'
 
 jest.mock('next/server', () => ({
-  NextRequest: jest.fn(),
+  NextRequest: jest.fn().mockImplementation((url: string) => ({
+    url,
+    nextUrl: {
+      pathname: '/',
+    },
+    headers: {
+      get: jest.fn().mockReturnValue(null),
+    },
+  })),
   NextResponse: {
-    next: jest.fn(),
+    next: jest.fn().mockImplementation(() => ({
+      headers: {
+        get: jest.fn().mockReturnValue(null),
+        set: jest.fn(),
+      },
+    })),
+    redirect: jest.fn().mockImplementation((url: URL) => ({
+      headers: {
+        get: jest.fn().mockReturnValue(null),
+        set: jest.fn(),
+      },
+      status: 307,
+      statusText: 'Temporary Redirect'
+    })),
   },
 }))
 
@@ -34,9 +55,18 @@ describe('Proxy Middleware', () => {
       nextUrl: {
         pathname: '/',
       },
+      headers: {
+        get: jest.fn().mockReturnValue(null),
+      },
+      url: 'http://localhost:3000/test',
     } as unknown as jest.Mocked<NextRequest>
 
-    ;(NextResponse.next as jest.Mock).mockReturnValue(mockNextResponse)
+    ;(NextResponse.next as jest.Mock).mockImplementation(() => ({
+      headers: {
+        get: jest.fn().mockReturnValue(null),
+        set: jest.fn(),
+      },
+    }))
   })
 
   afterEach(() => {
