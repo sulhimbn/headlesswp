@@ -1,5 +1,6 @@
 import { standardizedAPI } from '@/lib/api/standardized'
 import { enhancedPostService } from '@/lib/services/enhancedPostService'
+import { PAGINATION_LIMITS } from '@/lib/api/config'
 import Header from '@/components/layout/Header'
 import PostCard from '@/components/post/PostCard'
 import Pagination from '@/components/ui/Pagination'
@@ -25,7 +26,7 @@ export default async function TagPage({
   searchParams: { page?: string }
 }) {
   const page = parseInt(searchParams.page || '1', PARSING.DECIMAL_RADIX)
-  const perPage = 12
+  const perPage = PAGINATION_LIMITS.ALL_POSTS
 
   const tagResult = await standardizedAPI.getTagBySlug(params.slug)
 

@@ -15,17 +15,42 @@ import { logger } from '@/lib/utils/logger'
 import { UI_TEXT } from '@/lib/constants/uiText'
 import { SITE_URL } from '@/lib/api/config'
 import type { Metadata } from 'next'
-import PersonalizedRecommendations from '@/components/post/PersonalizedRecommendations'
-import ReadingTracker from '@/components/post/ReadingTracker'
 import { calculateReadingTime } from '@/lib/utils/readingTime'
 import SocialShare from '@/components/ui/SocialShare'
-import ReadingProgress from '@/components/ui/ReadingProgress'
 import TableOfContents from '@/components/ui/TableOfContents'
 import { extractHeadings, shouldShowToc, addIdsToHeadings } from '@/lib/utils/tableOfContents'
 
 const Footer = dynamic(() => import('@/components/layout/Footer'), {
   loading: () => <div className="h-64 bg-[hsl(var(--color-background-dark))] mt-12" aria-hidden="true" />
 })
+
+const PersonalizedRecommendations = dynamic(
+  () => import('@/components/post/PersonalizedRecommendations'),
+  {
+    loading: () => (
+      <section aria-labelledby="personalized-heading" className="mt-12">
+        <h2 id="personalized-heading" className="text-2xl font-bold text-[hsl(var(--color-text-primary))] mb-6">
+          Rekomendasi Untuk Anda
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {[1, 2, 3].map(i => (
+            <div key={i} className="bg-[hsl(var(--color-surface))] rounded-[var(--radius-lg)] h-64 animate-pulse" />
+          ))}
+        </div>
+      </section>
+    ),
+  }
+)
+
+const ReadingTracker = dynamic(
+  () => import('@/components/post/ReadingTracker'),
+  { loading: () => null }
+)
+
+const ReadingProgress = dynamic(
+  () => import('@/components/ui/ReadingProgress'),
+  { loading: () => <div className="h-1 bg-[hsl(var(--color-secondary-dark))]" /> }
+)
 
 export const revalidate = 3600 // 60 minutes (1 hour)
 
@@ -45,6 +70,9 @@ export async function generateMetadata({ params }: { params: { slug: string } })
 
   const description = stripHtml(post.excerpt.rendered).substring(0, 160)
   const articleUrl = `${baseUrl}/berita/${post.slug}`
+  const ogImageUrl = post.mediaUrl 
+    ? post.mediaUrl 
+    : `${baseUrl}/api/og?slug=${post.slug}`
 
   return {
     title: post.title.rendered,
@@ -59,7 +87,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
       siteName: 'Mitra Banten News',
       images: [
         {
-          url: post.mediaUrl || `${baseUrl}/og-image.jpg`,
+          url: ogImageUrl,
           width: 1200,
           height: 630,
           alt: stripHtml(post.title.rendered),

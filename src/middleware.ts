@@ -1,4 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { createCorrelationId } from '@/lib/utils/logger'
+
+const CORRELATION_ID_HEADER = 'x-correlation-id'
+const REQUEST_ID_HEADER = 'x-request-id'
 
 const BOT_UA_PATTERNS = [
   /googlebot/i,
@@ -56,12 +60,25 @@ function setPrefetchHints(response: NextResponse): void {
   response.headers.set('Link', `<${criticalRoutesStr}>; rel="prefetch"`)
 }
 
+function getOrCreateCorrelationId(request: NextRequest): string {
+  return request.headers.get(CORRELATION_ID_HEADER) as string || createCorrelationId()
+}
+
+function setCorrelationHeaders(request: NextRequest, response: NextResponse): void {
+  const correlationId = getOrCreateCorrelationId(request)
+  const requestId = request.headers.get(REQUEST_ID_HEADER) as string || correlationId
+
+  response.headers.set(CORRELATION_ID_HEADER, correlationId)
+  response.headers.set(REQUEST_ID_HEADER, requestId)
+}
+
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
   const isBot = isBotUserAgent(request.headers.get('user-agent'))
   const response = NextResponse.next()
 
+  setCorrelationHeaders(request, response)
   setSecurityHeaders(response)
   setBotOptimizationHeaders(response, isBot)
   setRateLimitHeaders(response)

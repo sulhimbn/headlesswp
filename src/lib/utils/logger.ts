@@ -1,3 +1,5 @@
+import { randomUUID } from 'crypto'
+
 export enum LogLevel {
   DEBUG = 0,
   INFO = 1,
@@ -7,6 +9,9 @@ export enum LogLevel {
 
 export interface LogContext {
   module: string
+  correlationId?: string
+  userId?: string
+  requestId?: string
   [key: string]: unknown
 }
 
@@ -14,16 +19,35 @@ export interface LoggerOptions {
   level?: LogLevel
   enableTimestamp?: boolean
   enableColors?: boolean
+  enableJsonFormat?: boolean
+}
+
+export interface LogEntry {
+  timestamp: string
+  level: string
+  message: string
+  module?: string
+  correlationId?: string
+  userId?: string
+  requestId?: string
+  error?: {
+    name: string
+    message: string
+    stack?: string
+  }
+  meta?: Record<string, unknown>
 }
 
 const DEFAULT_OPTIONS: LoggerOptions = {
   level: process.env.NODE_ENV === 'production' ? LogLevel.INFO : LogLevel.DEBUG,
   enableTimestamp: true,
-  enableColors: process.env.NODE_ENV !== 'production'
+  enableColors: process.env.NODE_ENV !== 'production',
+  enableJsonFormat: process.env.NODE_ENV === 'production'
 }
 
 class Logger {
   private options: LoggerOptions
+  private correlationId: string | undefined
 
   constructor(options: LoggerOptions = {}) {
     this.options = { ...DEFAULT_OPTIONS, ...options }
@@ -33,15 +57,25 @@ class Logger {
     return level >= (this.options.level ?? LogLevel.INFO)
   }
 
-  private formatMessage(level: LogLevel, message: string, context?: LogContext): string {
-    const levelTag = this.getLevelTag(level)
-    const timestamp = this.options.enableTimestamp ? `[${new Date().toISOString()}] ` : ''
-    const contextStr = context ? ` [${context.module}]` : ''
+  setCorrelationId(id: string | undefined): void {
+    this.correlationId = id
+  }
 
-    return `${timestamp}${levelTag}${contextStr} ${message}`
+  getCorrelationId(): string | undefined {
+    return this.correlationId
   }
 
   private getLevelTag(level: LogLevel): string {
+    const tags: Record<LogLevel, string> = {
+      [LogLevel.DEBUG]: 'DEBUG',
+      [LogLevel.INFO]: 'INFO',
+      [LogLevel.WARN]: 'WARN',
+      [LogLevel.ERROR]: 'ERROR'
+    }
+    return tags[level]
+  }
+
+  private getLevelTagWithColor(level: LogLevel): string {
     const tags: Record<LogLevel, string> = {
       [LogLevel.DEBUG]: this.options.enableColors ? '\x1b[36m[DEBUG]\x1b[0m' : '[DEBUG]',
       [LogLevel.INFO]: this.options.enableColors ? '\x1b[32m[INFO]\x1b[0m' : '[INFO]',
@@ -51,8 +85,58 @@ class Logger {
     return tags[level]
   }
 
+  private buildLogEntry(
+    level: LogLevel,
+    message: string,
+    error?: Error | unknown,
+    meta?: Record<string, unknown>
+  ): LogEntry {
+    const entry: LogEntry = {
+      timestamp: new Date().toISOString(),
+      level: this.getLevelTag(level),
+      message,
+      module: meta?.module as string | undefined,
+      correlationId: this.correlationId || (meta?.correlationId as string | undefined),
+      userId: meta?.userId as string | undefined,
+      requestId: meta?.requestId as string | undefined
+    }
+
+    if (error) {
+      const errorObj = error instanceof Error ? error : new Error(String(error))
+      entry.error = {
+        name: errorObj.name,
+        message: errorObj.message,
+        stack: errorObj.stack
+      }
+    }
+
+    if (meta) {
+      const { module, correlationId, userId, requestId, ...rest } = meta
+      if (Object.keys(rest).length > 0) {
+        entry.meta = rest
+      }
+    }
+
+    return entry
+  }
+
+  private formatMessage(level: LogLevel, message: string, context?: LogContext): string {
+    const levelTag = this.getLevelTagWithColor(level)
+    const timestamp = this.options.enableTimestamp ? `[${new Date().toISOString()}] ` : ''
+    const contextStr = context ? ` [${context.module}]` : ''
+
+    return `${timestamp}${levelTag}${contextStr} ${message}`
+  }
+
   private log(level: LogLevel, message: string, error?: Error | unknown, meta?: Record<string, unknown>): void {
     if (!this.shouldLog(level)) {
+      return
+    }
+
+    if (this.options.enableJsonFormat) {
+      const entry = this.buildLogEntry(level, message, error, meta)
+      const consoleMethod = this.getConsoleMethod(level)
+      consoleMethod(JSON.stringify(entry))
       return
     }
 
@@ -108,6 +192,20 @@ class Logger {
   setLevel(level: LogLevel): void {
     this.options.level = level
   }
+
+  setJsonFormat(enabled: boolean): void {
+    this.options.enableJsonFormat = enabled
+  }
+
+  withCorrelationId(correlationId: string): Logger {
+    const childLogger = new Logger(this.options)
+    childLogger.setCorrelationId(correlationId)
+    return childLogger
+  }
+}
+
+export function createCorrelationId(): string {
+  return randomUUID()
 }
 
 export class LoggerInternal extends Logger {}

@@ -647,6 +647,75 @@ describe('enhancedPostService', () => {
     });
   });
 
+  describe('getPostsByTag', () => {
+    it('should return enriched posts with media URLs on success', async () => {
+      const mockPosts: WordPressPost[] = [
+        {
+          id: 1,
+          title: { rendered: 'Tag Post 1' },
+          content: { rendered: '<p>Content</p>' },
+          excerpt: { rendered: 'Excerpt' },
+          slug: 'tag-post-1',
+          date: '2024-01-01T00:00:00',
+          modified: '2024-01-01T00:00:00',
+          author: 1,
+          categories: [1],
+          tags: [5],
+          featured_media: 10,
+          status: 'publish',
+          type: 'post',
+          link: 'https://example.com/tag-post-1'
+        }
+      ];
+
+      (wordpressAPI.getPostsWithHeaders as jest.Mock).mockResolvedValue({
+        data: mockPosts,
+        total: 1,
+        totalPages: 1
+      });
+      (dataValidator.validatePosts as jest.Mock).mockReturnValue({ valid: true, data: mockPosts, errors: [] });
+      (wordpressAPI.getMediaUrlsBatch as jest.Mock).mockResolvedValue(new Map([[10, 'https://example.com/media.jpg']]));
+
+      const result = await enhancedPostService.getPostsByTag(5, 1, 10);
+
+      expect(wordpressAPI.getPostsWithHeaders).toHaveBeenCalledWith({ page: 1, per_page: 10, tag: 5 });
+      expect(result.posts).toHaveLength(1);
+      expect(result.posts[0].mediaUrl).toBe('https://example.com/media.jpg');
+      expect(result.totalPosts).toBe(1);
+      expect(result.totalPages).toBe(1);
+    });
+
+    it('should return empty result on validation failure', async () => {
+      const mockPosts = [{ id: 1 }] as WordPressPost[];
+      (wordpressAPI.getPostsWithHeaders as jest.Mock).mockResolvedValue({
+        data: mockPosts,
+        total: 1,
+        totalPages: 1
+      });
+      (dataValidator.validatePosts as jest.Mock).mockReturnValue({
+        valid: false,
+        data: undefined,
+        errors: ['Invalid tag posts']
+      });
+
+      const result = await enhancedPostService.getPostsByTag(5, 1, 10);
+
+      expect(result.posts).toEqual([]);
+      expect(result.totalPosts).toBe(0);
+      expect(result.totalPages).toBe(0);
+    });
+
+    it('should return empty result on API error', async () => {
+      (wordpressAPI.getPostsWithHeaders as jest.Mock).mockRejectedValue(new Error('API Error'));
+
+      const result = await enhancedPostService.getPostsByTag(5, 1, 10);
+
+      expect(result.posts).toEqual([]);
+      expect(result.totalPosts).toBe(0);
+      expect(result.totalPages).toBe(0);
+    });
+  });
+
   describe('Data Validation Integration', () => {
     it('should validate posts before enrichment', async () => {
       const mockPosts: WordPressPost[] = [
