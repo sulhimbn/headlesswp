@@ -1,3 +1,5 @@
+import 'server-only';
+
 import { cacheManager } from '@/lib/cache';
 import { logger } from '@/lib/utils/logger';
 import { stripHtml } from '@/lib/utils/stripHtml';

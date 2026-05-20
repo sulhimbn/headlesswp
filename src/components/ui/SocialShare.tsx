@@ -54,24 +54,34 @@ function SocialShareComponent({ title, url, className = '' }: SocialShareProps) 
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
     } catch {
-      const input = document.createElement('input')
-      input.value = fullUrl
-      document.body.appendChild(input)
-      input.select()
-      document.execCommand('copy')
-      document.body.removeChild(input)
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
+      try {
+        const input = document.createElement('input')
+        input.value = fullUrl
+        document.body.appendChild(input)
+        input.select()
+        document.execCommand('copy')
+        document.body.removeChild(input)
+        setCopied(true)
+        setTimeout(() => setCopied(false), 2000)
+      } catch (fallbackError) {
+        console.warn('Failed to copy link:', fallbackError)
+      }
     }
   }
 
   return (
-    <div className={className}>
+    <div className={className} role="group" aria-label="Bagikan ke media sosial">
       <div className="flex items-center gap-3">
         {platforms.map((platform) => (
           <button
             key={platform.name}
             onClick={() => handleShare(platform)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault()
+                handleShare(platform)
+              }
+            }}
             className={`p-2 rounded-full bg-[hsl(var(--color-surface))] text-[hsl(var(--color-text-secondary))] ${platform.color} transition-colors focus:outline-none focus:ring-2 focus:ring-[hsl(var(--color-primary))] focus:ring-offset-2`}
             aria-label={`Bagikan ke ${platform.name}`}
             title={`Bagikan ke ${platform.name}`}
@@ -81,6 +91,12 @@ function SocialShareComponent({ title, url, className = '' }: SocialShareProps) 
         ))}
         <button
           onClick={handleCopyLink}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault()
+              handleCopyLink()
+            }
+          }}
           className={`p-2 rounded-full bg-[hsl(var(--color-surface))] text-[hsl(var(--color-text-secondary))] transition-colors focus:outline-none focus:ring-2 focus:ring-[hsl(var(--color-primary))] focus:ring-offset-2 ${
             copied 
               ? 'bg-[hsl(var(--color-success))] text-white' 
@@ -92,6 +108,9 @@ function SocialShareComponent({ title, url, className = '' }: SocialShareProps) 
           <SocialIcon type={copied ? 'check' : 'link'} />
         </button>
       </div>
+      <span className="sr-only" role="status" aria-live="polite">
+        {copied ? 'Tautan telah disalin ke clipboard' : ''}
+      </span>
     </div>
   )
 }
