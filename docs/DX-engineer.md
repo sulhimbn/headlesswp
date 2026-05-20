@@ -38,6 +38,15 @@ DX Engineer focuses on improving developer experience through small, safe, measu
 - Always verify changes with `npm run lint && npm run typecheck && npm test`
 - Keep changes atomic and focused
 
+### 2026-03-30
+- **PR #XXX**: Add Storybook for component documentation and visual testing - resolves issue #857
+  - Installed and configured Storybook 10.x with Next.js Vite framework
+  - Created stories for Button, Badge, and SearchBar components
+  - Added storybook scripts to package.json: `storybook`, `build-storybook`
+  - Configured with design tokens from globals.css
+  - Enabled accessibility addon for a11y testing
+  - Updated tsconfig.json moduleResolution to "bundler" for better compatibility
+
 ## Recent Work
 
 ### 2026-02-27
