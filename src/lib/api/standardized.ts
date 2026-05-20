@@ -59,6 +59,7 @@ export interface PostQueryParams {
   tag?: number;
   author?: number;
   search?: string;
+  _embed?: boolean;
 }
 
 export async function getPostById(id: number): Promise<ApiResult<WordPressPost>> {

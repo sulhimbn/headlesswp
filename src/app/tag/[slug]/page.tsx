@@ -1,5 +1,4 @@
 import { standardizedAPI } from '@/lib/api/standardized'
-import { enhancedPostService } from '@/lib/services/enhancedPostService'
 import Header from '@/components/layout/Header'
 import PostCard from '@/components/post/PostCard'
 import Pagination from '@/components/ui/Pagination'
@@ -38,18 +37,12 @@ export default async function TagPage({
   const postsResult = await standardizedAPI.getAllPosts({
     page,
     per_page: perPage,
-    tag: tag.id
+    tag: tag.id,
+    _embed: true
   })
 
   const posts = postsResult.data
   const totalPages = postsResult.pagination.totalPages ?? 0
-
-  const postsWithMedia = await enhancedPostService.getLatestPosts()
-
-  const enrichedPosts = posts.map(post => {
-    const enriched = postsWithMedia.find(p => p.id === post.id)
-    return enriched || { ...post, mediaUrl: null }
-  })
 
   return (
     <div className="min-h-screen bg-[hsl(var(--color-background))]">
@@ -69,8 +62,8 @@ export default async function TagPage({
         {posts.length > 0 ? (
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {enrichedPosts.map((post, index) => (
-                <PostCard key={post.id} post={post} mediaUrl={post.mediaUrl} priority={index < 6} />
+              {posts.map((post, index) => (
+                <PostCard key={post.id} post={post} priority={index < 6} />
               ))}
             </div>
 
