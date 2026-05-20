@@ -45,6 +45,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
 
   const description = stripHtml(post.excerpt.rendered).substring(0, 160)
   const articleUrl = `${baseUrl}/berita/${post.slug}`
+  const ogImageUrl = `${baseUrl}/api/og/${post.slug}`
 
   return {
     title: post.title.rendered,
@@ -59,7 +60,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
       siteName: 'Mitra Banten News',
       images: [
         {
-          url: post.mediaUrl || `${baseUrl}/og-image.jpg`,
+          url: ogImageUrl,
           width: 1200,
           height: 630,
           alt: stripHtml(post.title.rendered),
@@ -74,7 +75,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
       card: 'summary_large_image',
       title: post.title.rendered,
       description,
-      images: [post.mediaUrl || `${baseUrl}/og-image.jpg`],
+      images: [ogImageUrl],
     },
   }
 }

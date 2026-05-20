@@ -3,6 +3,8 @@ import { CacheCleanup } from './cache/cacheCleanup';
 import { CacheDependencyManager } from './cache/cacheDependencyManager';
 import type { ICacheManager } from '@/lib/api/ICacheManager';
 import type { CacheEntry, CacheTelemetry } from './cache/types';
+import type { ICacheStore } from './cache/types';
+import { InMemoryCacheStore } from './cache/stores/memoryStore';
 export type { CacheEntry, CacheTelemetry } from './cache/types';
 
 /**
@@ -43,6 +45,8 @@ export type { CacheEntry, CacheTelemetry } from './cache/types';
  */
 class CacheManager implements ICacheManager {
   private cache = new Map<string, CacheEntry<unknown>>();
+  private store: ICacheStore | null = null;
+  private useStore: boolean = false;
   private stats: CacheTelemetry = {
     hits: 0,
     misses: 0,
@@ -54,6 +58,38 @@ class CacheManager implements ICacheManager {
   private metricsCalculator = new CacheMetricsCalculator();
   private cacheCleanup = new CacheCleanup(this.cache);
   private dependencyManager = new CacheDependencyManager(this.cache);
+
+  constructor(store?: ICacheStore) {
+    if (store) {
+      this.store = store;
+      this.useStore = true;
+    }
+  }
+
+  private async getFromStore<T>(key: string): Promise<T | null> {
+    if (!this.store || !this.useStore) return null;
+    return this.store.get<T>(key);
+  }
+
+  private async setToStore<T>(key: string, data: T, ttl: number): Promise<void> {
+    if (!this.store || !this.useStore) return;
+    await this.store.set(key, data, ttl);
+  }
+
+  private async deleteFromStore(key: string): Promise<boolean> {
+    if (!this.store || !this.useStore) return false;
+    return this.store.delete(key);
+  }
+
+  private async clearStore(): Promise<void> {
+    if (!this.store || !this.useStore) return;
+    await this.store.clearAll();
+  }
+
+  private async getKeysFromStore(pattern: string): Promise<string[]> {
+    if (!this.store || !this.useStore) return [];
+    return this.store.getKeysByPattern(pattern);
+  }
 
   /**
     * Get data from cache by key.
@@ -71,6 +107,11 @@ class CacheManager implements ICacheManager {
     * ```
     */
   get<T>(key: string): T | null {
+    if (this.useStore && this.store) {
+      this.stats.misses++;
+      return null;
+    }
+    
     const entry = this.cache.get(key);
     
     if (!entry) {
@@ -87,6 +128,20 @@ class CacheManager implements ICacheManager {
 
     this.stats.hits++;
     return entry.data as T;
+  }
+
+  async getAsync<T>(key: string): Promise<T | null> {
+    if (this.useStore && this.store) {
+      const data = await this.store.get<T>(key);
+      if (data) {
+        this.stats.hits++;
+        return data;
+      }
+      this.stats.misses++;
+      return null;
+    }
+    
+    return this.get<T>(key);
   }
 
   /**
@@ -118,6 +173,14 @@ class CacheManager implements ICacheManager {
    * ```
    */
   set<T>(key: string, data: T, ttl: number, dependencies?: string[]): void {
+    if (this.useStore && this.store) {
+      this.store.set(key, data, ttl).catch(err => {
+        console.error('Failed to set cache in store:', err);
+      });
+      this.stats.sets++;
+      return;
+    }
+
     const entry: CacheEntry<T> = {
       data,
       timestamp: Date.now(),
@@ -131,6 +194,19 @@ class CacheManager implements ICacheManager {
     }
 
     this.stats.sets++;
+  }
+
+  async setAsync<T>(key: string, data: T, ttl: number, dependencies?: string[]): Promise<void> {
+    if (this.useStore && this.store) {
+      await this.store.set(key, data, ttl);
+      if (this.store instanceof InMemoryCacheStore && dependencies && dependencies.length > 0) {
+        await this.store.registerDependencies(key, dependencies);
+      }
+      this.stats.sets++;
+      return;
+    }
+    
+    this.set(key, data, ttl, dependencies);
   }
 
   /**
@@ -153,11 +229,33 @@ class CacheManager implements ICacheManager {
    * ```
    */
   delete(key: string): boolean {
+    if (this.useStore && this.store) {
+      this.store.delete(key).then(deleted => {
+        if (deleted) {
+          this.stats.deletes++;
+        }
+      }).catch(err => {
+        console.error('Failed to delete from store:', err);
+      });
+      return true;
+    }
+    
     const deleted = this.cache.delete(key);
     if (deleted) {
       this.stats.deletes++;
     }
     return deleted;
+  }
+
+  async deleteAsync(key: string): Promise<boolean> {
+    if (this.useStore && this.store) {
+      const deleted = await this.store.delete(key);
+      if (deleted) {
+        this.stats.deletes++;
+      }
+      return deleted;
+    }
+    return this.delete(key);
   }
 
   /**
@@ -184,7 +282,35 @@ class CacheManager implements ICacheManager {
    * ```
    */
   invalidate(key: string): void {
+    if (this.useStore && this.store) {
+      if (this.store instanceof InMemoryCacheStore) {
+        this.store.invalidateWithDependents(key).then(count => {
+          this.stats.deletes += count;
+          this.stats.cascadeInvalidations++;
+        }).catch(err => {
+          console.error('Failed to invalidate from store:', err);
+        });
+        return;
+      }
+      return;
+    }
     this.dependencyManager.invalidate(key, (key) => this.cache.delete(key), this.stats);
+  }
+
+  async invalidateAsync(key: string): Promise<number> {
+    if (this.useStore && this.store) {
+      if (this.store.invalidateWithDependents) {
+        const count = await this.store.invalidateWithDependents(key);
+        this.stats.deletes += count;
+        this.stats.cascadeInvalidations++;
+        return count;
+      }
+      await this.store.delete(key);
+      this.stats.deletes++;
+      return 1;
+    }
+    this.invalidate(key);
+    return 1;
   }
 
   /**
@@ -205,9 +331,29 @@ class CacheManager implements ICacheManager {
     * ```
    */
   clearAll(): void {
+    if (this.useStore && this.store) {
+      this.store.clearAll().then(() => {
+        this.stats.deletes += this.cache.size;
+      }).catch(err => {
+        console.error('Failed to clear store:', err);
+      });
+      this.cache.clear();
+      this.stats.deletes += this.cache.size;
+      return;
+    }
+    
     const size = this.cache.size;
     this.cache.clear();
     this.stats.deletes += size;
+  }
+
+  async clearAllAsync(): Promise<void> {
+    if (this.useStore && this.store) {
+      await this.store.clearAll();
+      this.stats.deletes += this.cache.size;
+      return;
+    }
+    this.clearAll();
   }
 
   /**
@@ -236,6 +382,20 @@ class CacheManager implements ICacheManager {
    * ```
    */
   clearPattern(pattern: string): void {
+    if (this.useStore && this.store) {
+      this.store.getKeysByPattern(pattern).then(keys => {
+        keys.forEach(key => {
+          this.store!.delete(key).catch(err => {
+            console.error('Failed to delete key from store:', err);
+          });
+        });
+        this.stats.deletes += keys.length;
+      }).catch(err => {
+        console.error('Failed to get keys by pattern:', err);
+      });
+      return;
+    }
+    
     const regex = new RegExp(pattern);
     const keysToDelete: string[] = [];
     
@@ -246,6 +406,18 @@ class CacheManager implements ICacheManager {
     });
     
     keysToDelete.forEach(key => this.invalidate(key));
+  }
+
+  async clearPatternAsync(pattern: string): Promise<void> {
+    if (this.useStore && this.store) {
+      const keys = await this.store.getKeysByPattern(pattern);
+      for (const key of keys) {
+        await this.store.delete(key);
+      }
+      this.stats.deletes += keys.length;
+      return;
+    }
+    this.clearPattern(pattern);
   }
 
    /**
@@ -471,6 +643,17 @@ class CacheManager implements ICacheManager {
     const pattern = new RegExp(`^${entityType}`);
     let invalidated = 0;
 
+    if (this.useStore && this.store) {
+      this.store.getKeysByPattern(pattern.source).then(keys => {
+        keys.forEach(key => {
+          this.store!.delete(key).catch(err => {
+            console.error('Failed to delete key:', err);
+          });
+        });
+      });
+      return 0;
+    }
+
     this.cache.forEach((_, key) => {
       if (pattern.test(key)) {
         this.invalidate(key);
@@ -479,6 +662,22 @@ class CacheManager implements ICacheManager {
     });
 
     return invalidated;
+  }
+
+  async invalidateByEntityTypeAsync(entityType: 'post' | 'posts' | 'category' | 'categories' | 'tag' | 'tags' | 'media' | 'author'): Promise<number> {
+    if (this.useStore && this.store) {
+      const pattern = new RegExp(`^${entityType}`);
+      const keys = await this.store.getKeysByPattern(pattern.source);
+      for (const key of keys) {
+        if (this.store.invalidateWithDependents) {
+          await this.store.invalidateWithDependents(key);
+        } else {
+          await this.store.delete(key);
+        }
+      }
+      return keys.length;
+    }
+    return this.invalidateByEntityType(entityType);
   }
 
   /**
@@ -502,8 +701,19 @@ class CacheManager implements ICacheManager {
     * ```
    */
   getKeysByPattern(pattern: string): string[] {
+    if (this.useStore && this.store) {
+      return [];
+    }
+    
     const regex = new RegExp(pattern);
     return Array.from(this.cache.keys()).filter(key => regex.test(key));
+  }
+
+  async getKeysByPatternAsync(pattern: string): Promise<string[]> {
+    if (this.useStore && this.store) {
+      return this.store.getKeysByPattern(pattern);
+    }
+    return this.getKeysByPattern(pattern);
   }
 
   /**
@@ -529,7 +739,20 @@ class CacheManager implements ICacheManager {
     * ```
    */
   getDependencies(key: string): { dependencies: string[]; dependents: string[] } {
+    if (this.useStore && this.store) {
+      return { dependencies: [], dependents: [] };
+    }
     return this.dependencyManager.getDependencies(key);
+  }
+
+  async getDependenciesAsync(key: string): Promise<{ dependencies: string[]; dependents: string[] }> {
+    if (this.useStore && this.store) {
+      if (this.store.getDependencies) {
+        return this.store.getDependencies(key);
+      }
+      return { dependencies: [], dependents: [] };
+    }
+    return this.getDependencies(key);
   }
 
   /**
@@ -568,6 +791,10 @@ export const { getStats: getCacheStats, clear: clearCache } = cacheManager;
 
 export { CACHE_CONFIG as CACHE_TTL } from './cache/cacheConfig';
 export { CACHE_CONFIG } from './cache/cacheConfig';
+
+export { createCacheStore, initializeCacheStore, getCacheStore, clearCacheStore, type CacheStoreType, type CacheStoreFactoryConfig } from './cache/cacheStoreFactory';
+export { RedisCacheStore } from './cache/stores/redisStore';
+export { InMemoryCacheStore } from './cache/stores/memoryStore';
 
 /**
  * Cache key factory for type-safe cache key generation.
