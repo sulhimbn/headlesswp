@@ -2,6 +2,11 @@ import { NextResponse } from 'next/server'
 import { checkApiHealth } from '@/lib/api/client'
 import { telemetryCollector } from '@/lib/api/telemetry'
 import { withApiRateLimit } from '@/lib/api/rateLimitMiddleware'
+import { withCors, corsOptionsResponse } from '@/lib/api/cors'
+
+export async function OPTIONS() {
+  return corsOptionsResponse()
+}
 
 async function healthHandler() {
   const startTime = Date.now()
@@ -23,7 +28,7 @@ async function healthHandler() {
     })
 
     if (result.healthy) {
-      return NextResponse.json({
+      return withCors(NextResponse.json({
         status: 'healthy',
         timestamp: result.timestamp,
         latency: result.latency,
@@ -35,10 +40,10 @@ async function healthHandler() {
           'Cache-Control': 'no-cache, no-store, must-revalidate',
           'Content-Type': 'application/json'
         }
-      })
+      }))
     }
 
-    return NextResponse.json({
+    return withCors(NextResponse.json({
       status: 'unhealthy',
       timestamp: result.timestamp,
       message: result.message,
@@ -50,7 +55,7 @@ async function healthHandler() {
         'Cache-Control': 'no-cache, no-store, must-revalidate',
         'Content-Type': 'application/json'
       }
-    })
+    }))
   } catch (error) {
     const duration = Date.now() - startTime
 
@@ -65,7 +70,7 @@ async function healthHandler() {
       }
     })
 
-    return NextResponse.json({
+    return withCors(NextResponse.json({
       status: 'error',
       error: error instanceof Error ? error.message : 'Unknown error'
     }, {
@@ -74,7 +79,7 @@ async function healthHandler() {
         'Cache-Control': 'no-cache, no-store, must-revalidate',
         'Content-Type': 'application/json'
       }
-    })
+    }))
   }
 }
 

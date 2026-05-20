@@ -6,6 +6,11 @@ import {
   performanceMetricsCollector,
   captureCurrentResourceUtilization 
 } from '@/lib/api/performanceMetrics'
+import { withCors, corsOptionsResponse } from '@/lib/api/cors'
+
+export async function OPTIONS() {
+  return corsOptionsResponse()
+}
 
 async function metricsHandler() {
   try {
@@ -78,7 +83,7 @@ async function metricsHandler() {
     const webVitalsMetrics = performanceMetricsCollector.getWebVitalsMetrics()
     const currentResourceUtilization = captureCurrentResourceUtilization()
 
-    return NextResponse.json({
+    return withCors(NextResponse.json({
       summary: {
         totalEvents: allEvents.length,
         eventTypes: Object.keys(stats).length,
@@ -125,9 +130,9 @@ async function metricsHandler() {
         'Cache-Control': 'no-cache, no-store, must-revalidate',
         'Content-Type': 'application/json'
       }
-    })
+    }))
   } catch (error) {
-    return NextResponse.json({
+    return withCors(NextResponse.json({
       error: error instanceof Error ? error.message : 'Unknown error'
     }, {
       status: 500,
@@ -135,7 +140,7 @@ async function metricsHandler() {
         'Cache-Control': 'no-cache, no-store, must-revalidate',
         'Content-Type': 'application/json'
       }
-    })
+    }))
   }
 }
 

@@ -5,8 +5,13 @@ import type { WordPressPost } from '@/types/wordpress';
 import { createCategoryRSSFeed, createRSSFeed } from '@/lib/utils/rss';
 import { CACHE_TIMES } from '@/lib/api/config';
 import { logger } from '@/lib/utils/logger';
+import { withCors, corsOptionsResponse } from '@/lib/api/cors';
 
 export const dynamic = 'force-dynamic';
+
+export async function OPTIONS() {
+  return corsOptionsResponse()
+}
 
 export async function GET(
   request: Request,
@@ -19,7 +24,7 @@ export async function GET(
     const category = categories.find(c => c.slug === slug);
 
     if (!category) {
-      return new NextResponse('Category not found', { status: 404 });
+      return withCors(new NextResponse('Category not found', { status: 404 }));
     }
 
     const response = await apiClient.get<WordPressPost[]>(getApiUrl('/wp/v2/posts'), {
@@ -34,14 +39,14 @@ export async function GET(
     const feed = createCategoryRSSFeed(posts, category);
     const rssXML = createRSSFeed(feed);
 
-    return new NextResponse(rssXML, {
+    return withCors(new NextResponse(rssXML, {
       headers: {
         'Content-Type': 'application/rss+xml; charset=utf-8',
         'Cache-Control': `public, max-age=${CACHE_TIMES.MEDIUM_SHORT / 1000}, s-maxage=${CACHE_TIMES.MEDIUM_SHORT / 1000}`,
       },
-    });
+    }));
   } catch (error) {
     logger.error('Error generating category RSS feed', error, { module: 'RSSFeed' });
-    return new NextResponse('Error generating RSS feed', { status: 500 });
+    return withCors(new NextResponse('Error generating RSS feed', { status: 500 }));
   }
 }
