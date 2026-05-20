@@ -10,12 +10,61 @@ import dynamic from 'next/dynamic';
 import { UI_TEXT } from '@/lib/constants/uiText';
 import { PARSING } from '@/lib/constants/appConstants';
 import { isApiResultSuccessful } from '@/lib/api/response';
+import type { Metadata } from 'next';
+import { SITE_URL } from '@/lib/api/config';
 
 const Footer = dynamic(() => import('@/components/layout/Footer'), {
   loading: () => <div className="h-64 bg-[hsl(var(--color-background-dark))] mt-12" aria-hidden="true" />
 });
 
 export const revalidate = 300;
+
+export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
+  const authorId = parseInt(params.id, PARSING.DECIMAL_RADIX);
+  
+  if (isNaN(authorId)) {
+    return {
+      title: 'Penulis Tidak Ditemukan',
+    }
+  }
+
+  const authorResult = await standardizedAPI.getAuthorById(authorId);
+  
+  if (!isApiResultSuccessful(authorResult)) {
+    return {
+      title: 'Penulis Tidak Ditemukan',
+    }
+  }
+
+  const author = authorResult.data;
+  const title = `${author.name} - Mitra Banten News`;
+  const description = author.description 
+    ? `${author.description} - Berita ditulis oleh ${author.name} di Mitra Banten News.`
+    : `Kumpulan berita ditulis oleh ${author.name} di Mitra Banten News.`;
+
+  return {
+    title,
+    description,
+    alternates: {
+      canonical: `${SITE_URL}/author/${params.id}`,
+    },
+    openGraph: {
+      title,
+      description,
+      url: `${SITE_URL}/author/${params.id}`,
+      type: 'profile',
+    },
+    twitter: {
+      card: 'summary',
+      title,
+      description,
+    },
+    robots: {
+      index: true,
+      follow: true,
+    },
+  };
+}
 
 export default async function AuthorPage({
   params,

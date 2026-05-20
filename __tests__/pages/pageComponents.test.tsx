@@ -259,7 +259,7 @@ describe('Page Components - Critical Path Testing', () => {
     it('should show empty state when no query provided', async () => {
       (enhancedPostService.searchPosts as jest.Mock).mockResolvedValue({ posts: [], totalPosts: 0, totalPages: 1 });
 
-      const Page = await CariPage({ searchParams: {} });
+      const Page = await CariPage({ searchParams: Promise.resolve({}) });
       render(Page);
 
       const matches = screen.getAllByText('Masukkan kata kunci');
@@ -270,7 +270,7 @@ describe('Page Components - Critical Path Testing', () => {
     it('should show empty state when query is empty string', async () => {
       (enhancedPostService.searchPosts as jest.Mock).mockResolvedValue({ posts: [], totalPosts: 0, totalPages: 1 });
 
-      const Page = await CariPage({ searchParams: { q: '' } });
+      const Page = await CariPage({ searchParams: Promise.resolve({ q: '' }) });
       render(Page);
 
       const matches = screen.getAllByText('Masukkan kata kunci');
@@ -281,7 +281,7 @@ describe('Page Components - Critical Path Testing', () => {
     it('should show empty state when query is only whitespace', async () => {
       (enhancedPostService.searchPosts as jest.Mock).mockResolvedValue({ posts: [], totalPosts: 0, totalPages: 1 });
 
-      const Page = await CariPage({ searchParams: { q: '   ' } });
+      const Page = await CariPage({ searchParams: Promise.resolve({ q: '   ' }) });
       render(Page);
 
       const matches = screen.getAllByText('Masukkan kata kunci');
@@ -292,7 +292,7 @@ describe('Page Components - Critical Path Testing', () => {
     it('should search posts when valid query provided', async () => {
       (enhancedPostService.searchPosts as jest.Mock).mockResolvedValue({ posts: mockSearchResults, totalPosts: 1, totalPages: 1 });
 
-      const Page = await CariPage({ searchParams: { q: 'test query' } });
+      const Page = await CariPage({ searchParams: Promise.resolve({ q: 'test query' }) });
       render(Page);
 
       expect(enhancedPostService.searchPosts).toHaveBeenCalledWith('test query', 1, 12);
@@ -301,7 +301,7 @@ describe('Page Components - Critical Path Testing', () => {
     it('should display search results when found', async () => {
       (enhancedPostService.searchPosts as jest.Mock).mockResolvedValue({ posts: mockSearchResults, totalPosts: 1, totalPages: 1 });
 
-      const Page = await CariPage({ searchParams: { q: 'test' } });
+      const Page = await CariPage({ searchParams: Promise.resolve({ q: 'test' }) });
       render(Page);
 
       const headings = screen.getAllByText('Hasil pencarian: "test"');
@@ -313,7 +313,7 @@ describe('Page Components - Critical Path Testing', () => {
     it('should show no results empty state when search returns empty', async () => {
       (enhancedPostService.searchPosts as jest.Mock).mockResolvedValue({ posts: [], totalPosts: 0, totalPages: 1 });
 
-      const Page = await CariPage({ searchParams: { q: 'nonexistent' } });
+      const Page = await CariPage({ searchParams: Promise.resolve({ q: 'nonexistent' }) });
       render(Page);
 
       expect(screen.getByText('Tidak ada hasil')).toBeInTheDocument();
@@ -323,7 +323,7 @@ describe('Page Components - Critical Path Testing', () => {
     it('should trim whitespace from query', async () => {
       (enhancedPostService.searchPosts as jest.Mock).mockResolvedValue({ posts: mockSearchResults, totalPosts: 1, totalPages: 1 });
 
-      const Page = await CariPage({ searchParams: { q: '  test query  ' } });
+      const Page = await CariPage({ searchParams: Promise.resolve({ q: '  test query  ' }) });
       render(Page);
 
       expect(enhancedPostService.searchPosts).toHaveBeenCalledWith('test query', 1, 12);
@@ -332,7 +332,7 @@ describe('Page Components - Critical Path Testing', () => {
     it('should include Header and Footer components', async () => {
       (enhancedPostService.searchPosts as jest.Mock).mockResolvedValue({ posts: mockSearchResults, totalPosts: 1, totalPages: 1 });
 
-      const Page = await CariPage({ searchParams: { q: 'test' } });
+      const Page = await CariPage({ searchParams: Promise.resolve({ q: 'test' }) });
       render(Page);
 
       expect(screen.getByRole('banner')).toBeInTheDocument();
