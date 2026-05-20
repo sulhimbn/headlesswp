@@ -10,20 +10,19 @@ export interface EnvVariable {
   description: string;
 }
 
-const REQUIRED_ENV_VARS: EnvVariable[] = [
+const REQUIRED_ENV_VARS: EnvVariable[] = [];
+
+const OPTIONAL_ENV_VARS: EnvVariable[] = [
   {
     name: 'NEXT_PUBLIC_WORDPRESS_URL',
-    required: true,
-    description: 'The public URL of the WordPress site',
+    required: false,
+    description: 'The public URL of the WordPress site (defaults to https://mitrabantennews.com)',
   },
   {
     name: 'NEXT_PUBLIC_WORDPRESS_API_URL',
-    required: true,
-    description: 'The WordPress REST API URL',
+    required: false,
+    description: 'The WordPress REST API URL (defaults to NEXT_PUBLIC_WORDPRESS_URL/wp-json)',
   },
-];
-
-const OPTIONAL_ENV_VARS: EnvVariable[] = [
   {
     name: 'NEXT_PUBLIC_SITE_URL',
     required: false,
