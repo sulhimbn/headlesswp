@@ -1,5 +1,6 @@
 import type { WordPressPost, WordPressCategory } from '@/types/wordpress';
 import { SITE_URL } from '@/lib/api/config';
+import { stripHtml } from './stripHtml';
 
 export interface RSSItem {
   title: string;
@@ -20,10 +21,6 @@ export interface RSSFeed {
   items: RSSItem[];
 }
 
-function stripHTML(html: string): string {
-  return html.replace(/<[^>]*>/g, '').trim();
-}
-
 function formatRFC822Date(dateString: string): string {
   const date = new Date(dateString);
   const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -42,9 +39,9 @@ function formatRFC822Date(dateString: string): string {
 
 export function createRSSItem(post: WordPressPost): RSSItem {
   return {
-    title: stripHTML(post.title.rendered),
+    title: stripHtml(post.title.rendered),
     link: post.link,
-    description: stripHTML(post.excerpt.rendered),
+    description: stripHtml(post.excerpt.rendered),
     pubDate: formatRFC822Date(post.date),
     guid: post.link,
     categories: [],
