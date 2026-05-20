@@ -31,6 +31,13 @@ export const metadata: Metadata = {
     statusBarStyle: 'default',
     title: 'Mitra Banten News',
   },
+  alternates: {
+    canonical: SITE_URL,
+    languages: {
+      'id-ID': SITE_URL,
+      'id': SITE_URL,
+    },
+  },
   openGraph: {
     title: 'Mitra Banten News',
     description: 'Portal berita terkini dan terpercaya dari Banten',
