@@ -1,34 +1,36 @@
-const CACHE_NAME = 'mitra-banten-news-v1';
-const OFFLINE_URL = '/offline.html';
+const CACHE_NAME = "mitra-banten-news-v1";
+const OFFLINE_URL = "/offline.html";
 
-const STATIC_ASSETS = [
-  '/',
-  '/offline.html',
-  '/manifest.json',
-];
+const STATIC_ASSETS = ["/", "/offline.html", "/manifest.json"];
+
+const CRITICAL_ROUTES = ["/", "/berita", "/tersedia", "/tentang"];
 
 const CACHE_STRATEGIES = {
-  CACHE_FIRST: 'cache-first',
-  NETWORK_FIRST: 'network-first',
-  STALE_WHILE_REVALIDATE: 'stale-while-revalidate',
+  CACHE_FIRST: "cache-first",
+  NETWORK_FIRST: "network-first",
+  STALE_WHILE_REVALIDATE: "stale-while-revalidate",
 };
 
 function isStaticAsset(url) {
-  return url.pathname.startsWith('/_next/static/') ||
-         url.pathname.endsWith('.js') ||
-         url.pathname.endsWith('.css') ||
-         url.pathname.endsWith('.woff2') ||
-         url.pathname.endsWith('.png') ||
-         url.pathname.endsWith('.jpg') ||
-         url.pathname.endsWith('.jpeg') ||
-         url.pathname.endsWith('.svg') ||
-         url.pathname.endsWith('.ico');
+  return (
+    url.pathname.startsWith("/_next/static/") ||
+    url.pathname.endsWith(".js") ||
+    url.pathname.endsWith(".css") ||
+    url.pathname.endsWith(".woff2") ||
+    url.pathname.endsWith(".png") ||
+    url.pathname.endsWith(".jpg") ||
+    url.pathname.endsWith(".jpeg") ||
+    url.pathname.endsWith(".svg") ||
+    url.pathname.endsWith(".ico")
+  );
 }
 
 function isApiRequest(url) {
-  return url.pathname.startsWith('/api/') ||
-         url.hostname.includes('wordpress') ||
-         url.hostname.includes('mitrabantennews.com/wp-json');
+  return (
+    url.pathname.startsWith("/api/") ||
+    url.hostname.includes("wordpress") ||
+    url.hostname.includes("mitrabantennews.com/wp-json")
+  );
 }
 
 async function cacheFirstStrategy(request) {
@@ -45,7 +47,7 @@ async function cacheFirstStrategy(request) {
     }
     return networkResponse;
   } catch (error) {
-    return caches.match('/offline.html');
+    return caches.match("/offline.html");
   }
 }
 
@@ -62,50 +64,54 @@ async function networkFirstStrategy(request) {
     if (cachedResponse) {
       return cachedResponse;
     }
-    return caches.match('/offline.html');
+    return caches.match("/offline.html");
   }
 }
 
 async function staleWhileRevalidateStrategy(request) {
   const cachedResponse = await caches.match(request);
 
-  const fetchPromise = fetch(request).then(networkResponse => {
+  try {
+    const networkResponse = await fetch(request);
     if (networkResponse.ok) {
-      const cache = caches.open(CACHE_NAME);
-      cache.then(c => c.put(request, networkResponse.clone()));
+      const cache = await caches.open(CACHE_NAME);
+      cache.put(request, networkResponse.clone());
     }
     return networkResponse;
-  }).catch(() => cachedResponse || caches.match('/offline.html'));
-
-  return cachedResponse || fetchPromise;
+  } catch (error) {
+    if (cachedResponse) {
+      return cachedResponse;
+    }
+    return caches.match("/offline.html");
+  }
 }
 
-self.addEventListener('install', event => {
+self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => {
+    caches.open(CACHE_NAME).then((cache) => {
       return cache.addAll(STATIC_ASSETS);
-    })
+    }),
   );
   self.skipWaiting();
 });
 
-self.addEventListener('activate', event => {
+self.addEventListener("activate", (event) => {
   event.waitUntil(
-    caches.keys().then(cacheNames => {
+    caches.keys().then((cacheNames) => {
       return Promise.all(
         cacheNames
-          .filter(name => name !== CACHE_NAME)
-          .map(name => caches.delete(name))
+          .filter((name) => name !== CACHE_NAME)
+          .map((name) => caches.delete(name)),
       );
-    })
+    }),
   );
   self.clients.claim();
 });
 
-self.addEventListener('fetch', event => {
+self.addEventListener("fetch", (event) => {
   const url = new URL(event.request.url);
 
-  if (event.request.method !== 'GET') {
+  if (event.request.method !== "GET") {
     return;
   }
 
@@ -115,15 +121,15 @@ self.addEventListener('fetch', event => {
   }
 
   if (isApiRequest(url)) {
-    event.respondWith(networkFirstStrategy(event.request));
+    event.respondWith(staleWhileRevalidateStrategy(event.request));
     return;
   }
 
   event.respondWith(staleWhileRevalidateStrategy(event.request));
 });
 
-self.addEventListener('message', event => {
-  if (event.data && event.data.type === 'SKIP_WAITING') {
+self.addEventListener("message", (event) => {
+  if (event.data && event.data.type === "SKIP_WAITING") {
     self.skipWaiting();
   }
 });
