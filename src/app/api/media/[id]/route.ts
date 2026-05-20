@@ -12,13 +12,13 @@ export async function GET(
     const mediaId = parseInt(id, 10)
 
     if (isNaN(mediaId)) {
-      return NextResponse.json({ source_url: null }, { status: 200 })
+      return NextResponse.json({ error: 'Invalid media ID' }, { status: 400 })
     }
 
     const result = await standardizedAPI.getMediaById(mediaId)
 
     if (!isApiResultSuccessful(result) || !result.data) {
-      return NextResponse.json({ source_url: null }, { status: 200 })
+      return NextResponse.json({ error: 'Media not found' }, { status: 404 })
     }
 
     return NextResponse.json({
@@ -27,6 +27,6 @@ export async function GET(
     })
   } catch (error) {
     logger.error('Error in /api/media/[id]', error, { module: 'api/media' })
-    return NextResponse.json({ source_url: null }, { status: 200 })
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

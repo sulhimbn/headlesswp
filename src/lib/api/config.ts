@@ -1,7 +1,15 @@
-export const WORDPRESS_API_BASE_URL = process.env.NEXT_PUBLIC_WORDPRESS_API_URL || 'https://mitrabantennews.com/wp-json'
-export const WORDPRESS_SITE_URL = process.env.NEXT_PUBLIC_WORDPRESS_URL || 'https://mitrabantennews.com'
-export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://mitrabantennews.com'
-export const SITE_URL_WWW = process.env.NEXT_PUBLIC_SITE_URL_WWW || 'https://www.mitrabantennews.com'
+function requireEnvVar(name: string): string {
+  const value = process.env[name]
+  if (!value) {
+    throw new Error(`Missing required environment variable: ${name}`)
+  }
+  return value
+}
+
+export const WORDPRESS_API_BASE_URL = requireEnvVar('NEXT_PUBLIC_WORDPRESS_API_URL')
+export const WORDPRESS_SITE_URL = requireEnvVar('NEXT_PUBLIC_WORDPRESS_URL')
+export const SITE_URL = requireEnvVar('NEXT_PUBLIC_SITE_URL')
+export const SITE_URL_WWW = requireEnvVar('NEXT_PUBLIC_SITE_URL_WWW')
 
 export const TIME_CONSTANTS = {
   SECOND_IN_MS: 1000,
