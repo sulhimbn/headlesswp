@@ -5,13 +5,14 @@ import type { WordPressPost } from '@/types/wordpress';
 import { createCategoryRSSFeed, createRSSFeed } from '@/lib/utils/rss';
 import { CACHE_TIMES } from '@/lib/api/config';
 import { logger } from '@/lib/utils/logger';
+import { withApiRateLimit } from '@/lib/api/rateLimitMiddleware';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET(
+export const GET = withApiRateLimit(async (
   request: Request,
   { params }: { params: Promise<{ slug: string }> }
-) {
+) => {
   try {
     const { slug } = await params;
 
@@ -44,4 +45,4 @@ export async function GET(
     logger.error('Error generating category RSS feed', error, { module: 'RSSFeed' });
     return new NextResponse('Error generating RSS feed', { status: 500 });
   }
-}
+})
