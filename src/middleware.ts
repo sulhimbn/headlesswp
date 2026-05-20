@@ -27,6 +27,8 @@ function isBotUserAgent(userAgent: string | null): boolean {
   return BOT_UA_PATTERNS.some((pattern) => pattern.test(userAgent))
 }
 
+export { isBotUserAgent }
+
 function setSecurityHeaders(response: NextResponse): void {
   response.headers.set('X-DNS-Prefetch-Control', 'on')
   response.headers.set('X-Frame-Options', 'DENY')
