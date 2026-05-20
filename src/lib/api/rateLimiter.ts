@@ -51,7 +51,7 @@ export class RateLimiter {
 
       if (this.requestTimes.length >= this.options.maxRequests) {
         const oldestRequest = this.requestTimes[0]
-        const waitTime = oldestRequest + this.options.windowMs - now
+        const waitTime = (oldestRequest ?? 0) + this.options.windowMs - now
 
         throw new ApiErrorImpl(
           ApiErrorType.RATE_LIMIT_ERROR,

@@ -6,8 +6,8 @@ import type { ICacheManager } from '@/lib/api/ICacheManager';
 interface CacheWarmResult {
   name: string;
   status: 'success' | 'failed';
-  error?: string;
-  latency?: number;
+  error: string;
+  latency: number;
 }
 
 class CacheWarmer {
@@ -33,12 +33,24 @@ class CacheWarmer {
 
       settledResults.forEach((result, index) => {
         const names = ['latest posts', 'categories', 'tags'];
-        const name = names[index];
+        const name = names[index] ?? 'unknown';
 
         if (result.status === 'fulfilled') {
-          results.push({ name, status: 'success', latency: result.value });
+          const latency = result.value as number | undefined;
+          results.push({ 
+            name, 
+            status: 'success', 
+            latency: typeof latency === 'number' ? latency : 0,
+            error: '' as string
+          });
         } else {
-          results.push({ name, status: 'failed', error: String(result.reason) });
+          const error = result.reason;
+          results.push({ 
+            name, 
+            status: 'failed', 
+            latency: 0,
+            error: (error !== undefined && error !== null ? String(error) : 'unknown error') as string
+          });
         }
       });
 

@@ -203,7 +203,7 @@ export default async function PostPage({ params }: { params: { slug: string } })
                 <div className="flex items-center gap-2 mb-4">
                   {authorDetails.avatar_urls && Object.keys(authorDetails.avatar_urls).length > 0 && (
                     <Image
-                      src={authorDetails.avatar_urls['96'] || authorDetails.avatar_urls['48'] || authorDetails.avatar_urls['24']}
+                      src={authorDetails.avatar_urls['96'] ?? authorDetails.avatar_urls['48'] ?? authorDetails.avatar_urls['24'] ?? ''}
                       alt={authorDetails.name}
                       width={32}
                       height={32}
