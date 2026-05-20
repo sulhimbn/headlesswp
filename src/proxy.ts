@@ -2,12 +2,60 @@ import { NextRequest, NextResponse } from 'next/server'
 import { SITE_URL, SITE_URL_WWW } from './lib/api/config'
 import { generateNonce } from './lib/utils/cspUtils'
 
+const BOT_USER_AGENTS = [
+  'bot',
+  'spider',
+  'crawler',
+  'slurp',
+  'mediapartners',
+  'googlebot',
+  'bingbot',
+  'yandex',
+  'baiduspider',
+  'facebookexternalhit',
+  'twitterbot',
+  'rogerbot',
+  'linkedinbot',
+  'embedly',
+  'quora link preview',
+  'showyoubot',
+  'outbrain',
+  'pinterest',
+  'applebot',
+  'duckduckbot',
+]
+
+function isBot(userAgent: string): boolean {
+  const lowerUA = userAgent.toLowerCase()
+  return BOT_USER_AGENTS.some(bot => lowerUA.includes(bot))
+}
+
 export function proxy(_request: NextRequest) {
   const response = NextResponse.next()
   
   const nonce = generateNonce()
   
   response.headers.set('x-nonce', nonce)
+  
+  const userAgent = _request.headers?.get('user-agent') || ''
+  const isBotRequest = isBot(userAgent)
+
+  if (isBotRequest) {
+    response.headers.set('X-Bot-Detected', 'true')
+  } else {
+    response.headers.set('X-Bot-Detected', 'false')
+  }
+
+  response.headers.set('X-Edge-Middleware', 'active')
+
+  const cacheControl = [
+    'public',
+    'max-age=60',
+    'stale-while-revalidate=300',
+    'immutable',
+  ].join(', ')
+  
+  response.headers.set('Cache-Control', cacheControl)
   
   // Enhanced CSP with nonce for dynamic content
   // In production, unsafe-inline and unsafe-eval are removed for better security
