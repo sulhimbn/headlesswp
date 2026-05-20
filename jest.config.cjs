@@ -18,4 +18,6 @@ module.exports = {
     '**/__tests__/**/*test.(ts|tsx|js)',
   ],
   workerIdleMemoryLimit: '512KB',
+  coverageReporters: ['text-summary', 'text', 'lcov', 'html'],
+  coverageProvider: 'v8',
 }
