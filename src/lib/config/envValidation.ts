@@ -49,6 +49,41 @@ const OPTIONAL_ENV_VARS: EnvVariable[] = [
     required: false,
     description: 'Skip retries for API requests',
   },
+  {
+    name: 'CONTENT_CHANGE_DETECTION_ENABLED',
+    required: false,
+    description: 'Enable content change detection for cache invalidation',
+  },
+  {
+    name: 'CONTENT_CHANGE_POLL_INTERVAL_MS',
+    required: false,
+    description: 'Polling interval for content change detection in milliseconds',
+  },
+  {
+    name: 'SEMANTIC_SEARCH_ENABLED',
+    required: false,
+    description: 'Enable semantic search with keyword expansion',
+  },
+  {
+    name: 'SEMANTIC_SEARCH_EXPANSION_ENABLED',
+    required: false,
+    description: 'Enable keyword expansion for semantic search',
+  },
+  {
+    name: 'SEMANTIC_SEARCH_MAX_KEYWORDS',
+    required: false,
+    description: 'Maximum number of keywords for semantic search expansion',
+  },
+  {
+    name: 'SEMANTIC_SEARCH_MIN_QUERY_LENGTH',
+    required: false,
+    description: 'Minimum query length for semantic search',
+  },
+  {
+    name: 'SEMANTIC_SEARCH_FALLBACK',
+    required: false,
+    description: 'Fallback to traditional search if semantic fails',
+  },
 ];
 
 export function validateEnvironment(): EnvValidationResult {

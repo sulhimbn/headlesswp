@@ -779,6 +779,78 @@ npm run start  # Production build, not dev mode
 
 ---
 
+## Cache Debugging
+
+### Export cache state for debugging
+
+**Use case**: Debug cache issues, share cache state for troubleshooting, analyze cache behavior.
+
+```bash
+# Export cache to JSON
+curl -X PATCH http://localhost:3000/api/cache
+```
+
+**Response format**:
+```json
+{
+  "success": true,
+  "data": {
+    "entries": {
+      "post:1": {
+        "data": { "title": "Test Post" },
+        "timestamp": 1234567890,
+        "ttl": 60000,
+        "expiresAt": "2024-01-01T00:01:30.000Z"
+      }
+    },
+    "metadata": {
+      "exportedAt": "2024-01-01T00:00:00.000Z",
+      "entryCount": 1,
+      "version": "1.0"
+    }
+  },
+  "timestamp": "2024-01-01T00:00:00.000Z"
+}
+```
+
+### Import cache state
+
+**Use case**: Restore cache from exported data, share cache snapshots.
+
+```bash
+# Import cache (merge mode - adds new entries, skips existing)
+curl -X PUT http://localhost:3000/api/cache \
+  -H "Content-Type: application/json" \
+  -d '{"data": {"entries": {...}, "metadata": {...}}, "mode": "merge"}'
+
+# Import cache (replace mode - clears cache first)
+curl -X PUT http://localhost:3000/api/cache \
+  -H "Content-Type: application/json" \
+  -d '{"data": {"entries": {...}, "metadata": {...}}, "mode": "replace"}'
+```
+
+**Response format**:
+```json
+{
+  "success": true,
+  "message": "Imported 3 entries, failed 0",
+  "data": {
+    "success": 3,
+    "failed": 0,
+    "errors": []
+  },
+  "timestamp": "2024-01-01T00:00:00.000Z"
+}
+```
+
+**Import modes**:
+- `merge` (default): Add new entries, skip existing keys
+- `replace`: Clear cache first, then import all entries
+
+**Validation**: Invalid entries (negative timestamps, negative TTL) are skipped and reported in errors.
+
+---
+
 ## Security Issues
 
 ### XSS vulnerabilities detected

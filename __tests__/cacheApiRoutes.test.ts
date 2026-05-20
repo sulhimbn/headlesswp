@@ -1,5 +1,5 @@
-import { GET as CacheGET, POST as CachePOST, DELETE as CacheDELETE } from '@/app/api/cache/route'
-import { getCacheStats, clearCache } from '@/lib/cache'
+import { GET as CacheGET, POST as CachePOST, DELETE as CacheDELETE, PATCH as CachePATCH, PUT as CachePUT } from '@/app/api/cache/route'
+import { getCacheStats, clearCache, exportCache, importCache } from '@/lib/cache'
 import { cacheWarmer } from '@/lib/services/cacheWarmer'
 import { logger } from '@/lib/utils/logger'
 import { resetAllRateLimitState } from '@/lib/api/rateLimitMiddleware'
@@ -29,7 +29,7 @@ jest.mock('next/server', () => ({
   }
 }))
 
-const { getCacheStats: mockGetCacheStats, clearCache: mockClearCache } = require('@/lib/cache')
+const { getCacheStats: mockGetCacheStats, clearCache: mockClearCache, exportCache: mockExportCache, importCache: mockImportCache } = require('@/lib/cache')
 const { cacheWarmer: mockCacheWarmer } = require('@/lib/services/cacheWarmer')
 const { logger: mockLogger } = require('@/lib/utils/logger')
 
@@ -266,6 +266,168 @@ describe('Cache API Routes', () => {
       expect(data.success).toBe(true)
       expect(data.message).toBe('Cache cleared for pattern: post:')
       expect(mockClearCache).toHaveBeenCalledWith('post:')
+    })
+  })
+
+  describe('PATCH /api/cache (export)', () => {
+    it('should return 200 with cache export data', async () => {
+      const mockExportData = {
+        entries: {
+          'post:1': { data: { title: 'Test' }, timestamp: 1234567890, ttl: 60000, expiresAt: '2024-01-01T00:00:00.000Z' }
+        },
+        metadata: { exportedAt: '2024-01-01T00:00:00.000Z', entryCount: 1, version: '1.0' }
+      }
+      mockExportCache.mockReturnValue(mockExportData)
+
+      const response = await CachePATCH(mockRequest)
+      const data = await response.json()
+
+      expect(response.status).toBe(200)
+      expect(data.success).toBe(true)
+      expect(data.data).toEqual(mockExportData)
+      expect(data.timestamp).toBeDefined()
+      expect(mockExportCache).toHaveBeenCalled()
+    })
+
+    it('should return 500 when export fails', async () => {
+      mockExportCache.mockImplementation(() => {
+        throw new Error('Export failed')
+      })
+
+      const response = await CachePATCH(mockRequest)
+      const data = await response.json()
+
+      expect(response.status).toBe(500)
+      expect(data.success).toBe(false)
+      expect(data.error).toBe('Failed to export cache')
+      expect(mockLogger.error).toHaveBeenCalledWith(
+        'Error exporting cache:',
+        expect.any(Error),
+        { module: 'cache' }
+      )
+    })
+
+    it('should handle empty cache export', async () => {
+      mockExportCache.mockReturnValue({
+        entries: {},
+        metadata: { exportedAt: '2024-01-01T00:00:00.000Z', entryCount: 0, version: '1.0' }
+      })
+
+      const response = await CachePATCH(mockRequest)
+      const data = await response.json()
+
+      expect(response.status).toBe(200)
+      expect(data.success).toBe(true)
+      expect(data.data.entries).toEqual({})
+      expect(data.data.metadata.entryCount).toBe(0)
+    })
+  })
+
+  describe('PUT /api/cache (import)', () => {
+    it('should return 200 with merge mode', async () => {
+      const importData = {
+        entries: {
+          'key1': { data: 'data', timestamp: Date.now(), ttl: 60000 }
+        },
+        metadata: { exportedAt: new Date().toISOString(), entryCount: 1, version: '1.0' }
+      }
+      const mockImportResult = { success: 1, failed: 0, errors: [] }
+      mockImportCache.mockReturnValue(mockImportResult)
+
+      const importRequest = {
+        url: 'http://localhost:3000/api/cache',
+        json: () => Promise.resolve({ data: importData, mode: 'merge' })
+      } as any
+
+      const response = await CachePUT(importRequest)
+      const data = await response.json()
+
+      expect(response.status).toBe(200)
+      expect(data.success).toBe(true)
+      expect(data.message).toContain('Imported 1 entries')
+      expect(data.data).toEqual(mockImportResult)
+      expect(mockImportCache).toHaveBeenCalledWith(importData, { mode: 'merge' })
+    })
+
+    it('should return 200 with replace mode', async () => {
+      const importData = {
+        entries: {
+          'key1': { data: 'data', timestamp: Date.now(), ttl: 60000 }
+        },
+        metadata: { exportedAt: new Date().toISOString(), entryCount: 1, version: '1.0' }
+      }
+      const mockImportResult = { success: 1, failed: 0, errors: [] }
+      mockImportCache.mockReturnValue(mockImportResult)
+
+      const importRequest = {
+        url: 'http://localhost:3000/api/cache',
+        json: () => Promise.resolve({ data: importData, mode: 'replace' })
+      } as any
+
+      const response = await CachePUT(importRequest)
+      const data = await response.json()
+
+      expect(mockImportCache).toHaveBeenCalledWith(importData, { mode: 'replace' })
+    })
+
+    it('should return 400 for invalid import data', async () => {
+      const importRequest = {
+        url: 'http://localhost:3000/api/cache',
+        json: () => Promise.resolve({ data: null })
+      } as any
+
+      const response = await CachePUT(importRequest)
+      const data = await response.json()
+
+      expect(response.status).toBe(400)
+      expect(data.success).toBe(false)
+      expect(data.error).toContain('Invalid import data')
+    })
+
+    it('should return partial success when some entries fail', async () => {
+      const importData = {
+        entries: {
+          'key1': { data: 'data', timestamp: Date.now(), ttl: 60000 },
+          'key2': { data: 'data', timestamp: -1, ttl: 60000 }
+        },
+        metadata: { exportedAt: new Date().toISOString(), entryCount: 2, version: '1.0' }
+      }
+      const mockImportResult = { success: 1, failed: 1, errors: ['Invalid entry for key "key2"'] }
+      mockImportCache.mockReturnValue(mockImportResult)
+
+      const importRequest = {
+        url: 'http://localhost:3000/api/cache',
+        json: () => Promise.resolve({ data: importData })
+      } as any
+
+      const response = await CachePUT(importRequest)
+      const data = await response.json()
+
+      expect(response.status).toBe(200)
+      expect(data.success).toBe(false)
+      expect(data.message).toContain('Imported 1 entries, failed 1')
+    })
+
+    it('should return 500 when import fails with exception', async () => {
+      const importRequest = {
+        url: 'http://localhost:3000/api/cache',
+        json: () => Promise.resolve({ data: {} })
+      } as any
+      mockImportCache.mockImplementation(() => {
+        throw new Error('Import error')
+      })
+
+      const response = await CachePUT(importRequest)
+      const data = await response.json()
+
+      expect(response.status).toBe(500)
+      expect(data.success).toBe(false)
+      expect(data.error).toBe('Failed to import cache')
+      expect(mockLogger.error).toHaveBeenCalledWith(
+        'Error importing cache:',
+        expect.any(Error),
+        { module: 'cache' }
+      )
     })
   })
 })

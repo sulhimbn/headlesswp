@@ -46,9 +46,12 @@
     "**/*.tsx",
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts",
-    "global.d.ts"
+    "global.d.ts",
+    ".storybook/**/*.ts"
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    ".storybook",
+    "src/**/*.stories.tsx"
   ]
 }

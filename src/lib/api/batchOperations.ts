@@ -32,8 +32,8 @@ async function executeBatchOperation<T>(options: BatchOperationOptions<T>): Prom
 
     const cacheKey = options.cacheKeyFn(id);
     const cached = options.cacheManager.get<T>(cacheKey);
-    if (cached) {
-      result.set(id, cached);
+    if (cached !== null && cached !== undefined) {
+      result.set(id, cached as T);
     } else if (!idsToFetchSet.has(id)) {
       idsToFetch.push(id);
       idsToFetchSet.add(id);

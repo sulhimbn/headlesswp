@@ -134,5 +134,26 @@ export const UI_TEXT = {
   },
   icon: {
     loading: 'Memuat'
+  },
+  shortcuts: {
+    title: 'Pintasan Keyboard',
+    close: 'Tutup',
+    hint: 'Tekan ? kapan saja untuk menampilkan bantuan ini.',
+    categories: {
+      navigation: 'Navigasi',
+      search: 'Pencarian',
+      accessibility: 'Aksesibilitas',
+      general: 'Umum'
+    },
+    descriptions: {
+      nextPost: '下一个帖子',
+      prevPost: '上一个帖子',
+      openPost: 'Buka帖子 yang dipilih',
+      focusSearch: 'Fokus ke pencarian',
+      showHelp: 'Tampilkan帮助',
+      goHome: 'Kembali ke halaman utama',
+      goNews: 'Daftar berita',
+      close: 'Tutup overlay/popup'
+    }
   }
 } as const

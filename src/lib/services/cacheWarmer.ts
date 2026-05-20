@@ -81,8 +81,8 @@ class CacheWarmer {
     return Date.now() - startTime;
   }
 
-  getStats(): { hits: number; misses: number; hitsRate: number } {
-    const stats = this.cacheManager.getStats();
+  async getStats(): Promise<{ hits: number; misses: number; hitsRate: number }> {
+    const stats = await this.cacheManager.getStats();
     const hitsRate = stats.hits + stats.misses > 0
       ? (stats.hits / (stats.hits + stats.misses)) * 100
       : 0;

@@ -16,6 +16,7 @@ import { UI_TEXT } from '@/lib/constants/uiText'
 import { SITE_URL } from '@/lib/api/config'
 import type { Metadata } from 'next'
 import PersonalizedRecommendations from '@/components/post/PersonalizedRecommendations'
+import AIRecommendations from '@/components/post/AIRecommendations'
 import ReadingTracker from '@/components/post/ReadingTracker'
 import { calculateReadingTime } from '@/lib/utils/readingTime'
 import SocialShare from '@/components/ui/SocialShare'
@@ -27,10 +28,35 @@ const Footer = dynamic(() => import('@/components/layout/Footer'), {
   loading: () => <div className="h-64 bg-[hsl(var(--color-background-dark))] mt-12" aria-hidden="true" />
 })
 
-export const revalidate = 3600 // 60 minutes (1 hour)
+export const revalidate = 3600
 
 function stripHtml(html: string): string {
   return html.replace(/<[^>]*>?/gm, '').trim()
+}
+
+function getOGImageUrl(baseUrl: string, post: { id: number; title: { rendered: string }; mediaUrl?: string | null; categoriesDetails: { name: string }[]; authorDetails: { name: string } | null; date: string }): string {
+  const title = stripHtml(post.title.rendered).substring(0, 80)
+  const params = new URLSearchParams({
+    title,
+    postId: post.id.toString(),
+  })
+  
+  if (post.mediaUrl) {
+    params.set('image', post.mediaUrl)
+  }
+  
+  if (post.categoriesDetails.length > 0) {
+    params.set('category', post.categoriesDetails[0].name)
+  }
+  
+  if (post.authorDetails?.name) {
+    params.set('author', post.authorDetails.name)
+  }
+  
+  const dateObj = new Date(post.date)
+  params.set('date', dateObj.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }))
+  
+  return `${baseUrl}/api/og-image?${params.toString()}`
 }
 
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
@@ -45,12 +71,17 @@ export async function generateMetadata({ params }: { params: { slug: string } })
 
   const description = stripHtml(post.excerpt.rendered).substring(0, 160)
   const articleUrl = `${baseUrl}/berita/${post.slug}`
+  const ogImageUrl = getOGImageUrl(baseUrl, post)
 
   return {
     title: post.title.rendered,
     description,
     alternates: {
       canonical: articleUrl,
+      languages: {
+        'x-default': articleUrl,
+        'id': articleUrl,
+      },
     },
     openGraph: {
       title: post.title.rendered,
@@ -59,7 +90,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
       siteName: 'Mitra Banten News',
       images: [
         {
-          url: post.mediaUrl || `${baseUrl}/og-image.jpg`,
+          url: ogImageUrl,
           width: 1200,
           height: 630,
           alt: stripHtml(post.title.rendered),
@@ -74,7 +105,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
       card: 'summary_large_image',
       title: post.title.rendered,
       description,
-      images: [post.mediaUrl || `${baseUrl}/og-image.jpg`],
+      images: [ogImageUrl],
     },
   }
 }
@@ -285,6 +316,12 @@ export default async function PostPage({ params }: { params: { slug: string } })
         <PersonalizedRecommendations
           currentPostId={post.id}
           currentCategoryIds={post.categories}
+        />
+
+        <AIRecommendations
+          currentPostId={post.id}
+          currentCategoryIds={post.categories}
+          currentTagIds={post.tags}
         />
 
         <div className="mt-8">

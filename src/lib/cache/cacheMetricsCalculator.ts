@@ -39,6 +39,16 @@ export interface FormattedMetrics {
   dependencyRegistrations: number;
 }
 
+export interface RedisMetrics {
+  connected: boolean;
+  reconnectAttempts: number;
+  lastConnectedAt: number | null;
+  lastErrorAt: number | null;
+  lastErrorMessage: string | null;
+  commandsExecuted: number;
+  commandsFailed: number;
+}
+
 export class CacheMetricsCalculator implements ICacheMetricsCalculator {
   calculateStatistics(
     stats: CacheTelemetry,
