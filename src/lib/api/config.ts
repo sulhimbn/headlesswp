@@ -63,3 +63,16 @@ export const RECOMMENDATION_CONFIG = {
   MAX_HISTORY_ITEMS: 20,
   MAX_RECOMMENDATIONS: 3,
 } as const
+
+export const REDIS_CONFIG = {
+  URL: process.env.REDIS_URL,
+  HOST: process.env.REDIS_HOST || 'localhost',
+  PORT: parseInt(process.env.REDIS_PORT || '6379', 10),
+  PASSWORD: process.env.REDIS_PASSWORD,
+  DB: parseInt(process.env.REDIS_DB || '0', 10),
+  KEY_PREFIX: process.env.REDIS_KEY_PREFIX || 'headlesswp:',
+  CONNECT_TIMEOUT: parseInt(process.env.REDIS_CONNECT_TIMEOUT || '5000', 10),
+  ENABLE_READY_CHECK: process.env.REDIS_ENABLE_READY_CHECK !== 'false',
+  LAZY_CONNECT: process.env.REDIS_LAZY_CONNECT !== 'false',
+  ENABLE_FALLBACK: process.env.REDIS_ENABLE_FALLBACK !== 'false',
+} as const
