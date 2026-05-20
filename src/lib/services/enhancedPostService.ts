@@ -7,10 +7,11 @@ import { relationshipValidator, type RelationshipValidatorOptions } from '@/lib/
 import { createFallbackPost } from '@/lib/utils/fallbackPost';
 import { logger } from '@/lib/utils/logger';
 import { getFallbackPosts, type FallbackPostType } from '@/lib/constants/fallbackPosts';
-import type { IPostService, PostWithMediaUrl, PostWithDetails, PaginatedPostsResult } from './IPostService';
+import type { IPostService, PostWithMediaUrl, PostWithDetails, PaginatedPostsResult, SemanticSearchResult } from './IPostService';
 import { standardizedAPI } from '@/lib/api/standardized';
 import { isApiResultSuccessful } from '@/lib/api/response';
 import type { ICacheManager } from '@/lib/api/ICacheManager';
+import { semanticSearchService } from './semanticSearchService';
 
 interface EntityMapOptions<T> {
   cacheKey: string;
@@ -316,6 +317,21 @@ export const enhancedPostService: IPostService = {
       posts: postsWithMedia,
       totalPosts: posts.length,
       totalPages
+    };
+  },
+
+  semanticSearchPosts: async (query: string, page: number = 1, perPage: number = PAGINATION_LIMITS.SEARCH_POSTS): Promise<SemanticSearchResult> => {
+    const result = await semanticSearchService.search(query, page, perPage);
+    
+    const postsWithMedia = await enrichPostsWithMediaUrls(
+      result.posts.map(r => r.post)
+    );
+    
+    return {
+      posts: postsWithMedia,
+      relatedQueries: result.relatedQueries,
+      totalPosts: result.totalCount,
+      totalPages: Math.ceil(result.totalCount / perPage)
     };
   },
 

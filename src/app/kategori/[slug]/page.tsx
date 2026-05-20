@@ -10,12 +10,63 @@ import dynamic from 'next/dynamic'
 import { UI_TEXT } from '@/lib/constants/uiText'
 import { PARSING } from '@/lib/constants/appConstants'
 import { isApiResultSuccessful } from '@/lib/api/response'
+import type { Metadata } from 'next'
+import { SITE_URL } from '@/lib/api/config'
+import { generateCollectionPageSchema, generateBreadcrumbSchemaForPage } from '@/lib/seo/structuredData'
 
 const Footer = dynamic(() => import('@/components/layout/Footer'), {
   loading: () => <div className="h-64 bg-[hsl(var(--color-background-dark))] mt-12" aria-hidden="true" />
 })
 
 export const revalidate = 300
+
+export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
+  const categoryResult = await standardizedAPI.getCategoryBySlug(params.slug)
+  
+  if (!isApiResultSuccessful(categoryResult)) {
+    return {
+      title: 'Kategori Tidak Ditemukan',
+    }
+  }
+
+  const category = categoryResult.data
+  const title = `Kategori: ${category.name} - Mitra Banten News`
+  const description = category.description 
+    ? `${category.description} - Berita terkini dari kategori ${category.name} di Mitra Banten News.`
+    : `Kumpulan berita terkini dalam kategori ${category.name} di Mitra Banten News.`
+
+  return {
+    title,
+    description,
+    alternates: {
+      canonical: `${SITE_URL}/kategori/${params.slug}`,
+    },
+    openGraph: {
+      title,
+      description,
+      url: `${SITE_URL}/kategori/${params.slug}`,
+      type: 'website',
+      images: [
+        {
+          url: `${SITE_URL}/og/category/${params.slug}`,
+          width: 1200,
+          height: 630,
+          alt: `Kategori: ${category.name}`,
+        },
+      ],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: [`${SITE_URL}/og/category/${params.slug}`],
+    },
+    robots: {
+      index: true,
+      follow: true,
+    },
+  }
+}
 
 export default async function CategoryPage({
   params,
@@ -40,8 +91,29 @@ export default async function CategoryPage({
   const enrichedPosts = postsResult.posts
   const totalPages = postsResult.totalPages
 
+  const categoryUrl = `${SITE_URL}/kategori/${params.slug}`
+  const collectionPageSchema = generateCollectionPageSchema({
+    name: `Kategori: ${category.name}`,
+    description: category.description || undefined,
+    url: categoryUrl,
+    numberOfItems: enrichedPosts.length,
+  })
+  const breadcrumbSchema = generateBreadcrumbSchemaForPage([
+    { label: 'Beranda', href: '/' },
+    { label: 'Kategori', href: '/berita' },
+    { label: category.name, href: `/kategori/${params.slug}` },
+  ])
+
   return (
     <div className="min-h-screen bg-[hsl(var(--color-background))]">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(collectionPageSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+      />
       <Header />
 
       <main id="main-content" aria-labelledby="page-heading" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">

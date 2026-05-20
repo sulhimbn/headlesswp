@@ -5,12 +5,29 @@ import PostCard from '@/components/post/PostCard'
 import SectionHeading from '@/components/ui/SectionHeading'
 import dynamic from 'next/dynamic'
 import { UI_TEXT } from '@/lib/constants/uiText'
+import type { Metadata } from 'next'
+import { SITE_URL } from '@/lib/api/config'
 
 const Footer = dynamic(() => import('@/components/layout/Footer'), {
   loading: () => <div className="h-64 bg-[hsl(var(--color-background-dark))] mt-12" aria-hidden="true" />
 })
 
-export const revalidate = 300 // 5 minutes
+export const revalidate = 300
+
+export const metadata: Metadata = {
+  title: {
+    default: 'Mitra Banten News - Berita Terkini Banten',
+    template: '%s | Mitra Banten News',
+  },
+  description: 'Portal berita terkini dan terpercaya dari Banten. Dapatkan informasi terbaru tentang politik, ekonomi, olahraga, dan peristiwa di Banten.',
+  alternates: {
+    canonical: SITE_URL,
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
+}
 
 export default async function HomePage() {
   cacheInitializer.initialize().catch(() => {})
