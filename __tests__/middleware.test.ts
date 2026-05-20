@@ -1,4 +1,4 @@
-import { proxy as middleware } from '@/proxy'
+import { middleware } from '@/middleware'
 
 let mockHeaders: Record<string, string> = {}
 
@@ -6,7 +6,10 @@ jest.mock('next/server', () => ({
   NextRequest: jest.fn().mockImplementation(() => ({
     url: 'http://localhost:3000/test',
     method: 'GET',
-    headers: new Map()
+    headers: new Map(),
+    nextUrl: {
+      pathname: '/test'
+    }
   })),
   NextResponse: {
     next: jest.fn(() => ({
@@ -21,6 +24,15 @@ jest.mock('next/server', () => ({
       status: 200
     }))
   }
+}))
+
+jest.mock('@/lib/api/config', () => ({
+  SITE_URL: 'https://mitrabantennews.com',
+  SITE_URL_WWW: 'https://www.mitrabantennews.com',
+}))
+
+jest.mock('@/lib/utils/cspUtils', () => ({
+  generateNonce: jest.fn(() => 'dGVzdC1ub25jZS0xMjM0NQ=='),
 }))
 
 describe('Middleware', () => {
@@ -187,14 +199,17 @@ describe('Middleware', () => {
 
     it('should generate unique nonces on each request', async () => {
       const { NextRequest } = require('next/server')
-      const request1 = new NextRequest()
-      const request2 = new NextRequest()
+      const { generateNonce } = require('@/lib/utils/cspUtils')
       
-      mockHeaders = {}
+      let callCount = 0
+      generateNonce.mockImplementation(() => `nonce-${++callCount}`)
+      
+      const request1 = new NextRequest()
       await middleware(request1)
       const nonce1 = mockHeaders['x-nonce']
       
       mockHeaders = {}
+      const request2 = new NextRequest()
       await middleware(request2)
       const nonce2 = mockHeaders['x-nonce']
       
