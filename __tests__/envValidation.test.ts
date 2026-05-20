@@ -1,4 +1,4 @@
-import { validateEnvironment, logEnvironmentValidation } from '@/lib/utils/envValidation'
+import { validateEnvironment, logEnvironmentValidation } from '@/lib/config/envValidation'
 
 describe('envValidation', () => {
   const originalEnv = process.env
