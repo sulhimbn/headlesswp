@@ -13,12 +13,12 @@ interface UseDarkModeReturn {
 
 const DARK_MODE_KEY = 'dark-mode'
 
-function getSystemPreference(): boolean {
+export function getSystemPreference(): boolean {
   if (typeof window === 'undefined') return false
   return window.matchMedia('(prefers-color-scheme: dark)').matches
 }
 
-function getStoredMode(): DarkMode {
+export function getStoredMode(): DarkMode {
   if (typeof window === 'undefined') return 'system'
   const stored = localStorage.getItem(DARK_MODE_KEY)
   if (stored === 'light' || stored === 'dark' || stored === 'system') {
