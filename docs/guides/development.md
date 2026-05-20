@@ -593,6 +593,61 @@ docker-compose build frontend
 - **Database**: Use specific versions (e.g., `mysql:8.0`) - avoid `latest` for production
 - **WordPress**: Can use `wordpress:latest` for development; consider pinned versions for production
 
+## Storybook
+
+This project uses Storybook for component documentation and visual testing.
+
+### Running Storybook
+
+```bash
+npm run storybook      # Start Storybook dev server on port 6006
+npm run build-storybook # Build static Storybook for deployment
+```
+
+### Creating Component Stories
+
+Create stories in the same directory as your component with `.stories.tsx` extension:
+
+```typescript
+// src/components/ui/Button.stories.tsx
+import type { Meta, StoryObj } from '@storybook/react';
+import Button from './Button';
+
+const meta: Meta<typeof Button> = {
+  title: 'UI/Button',
+  component: Button,
+  tags: ['autodocs'],
+};
+
+export default meta;
+type Story = StoryObj<typeof Button>;
+
+export const Primary: Story = {
+  args: {
+    children: 'Click me',
+    variant: 'primary',
+  },
+};
+```
+
+### Available Stories
+
+- **UI/Button** - Button component with variants (primary, secondary, outline, ghost) and sizes (sm, md, lg)
+- **UI/Badge** - Badge component for categories and tags
+- **UI/SearchBar** - Search input with debouncing
+
+### Design Tokens
+
+Stories use design tokens from `src/app/globals.css`:
+- Colors: `hsl(var(--color-primary))`, `hsl(var(--color-background))`, etc.
+- Spacing: `var(--spacing-sm)`, `var(--spacing-md)`, etc.
+- Border radius: `var(--radius-sm)`, `var(--radius-md)`, etc.
+- Transitions: `var(--transition-fast)`, `var(--transition-normal)`, etc.
+
+### Accessibility Testing
+
+Storybook includes the a11y addon. Accessibility violations are shown in the addon panel during development.
+
 ## Additional Resources
 
 - [Architecture Blueprint](../blueprint.md) - System architecture and design patterns

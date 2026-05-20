@@ -18,11 +18,14 @@
     "deps:check": "npm outdated",
     "deps:update": "npm update",
     "size-check": "node scripts/bundle-size-check.js",
-    "check": "npm run lint && npm run typecheck && npm test"
+    "check": "npm run lint && npm run typecheck && npm test",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build"
   },
   "dependencies": {
     "@sentry/nextjs": "^10.40.0",
     "axios": "^1.13.5",
+    "ioredis": "5.10.1",
     "isomorphic-dompurify": "^2.36.0",
     "next": "^16.2.1",
     "react": "^19.2.4",
@@ -30,11 +33,17 @@
     "web-vitals": "^5.1.0"
   },
   "devDependencies": {
+    "@chromatic-com/storybook": "^5.1.1",
     "@eslint/js": "^10.0.1",
     "@next/bundle-analyzer": "^16.1.6",
     "@size-limit/file": "^12.0.0",
     "@size-limit/preset-app": "^12.0.0",
     "@size-limit/webpack": "^12.0.0",
+    "@storybook/addon-a11y": "^10.3.3",
+    "@storybook/addon-docs": "^10.3.3",
+    "@storybook/addon-onboarding": "^10.3.3",
+    "@storybook/addon-vitest": "^10.3.3",
+    "@storybook/nextjs-vite": "^10.3.3",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.1",
     "@types/jest": "^30.0.0",
@@ -43,14 +52,20 @@
     "@types/react-dom": "^19.2.3",
     "@typescript-eslint/eslint-plugin": "^8.54.0",
     "@typescript-eslint/parser": "^8.53.1",
+    "@vitest/browser-playwright": "^4.1.2",
+    "@vitest/coverage-v8": "^4.1.2",
     "baseline-browser-mapping": "^2.10.0",
     "eslint": "^10.0.2",
     "jest": "^30.2.0",
     "jest-axe": "^10.0.0",
     "jest-environment-jsdom": "^30.2.0",
+    "playwright": "^1.58.2",
     "size-limit": "^12.0.0",
+    "storybook": "^10.3.3",
     "ts-jest": "^29.2.5",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vite": "^8.0.3",
+    "vitest": "^4.1.2"
   },
   "keywords": [
     "wordpress",

@@ -10,12 +10,51 @@ import dynamic from 'next/dynamic'
 import { UI_TEXT } from '@/lib/constants/uiText'
 import { PARSING } from '@/lib/constants/appConstants'
 import { isApiResultSuccessful } from '@/lib/api/response'
+import { SITE_URL } from '@/lib/api/config'
+import { generatePageHreflang } from '@/lib/utils/hreflang'
+import type { Metadata } from 'next'
 
 const Footer = dynamic(() => import('@/components/layout/Footer'), {
   loading: () => <div className="h-64 bg-[hsl(var(--color-background-dark))] mt-12" aria-hidden="true" />
 })
 
 export const revalidate = 300
+
+export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
+  const categoryResult = await standardizedAPI.getCategoryBySlug(params.slug)
+  const baseUrl = SITE_URL
+
+  if (!isApiResultSuccessful(categoryResult)) {
+    return {
+      title: 'Kategori Tidak Ditemukan',
+    }
+  }
+
+  const category = categoryResult.data
+  const categoryUrl = `${baseUrl}/kategori/${category.slug}`
+  const hreflangEntries = generatePageHreflang(category.slug, 'kategori')
+
+  const languages: Record<string, string> = {}
+  for (const entry of hreflangEntries) {
+    languages[entry.lang] = entry.url
+  }
+
+  return {
+    title: `Kategori: ${category.name} - Mitra Banten News`,
+    description: category.description || `Artikel terbaru dalam kategori ${category.name} di Mitra Banten News`,
+    alternates: {
+      canonical: categoryUrl,
+      languages,
+    },
+    openGraph: {
+      title: `Kategori: ${category.name} - Mitra Banten News`,
+      description: category.description || `Artikel terbaru dalam kategori ${category.name} di Mitra Banten News`,
+      url: categoryUrl,
+      siteName: 'Mitra Banten News',
+      type: 'website',
+    },
+  }
+}
 
 export default async function CategoryPage({
   params,
