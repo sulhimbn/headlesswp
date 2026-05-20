@@ -37,7 +37,7 @@ jobs:
       API_KEY: ${{ secrets.GEMINI_API_KEY }}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
       - name: Check Open Issue Count
