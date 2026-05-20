@@ -2207,5 +2207,49 @@ function SearchPage() {
 - [ ] GraphQL integration (if REST proves insufficient)
 - [ ] Static Site Generation (SSG) for better performance
 - [ ] Internationalization (i18n)
+
+## AI Semantic Search Integration
+
+**Last Updated**: 2026-03-26 (Innovation-Strategist - INNOVATION-873: AI-powered search with semantic understanding)
+
+**Status**: ✅ Phase 1 Complete - TF-IDF Enhancement Implemented
+
+**Implementation** (`src/lib/search/searchRelevance.ts`):
+- Added relevance ranking algorithm using TF-IDF-like scoring
+- Title matches weighted 10x, excerpt matches 5x, content matches 1x
+- Exact phrase matches receive +15 bonus points
+- Position weighting: earlier matches in content score higher
+- Fully backward compatible with existing search API
+
+**Algorithm Details**:
+1. Tokenize query and normalize (lowercase, remove punctuation)
+2. Extract searchable text from posts (title, excerpt, content)
+3. Calculate relevance score based on:
+   - Title matches: +10 points per occurrence (with position weight)
+   - Excerpt matches: +5 points per occurrence (with position weight)
+   - Content matches: +1 point per occurrence (with position weight)
+   - Exact phrase bonus: +15 points if query found as phrase
+4. Sort results by relevance score descending
+
+**Files Changed**:
+- `src/lib/search/searchRelevance.ts` (new) - Relevance scoring algorithm
+- `src/lib/services/enhancedPostService.ts` - Integrated ranking into searchPosts
+- `__tests__/searchRelevance.test.ts` (new) - 18 comprehensive tests
+- `docs/ai-semantic-search-proposal.md` (new) - Innovation proposal document
+
+**Tests**: 18 new tests passing, all 2199 tests passing
+
+**Proposal Document**: See `docs/ai-semantic-search-proposal.md` for:
+- Problem statement and root cause analysis
+- Three solution options with trade-offs (TF-IDF, OpenAI, Hybrid)
+- Cost estimates and implementation timelines
+- Technical specifications and architecture
+
+**Future Enhancements**:
+- Option 2: OpenAI Embeddings integration (true semantic search)
+- Option 3: Hybrid approach combining keyword and semantic search
+- Requires external API infrastructure and vector database
+
+**See Also**: [AI Semantic Search Proposal](./ai-semantic-search-proposal.md)
 - [ ] Analytics integration
 - [ ] E2E testing with Playwright/Cypress
