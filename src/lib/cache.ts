@@ -5,6 +5,20 @@ import type { ICacheManager } from '@/lib/api/ICacheManager';
 import type { CacheEntry, CacheTelemetry } from './cache/types';
 export type { CacheEntry, CacheTelemetry } from './cache/types';
 
+export interface CacheExportData {
+  version: string;
+  exportedAt: string;
+  entries: Array<{
+    key: string;
+    data: unknown;
+    timestamp: number;
+    ttl: number;
+    dependencies: string[];
+    dependents: string[];
+  }>;
+  stats: CacheTelemetry;
+}
+
 /**
  * Advanced cache manager with dependency-aware cascade invalidation.
  * 
@@ -558,13 +572,117 @@ class CacheManager implements ICacheManager {
       this.clearAll();
     }
   }
+
+  /**
+   * Export cache state to JSON for debugging.
+   * 
+   * @returns CacheExportData object containing all cache entries and stats
+   * 
+   * @remarks
+   * This method exports:
+   * - All cache entries with their data, timestamps, and TTL
+   * - Dependencies and dependents for each entry
+   * - Current cache statistics
+   * 
+   * Use this for:
+   * - Debugging cache issues
+   * - Analyzing cache state
+   * - Creating cache snapshots
+   * 
+   * @example
+   * ```typescript
+   * const exportData = cacheManager.exportCache();
+   * console.log(JSON.stringify(exportData, null, 2));
+   * ```
+   */
+  exportCache(): CacheExportData {
+    const entries: CacheExportData['entries'] = [];
+
+    this.cache.forEach((entry, key) => {
+      entries.push({
+        key,
+        data: entry.data,
+        timestamp: entry.timestamp,
+        ttl: entry.ttl,
+        dependencies: entry.dependencies ? Array.from(entry.dependencies) : [],
+        dependents: entry.dependents ? Array.from(entry.dependents) : [],
+      });
+    });
+
+    return {
+      version: '1.0.0',
+      exportedAt: new Date().toISOString(),
+      entries,
+      stats: { ...this.stats },
+    };
+  }
+
+  /**
+   * Import cache state from JSON export.
+   * 
+   * @param data - CacheExportData to import
+   * @returns Number of entries imported
+   * 
+   * @remarks
+   * This method:
+   * - Clears existing cache before importing
+   * - Imports all entries with their data, timestamps, and TTL
+   * - Restores dependency relationships
+   * - Resets statistics
+   * 
+   * Use this for:
+   * - Restoring cache from a snapshot
+   * - Debugging with known cache state
+   * - Testing scenarios
+   * 
+   * @example
+   * ```typescript
+   * const jsonData = require('./cache-export.json');
+   * const count = cacheManager.importCache(jsonData);
+   * ```
+   */
+  importCache(data: CacheExportData): number {
+    if (!data.entries || !Array.isArray(data.entries)) {
+      throw new Error('Invalid cache export data: missing or invalid entries array');
+    }
+
+    this.clearAll();
+
+    for (const entry of data.entries) {
+      const cacheEntry: CacheEntry<unknown> = {
+        data: entry.data,
+        timestamp: entry.timestamp,
+        ttl: entry.ttl,
+      };
+
+      if (entry.dependencies && entry.dependencies.length > 0) {
+        cacheEntry.dependencies = new Set(entry.dependencies);
+      }
+      if (entry.dependents && entry.dependents.length > 0) {
+        cacheEntry.dependents = new Set(entry.dependents);
+      }
+
+      this.cache.set(entry.key, cacheEntry);
+    }
+
+    if (data.stats) {
+      this.stats = { ...data.stats };
+    }
+
+    return data.entries.length;
+  }
 }
 
 // Global cache instance - single source of truth for all caching operations
 export const cacheManager = new CacheManager();
 
 // Convenience exports for backward compatibility
-export const { getStats: getCacheStats, clear: clearCache } = cacheManager;
+export const { 
+  getStats: getCacheStats, 
+  clear: clearCache,
+  exportCache,
+  importCache 
+} = cacheManager;
 
 export { CACHE_CONFIG as CACHE_TTL } from './cache/cacheConfig';
 export { CACHE_CONFIG } from './cache/cacheConfig';
