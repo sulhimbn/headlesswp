@@ -7,15 +7,17 @@ import EmptyState from '@/components/ui/EmptyState';
 import SectionHeading from '@/components/ui/SectionHeading';
 import { notFound } from 'next/navigation';
 import dynamic from 'next/dynamic';
+import Image from 'next/image';
 import { UI_TEXT } from '@/lib/constants/uiText';
 import { PARSING } from '@/lib/constants/appConstants';
 import { isApiResultSuccessful } from '@/lib/api/response';
+import { REVALIDATE_TIMES } from '@/lib/api/config';
 
 const Footer = dynamic(() => import('@/components/layout/Footer'), {
   loading: () => <div className="h-64 bg-[hsl(var(--color-background-dark))] mt-12" aria-hidden="true" />
 });
 
-export const revalidate = 300;
+export const revalidate = REVALIDATE_TIMES.POST_LIST;
 
 export default async function AuthorPage({
   params,
@@ -53,12 +55,13 @@ export default async function AuthorPage({
         <div className="bg-[hsl(var(--color-background-secondary))] rounded-lg p-6 mb-8">
           <div className="flex items-center gap-4">
             {author.avatar_urls && author.avatar_urls['96'] && (
-              <img
+              <Image
                 src={author.avatar_urls['96']}
                 alt={author.name}
                 width={96}
                 height={96}
                 className="rounded-full"
+                priority={false}
               />
             )}
             <div>

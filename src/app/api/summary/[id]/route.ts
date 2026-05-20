@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { summarizePost, isSummarizationEnabled, getSummarizationConfig } from '@/lib/services/summarizer';
 import { wordpressAPI } from '@/lib/wordpress';
 import { logger } from '@/lib/utils/logger';
+import { validatePositiveInteger } from '@/lib/validation/validationUtils';
 
 export const dynamic = 'force-dynamic';
 
@@ -19,7 +20,15 @@ export async function GET(
 
     if (isNaN(postId)) {
       return NextResponse.json(
-        { error: 'Invalid post ID' },
+        { error: 'Invalid post ID: ID must be a valid number' },
+        { status: 400 }
+      );
+    }
+
+    const validationError = validatePositiveInteger(postId, 'postId');
+    if (validationError) {
+      return NextResponse.json(
+        { error: `Invalid post ID: ${validationError.message}` },
         { status: 400 }
       );
     }

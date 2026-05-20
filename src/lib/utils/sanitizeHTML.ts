@@ -49,3 +49,34 @@ export function sanitizeHTML(html: string, config: SanitizeConfig = 'full'): str
   sanitizeCache.set(cacheKey, { result, timestamp: Date.now() });
   return result;
 }
+
+export function sanitizeSchemaData(obj: unknown): unknown {
+  if (obj === null || obj === undefined) {
+    return obj;
+  }
+
+  if (typeof obj === 'string') {
+    return stripHtml(obj);
+  }
+
+  if (Array.isArray(obj)) {
+    return obj.map(item => sanitizeSchemaData(item));
+  }
+
+  if (typeof obj === 'object') {
+    const sanitized: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(obj as Record<string, unknown>)) {
+      sanitized[key] = sanitizeSchemaData(value);
+    }
+    return sanitized;
+  }
+
+  return obj;
+}
+
+function stripHtml(html: string): string {
+  let result = html.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
+  result = result.replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '');
+  result = result.replace(/<[^>]*>?/gm, '');
+  return result.trim();
+}

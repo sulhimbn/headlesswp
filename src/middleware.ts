@@ -44,13 +44,6 @@ function setBotOptimizationHeaders(response: NextResponse, isBot: boolean): void
   }
 }
 
-function setRateLimitHeaders(response: NextResponse): void {
-  response.headers.set('X-RateLimit-Policy', '60;w=60')
-  response.headers.set('X-RateLimit-Limit', '60')
-  response.headers.set('X-RateLimit-Remaining', '59')
-  response.headers.set('X-RateLimit-Reset', Math.ceil(Date.now() / 60000).toString())
-}
-
 function setPrefetchHints(response: NextResponse): void {
   const criticalRoutesStr = CRITICAL_ROUTES.join(',')
   response.headers.set('Link', `<${criticalRoutesStr}>; rel="prefetch"`)
@@ -64,7 +57,6 @@ export function middleware(request: NextRequest) {
 
   setSecurityHeaders(response)
   setBotOptimizationHeaders(response, isBot)
-  setRateLimitHeaders(response)
   setPrefetchHints(response)
 
   if (pathname === '/') {
