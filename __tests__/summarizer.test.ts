@@ -1,6 +1,14 @@
-import { summarizePost, isSummarizationEnabled, getSummarizationConfig } from '@/lib/services/summarizer';
+import { summarizePost, isSummarizationEnabled, getSummarizationConfig, clearSummaryCache } from '@/lib/services/summarizer';
 import { stripHtml } from '@/lib/utils/stripHtml';
 import { cacheManager } from '@/lib/cache';
+import { logger } from '@/lib/utils/logger';
+
+jest.mock('@/lib/cache');
+jest.mock('@/lib/utils/logger');
+
+function extractTextFromContent(htmlContent: string): string {
+  return stripHtml(htmlContent).trim();
+}
 
 function generateLocalSummary(text: string): string {
   const sentences = text.split(/[.!?]+/).filter((s) => s.trim().length > 0);
@@ -28,12 +36,6 @@ function generateLocalSummary(text: string): string {
   
   return summary;
 }
-
-function extractTextFromContent(htmlContent: string): string {
-  return stripHtml(htmlContent).trim();
-}
-
-jest.mock('@/lib/cache');
 
 describe('summarizer', () => {
   beforeEach(() => {
@@ -76,9 +78,163 @@ describe('summarizer', () => {
       const summary = generateLocalSummary(text);
       expect(summary.length).toBeLessThanOrEqual(text.length * 1.5 + 3);
     });
+
+    it('should handle text with exactly two sentences', () => {
+      const text = 'First sentence here. Second sentence here.';
+      const summary = generateLocalSummary(text);
+      expect(summary).toContain('First sentence here');
+      expect(summary).toContain('Second sentence here');
+    });
+
+    it('should not add second sentence when first is already long', () => {
+      const text = 'This is a very long first sentence that definitely exceeds one hundred fifty characters in length for real. Second sentence here.';
+      const summary = generateLocalSummary(text);
+      expect(summary.length).toBeLessThan(150);
+    });
+
+    it('should handle summary at boundary length', () => {
+      const text = 'A'.repeat(100) + '. ' + 'B'.repeat(150) + '. Extra sentence.';
+      const summary = generateLocalSummary(text);
+      expect(summary.length).toBeLessThanOrEqual(300);
+    });
+  });
+
+  describe('summarizePost with OpenAI provider', () => {
+    beforeEach(() => {
+      process.env.SUMMARY_PROVIDER = 'openai';
+      process.env.SUMMARY_API_KEY = 'test-openai-key';
+    });
+
+    it('should generate summary using OpenAI API', async () => {
+      (cacheManager.get as jest.Mock).mockReturnValue(null);
+      (cacheManager.set as jest.Mock).mockReturnValue(undefined);
+
+      const mockResponse = {
+        ok: true,
+        json: jest.fn().mockResolvedValue({
+          choices: [{ message: { content: 'OpenAI generated summary' } }]
+        })
+      };
+      global.fetch = jest.fn().mockResolvedValue(mockResponse) as jest.Mock;
+
+      const result = await summarizePost(100, '<p>This is a test article with some content. It has multiple sentences that need to be summarized by the OpenAI API.</p>');
+
+      expect(result.summary).toBe('OpenAI generated summary');
+      expect(result.cached).toBe(false);
+    });
+
+    it('should fallback to local summary when OpenAI API fails', async () => {
+      (cacheManager.get as jest.Mock).mockReturnValue(null);
+      (cacheManager.set as jest.Mock).mockReturnValue(undefined);
+
+      const mockResponse = {
+        ok: false,
+        status: 500,
+        text: jest.fn().mockResolvedValue('Internal Server Error')
+      };
+      global.fetch = jest.fn().mockResolvedValue(mockResponse) as jest.Mock;
+
+      const result = await summarizePost(101, '<p>This is a test article with some content. It has multiple sentences.</p>');
+
+      expect(result.summary).toBeTruthy();
+      expect(result.cached).toBe(false);
+      expect(logger.error).toHaveBeenCalled();
+    });
+
+    it('should fallback to local summary when OpenAI API key is missing', async () => {
+      delete process.env.SUMMARY_API_KEY;
+      (cacheManager.get as jest.Mock).mockReturnValue(null);
+      (cacheManager.set as jest.Mock).mockReturnValue(undefined);
+
+      const result = await summarizePost(102, '<p>This is a test article with some content. It has multiple sentences.</p>');
+
+      expect(result.summary).toBeTruthy();
+      expect(result.cached).toBe(false);
+    });
+  });
+
+  describe('summarizePost with Anthropic provider', () => {
+    beforeEach(() => {
+      process.env.SUMMARY_PROVIDER = 'anthropic';
+      process.env.SUMMARY_API_KEY = 'test-anthropic-key';
+    });
+
+    it('should generate summary using Anthropic API', async () => {
+      (cacheManager.get as jest.Mock).mockReturnValue(null);
+      (cacheManager.set as jest.Mock).mockReturnValue(undefined);
+
+      const mockResponse = {
+        ok: true,
+        json: jest.fn().mockResolvedValue({
+          content: [{ text: 'Anthropic generated summary' }]
+        })
+      };
+      global.fetch = jest.fn().mockResolvedValue(mockResponse) as jest.Mock;
+
+      const result = await summarizePost(200, '<p>This is a test article with some content. It has multiple sentences that need to be summarized by the Anthropic API.</p>');
+
+      expect(result.summary).toBe('Anthropic generated summary');
+      expect(result.cached).toBe(false);
+    });
+
+    it('should fallback to local summary when Anthropic API fails', async () => {
+      (cacheManager.get as jest.Mock).mockReturnValue(null);
+      (cacheManager.set as jest.Mock).mockReturnValue(undefined);
+
+      const mockResponse = {
+        ok: false,
+        status: 429,
+        text: jest.fn().mockResolvedValue('Rate Limited')
+      };
+      global.fetch = jest.fn().mockResolvedValue(mockResponse) as jest.Mock;
+
+      const result = await summarizePost(201, '<p>This is a test article with some content. It has multiple sentences.</p>');
+
+      expect(result.summary).toBeTruthy();
+      expect(result.cached).toBe(false);
+      expect(logger.error).toHaveBeenCalled();
+    });
+
+    it('should fallback to local summary when Anthropic API key is missing', async () => {
+      delete process.env.SUMMARY_API_KEY;
+      (cacheManager.get as jest.Mock).mockReturnValue(null);
+      (cacheManager.set as jest.Mock).mockReturnValue(undefined);
+
+      const result = await summarizePost(202, '<p>This is a test article with some content. It has multiple sentences.</p>');
+
+      expect(result.summary).toBeTruthy();
+      expect(result.cached).toBe(false);
+    });
+  });
+
+  describe('clearSummaryCache', () => {
+    it('should clear cache for specific post', () => {
+      clearSummaryCache(123);
+      expect(cacheManager.invalidate).toHaveBeenCalledWith('summary:123');
+    });
+
+    it('should clear all summary caches when no postId provided', () => {
+      const mockCache = new Map();
+      mockCache.set('summary:1', 'value1');
+      mockCache.set('summary:2', 'value2');
+      mockCache.set('other:key', 'value3');
+      
+      (cacheManager as unknown as { cache: Map<string, unknown> }).cache = mockCache;
+      
+      clearSummaryCache();
+      
+      expect(cacheManager.invalidate).toHaveBeenCalledWith('summary:1');
+      expect(cacheManager.invalidate).toHaveBeenCalledWith('summary:2');
+      expect(cacheManager.invalidate).not.toHaveBeenCalledWith('other:key');
+    });
   });
 
   describe('summarizePost', () => {
+    beforeEach(() => {
+      delete process.env.SUMMARY_PROVIDER;
+      delete process.env.SUMMARY_API_KEY;
+    });
+
     it('should return cached summary if available', async () => {
       const cachedSummary = 'Cached summary';
       (cacheManager.get as jest.Mock).mockReturnValue(cachedSummary);
@@ -110,6 +266,15 @@ describe('summarizer', () => {
       expect(result.summary).toBe('Hi');
       expect(result.cached).toBe(false);
     });
+
+    it('should use cache key correctly', async () => {
+      (cacheManager.get as jest.Mock).mockReturnValue(null);
+      (cacheManager.set as jest.Mock).mockReturnValue(undefined);
+
+      await summarizePost(999, '<p>Content here</p>');
+
+      expect(cacheManager.get).toHaveBeenCalledWith('summary:999');
+    });
   });
 
   describe('isSummarizationEnabled', () => {
@@ -126,6 +291,18 @@ describe('summarizer', () => {
 
     it('should return false when no API key for OpenAI', () => {
       process.env.SUMMARY_PROVIDER = 'openai';
+      delete process.env.SUMMARY_API_KEY;
+      expect(isSummarizationEnabled()).toBe(false);
+    });
+
+    it('should return true when API key is provided for Anthropic', () => {
+      process.env.SUMMARY_PROVIDER = 'anthropic';
+      process.env.SUMMARY_API_KEY = 'test-anthropic-key';
+      expect(isSummarizationEnabled()).toBe(true);
+    });
+
+    it('should return false when no API key for Anthropic', () => {
+      process.env.SUMMARY_PROVIDER = 'anthropic';
       delete process.env.SUMMARY_API_KEY;
       expect(isSummarizationEnabled()).toBe(false);
     });
