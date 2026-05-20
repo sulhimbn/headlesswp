@@ -21,6 +21,16 @@ const REQUIRED_ENV_VARS: EnvVariable[] = [
     required: true,
     description: 'The WordPress REST API URL',
   },
+  {
+    name: 'WORDPRESS_URL',
+    required: true,
+    description: 'The WordPress site URL (server-side)',
+  },
+  {
+    name: 'WORDPRESS_API_URL',
+    required: true,
+    description: 'The WordPress REST API URL (server-side)',
+  },
 ];
 
 const OPTIONAL_ENV_VARS: EnvVariable[] = [

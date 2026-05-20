@@ -4,6 +4,12 @@ import { cacheWarmer } from '@/lib/services/cacheWarmer';
 import { logger } from '@/lib/utils/logger';
 import { withApiRateLimit } from '@/lib/api/rateLimitMiddleware';
 
+function sanitizePattern(pattern: string | null): string | undefined {
+  if (!pattern) return undefined
+  const sanitized = pattern.replace(/[^a-zA-Z0-9_*\-.:]/g, '').slice(0, 200)
+  return sanitized.length > 0 ? sanitized : undefined
+}
+
 async function cacheGetHandler(_request: NextRequest) {
   try {
     const stats = getCacheStats();
@@ -54,9 +60,9 @@ async function cachePostHandler(_request: NextRequest) {
 async function cacheDeleteHandler(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const pattern = searchParams.get('pattern');
+    const pattern = sanitizePattern(searchParams.get('pattern'));
     
-    clearCache(pattern || undefined);
+    clearCache(pattern);
     
     return NextResponse.json({
       success: true,

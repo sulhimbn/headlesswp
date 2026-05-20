@@ -1,22 +1,28 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { wordpressAPI } from '@/lib/wordpress';
 import { apiClient, getApiUrl } from '@/lib/api/client';
 import type { WordPressPost } from '@/types/wordpress';
 import { createCategoryRSSFeed, createRSSFeed } from '@/lib/utils/rss';
 import { CACHE_TIMES } from '@/lib/api/config';
 import { logger } from '@/lib/utils/logger';
+import { withApiRateLimit } from '@/lib/api/rateLimitMiddleware';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET(
-  request: Request,
-  { params }: { params: Promise<{ slug: string }> }
+function sanitizeSlug(slug: string): string {
+  return slug.replace(/[^a-zA-Z0-9-_]/g, '').slice(0, 100);
+}
+
+async function categoryRssHandler(
+  request: NextRequest,
+  context: { params: Promise<{ slug: string }> }
 ) {
   try {
-    const { slug } = await params;
+    const { slug } = await context.params;
+    const sanitizedSlug = sanitizeSlug(slug);
 
     const categories = await wordpressAPI.getCategories();
-    const category = categories.find(c => c.slug === slug);
+    const category = categories.find(c => c.slug === sanitizedSlug);
 
     if (!category) {
       return new NextResponse('Category not found', { status: 404 });
@@ -45,3 +51,6 @@ export async function GET(
     return new NextResponse('Error generating RSS feed', { status: 500 });
   }
 }
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const GET = withApiRateLimit(categoryRssHandler as any, 'metrics')

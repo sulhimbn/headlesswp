@@ -3,15 +3,28 @@ import { standardizedAPI } from '@/lib/api/standardized'
 import { isApiResultSuccessful } from '@/lib/api/response'
 import { logger } from '@/lib/utils/logger'
 import { CACHE_TIMES } from '@/lib/api/config'
+import { withApiRateLimit } from '@/lib/api/rateLimitMiddleware'
 
 const CACHE_CONTROL = `public, max-age=${CACHE_TIMES.MEDIUM_SHORT / 1000}, s-maxage=${CACHE_TIMES.MEDIUM_SHORT / 1000}, stale-while-revalidate=${CACHE_TIMES.MEDIUM}`
 
-export async function GET(request: Request) {
+function sanitizeString(value: string | null): string {
+  if (!value) return ''
+  return value.replace(/[<>"'&]/g, '').slice(0, 500)
+}
+
+function sanitizeNumber(value: string | null, defaultValue: number, max: number): number {
+  const parsed = parseInt(value || String(defaultValue), 10)
+  if (isNaN(parsed) || parsed < 1) return defaultValue
+  if (parsed > max) return max
+  return parsed
+}
+
+async function postsHandler(_request: Request) {
   try {
-    const { searchParams } = new URL(request.url)
-    const categories = searchParams.get('categories')
-    const perPage = parseInt(searchParams.get('per_page') || '10', 10)
-    const page = parseInt(searchParams.get('page') || '1', 10)
+    const { searchParams } = new URL(_request.url)
+    const categories = sanitizeString(searchParams.get('categories'))
+    const perPage = sanitizeNumber(searchParams.get('per_page'), 10, 100)
+    const page = sanitizeNumber(searchParams.get('page'), 1, 1000)
 
     const queryParams: Record<string, string | number> = {
       per_page: perPage,
@@ -26,7 +39,7 @@ export async function GET(request: Request) {
 
     if (!isApiResultSuccessful(result) || !result.data) {
       logger.warn('Failed to fetch posts from API', undefined, { module: 'api/posts' })
-      return NextResponse.json([], { status: 200 })
+      return NextResponse.json({ error: 'Failed to fetch posts' }, { status: 500 })
     }
 
     const posts = result.data.map(post => ({
@@ -45,6 +58,8 @@ export async function GET(request: Request) {
     return response
   } catch (error) {
     logger.error('Error in /api/posts', error, { module: 'api/posts' })
-    return NextResponse.json([], { status: 200 })
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
+
+export const GET = withApiRateLimit(postsHandler, 'metrics')

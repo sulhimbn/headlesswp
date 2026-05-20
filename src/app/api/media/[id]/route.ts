@@ -1,24 +1,31 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { standardizedAPI } from '@/lib/api/standardized'
 import { isApiResultSuccessful } from '@/lib/api/response'
 import { logger } from '@/lib/utils/logger'
+import { withApiRateLimit } from '@/lib/api/rateLimitMiddleware'
 
-export async function GET(
-  request: Request,
-  { params }: { params: Promise<{ id: string }> }
+function sanitizeMediaId(id: string): number | null {
+  const parsed = parseInt(id, 10)
+  if (isNaN(parsed) || parsed < 1 || parsed > 2147483647) return null
+  return parsed
+}
+
+async function mediaHandler(
+  request: NextRequest,
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = await params
-    const mediaId = parseInt(id, 10)
+    const { id } = await context.params
+    const mediaId = sanitizeMediaId(id)
 
-    if (isNaN(mediaId)) {
-      return NextResponse.json({ source_url: null }, { status: 200 })
+    if (mediaId === null) {
+      return NextResponse.json({ error: 'Invalid media ID' }, { status: 400 })
     }
 
     const result = await standardizedAPI.getMediaById(mediaId)
 
     if (!isApiResultSuccessful(result) || !result.data) {
-      return NextResponse.json({ source_url: null }, { status: 200 })
+      return NextResponse.json({ error: 'Media not found' }, { status: 404 })
     }
 
     return NextResponse.json({
@@ -27,6 +34,9 @@ export async function GET(
     })
   } catch (error) {
     logger.error('Error in /api/media/[id]', error, { module: 'api/media' })
-    return NextResponse.json({ source_url: null }, { status: 200 })
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const GET = withApiRateLimit(mediaHandler as any, 'metrics')
