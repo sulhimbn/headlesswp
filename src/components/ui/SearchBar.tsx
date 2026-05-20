@@ -1,17 +1,19 @@
 'use client'
 
 import { useState, useRef, useEffect, useCallback, memo } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Icon from './Icon'
 import { UI_TEXT } from '@/lib/constants/uiText'
 
 interface SearchBarProps {
-  onSearch: (query: string) => void
+  onSearch?: (query: string) => void
   placeholder?: string
   isLoading?: boolean
   debounceMs?: number
   className?: string
   initialValue?: string
   ariaLabel?: string
+  persistToUrl?: boolean
 }
 
 function SearchBarComponent({
@@ -21,16 +23,22 @@ function SearchBarComponent({
   debounceMs = 300,
   className = '',
   initialValue = '',
-  ariaLabel = UI_TEXT.search.label
+  ariaLabel = UI_TEXT.search.label,
+  persistToUrl = false
 }: SearchBarProps) {
-  const [query, setQuery] = useState(initialValue)
-  const [debouncedQuery, setDebouncedQuery] = useState(initialValue)
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const urlQuery = searchParams?.get('q') || ''
+  const [query, setQuery] = useState(persistToUrl ? (urlQuery || initialValue) : initialValue)
+  const [debouncedQuery, setDebouncedQuery] = useState(persistToUrl ? urlQuery : initialValue)
   const inputRef = useRef<HTMLInputElement>(null)
   const timeoutRef = useRef<NodeJS.Timeout | undefined>(undefined)
-  const pendingQueryRef = useRef(initialValue)
+  const pendingQueryRef = useRef(persistToUrl ? urlQuery : initialValue)
 
   const handleSearch = useCallback((searchQuery: string) => {
-    onSearch(searchQuery)
+    if (onSearch) {
+      onSearch(searchQuery)
+    }
   }, [onSearch])
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -64,11 +72,19 @@ function SearchBarComponent({
     setQuery(emptyValue)
     pendingQueryRef.current = emptyValue
     inputRef.current?.focus()
+    if (persistToUrl) {
+      router.push('/cari')
+    }
   }
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    onSearch(pendingQueryRef.current)
+    const searchValue = pendingQueryRef.current.trim()
+    if (persistToUrl && searchValue) {
+      router.push(`/cari?q=${encodeURIComponent(searchValue)}`)
+    } else if (onSearch) {
+      onSearch(searchValue)
+    }
   }
 
   return (
@@ -121,7 +137,8 @@ function arePropsEqual(prevProps: SearchBarProps, nextProps: SearchBarProps): bo
     prevProps.className === nextProps.className &&
     prevProps.initialValue === nextProps.initialValue &&
     prevProps.ariaLabel === nextProps.ariaLabel &&
-    prevProps.onSearch === nextProps.onSearch
+    prevProps.onSearch === nextProps.onSearch &&
+    prevProps.persistToUrl === nextProps.persistToUrl
   )
 }
 

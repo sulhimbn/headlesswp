@@ -4,7 +4,7 @@ import PostCard from '@/components/post/PostCard'
 import Pagination from '@/components/ui/Pagination'
 import EmptyState from '@/components/ui/EmptyState'
 import SectionHeading from '@/components/ui/SectionHeading'
-import { PAGINATION_LIMITS } from '@/lib/api/config'
+import { PAGINATION_LIMITS, PAGINATION } from '@/lib/api/config'
 import dynamic from 'next/dynamic'
 import { UI_TEXT } from '@/lib/constants/uiText'
 import { PARSING } from '@/lib/constants/appConstants'
@@ -15,12 +15,23 @@ const Footer = dynamic(() => import('@/components/layout/Footer'), {
 
 export const revalidate = 300 // 5 minutes
 
+function validatePage(page: number): number {
+  if (!Number.isInteger(page) || page < PAGINATION.MIN_PAGE) {
+    return PAGINATION.MIN_PAGE
+  }
+  if (page > PAGINATION.MAX_PAGE) {
+    return PAGINATION.MAX_PAGE
+  }
+  return page
+}
+
 export default async function BeritaPage({
   searchParams,
 }: {
   searchParams: { page?: string }
 }) {
-  const page = parseInt(searchParams.page || '1', PARSING.DECIMAL_RADIX)
+  const rawPage = parseInt(searchParams.page || '1', PARSING.DECIMAL_RADIX)
+  const page = validatePage(rawPage)
   const postsPerPage = PAGINATION_LIMITS.ALL_POSTS
 
   const { posts, totalPages } = await enhancedPostService.getPaginatedPosts(page, postsPerPage)

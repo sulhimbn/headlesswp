@@ -52,6 +52,8 @@ export const REVALIDATE_TIMES = {
 
 export const PAGINATION = {
   MAX_VISIBLE_PAGES: 5,
+  MIN_PAGE: 1,
+  MAX_PAGE: 1000,
 } as const
 
 export const FEATURE_FLAGS = {

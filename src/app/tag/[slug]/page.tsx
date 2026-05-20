@@ -10,12 +10,23 @@ import dynamic from 'next/dynamic'
 import { UI_TEXT } from '@/lib/constants/uiText'
 import { PARSING } from '@/lib/constants/appConstants'
 import { isApiResultSuccessful } from '@/lib/api/response'
+import { PAGINATION } from '@/lib/api/config'
 
 const Footer = dynamic(() => import('@/components/layout/Footer'), {
   loading: () => <div className="h-64 bg-[hsl(var(--color-background-dark))] mt-12" aria-hidden="true" />
 })
 
 export const revalidate = 300
+
+function validatePage(page: number): number {
+  if (!Number.isInteger(page) || page < PAGINATION.MIN_PAGE) {
+    return PAGINATION.MIN_PAGE
+  }
+  if (page > PAGINATION.MAX_PAGE) {
+    return PAGINATION.MAX_PAGE
+  }
+  return page
+}
 
 export default async function TagPage({
   params,
@@ -24,7 +35,8 @@ export default async function TagPage({
   params: { slug: string }
   searchParams: { page?: string }
 }) {
-  const page = parseInt(searchParams.page || '1', PARSING.DECIMAL_RADIX)
+  const rawPage = parseInt(searchParams.page || '1', PARSING.DECIMAL_RADIX)
+  const page = validatePage(rawPage)
   const perPage = 12
 
   const tagResult = await standardizedAPI.getTagBySlug(params.slug)

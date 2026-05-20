@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { proxy, config as proxyConfig } from '@/proxy'
+import { proxy, config as proxyConfig } from '@/middleware'
 
 jest.mock('next/server', () => ({
   NextRequest: jest.fn(),
