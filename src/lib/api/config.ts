@@ -3,6 +3,13 @@ export const WORDPRESS_SITE_URL = process.env.NEXT_PUBLIC_WORDPRESS_URL || 'http
 export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://mitrabantennews.com'
 export const SITE_URL_WWW = process.env.NEXT_PUBLIC_SITE_URL_WWW || 'https://www.mitrabantennews.com'
 
+export const ALLOWED_DOMAINS = [
+  'mitrabantennews.com',
+  'www.mitrabantennews.com',
+  'api.mitrabantennews.com',
+  'wp-json.mitrabantennews.com',
+]
+
 export const TIME_CONSTANTS = {
   SECOND_IN_MS: 1000,
   MINUTE_IN_MS: 60 * 1000,

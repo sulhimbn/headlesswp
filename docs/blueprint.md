@@ -35,7 +35,7 @@
 
 ### Development
 - **Testing**: Jest 30 + React Testing Library 16
-- **Linting**: ESLint 8 with Next.js config
+- **Linting**: ESLint 9 with flat config
 - **Version Control**: Git
 
 ## Design System
