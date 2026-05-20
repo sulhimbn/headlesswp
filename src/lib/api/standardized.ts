@@ -11,6 +11,7 @@ import {
 } from './response';
 import { createApiError } from './errors';
 import { DEFAULT_PER_PAGE } from './config';
+import { validateSearchQuery } from '@/lib/validation/searchQueryValidator';
 
 async function getAllEntities<T>(
   entities: T[],
@@ -102,8 +103,16 @@ export async function getAllPosts(
 }
 
 export async function searchPosts(query: string, page: number = 1, perPage: number = 12): Promise<ApiListResult<WordPressPost>> {
+  const validation = validateSearchQuery(query);
+  
+  if (!validation.isValid) {
+    const errors = validation.errors.map(e => e.message).join('; ');
+    const error = new Error(`Search query validation failed: ${errors}`);
+    return createErrorListResult('/wp/v2/search', { cacheHit: false }, { perPage: 0 }, error);
+  }
+  
   try {
-    const result = await wordpressAPI.search(query, page, perPage);
+    const result = await wordpressAPI.search(validation.sanitizedQuery, page, perPage);
     const pagination: ApiPaginationMetadata = {
       page,
       perPage,

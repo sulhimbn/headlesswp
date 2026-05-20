@@ -24,9 +24,13 @@ const DEFAULT_OPTIONS: LoggerOptions = {
 
 class Logger {
   private options: LoggerOptions
+  private isProduction: boolean
+
+  private noOp = () => {}
 
   constructor(options: LoggerOptions = {}) {
     this.options = { ...DEFAULT_OPTIONS, ...options }
+    this.isProduction = process.env.NODE_ENV === 'production'
   }
 
   private shouldLog(level: LogLevel): boolean {
@@ -75,6 +79,10 @@ class Logger {
   }
 
   private getConsoleMethod(level: LogLevel): (...args: unknown[]) => void {
+    if (this.isProduction) {
+      return this.noOp
+    }
+
     switch (level) {
       case LogLevel.DEBUG:
         return console.debug

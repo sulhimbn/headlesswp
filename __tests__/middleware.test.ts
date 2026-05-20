@@ -1,12 +1,16 @@
 import { proxy as middleware } from '@/proxy'
 
 let mockHeaders: Record<string, string> = {}
+let mockRequestHeaders: Map<string, string> = new Map()
 
 jest.mock('next/server', () => ({
   NextRequest: jest.fn().mockImplementation(() => ({
     url: 'http://localhost:3000/test',
     method: 'GET',
-    headers: new Map()
+    headers: mockRequestHeaders,
+    nextUrl: {
+      pathname: '/test'
+    }
   })),
   NextResponse: {
     next: jest.fn(() => ({
@@ -19,6 +23,17 @@ jest.mock('next/server', () => ({
         })
       },
       status: 200
+    })),
+    redirect: jest.fn(() => ({
+      headers: {
+        get: (key: string) => {
+          return mockHeaders[key] || null
+        },
+        set: jest.fn((key: string, value: string) => {
+          mockHeaders[key] = value
+        })
+      },
+      status: 307
     }))
   }
 }))
@@ -442,6 +457,221 @@ describe('Middleware', () => {
       directives.forEach(directive => {
         expect(directive).toMatch(/^[a-z-]+/)
       })
+    })
+  })
+
+  describe('Bot Detection', () => {
+    it('should set X-Robots-Tag for Googlebot', async () => {
+      mockRequestHeaders.set('user-agent', 'Googlebot/2.1')
+      const { NextRequest } = require('next/server')
+      const request = new NextRequest()
+      
+      await middleware(request)
+      
+      expect(mockHeaders['X-Robots-Tag']).toBe('index, follow')
+    })
+
+    it('should set X-SEO-Crawler to bot for Googlebot', async () => {
+      mockRequestHeaders.set('user-agent', 'Googlebot/2.1')
+      const { NextRequest } = require('next/server')
+      const request = new NextRequest()
+      
+      await middleware(request)
+      
+      expect(mockHeaders['X-SEO-Crawler']).toBe('bot')
+    })
+
+    it('should set X-Robots-Tag for Bingbot', async () => {
+      mockRequestHeaders.set('user-agent', 'bingbot/2.0')
+      const { NextRequest } = require('next/server')
+      const request = new NextRequest()
+      
+      await middleware(request)
+      
+      expect(mockHeaders['X-Robots-Tag']).toBe('index, follow')
+    })
+
+    it('should set X-SEO-Crawler to bot for Bingbot', async () => {
+      mockRequestHeaders.set('user-agent', 'bingbot/2.0')
+      const { NextRequest } = require('next/server')
+      const request = new NextRequest()
+      
+      await middleware(request)
+      
+      expect(mockHeaders['X-SEO-Crawler']).toBe('bot')
+    })
+
+    it('should set X-Robots-Tag for Yandex', async () => {
+      mockRequestHeaders.set('user-agent', 'Yandex/1.1')
+      const { NextRequest } = require('next/server')
+      const request = new NextRequest()
+      
+      await middleware(request)
+      
+      expect(mockHeaders['X-Robots-Tag']).toBe('index, follow')
+    })
+
+    it('should set X-SEO-Crawler to bot for Yandex', async () => {
+      mockRequestHeaders.set('user-agent', 'Yandex/1.1')
+      const { NextRequest } = require('next/server')
+      const request = new NextRequest()
+      
+      await middleware(request)
+      
+      expect(mockHeaders['X-SEO-Crawler']).toBe('bot')
+    })
+
+    it('should set X-Robots-Tag for other bots (Baiduspider)', async () => {
+      mockRequestHeaders.set('user-agent', 'Baiduspider/2.0')
+      const { NextRequest } = require('next/server')
+      const request = new NextRequest()
+      
+      await middleware(request)
+      
+      expect(mockHeaders['X-Robots-Tag']).toBe('index, follow')
+    })
+
+    it('should set X-SEO-Crawler to bot for Baiduspider', async () => {
+      mockRequestHeaders.set('user-agent', 'Baiduspider/2.0')
+      const { NextRequest } = require('next/server')
+      const request = new NextRequest()
+      
+      await middleware(request)
+      
+      expect(mockHeaders['X-SEO-Crawler']).toBe('bot')
+    })
+
+    it('should detect GPTBot as bot', async () => {
+      mockRequestHeaders.set('user-agent', 'GPTBot/1.0')
+      const { NextRequest } = require('next/server')
+      const request = new NextRequest()
+      
+      await middleware(request)
+      
+      expect(mockHeaders['X-SEO-Crawler']).toBe('bot')
+    })
+
+    it('should detect ClaudeBot as bot', async () => {
+      mockRequestHeaders.set('user-agent', 'ClaudeBot/1.0')
+      const { NextRequest } = require('next/server')
+      const request = new NextRequest()
+      
+      await middleware(request)
+      
+      expect(mockHeaders['X-SEO-Crawler']).toBe('bot')
+    })
+
+    it('should set X-Robots-Tag for human user agent', async () => {
+      mockRequestHeaders.set('user-agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120.0.0.0')
+      const { NextRequest } = require('next/server')
+      const request = new NextRequest()
+      
+      await middleware(request)
+      
+      expect(mockHeaders['X-Robots-Tag']).toBe('index, follow')
+    })
+
+    it('should set X-SEO-Crawler to human for non-bot user agent', async () => {
+      mockRequestHeaders.set('user-agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120.0.0.0')
+      const { NextRequest } = require('next/server')
+      const request = new NextRequest()
+      
+      await middleware(request)
+      
+      expect(mockHeaders['X-SEO-Crawler']).toBe('human')
+    })
+
+    it('should set X-SEO-Crawler to human when no user agent', async () => {
+      mockRequestHeaders = new Map()
+      const { NextRequest } = require('next/server')
+      const request = new NextRequest()
+      
+      await middleware(request)
+      
+      expect(mockHeaders['X-SEO-Crawler']).toBe('human')
+    })
+
+    it('should set X-Robots-Tag for Safari browser', async () => {
+      mockRequestHeaders.set('user-agent', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15')
+      const { NextRequest } = require('next/server')
+      const request = new NextRequest()
+      
+      await middleware(request)
+      
+      expect(mockHeaders['X-Robots-Tag']).toBe('index, follow')
+      expect(mockHeaders['X-SEO-Crawler']).toBe('human')
+    })
+
+    it('should set X-Robots-Tag for Firefox browser', async () => {
+      mockRequestHeaders.set('user-agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:120.0) Gecko/20100101 Firefox/120.0')
+      const { NextRequest } = require('next/server')
+      const request = new NextRequest()
+      
+      await middleware(request)
+      
+      expect(mockHeaders['X-Robots-Tag']).toBe('index, follow')
+      expect(mockHeaders['X-SEO-Crawler']).toBe('human')
+    })
+  })
+
+  describe('Root Redirect', () => {
+    it('should redirect root path to /berita', async () => {
+      const { NextRequest, NextResponse } = require('next/server')
+      const MockNextRequest = jest.fn().mockImplementation(() => ({
+        url: 'http://localhost:3000/',
+        method: 'GET',
+        headers: mockRequestHeaders,
+        nextUrl: {
+          pathname: '/'
+        }
+      }))
+      
+      const mockRedirectResponse = {
+        status: 307,
+        headers: {
+          get: (key: string) => {
+            return mockHeaders[key] || null
+          },
+          set: jest.fn((key: string, value: string) => {
+            mockHeaders[key] = value
+          })
+        }
+      }
+      
+      jest.spyOn(NextResponse, 'redirect').mockReturnValue(mockRedirectResponse as any)
+      jest.spyOn(NextResponse, 'next').mockReturnValue({
+        headers: {
+          get: (key: string) => mockHeaders[key] || null,
+          set: jest.fn((key: string, value: string) => { mockHeaders[key] = value })
+        },
+        status: 200
+      } as any)
+      
+      const request = new MockNextRequest()
+      const response = await middleware(request)
+      
+      expect(NextResponse.redirect).toHaveBeenCalled()
+    })
+  })
+
+  describe('X-DNS-Prefetch-Control', () => {
+    it('should set X-DNS-Prefetch-Control header', async () => {
+      const { NextRequest } = require('next/server')
+      const request = new NextRequest()
+      
+      await middleware(request)
+      
+      expect(mockHeaders['X-DNS-Prefetch-Control']).toBe('on')
+    })
+
+    it('should have X-DNS-Prefetch-Control set to on', async () => {
+      const { NextRequest } = require('next/server')
+      const request = new NextRequest()
+      
+      await middleware(request)
+      
+      expect(mockHeaders['X-DNS-Prefetch-Control']).toBeDefined()
+      expect(mockHeaders['X-DNS-Prefetch-Control']).toBe('on')
     })
   })
 })

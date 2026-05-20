@@ -1,4 +1,5 @@
 import { RECOMMENDATION_CONFIG } from '@/lib/api/config'
+import { logger } from './logger'
 
 const READING_HISTORY_KEY = 'reading_history'
 const RECOMMENDATION_CLICKS_KEY = 'recommendation_clicks'
@@ -32,8 +33,8 @@ function setStorageItem<T>(key: string, value: T): void {
   if (typeof window === 'undefined') return
   try {
     localStorage.setItem(key, JSON.stringify(value))
-  } catch {
-    // localStorage unavailable or quota exceeded
+  } catch (error) {
+    logger.warn('Failed to save to localStorage', error, { module: 'readingHistory', key })
   }
 }
 
