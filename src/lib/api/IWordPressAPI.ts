@@ -38,4 +38,5 @@ export interface IWordPressAPI {
   getMediaUrlsBatch(ids: number[], signal?: AbortSignal): Promise<Map<number, string | null>>;
   
   getAuthor(id: number, signal?: AbortSignal): Promise<WordPressAuthor>;
+  getAuthors(signal?: AbortSignal): Promise<WordPressAuthor[]>;
 }
