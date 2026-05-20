@@ -49,7 +49,7 @@ function PostCardComponent({ post, mediaUrl, mediaDimensions, priority = false }
           />
         </Link>
       )}
-      <div className="p-4 sm:p-5 md:p-4">
+      <div className="p-[var(--spacing-md)] sm:p-5 md:p-[var(--spacing-md)]">
         <h3 id={postTitleId} className="text-lg sm:text-xl md:text-lg font-semibold mb-2">
           <Link
             href={`/berita/${post.slug}`}

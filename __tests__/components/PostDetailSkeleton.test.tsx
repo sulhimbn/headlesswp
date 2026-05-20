@@ -143,7 +143,7 @@ describe('PostDetailSkeleton Component', () => {
       const { container } = render(<PostDetailSkeleton />)
       const article = container.querySelector('article')
       const contentSection = article?.querySelector('div:last-child')
-      expect(contentSection).toHaveClass('p-8')
+      expect(contentSection).toHaveClass('p-[var(--spacing-xl)]')
     })
   })
 

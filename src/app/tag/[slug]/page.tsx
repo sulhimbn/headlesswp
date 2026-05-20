@@ -35,21 +35,10 @@ export default async function TagPage({
 
   const tag = tagResult.data
 
-  const postsResult = await standardizedAPI.getAllPosts({
-    page,
-    per_page: perPage,
-    tag: tag.id
-  })
+  const postsResult = await enhancedPostService.getPostsByTag(tag.id, page, perPage)
 
-  const posts = postsResult.data
-  const totalPages = postsResult.pagination.totalPages ?? 0
-
-  const postsWithMedia = await enhancedPostService.getLatestPosts()
-
-  const enrichedPosts = posts.map(post => {
-    const enriched = postsWithMedia.find(p => p.id === post.id)
-    return enriched || { ...post, mediaUrl: null }
-  })
+  const posts = postsResult.posts
+  const totalPages = postsResult.totalPages
 
   return (
     <div className="min-h-screen bg-[hsl(var(--color-background))]">
@@ -69,7 +58,7 @@ export default async function TagPage({
         {posts.length > 0 ? (
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {enrichedPosts.map((post, index) => (
+              {posts.map((post, index) => (
                 <PostCard key={post.id} post={post} mediaUrl={post.mediaUrl} priority={index < 6} />
               ))}
             </div>

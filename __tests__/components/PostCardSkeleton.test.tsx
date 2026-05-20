@@ -119,7 +119,7 @@ describe('PostCardSkeleton Component', () => {
     test('content has responsive padding classes', () => {
       const { container } = render(<PostCardSkeleton />)
       const contentSection = container.querySelector('article > div:last-child')
-      expect(contentSection).toHaveClass('p-4', 'sm:p-5', 'md:p-4')
+      expect(contentSection).toHaveClass('p-[var(--spacing-md)]', 'sm:p-5', 'md:p-[var(--spacing-md)]')
     })
 
     test('title has responsive height classes', () => {

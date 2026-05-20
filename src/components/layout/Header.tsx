@@ -102,7 +102,7 @@ export default memo(function Header() {
             <button
               ref={searchButtonRef}
               type="button"
-              className="inline-flex items-center justify-center p-2 rounded-[var(--radius-md)] text-[hsl(var(--color-text-primary))] hover:text-[hsl(var(--color-primary))] hover:bg-[hsl(var(--color-secondary-dark))] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--color-primary))] focus:ring-offset-2"
+              className="inline-flex items-center justify-center p-[var(--spacing-sm)] rounded-[var(--radius-md)] text-[hsl(var(--color-text-primary))] hover:text-[hsl(var(--color-primary))] hover:bg-[hsl(var(--color-secondary-dark))] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--color-primary))] focus:ring-offset-2"
               onClick={toggleSearch}
               aria-expanded={isSearchOpen}
               aria-controls="desktop-search"
@@ -112,7 +112,7 @@ export default memo(function Header() {
             </button>
             <button
               type="button"
-              className="inline-flex items-center justify-center p-2 rounded-[var(--radius-md)] text-[hsl(var(--color-text-primary))] hover:text-[hsl(var(--color-primary))] hover:bg-[hsl(var(--color-secondary-dark))] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--color-primary))] focus:ring-offset-2"
+              className="inline-flex items-center justify-center p-[var(--spacing-sm)] rounded-[var(--radius-md)] text-[hsl(var(--color-text-primary))] hover:text-[hsl(var(--color-primary))] hover:bg-[hsl(var(--color-secondary-dark))] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--color-primary))] focus:ring-offset-2"
               onClick={toggleDarkMode}
               aria-label={isDark ? UI_TEXT.header.darkMode.enableLight : UI_TEXT.header.darkMode.enableDark}
             >
@@ -135,7 +135,7 @@ export default memo(function Header() {
             <button
               ref={searchButtonRef}
               type="button"
-              className="inline-flex items-center justify-center p-3 min-w-[44px] min-h-[44px] rounded-[var(--radius-md)] text-[hsl(var(--color-text-primary))] hover:text-[hsl(var(--color-primary))] hover:bg-[hsl(var(--color-secondary-dark))] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--color-primary))] focus:ring-offset-2"
+              className="inline-flex items-center justify-center p-[var(--spacing-md)] min-w-[44px] min-h-[44px] rounded-[var(--radius-md)] text-[hsl(var(--color-text-primary))] hover:text-[hsl(var(--color-primary))] hover:bg-[hsl(var(--color-secondary-dark))] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--color-primary))] focus:ring-offset-2"
               onClick={toggleSearch}
               aria-expanded={isSearchOpen}
               aria-controls="mobile-search"
@@ -145,7 +145,7 @@ export default memo(function Header() {
             </button>
             <button
               type="button"
-              className="inline-flex items-center justify-center p-3 min-w-[44px] min-h-[44px] rounded-[var(--radius-md)] text-[hsl(var(--color-text-primary))] hover:text-[hsl(var(--color-primary))] hover:bg-[hsl(var(--color-secondary-dark))] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--color-primary))] focus:ring-offset-2"
+              className="inline-flex items-center justify-center p-[var(--spacing-md)] min-w-[44px] min-h-[44px] rounded-[var(--radius-md)] text-[hsl(var(--color-text-primary))] hover:text-[hsl(var(--color-primary))] hover:bg-[hsl(var(--color-secondary-dark))] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--color-primary))] focus:ring-offset-2"
               onClick={toggleDarkMode}
               aria-label={isDark ? UI_TEXT.header.darkMode.enableLight : UI_TEXT.header.darkMode.enableDark}
             >
@@ -154,7 +154,7 @@ export default memo(function Header() {
             <button
               ref={menuButtonRef}
               type="button"
-              className="inline-flex items-center justify-center p-3 min-w-[44px] min-h-[44px] rounded-[var(--radius-md)] text-[hsl(var(--color-text-primary))] hover:text-[hsl(var(--color-primary))] hover:bg-[hsl(var(--color-secondary-dark))] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--color-primary))] focus:ring-offset-2"
+              className="inline-flex items-center justify-center p-[var(--spacing-md)] min-w-[44px] min-h-[44px] rounded-[var(--radius-md)] text-[hsl(var(--color-text-primary))] hover:text-[hsl(var(--color-primary))] hover:bg-[hsl(var(--color-secondary-dark))] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--color-primary))] focus:ring-offset-2"
               aria-expanded={isMenuOpen}
               aria-controls="mobile-menu"
               aria-haspopup="true"
@@ -204,7 +204,7 @@ export default memo(function Header() {
                   undefined
                 }
                 href={item.href}
-                className="block px-4 py-3 min-h-[44px] flex items-center rounded-[var(--radius-md)] text-base font-medium text-[hsl(var(--color-text-primary))] hover:text-[hsl(var(--color-primary))] hover:bg-[hsl(var(--color-secondary-dark))] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--color-primary))] focus:ring-offset-2"
+                className="block px-[var(--spacing-md)] py-[var(--spacing-md)] min-h-[44px] flex items-center rounded-[var(--radius-md)] text-base font-medium text-[hsl(var(--color-text-primary))] hover:text-[hsl(var(--color-primary))] hover:bg-[hsl(var(--color-secondary-dark))] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--color-primary))] focus:ring-offset-2"
                 onClick={closeMenu}
               >
                 {item.label}

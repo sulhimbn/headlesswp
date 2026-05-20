@@ -38,7 +38,7 @@ function TableOfContentsComponent({ headings, className = '' }: TableOfContentsP
 
   return (
     <nav 
-      className={`bg-[hsl(var(--color-surface))] rounded-[var(--radius-lg)] p-4 shadow-[var(--shadow-md)] ${className}`}
+      className={`bg-[hsl(var(--color-surface))] rounded-[var(--radius-lg)] p-[var(--spacing-md)] shadow-[var(--shadow-md)] ${className}`}
       aria-label={UI_TEXT.postDetail.tableOfContents}
     >
       <h2 className="text-sm font-semibold text-[hsl(var(--color-text-primary))] mb-3">
