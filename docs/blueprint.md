@@ -1,7 +1,7 @@
 # Architecture Blueprint
 
-**Version**: 1.0.3
-**Last Updated**: 2026-03-21 (System Orchestrator - FIX-844: Restore missing middleware.ts, FIX-843: npm audit vulnerabilities resolved)
+**Version**: 1.0.4
+**Last Updated**: 2026-03-28 (Issue #856: Redis Cache Adapter for Multi-Instance Deployments)
 
 ## System Architecture
 
@@ -1465,6 +1465,15 @@ startResourceMonitoring(30000)
 - **Smart Invalidation**: `invalidateByEntityType()` clears all caches for specific entity type
 - **Orphan Cleanup**: Automatic removal of broken dependency references
 - **Debug Tools**: `getDependencies()`, `getKeysByPattern()` for cache inspection
+- **Redis Cache Adapter**: External cache store support for multi-instance deployments
+  - **ICacheStore Interface** (`src/lib/cache/types.ts`): Defines contract for cache stores
+  - **RedisCacheStore** (`src/lib/cache/stores/redisStore.ts`): Redis implementation with connection pooling
+  - **MemoryCacheStore** (`src/lib/cache/stores/memoryStore.ts`): In-memory fallback implementation
+  - **Cache Store Factory** (`src/lib/cache/cacheStoreFactory.ts`): Factory for creating cache stores
+  - **Environment Variable**: `REDIS_URL` triggers Redis mode
+  - **Graceful Fallback**: Automatically falls back to in-memory when Redis unavailable
+  - **Health Check**: Connection health monitoring for Redis
+  - **Async Methods**: New async versions of cache operations (`getAsync`, `setAsync`, `deleteAsync`, `invalidateAsync`, `clearAsync`) for external store support
 
 **Cache Dependencies**:
 - Posts depend on: categories, tags, media

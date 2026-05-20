@@ -2,8 +2,10 @@ import { CacheMetricsCalculator } from './cache/cacheMetricsCalculator';
 import { CacheCleanup } from './cache/cacheCleanup';
 import { CacheDependencyManager } from './cache/cacheDependencyManager';
 import type { ICacheManager } from '@/lib/api/ICacheManager';
-import type { CacheEntry, CacheTelemetry } from './cache/types';
-export type { CacheEntry, CacheTelemetry } from './cache/types';
+import type { CacheEntry, CacheTelemetry, ICacheStore } from './cache/types';
+import { createCacheStore, isRedisAvailable } from './cache/cacheStoreFactory';
+import { MemoryCacheStore } from './cache/stores/memoryStore';
+export type { CacheEntry, CacheTelemetry, ICacheStore, CacheStoreType } from './cache/types';
 
 /**
  * Advanced cache manager with dependency-aware cascade invalidation.
@@ -31,6 +33,11 @@ export type { CacheEntry, CacheTelemetry } from './cache/types';
  *    - Clean up orphaned dependency references
  *    - Pattern-based cache clearing (e.g., clear all 'post:*' entries)
  * 
+ * 5. **External Store Support**:
+ *    - Supports Redis for multi-instance deployments
+ *    - Falls back to in-memory when Redis unavailable
+ *    - Connection health checks for Redis
+ * 
  * @example
  * ```typescript
  * // Cache a post with dependencies on category and media
@@ -43,6 +50,8 @@ export type { CacheEntry, CacheTelemetry } from './cache/types';
  */
 class CacheManager implements ICacheManager {
   private cache = new Map<string, CacheEntry<unknown>>();
+  private store: ICacheStore;
+  private useExternalStore = false;
   private stats: CacheTelemetry = {
     hits: 0,
     misses: 0,
@@ -54,6 +63,40 @@ class CacheManager implements ICacheManager {
   private metricsCalculator = new CacheMetricsCalculator();
   private cacheCleanup = new CacheCleanup(this.cache);
   private dependencyManager = new CacheDependencyManager(this.cache);
+
+  constructor(store?: ICacheStore) {
+    this.store = store || new MemoryCacheStore();
+    this.useExternalStore = !!store && store instanceof MemoryCacheStore === false;
+    this.initAsyncStore();
+  }
+
+  private async initAsyncStore(): Promise<void> {
+    if (this.useExternalStore) {
+      const keys = await this.store.keys();
+      for (const key of keys) {
+        const entry = await this.store.get(key);
+        if (entry) {
+          const deps = await this.store.get(`${key}:_deps`);
+          if (deps && typeof deps === 'object' && 'dependencies' in deps) {
+            const depData = deps as { dependencies: string[] };
+            const cacheEntry = this.cache.get(key);
+            if (cacheEntry) {
+              cacheEntry.dependencies = new Set(depData.dependencies);
+              depData.dependencies.forEach(depKey => {
+                const depEntry = this.cache.get(depKey);
+                if (depEntry) {
+                  if (!depEntry.dependents) {
+                    depEntry.dependents = new Set();
+                  }
+                  depEntry.dependents.add(key);
+                }
+              });
+            }
+          }
+        }
+      }
+    }
+  }
 
   /**
     * Get data from cache by key.
@@ -87,6 +130,34 @@ class CacheManager implements ICacheManager {
 
     this.stats.hits++;
     return entry.data as T;
+  }
+
+  async getAsync<T>(key: string): Promise<T | null> {
+    if (!this.useExternalStore) {
+      return this.get<T>(key);
+    }
+
+    try {
+      const entry = await this.store.get<CacheEntry<T>>(key);
+      
+      if (!entry) {
+        this.stats.misses++;
+        return null;
+      }
+
+      if (Date.now() - entry.timestamp > entry.ttl) {
+        await this.invalidateAsync(key);
+        this.stats.misses++;
+        return null;
+      }
+
+      this.stats.hits++;
+      return entry.data;
+    } catch (error) {
+      console.error('Cache getAsync error:', error);
+      this.stats.misses++;
+      return null;
+    }
   }
 
   /**
@@ -131,6 +202,39 @@ class CacheManager implements ICacheManager {
     }
 
     this.stats.sets++;
+  }
+
+  async setAsync<T>(key: string, data: T, ttl: number, dependencies?: string[]): Promise<void> {
+    if (!this.useExternalStore) {
+      this.set(key, data, ttl, dependencies);
+      return;
+    }
+
+    try {
+      const entry: CacheEntry<T> = {
+        data,
+        timestamp: Date.now(),
+        ttl,
+        dependencies: dependencies ? new Set(dependencies) : undefined,
+      };
+
+      await this.store.set(key, entry, ttl);
+
+      if (dependencies && dependencies.length > 0) {
+        const cacheEntry = this.cache.get(key);
+        if (cacheEntry) {
+          cacheEntry.dependencies = new Set(dependencies);
+        }
+        await this.store.set(`${key}:_deps`, { dependencies }, ttl);
+
+        this.dependencyManager.registerDependencies(key, dependencies, this.stats);
+      }
+
+      this.stats.sets++;
+    } catch (error) {
+      console.error('Cache setAsync error:', error);
+      this.set(key, data, ttl, dependencies);
+    }
   }
 
   /**
@@ -187,6 +291,50 @@ class CacheManager implements ICacheManager {
     this.dependencyManager.invalidate(key, (key) => this.cache.delete(key), this.stats);
   }
 
+  async invalidateAsync(key: string): Promise<void> {
+    if (!this.useExternalStore) {
+      this.invalidate(key);
+      return;
+    }
+
+    try {
+      const deps = await this.store.get<{ dependencies: string[] }>(`${key}:_deps`);
+      await this.store.delete(key);
+      await this.store.delete(`${key}:_deps`);
+      this.stats.deletes++;
+      this.stats.cascadeInvalidations++;
+
+      if (deps && deps.dependencies) {
+        for (const depKey of deps.dependencies) {
+          await this.invalidateAsync(depKey);
+        }
+      }
+
+      this.invalidate(key);
+    } catch (error) {
+      console.error('Cache invalidateAsync error:', error);
+      this.invalidate(key);
+    }
+  }
+
+  async deleteAsync(key: string): Promise<boolean> {
+    if (!this.useExternalStore) {
+      return this.delete(key);
+    }
+
+    try {
+      const deleted = await this.store.delete(key);
+      await this.store.delete(`${key}:_deps`);
+      if (deleted) {
+        this.stats.deletes++;
+      }
+      return deleted;
+    } catch (error) {
+      console.error('Cache deleteAsync error:', error);
+      return this.delete(key);
+    }
+  }
+
   /**
    * Clear all cache entries without cascade invalidation.
    * 
@@ -208,6 +356,24 @@ class CacheManager implements ICacheManager {
     const size = this.cache.size;
     this.cache.clear();
     this.stats.deletes += size;
+  }
+
+  async clearAllAsync(): Promise<void> {
+    if (!this.useExternalStore) {
+      this.clearAll();
+      return;
+    }
+
+    try {
+      const keys = await this.store.keys();
+      for (const key of keys) {
+        await this.store.delete(key);
+      }
+      this.clearAll();
+    } catch (error) {
+      console.error('Cache clearAllAsync error:', error);
+      this.clearAll();
+    }
   }
 
   /**
@@ -558,16 +724,82 @@ class CacheManager implements ICacheManager {
       this.clearAll();
     }
   }
+
+  async clearAsync(pattern?: string): Promise<void> {
+    if (!this.useExternalStore) {
+      this.clear(pattern);
+      return;
+    }
+
+    if (pattern) {
+      try {
+        const keys = await this.store.keys(pattern.replace('*', '.*'));
+        for (const key of keys) {
+          await this.invalidateAsync(key);
+        }
+      } catch (error) {
+        console.error('Cache clearAsync pattern error:', error);
+        this.clearPattern(pattern);
+      }
+    } else {
+      await this.clearAllAsync();
+    }
+  }
+
+  getStoreInfo(): { type: string; isConnected: boolean } {
+    return {
+      type: this.useExternalStore ? 'redis' : 'memory',
+      isConnected: true,
+    };
+  }
+
+  async healthCheck(): Promise<boolean> {
+    if (this.useExternalStore) {
+      try {
+        return await this.store.healthCheck();
+      } catch {
+        return false;
+      }
+    }
+    return true;
+  }
 }
 
 // Global cache instance - single source of truth for all caching operations
-export const cacheManager = new CacheManager();
+let globalCacheManager: CacheManager | null = null;
+
+export async function initializeCacheManager(store?: ICacheStore): Promise<CacheManager> {
+  if (!store && isRedisAvailable()) {
+    try {
+      const redisStore = await createCacheStore();
+      globalCacheManager = new CacheManager(redisStore);
+    } catch (error) {
+      console.warn('Failed to initialize Redis cache, falling back to memory:', error);
+      globalCacheManager = new CacheManager();
+    }
+  } else {
+    globalCacheManager = new CacheManager(store);
+  }
+  return globalCacheManager;
+}
+
+export function getCacheManager(): CacheManager {
+  if (!globalCacheManager) {
+    globalCacheManager = new CacheManager();
+  }
+  return globalCacheManager;
+}
+
+export const cacheManager: CacheManager = new CacheManager();
 
 // Convenience exports for backward compatibility
 export const { getStats: getCacheStats, clear: clearCache } = cacheManager;
 
 export { CACHE_CONFIG as CACHE_TTL } from './cache/cacheConfig';
 export { CACHE_CONFIG } from './cache/cacheConfig';
+export { createCacheStore, isRedisAvailable } from './cache/cacheStoreFactory';
+export { MemoryCacheStore } from './cache/stores/memoryStore';
+export { RedisCacheStore } from './cache/stores/redisStore';
 
 /**
  * Cache key factory for type-safe cache key generation.
