@@ -14,6 +14,10 @@ const API_ROUTE_RATE_LIMITS: Record<string, ApiRouteRateLimitOptions> = {
   metrics: { key: 'metrics', maxRequests: RATE_LIMIT.METRICS_MAX_REQUESTS, windowMs: RATE_LIMIT.DEFAULT_WINDOW_MS },
   cache: { key: 'cache', maxRequests: RATE_LIMIT.CACHE_MAX_REQUESTS, windowMs: RATE_LIMIT.DEFAULT_WINDOW_MS },
   cspReport: { key: 'csp-report', maxRequests: RATE_LIMIT.CSP_REPORT_MAX_REQUESTS, windowMs: RATE_LIMIT.DEFAULT_WINDOW_MS },
+  posts: { key: 'posts', maxRequests: 60, windowMs: 60000 },
+  summary: { key: 'summary', maxRequests: 30, windowMs: 60000 },
+  rss: { key: 'rss', maxRequests: 30, windowMs: 60000 },
+  media: { key: 'media', maxRequests: 60, windowMs: 60000 },
 }
 
 interface RateLimitState {
@@ -62,11 +66,15 @@ async function checkRateLimit(key: string, options: ApiRouteRateLimitOptions): P
   state.requestTimes.push(now)
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type GenericHandler = (request: NextRequest, context?: any) => Promise<NextResponse>;
+
 export function withApiRateLimit(
-  handler: (request: NextRequest, context?: unknown) => Promise<NextResponse>,
+  handler: GenericHandler,
   optionsKey: keyof typeof API_ROUTE_RATE_LIMITS = 'metrics'
 ) {
-  return async (request: NextRequest, context?: unknown): Promise<NextResponse> => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return async (request: NextRequest, context?: any): Promise<NextResponse> => {
     const options = API_ROUTE_RATE_LIMITS[optionsKey]
 
     try {

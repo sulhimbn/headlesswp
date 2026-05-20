@@ -1809,6 +1809,7 @@ spec:
     "timestamp": "2026-01-10T10:00:00Z",
     "uptime": 3600
   },
+  "stats": { ... },
   "circuitBreaker": {
     "stateChanges": 5,
     "failures": 23,
@@ -1845,6 +1846,24 @@ spec:
     "cacheMisses": 400,
     "totalEvents": 1600,
     "recentEvents": [...]
+  },
+  "performance": {
+    "apiResponse": {
+      "total": 1500,
+      "p50": 120,
+      "p95": 350,
+      "p99": 800,
+      "avg": 125,
+      "byEndpoint": {}
+    },
+    "resourceUtilization": {
+      "current": { "cpu": 25, "memory": 60 },
+      "avgCpuUsage": 22,
+      "avgMemoryUsage": 55,
+      "avgHeapUsage": 65
+    },
+    "errorRates": [],
+    "webVitals": { "events": [], "byMetricName": {} }
   }
 }
 ```
@@ -1869,8 +1888,8 @@ if (retryRate > 0.20) {
 }
 
 // Check API response time
-if (metrics.apiRequest.averageDuration > 500) {
-  console.warn(`High API response time: ${metrics.apiRequest.averageDuration}ms`);
+if (metrics.performance.apiResponse.avg > 500) {
+  console.warn(`High API response time: ${metrics.performance.apiResponse.avg}ms`);
   // Trigger warning alert
 }
 ```
@@ -2019,6 +2038,232 @@ const response = await fetch('http://localhost:3000/api/cache', {
 const response = await fetch('http://localhost:3000/api/cache?pattern=search:', {
   method: 'DELETE'
 });
+```
+
+---
+
+### GET /api/observability/performance
+
+**Purpose**: Export performance metrics including API response times, resource utilization, and web vitals.
+
+**Usage**: Performance monitoring dashboards, detailed performance analysis.
+
+**Response**:
+```json
+{
+  "summary": {
+    "totalApiCalls": 1500,
+    "totalErrorTypes": 5,
+    "totalWebVitalEvents": 200,
+    "timestamp": "2026-01-10T10:00:00Z",
+    "uptime": 3600
+  },
+  "apiResponse": {
+    "total": 1500,
+    "p50": 120,
+    "p95": 350,
+    "p99": 800,
+    "avg": 125,
+    "min": 50,
+    "max": 2000,
+    "byEndpoint": {}
+  },
+  "resourceUtilization": {
+    "current": { "cpu": 25, "memory": 60 },
+    "latest": { "cpu": 22, "memory": 58 },
+    "avgCpuUsage": 22,
+    "avgMemoryUsage": 55,
+    "avgHeapUsage": 65
+  },
+  "errorRates": [],
+  "webVitals": {
+    "events": [],
+    "byMetricName": {}
+  }
+}
+```
+
+**Example**:
+```typescript
+const response = await fetch('http://localhost:3000/api/observability/performance');
+const metrics = await response.json();
+
+console.log(`API P50: ${metrics.apiResponse.p50}ms`);
+console.log(`API P95: ${metrics.apiResponse.p95}ms`);
+console.log(`CPU Usage: ${metrics.resourceUtilization.current.cpu}%`);
+```
+
+---
+
+### GET /api/health/environment
+
+**Purpose**: Check environment configuration and validation status.
+
+**Usage**: Debugging configuration issues, deployment verification.
+
+**Response** (Valid - 200):
+```json
+{
+  "valid": true,
+  "checks": {
+    "WORDPRESS_API_URL": "valid",
+    "NEXT_PUBLIC_WORDPRESS_API_URL": "valid"
+  },
+  "timestamp": "2026-01-10T10:00:00Z"
+}
+```
+
+**Response** (Invalid - 500):
+```json
+{
+  "valid": false,
+  "checks": {
+    "WORDPRESS_API_URL": "missing"
+  },
+  "errors": ["WORDPRESS_API_URL is required"],
+  "timestamp": "2026-01-10T10:00:00Z"
+}
+```
+
+---
+
+## Content API Endpoints
+
+### GET /api/posts
+
+**Purpose**: Fetch posts with optional filtering.
+
+**Query Parameters**:
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| page | number | No | Page number (default: 1) |
+| per_page | number | No | Posts per page (default: 10) |
+| categories | string | No | Comma-separated category IDs |
+
+**Response** (200):
+```json
+[
+  {
+    "id": 123,
+    "title": { "rendered": "Post Title" },
+    "excerpt": { "rendered": "<p>Excerpt...</p>" },
+    "slug": "post-title",
+    "featured_media": 456,
+    "date": "2026-01-10T10:00:00Z",
+    "categories": [5, 8],
+    "tags": [12, 15]
+  }
+]
+```
+
+**Example**:
+```typescript
+const response = await fetch('http://localhost:3000/api/posts?categories=5&per_page=10');
+const posts = await response.json();
+```
+
+---
+
+### GET /api/media/[id]
+
+**Purpose**: Fetch media URL and alt text by ID.
+
+**Path Parameters**:
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| id | string | Media ID |
+
+**Response** (200):
+```json
+{
+  "source_url": "https://example.com/wp-content/uploads/2026/01/image.jpg",
+  "alt_text": "Image description"
+}
+```
+
+**Example**:
+```typescript
+const response = await fetch('http://localhost:3000/api/media/456');
+const { source_url, alt_text } = await response.json();
+```
+
+---
+
+### GET /api/summary/[id]
+
+**Purpose**: Generate or retrieve AI summary for a post.
+
+**Path Parameters**:
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| id | string | Post ID |
+
+**Response** (200):
+```json
+{
+  "postId": 123,
+  "useAiSummary": true,
+  "summary": "This is an AI-generated summary of the post content...",
+  "originalLength": 5000,
+  "summaryLength": 200,
+  "cached": false,
+  "generatedAt": "2026-01-10T10:00:00Z",
+  "config": {
+    "provider": "openai",
+    "enabled": true
+  }
+}
+```
+
+**Response** (404):
+```json
+{
+  "error": "Post not found"
+}
+```
+
+**Example**:
+```typescript
+const response = await fetch('http://localhost:3000/api/summary/123');
+const { summary } = await response.json();
+```
+
+---
+
+## RSS Feed Endpoints
+
+### GET /api/rss
+
+**Purpose**: Generate RSS feed for all posts.
+
+**Response**: XML content (application/rss+xml)
+
+**Example**:
+```typescript
+const response = await fetch('http://localhost:3000/api/rss');
+const rssXml = await response.text();
+// Process RSS XML
+```
+
+---
+
+### GET /api/rss/category/[slug]
+
+**Purpose**: Generate RSS feed for a specific category.
+
+**Path Parameters**:
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| slug | string | Category slug |
+
+**Response** (200): XML content (application/rss+xml)
+
+**Response** (404): Category not found
+
+**Example**:
+```typescript
+const response = await fetch('http://localhost:3000/api/rss/category/politik');
+const rssXml = await response.text();
 ```
 
 ---
