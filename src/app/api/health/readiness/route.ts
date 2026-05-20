@@ -1,6 +1,11 @@
 import { NextResponse } from 'next/server'
 import { telemetryCollector } from '@/lib/api/telemetry'
 import { withApiRateLimit } from '@/lib/api/rateLimitMiddleware'
+import { withCors, corsOptionsResponse } from '@/lib/api/cors'
+
+export async function OPTIONS() {
+  return corsOptionsResponse()
+}
 
 async function readinessHandler() {
   const startTime = Date.now()
@@ -29,7 +34,7 @@ async function readinessHandler() {
       }
     })
 
-    return NextResponse.json({
+    return withCors(NextResponse.json({
       status: 'ready',
       checks,
       timestamp: new Date().toISOString(),
@@ -40,7 +45,7 @@ async function readinessHandler() {
         'Cache-Control': 'no-cache, no-store, must-revalidate',
         'Content-Type': 'application/json'
       }
-    })
+    }))
   } catch (error) {
     const duration = Date.now() - startTime
 
@@ -55,7 +60,7 @@ async function readinessHandler() {
       }
     })
 
-    return NextResponse.json({
+    return withCors(NextResponse.json({
       status: 'not-ready',
       error: error instanceof Error ? error.message : 'Unknown error'
     }, {
@@ -64,7 +69,7 @@ async function readinessHandler() {
         'Cache-Control': 'no-cache, no-store, must-revalidate',
         'Content-Type': 'application/json'
       }
-    })
+    }))
   }
 }
 

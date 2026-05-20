@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { logger } from '@/lib/utils/logger'
 import { withApiRateLimit } from '@/lib/api/rateLimitMiddleware'
+import { withCors, corsOptionsResponse } from '@/lib/api/cors'
+
+export async function OPTIONS() {
+  return corsOptionsResponse()
+}
 
 async function cspReportHandler(request: NextRequest) {
   try {
@@ -18,10 +23,10 @@ async function cspReportHandler(request: NextRequest) {
       // await sendToMonitoringService(report)
     }
     
-    return NextResponse.json({ success: true })
+    return withCors(NextResponse.json({ success: true }))
   } catch (error) {
     logger.error('Error processing CSP report:', error, { module: 'cspReport' })
-    return NextResponse.json({ error: 'Failed to process report' }, { status: 400 })
+    return withCors(NextResponse.json({ error: 'Failed to process report' }, { status: 400 }))
   }
 }
 
