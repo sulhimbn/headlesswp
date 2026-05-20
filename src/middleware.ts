@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { MIDDLEWARE } from '@/lib/constants/appConstants'
 
 const BOT_UA_PATTERNS = [
   /googlebot/i,
@@ -45,10 +46,12 @@ function setBotOptimizationHeaders(response: NextResponse, isBot: boolean): void
 }
 
 function setRateLimitHeaders(response: NextResponse): void {
-  response.headers.set('X-RateLimit-Policy', '60;w=60')
-  response.headers.set('X-RateLimit-Limit', '60')
-  response.headers.set('X-RateLimit-Remaining', '59')
-  response.headers.set('X-RateLimit-Reset', Math.ceil(Date.now() / 60000).toString())
+  const now = Date.now()
+  const resetTime = Math.ceil(now / MIDDLEWARE.RATE_LIMIT_RESET_WINDOW_MS)
+  response.headers.set('X-RateLimit-Policy', `${MIDDLEWARE.RATE_LIMIT_MAX};w=${MIDDLEWARE.RATE_LIMIT_WINDOW_MS / 1000}`)
+  response.headers.set('X-RateLimit-Limit', String(MIDDLEWARE.RATE_LIMIT_MAX))
+  response.headers.set('X-RateLimit-Remaining', String(MIDDLEWARE.RATE_LIMIT_MAX - 1))
+  response.headers.set('X-RateLimit-Reset', String(resetTime))
 }
 
 function setPrefetchHints(response: NextResponse): void {
