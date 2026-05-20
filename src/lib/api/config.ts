@@ -1,7 +1,27 @@
-export const WORDPRESS_API_BASE_URL = process.env.NEXT_PUBLIC_WORDPRESS_API_URL || 'https://mitrabantennews.com/wp-json'
-export const WORDPRESS_SITE_URL = process.env.NEXT_PUBLIC_WORDPRESS_URL || 'https://mitrabantennews.com'
-export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://mitrabantennews.com'
-export const SITE_URL_WWW = process.env.NEXT_PUBLIC_SITE_URL_WWW || 'https://www.mitrabantennews.com'
+export function validateRequiredEnvVars(): void {
+  const vars = [
+    'NEXT_PUBLIC_WORDPRESS_API_URL',
+    'NEXT_PUBLIC_WORDPRESS_URL',
+    'NEXT_PUBLIC_SITE_URL',
+    'NEXT_PUBLIC_SITE_URL_WWW',
+  ]
+  
+  const missing = vars.filter(v => !process.env[v])
+  
+  if (missing.length > 0 && process.env.NODE_ENV === 'production') {
+    throw new Error(`Missing required environment variables in production: ${missing.join(', ')}`)
+  }
+}
+
+const wpApiUrl = process.env.NEXT_PUBLIC_WORDPRESS_API_URL
+const wpSiteUrl = process.env.NEXT_PUBLIC_WORDPRESS_URL
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL
+const siteUrlWww = process.env.NEXT_PUBLIC_SITE_URL_WWW
+
+export const WORDPRESS_API_BASE_URL = wpApiUrl ?? ''
+export const WORDPRESS_SITE_URL = wpSiteUrl ?? ''
+export const SITE_URL = siteUrl ?? ''
+export const SITE_URL_WWW = siteUrlWww ?? ''
 
 export const TIME_CONSTANTS = {
   SECOND_IN_MS: 1000,
