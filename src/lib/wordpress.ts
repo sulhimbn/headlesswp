@@ -12,6 +12,18 @@ import {
   createPostsWithHeadersMethod
 } from './api/wpMethodFactory';
 import { createBatchOperation } from './api/batchOperations';
+import { API_QUERY_LIMITS } from './api/config';
+
+function sanitizeSearchQuery(query: string): string {
+  return query.replace(/[<>'"&;]/g, '');
+}
+
+function clampPagination(page: number, perPage: number): { page: number; perPage: number } {
+  return {
+    page: Math.min(Math.max(1, page), API_QUERY_LIMITS.MAX_PAGE),
+    perPage: Math.min(Math.max(1, perPage), API_QUERY_LIMITS.MAX_PER_PAGE),
+  };
+}
 
 export const wordpressAPI: IWordPressAPI = {
   getPostsWithHeaders: createPostsWithHeadersMethod(),
@@ -154,7 +166,9 @@ export const wordpressAPI: IWordPressAPI = {
   },
 
   search: async (query: string, page: number = 1, perPage: number = 12, signal?: AbortSignal): Promise<{ posts: WordPressPost[], totalPages: number }> => {
-    const cacheKey = cacheKeys.search(query);
+    const sanitizedQuery = sanitizeSearchQuery(query.slice(0, API_QUERY_LIMITS.MAX_QUERY_LENGTH));
+    const { page: clampedPage, perPage: clampedPerPage } = clampPagination(page, perPage);
+    const cacheKey = cacheKeys.search(sanitizedQuery);
 
     const result = await cacheFetch(
       async () => {
@@ -171,10 +185,10 @@ export const wordpressAPI: IWordPressAPI = {
 
         const postIds = searchResults.map((result) => result.id);
         const totalResults = postIds.length;
-        const totalPages = Math.ceil(totalResults / perPage);
+        const totalPages = Math.ceil(totalResults / clampedPerPage);
         
-        const startIndex = (page - 1) * perPage;
-        const endIndex = startIndex + perPage;
+        const startIndex = (clampedPage - 1) * clampedPerPage;
+        const endIndex = startIndex + clampedPerPage;
         const pagePostIds = postIds.slice(startIndex, endIndex);
 
         if (pagePostIds.length === 0) {
@@ -195,7 +209,7 @@ export const wordpressAPI: IWordPressAPI = {
         return { posts: response.data as WordPressPost[], totalPages };
       },
       {
-        key: `${cacheKey}_page_${page}_per_${perPage}`,
+        key: `${cacheKey}_page_${clampedPage}_per_${clampedPerPage}`,
         ttl: CACHE_TTL.SEARCH,
         transform: (data) => data as { posts: WordPressPost[], totalPages: number }
       }

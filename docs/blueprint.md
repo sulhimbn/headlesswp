@@ -2209,3 +2209,30 @@ function SearchPage() {
 - [ ] Internationalization (i18n)
 - [ ] Analytics integration
 - [ ] E2E testing with Playwright/Cypress
+
+## Cache Behavior
+
+**See**: [cache-behavior.md](./cache-behavior.md)
+
+The application uses in-memory caching with the following characteristics:
+
+- **Storage**: In-memory `Map` data structure
+- **Persistence**: None - cache resets on server restart/pod scaling
+- **Sharing**: Not shared across instances (each pod has its own cache)
+- **Impact**: Cache misses during rolling deployments
+
+### Redis Integration
+
+A Redis adapter has been implemented at `src/lib/cache/redisCacheAdapter.ts` for future production use:
+
+- **Status**: Infrastructure ready
+- **To enable**: Set `REDIS_URL` environment variable and configure adapter
+- **Recommended**: Upstash Redis for serverless deployments
+
+### Documentation
+
+See [cache-behavior.md](./cache-behavior.md) for:
+- Current cache behavior and limitations
+- Redis integration plan and architecture
+- When to use Redis vs in-memory
+- Migration path and configuration

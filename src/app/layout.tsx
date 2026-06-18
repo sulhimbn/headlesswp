@@ -13,7 +13,7 @@ const inter = Inter({ subsets: ['latin'], display: 'swap' })
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  themeColor: '#2563eb',
+  themeColor: 'var(--color-primary)',
 }
 
 export const metadata: Metadata = {
@@ -102,7 +102,7 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content="Mitra Banten News" />
         <meta name="mobile-web-app-capable" content="yes" />
-        <meta name="msapplication-TileColor" content="#2563eb" />
+        <meta name="msapplication-TileColor" content="var(--color-primary)" />
         <meta name="msapplication-tap-highlight" content="no" />
         <link rel="preconnect" href={SITE_URL} />
         <link rel="preconnect" href={SITE_URL_WWW} />
