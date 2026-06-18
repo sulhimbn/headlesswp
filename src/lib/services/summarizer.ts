@@ -37,11 +37,11 @@ function getCacheKey(postId: number): string {
   return `summary:${postId}`;
 }
 
-function extractTextFromContent(htmlContent: string): string {
+export function extractTextFromContent(htmlContent: string): string {
   return stripHtml(htmlContent).trim();
 }
 
-async function generateSummaryWithOpenAI(
+export async function generateSummaryWithOpenAI(
   text: string,
   config: SummarizationConfig
 ): Promise<string> {
@@ -83,7 +83,7 @@ async function generateSummaryWithOpenAI(
   return data.choices[0]?.message?.content || '';
 }
 
-async function generateSummaryWithAnthropic(
+export async function generateSummaryWithAnthropic(
   text: string,
   config: SummarizationConfig
 ): Promise<string> {
@@ -121,7 +121,7 @@ async function generateSummaryWithAnthropic(
   return data.content[0]?.text || '';
 }
 
-function generateLocalSummary(text: string): string {
+export function generateLocalSummary(text: string): string {
   const sentences = text.split(/[.!?]+/).filter((s) => s.trim().length > 0);
   
   if (sentences.length <= 2) {
@@ -148,7 +148,7 @@ function generateLocalSummary(text: string): string {
   return summary;
 }
 
-async function generateSummary(
+export async function generateSummary(
   text: string,
   config: SummarizationConfig
 ): Promise<string> {
