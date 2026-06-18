@@ -34,6 +34,9 @@ describe('Proxy Middleware', () => {
       nextUrl: {
         pathname: '/',
       },
+      headers: {
+        get: jest.fn().mockReturnValue('Mozilla/5.0'),
+      },
     } as unknown as jest.Mocked<NextRequest>
 
     ;(NextResponse.next as jest.Mock).mockReturnValue(mockNextResponse)
