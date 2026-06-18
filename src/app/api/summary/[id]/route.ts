@@ -2,19 +2,14 @@ import { NextRequest, NextResponse } from 'next/server';
 import { summarizePost, isSummarizationEnabled, getSummarizationConfig } from '@/lib/services/summarizer';
 import { wordpressAPI } from '@/lib/wordpress';
 import { logger } from '@/lib/utils/logger';
+import { withApiRateLimit } from '@/lib/api/rateLimitMiddleware';
 
 export const dynamic = 'force-dynamic';
 
-interface RouteParams {
-  params: Promise<{ id: string }>;
-}
-
-export async function GET(
-  request: NextRequest,
-  { params }: RouteParams
-): Promise<NextResponse> {
+async function summaryHandler(_request: NextRequest, context?: unknown): Promise<NextResponse> {
   try {
-    const { id } = await params;
+    const params = context as { params: Promise<{ id: string }> } | undefined
+    const { id } = await params!.params;
     const postId = parseInt(id, 10);
 
     if (isNaN(postId)) {
@@ -58,3 +53,5 @@ export async function GET(
     );
   }
 }
+
+export const GET = withApiRateLimit(summaryHandler, 'summary')

@@ -14,6 +14,11 @@ const API_ROUTE_RATE_LIMITS: Record<string, ApiRouteRateLimitOptions> = {
   metrics: { key: 'metrics', maxRequests: RATE_LIMIT.METRICS_MAX_REQUESTS, windowMs: RATE_LIMIT.DEFAULT_WINDOW_MS },
   cache: { key: 'cache', maxRequests: RATE_LIMIT.CACHE_MAX_REQUESTS, windowMs: RATE_LIMIT.DEFAULT_WINDOW_MS },
   cspReport: { key: 'csp-report', maxRequests: RATE_LIMIT.CSP_REPORT_MAX_REQUESTS, windowMs: RATE_LIMIT.DEFAULT_WINDOW_MS },
+  posts: { key: 'posts', maxRequests: RATE_LIMIT.POSTS_MAX_REQUESTS, windowMs: RATE_LIMIT.DEFAULT_WINDOW_MS },
+  media: { key: 'media', maxRequests: RATE_LIMIT.MEDIA_MAX_REQUESTS, windowMs: RATE_LIMIT.DEFAULT_WINDOW_MS },
+  summary: { key: 'summary', maxRequests: RATE_LIMIT.SUMMARY_MAX_REQUESTS, windowMs: RATE_LIMIT.DEFAULT_WINDOW_MS },
+  rss: { key: 'rss', maxRequests: RATE_LIMIT.RSS_MAX_REQUESTS, windowMs: RATE_LIMIT.DEFAULT_WINDOW_MS },
+  environment: { key: 'environment', maxRequests: RATE_LIMIT.ENVIRONMENT_MAX_REQUESTS, windowMs: RATE_LIMIT.DEFAULT_WINDOW_MS },
 }
 
 interface RateLimitState {

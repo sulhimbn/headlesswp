@@ -1,9 +1,10 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { getEnvironmentStatus } from '@/lib/config/envValidation'
+import { withApiRateLimit } from '@/lib/api/rateLimitMiddleware'
 
 export const dynamic = 'force-dynamic'
 
-async function environmentHandler() {
+async function environmentHandler(_request: NextRequest) {
   const status = getEnvironmentStatus()
 
   if (status.valid) {
@@ -25,4 +26,4 @@ async function environmentHandler() {
   })
 }
 
-export const GET = environmentHandler
+export const GET = withApiRateLimit(environmentHandler, 'environment')
