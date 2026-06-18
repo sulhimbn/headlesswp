@@ -5,6 +5,7 @@ import PostCard from '@/components/post/PostCard';
 import Pagination from '@/components/ui/Pagination';
 import EmptyState from '@/components/ui/EmptyState';
 import SectionHeading from '@/components/ui/SectionHeading';
+import OptimizedImage from '@/components/ui/OptimizedImage';
 import { notFound } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import { UI_TEXT } from '@/lib/constants/uiText';
@@ -53,12 +54,14 @@ export default async function AuthorPage({
         <div className="bg-[hsl(var(--color-background-secondary))] rounded-lg p-6 mb-8">
           <div className="flex items-center gap-4">
             {author.avatar_urls && author.avatar_urls['96'] && (
-              <img
+              <OptimizedImage
                 src={author.avatar_urls['96']}
                 alt={author.name}
                 width={96}
                 height={96}
                 className="rounded-full"
+                context="thumbnail"
+                priority
               />
             )}
             <div>
