@@ -14,6 +14,13 @@ module.exports = {
   modulePathIgnorePatterns: [
     '/.next/',
   ],
+  testPathIgnorePatterns: [
+    '/node_modules/',
+    '/.next/',
+    // Local agent worktrees (see .git/info/exclude) must not be tested twice
+    '/.kilo/',
+    '/.kilocode/',
+  ],
   testMatch: [
     '**/__tests__/**/*test.(ts|tsx|js)',
   ],

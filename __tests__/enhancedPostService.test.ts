@@ -443,6 +443,115 @@ describe('enhancedPostService', () => {
       expect(result!.tagsDetails).toHaveLength(0);
       expect(result!.mediaUrl).toBeNull();
     });
+
+    it('should return media dimensions when media metadata is available', async () => {
+      const mockPost: WordPressPost = {
+        id: 1,
+        title: { rendered: 'Post with media' },
+        content: { rendered: '<p>Content</p>' },
+        excerpt: { rendered: 'Excerpt' },
+        slug: 'post-with-media',
+        date: '2024-01-01T00:00:00',
+        modified: '2024-01-01T00:00:00',
+        author: 1,
+        categories: [],
+        tags: [],
+        featured_media: 10,
+        status: 'publish',
+        type: 'post',
+        link: 'https://example.com/post-with-media'
+      };
+
+      (wordpressAPI.getPost as jest.Mock).mockResolvedValue(mockPost);
+      (dataValidator.validatePost as jest.Mock).mockReturnValue({ valid: true, data: mockPost, errors: [] });
+      (wordpressAPI.getMediaMetadata as jest.Mock).mockResolvedValue({
+        url: 'https://example.com/media.jpg',
+        width: 1200,
+        height: 800
+      });
+      (wordpressAPI.getCategories as jest.Mock).mockResolvedValue([]);
+      (dataValidator.validateCategories as jest.Mock).mockReturnValue({ valid: true, data: [], errors: [] });
+      (wordpressAPI.getTags as jest.Mock).mockResolvedValue([]);
+      (dataValidator.validateTags as jest.Mock).mockReturnValue({ valid: true, data: [], errors: [] });
+
+      const result = await enhancedPostService.getPostBySlug('post-with-media');
+
+      expect(result).not.toBeNull();
+      expect(result!.mediaUrl).toBe('https://example.com/media.jpg');
+      expect(result!.mediaDimensions).toEqual({ width: 1200, height: 800 });
+      expect(wordpressAPI.getMediaUrl).not.toHaveBeenCalled();
+    });
+
+    it('should fall back to getMediaUrl without dimensions when metadata is unavailable', async () => {
+      const mockPost: WordPressPost = {
+        id: 1,
+        title: { rendered: 'Post without metadata' },
+        content: { rendered: '<p>Content</p>' },
+        excerpt: { rendered: 'Excerpt' },
+        slug: 'post-without-metadata',
+        date: '2024-01-01T00:00:00',
+        modified: '2024-01-01T00:00:00',
+        author: 1,
+        categories: [],
+        tags: [],
+        featured_media: 10,
+        status: 'publish',
+        type: 'post',
+        link: 'https://example.com/post-without-metadata'
+      };
+
+      (wordpressAPI.getPost as jest.Mock).mockResolvedValue(mockPost);
+      (dataValidator.validatePost as jest.Mock).mockReturnValue({ valid: true, data: mockPost, errors: [] });
+      (wordpressAPI.getMediaMetadata as jest.Mock).mockResolvedValue(null);
+      (wordpressAPI.getMediaUrl as jest.Mock).mockResolvedValue('https://example.com/fallback.jpg');
+      (wordpressAPI.getCategories as jest.Mock).mockResolvedValue([]);
+      (dataValidator.validateCategories as jest.Mock).mockReturnValue({ valid: true, data: [], errors: [] });
+      (wordpressAPI.getTags as jest.Mock).mockResolvedValue([]);
+      (dataValidator.validateTags as jest.Mock).mockReturnValue({ valid: true, data: [], errors: [] });
+
+      const result = await enhancedPostService.getPostBySlug('post-without-metadata');
+
+      expect(result).not.toBeNull();
+      expect(result!.mediaUrl).toBe('https://example.com/fallback.jpg');
+      expect(result!.mediaDimensions).toBeNull();
+    });
+
+    it('should keep a media url without dimensions when metadata has no size', async () => {
+      const mockPost: WordPressPost = {
+        id: 1,
+        title: { rendered: 'Post without size' },
+        content: { rendered: '<p>Content</p>' },
+        excerpt: { rendered: 'Excerpt' },
+        slug: 'post-without-size',
+        date: '2024-01-01T00:00:00',
+        modified: '2024-01-01T00:00:00',
+        author: 1,
+        categories: [],
+        tags: [],
+        featured_media: 10,
+        status: 'publish',
+        type: 'post',
+        link: 'https://example.com/post-without-size'
+      };
+
+      (wordpressAPI.getPost as jest.Mock).mockResolvedValue(mockPost);
+      (dataValidator.validatePost as jest.Mock).mockReturnValue({ valid: true, data: mockPost, errors: [] });
+      (wordpressAPI.getMediaMetadata as jest.Mock).mockResolvedValue({
+        url: 'https://example.com/media.jpg',
+        width: 0,
+        height: 0
+      });
+      (wordpressAPI.getCategories as jest.Mock).mockResolvedValue([]);
+      (dataValidator.validateCategories as jest.Mock).mockReturnValue({ valid: true, data: [], errors: [] });
+      (wordpressAPI.getTags as jest.Mock).mockResolvedValue([]);
+      (dataValidator.validateTags as jest.Mock).mockReturnValue({ valid: true, data: [], errors: [] });
+
+      const result = await enhancedPostService.getPostBySlug('post-without-size');
+
+      expect(result).not.toBeNull();
+      expect(result!.mediaUrl).toBe('https://example.com/media.jpg');
+      expect(result!.mediaDimensions).toBeNull();
+    });
   });
 
   describe('getPostById', () => {
