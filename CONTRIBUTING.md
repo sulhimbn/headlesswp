@@ -91,14 +91,14 @@ docker compose up -d wordpress db phpmyadmin
 | Service | URL | Credentials |
 | --- | --- | --- |
 | WordPress | http://localhost:8080 | complete the install at `/wp-admin/install.php` |
-| WordPress admin | http://localhost:8080/wp-admin | user `admin` / password `admin` (local only) |
+| WordPress admin | http://localhost:8080/wp-admin | the admin account created during the install below |
 | REST API | http://localhost:8080/wp-json/wp/v2/ | public |
 | phpMyAdmin | http://localhost:8081 | `root` / `MYSQL_ROOT_PASSWORD` from `.env.local` |
 
 If the WordPress container comes up empty, finish the 5-minute install:
 
-- manually at http://localhost:8080/wp-admin/install.php, or
-- via `./install-wordpress.sh` (reads `WP_ADMIN_USER` / `WP_ADMIN_PASSWORD` / `WP_ADMIN_EMAIL` from the environment)
+- manually at http://localhost:8080/wp-admin/install.php (you choose the admin user and password), or
+- via `./install-wordpress.sh` (reads `WP_ADMIN_USER` / `WP_ADMIN_PASSWORD` / `WP_ADMIN_EMAIL` from the environment; generates a random password when unset)
 
 Then create a post in the WordPress admin so the frontend has content to render.
 
