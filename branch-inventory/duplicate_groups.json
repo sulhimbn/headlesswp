@@ -1,0 +1,895 @@
+[
+ {
+  "group_id": "DUP-001",
+  "size": 8,
+  "canonical_branch": "fix/build-001-typescript-eslint",
+  "canonical_rule": "newest last-commit date, then lowercase name, then shortest, then A-Z",
+  "canonical_tip": "512d728a33d88c776d9e6a43c64a89878048aeaf",
+  "canonical_date": "2026-05-18",
+  "canonical_insertions": 5,
+  "canonical_files": 1,
+  "canonical_category": "unclear",
+  "matched_on": [
+   "identical content fingerprint (same net change)",
+   "near-identical after name normalisation (subjectJ=0.00, contentJ=0.50)",
+   "near-identical after name normalisation (subjectJ=0.00, contentJ=1.00)",
+   "near-identical after name normalisation (subjectJ=1.00, contentJ=1.00)"
+  ],
+  "branches": [
+   "fix-build-001",
+   "fix/FIX-001-typescript-eslint-errors",
+   "fix/FIX-BUILD-001-typescript-eslint-errors",
+   "fix/build-001-typescript-eslint",
+   "fix/fix-build-001",
+   "fix/issue-1449-typescript-eslint-errors",
+   "fix/lint-type-errors",
+   "fix/typescript-eslint-errors"
+  ],
+  "insertions_if_all_kept": 139,
+  "open_pr_numbers": [
+   1400,
+   1412,
+   1446,
+   1448,
+   1450,
+   1452,
+   1458
+  ]
+ },
+ {
+  "group_id": "DUP-002",
+  "size": 4,
+  "canonical_branch": "security/add-csp-header-rebased",
+  "canonical_rule": "newest last-commit date, then lowercase name, then shortest, then A-Z",
+  "canonical_tip": "7abbb1ce14a4abc3cd2df986c31b19509a8126a9",
+  "canonical_date": "2026-02-26",
+  "canonical_insertions": 4,
+  "canonical_files": 1,
+  "canonical_category": "security-review",
+  "matched_on": [
+   "identical content fingerprint (same net change)",
+   "identical tip commit",
+   "near-identical after name normalisation (subjectJ=1.00, contentJ=1.00)"
+  ],
+  "branches": [
+   "pr-542",
+   "security/add-csp-header",
+   "security/add-csp-header-rebased",
+   "security/add-csp-header-v2"
+  ],
+  "insertions_if_all_kept": 16,
+  "open_pr_numbers": []
+ },
+ {
+  "group_id": "DUP-003",
+  "size": 3,
+  "canonical_branch": "feature/dx-001-dependency-update-workflow",
+  "canonical_rule": "newest last-commit date, then lowercase name, then shortest, then A-Z",
+  "canonical_tip": "8b84c4a31f446978160cfb06ad24bbec2b422d92",
+  "canonical_date": "2026-05-09",
+  "canonical_insertions": 576,
+  "canonical_files": 10,
+  "canonical_category": "unclear",
+  "matched_on": [
+   "identical content fingerprint (same net change)",
+   "identical tip commit"
+  ],
+  "branches": [
+   "arch-001-interface-compliance",
+   "feature/dx-001-dependency-update-workflow",
+   "feature/ux-001-darkmode-toggle"
+  ],
+  "insertions_if_all_kept": 1728,
+  "open_pr_numbers": []
+ },
+ {
+  "group_id": "DUP-004",
+  "size": 3,
+  "canonical_branch": "fix/security-txt-endpoint-1369",
+  "canonical_rule": "newest last-commit date, then lowercase name, then shortest, then A-Z",
+  "canonical_tip": "44982a544031046f76c72afd858d9c16c22f61dd",
+  "canonical_date": "2026-05-10",
+  "canonical_insertions": 597,
+  "canonical_files": 7,
+  "canonical_category": "superseded",
+  "matched_on": [
+   "identical content fingerprint (same net change)",
+   "identical tip commit"
+  ],
+  "branches": [
+   "feat/json-feed-1368",
+   "feat/json-feed-support-1368",
+   "fix/security-txt-endpoint-1369"
+  ],
+  "insertions_if_all_kept": 1791,
+  "open_pr_numbers": []
+ },
+ {
+  "group_id": "DUP-005",
+  "size": 3,
+  "canonical_branch": "fix/issue-1414-axios-security-vulnerabilities",
+  "canonical_rule": "newest last-commit date, then lowercase name, then shortest, then A-Z",
+  "canonical_tip": "f667c537abfb7f4d8d0d13e651fc99460c5284fc",
+  "canonical_date": "2026-05-15",
+  "canonical_insertions": 132,
+  "canonical_files": 2,
+  "canonical_category": "security-review",
+  "matched_on": [
+   "near-identical after name normalisation (subjectJ=0.00, contentJ=0.50)",
+   "near-identical after name normalisation (subjectJ=0.00, contentJ=0.67)"
+  ],
+  "branches": [
+   "fix/SEC-003-axios-security-vulnerabilities",
+   "fix/axios-security-vulnerabilities",
+   "fix/issue-1414-axios-security-vulnerabilities"
+  ],
+  "insertions_if_all_kept": 256,
+  "open_pr_numbers": [
+   1416,
+   1426,
+   1437
+  ]
+ },
+ {
+  "group_id": "DUP-006",
+  "size": 3,
+  "canonical_branch": "fix/api-posts-error-response",
+  "canonical_rule": "newest last-commit date, then lowercase name, then shortest, then A-Z",
+  "canonical_tip": "54002f791e70653a5ca249aef30b7b545c1c6102",
+  "canonical_date": "2026-03-08",
+  "canonical_insertions": 86,
+  "canonical_files": 5,
+  "canonical_category": "unclear",
+  "matched_on": [
+   "identical content fingerprint (same net change)",
+   "identical tip commit",
+   "near-identical after name normalisation (subjectJ=0.11, contentJ=0.56)"
+  ],
+  "branches": [
+   "fix/api-posts-error-response",
+   "fix/api-posts-error-response-713",
+   "fix/merge-envValidation-dry-violation"
+  ],
+  "insertions_if_all_kept": 869,
+  "open_pr_numbers": [
+   723,
+   755,
+   756
+  ]
+ },
+ {
+  "group_id": "DUP-007",
+  "size": 3,
+  "canonical_branch": "qa/add-socialshare-tests-717",
+  "canonical_rule": "newest last-commit date, then lowercase name, then shortest, then A-Z",
+  "canonical_tip": "d2f92a4e70215989b025d0594706ca1683bf40f2",
+  "canonical_date": "2026-03-08",
+  "canonical_insertions": 710,
+  "canonical_files": 7,
+  "canonical_category": "candidate-salvage",
+  "matched_on": [
+   "near-identical after name normalisation (subjectJ=0.00, contentJ=0.50)"
+  ],
+  "branches": [
+   "fix/merge-envValidation-duplicate",
+   "fix/merge-envValidation-duplicate-715",
+   "qa/add-socialshare-tests-717"
+  ],
+  "insertions_if_all_kept": 1494,
+  "open_pr_numbers": [
+   746,
+   751,
+   752
+  ]
+ },
+ {
+  "group_id": "DUP-008",
+  "size": 3,
+  "canonical_branch": "fix/npm-audit-vulnerabilities",
+  "canonical_rule": "newest last-commit date, then lowercase name, then shortest, then A-Z",
+  "canonical_tip": "2333670cb348330cc3879c415af5e6eede283898",
+  "canonical_date": "2026-03-20",
+  "canonical_insertions": 53,
+  "canonical_files": 1,
+  "canonical_category": "security-review",
+  "matched_on": [
+   "near-identical after name normalisation (subjectJ=0.00, contentJ=1.00)"
+  ],
+  "branches": [
+   "fix/npm-audit-vulnerabilities",
+   "fix/npm-audit-vulnerabilities-714",
+   "fix/security-npm-audit-vulnerabilities-714"
+  ],
+  "insertions_if_all_kept": 71,
+  "open_pr_numbers": [
+   720,
+   738,
+   753
+  ]
+ },
+ {
+  "group_id": "DUP-009",
+  "size": 3,
+  "canonical_branch": "fix/nvmrc-version-alignment",
+  "canonical_rule": "newest last-commit date, then lowercase name, then shortest, then A-Z",
+  "canonical_tip": "eb2775b71303727fb1f13646bf90268560a96609",
+  "canonical_date": "2026-02-26",
+  "canonical_insertions": 8,
+  "canonical_files": 2,
+  "canonical_category": "unclear",
+  "matched_on": [
+   "identical content fingerprint (same net change)",
+   "identical tip commit"
+  ],
+  "branches": [
+   "fix/nvmrc-v2",
+   "fix/nvmrc-version-alignment",
+   "pr-556"
+  ],
+  "insertions_if_all_kept": 24,
+  "open_pr_numbers": []
+ },
+ {
+  "group_id": "DUP-010",
+  "size": 2,
+  "canonical_branch": "docs/update-blueprint-v1.0.2",
+  "canonical_rule": "newest last-commit date, then lowercase name, then shortest, then A-Z",
+  "canonical_tip": "fde2d540bb9859106d095a53224b319bdc0346ab",
+  "canonical_date": "2026-02-26",
+  "canonical_insertions": 23,
+  "canonical_files": 2,
+  "canonical_category": "unclear",
+  "matched_on": [
+   "identical content fingerprint (same net change)",
+   "identical tip commit"
+  ],
+  "branches": [
+   "docs/update-blueprint-v1.0.2",
+   "pr-559"
+  ],
+  "insertions_if_all_kept": 46,
+  "open_pr_numbers": []
+ },
+ {
+  "group_id": "DUP-011",
+  "size": 2,
+  "canonical_branch": "dx/api-contract-testing",
+  "canonical_rule": "newest last-commit date, then lowercase name, then shortest, then A-Z",
+  "canonical_tip": "272f17b289cd071e4ead1d58427fdfb6dcd22569",
+  "canonical_date": "2026-03-18",
+  "canonical_insertions": 1122,
+  "canonical_files": 4,
+  "canonical_category": "candidate-salvage",
+  "matched_on": [
+   "identical content fingerprint (same net change)",
+   "identical tip commit"
+  ],
+  "branches": [
+   "dx/api-contract-testing",
+   "dx/useDarkMode-coverage-v2"
+  ],
+  "insertions_if_all_kept": 2244,
+  "open_pr_numbers": [
+   815,
+   816
+  ]
+ },
+ {
+  "group_id": "DUP-012",
+  "size": 2,
+  "canonical_branch": "dx/sentry-integration",
+  "canonical_rule": "newest last-commit date, then lowercase name, then shortest, then A-Z",
+  "canonical_tip": "42fcc79ef23b35092768a7884d48fd225fbf5489",
+  "canonical_date": "2026-02-26",
+  "canonical_insertions": 3052,
+  "canonical_files": 12,
+  "canonical_category": "security-review",
+  "matched_on": [
+   "identical content fingerprint (same net change)",
+   "identical tip commit"
+  ],
+  "branches": [
+   "dx/sentry-integration",
+   "pr-544"
+  ],
+  "insertions_if_all_kept": 6104,
+  "open_pr_numbers": []
+ },
+ {
+  "group_id": "DUP-013",
+  "size": 2,
+  "canonical_branch": "feat/add-precommit-hooks-1173",
+  "canonical_rule": "newest last-commit date, then lowercase name, then shortest, then A-Z",
+  "canonical_tip": "e6f26bc4e66620d7109f8f690728ff7b298cf99b",
+  "canonical_date": "2026-04-24",
+  "canonical_insertions": 1010,
+  "canonical_files": 15,
+  "canonical_category": "candidate-salvage",
+  "matched_on": [
+   "identical content fingerprint (same net change)",
+   "identical tip commit",
+   "near-identical after name normalisation (subjectJ=1.00, contentJ=1.00)"
+  ],
+  "branches": [
+   "feat/add-precommit-hooks",
+   "feat/add-precommit-hooks-1173"
+  ],
+  "insertions_if_all_kept": 2020,
+  "open_pr_numbers": [
+   1181,
+   1206
+  ]
+ },
+ {
+  "group_id": "DUP-014",
+  "size": 2,
+  "canonical_branch": "feat/add-redis-cache-adapter",
+  "canonical_rule": "newest last-commit date, then lowercase name, then shortest, then A-Z",
+  "canonical_tip": "7f4c1a6787f144219f628d7c486fd48013aa6a3d",
+  "canonical_date": "2026-03-31",
+  "canonical_insertions": 3320,
+  "canonical_files": 39,
+  "canonical_category": "security-review",
+  "matched_on": [
+   "identical content fingerprint (same net change)"
+  ],
+  "branches": [
+   "feat/add-redis-cache-adapter",
+   "fix/redis-cache-adapter-856"
+  ],
+  "insertions_if_all_kept": 6640,
+  "open_pr_numbers": [
+   897,
+   924
+  ]
+ },
+ {
+  "group_id": "DUP-015",
+  "size": 2,
+  "canonical_branch": "feat/page-view-analytics-859",
+  "canonical_rule": "newest last-commit date, then lowercase name, then shortest, then A-Z",
+  "canonical_tip": "c699b76607122b7cf3f4ffc8aee27c9b7787871a",
+  "canonical_date": "2026-03-28",
+  "canonical_insertions": 641,
+  "canonical_files": 12,
+  "canonical_category": "candidate-salvage",
+  "matched_on": [
+   "identical content fingerprint (same net change)",
+   "identical tip commit"
+  ],
+  "branches": [
+   "feat/page-view-analytics-859",
+   "feature/keyboard-shortcuts"
+  ],
+  "insertions_if_all_kept": 1282,
+  "open_pr_numbers": [
+   903,
+   923
+  ]
+ },
+ {
+  "group_id": "DUP-016",
+  "size": 2,
+  "canonical_branch": "feature/add-dependabot-workflow-dx-001",
+  "canonical_rule": "newest last-commit date, then lowercase name, then shortest, then A-Z",
+  "canonical_tip": "5c03629320e175a9a4ebb94f88501153234b6d52",
+  "canonical_date": "2026-05-10",
+  "canonical_insertions": 54,
+  "canonical_files": 2,
+  "canonical_category": "candidate-salvage",
+  "matched_on": [
+   "identical content fingerprint (same net change)",
+   "identical tip commit"
+  ],
+  "branches": [
+   "feature/add-dependabot-workflow-dx-001",
+   "test/TEST-001-social-share-component-tests"
+  ],
+  "insertions_if_all_kept": 108,
+  "open_pr_numbers": [
+   1361,
+   1363
+  ]
+ },
+ {
+  "group_id": "DUP-017",
+  "size": 2,
+  "canonical_branch": "fix/middleware-edge-routing-787",
+  "canonical_rule": "newest last-commit date, then lowercase name, then shortest, then A-Z",
+  "canonical_tip": "f681b109008942c8f36c1ffa6dfe4b0649c4ddb1",
+  "canonical_date": "2026-03-19",
+  "canonical_insertions": 1269,
+  "canonical_files": 12,
+  "canonical_category": "security-review",
+  "matched_on": [
+   "identical content fingerprint (same net change)",
+   "identical tip commit"
+  ],
+  "branches": [
+   "feature/api-contract-testing",
+   "fix/middleware-edge-routing-787"
+  ],
+  "insertions_if_all_kept": 2538,
+  "open_pr_numbers": [
+   827,
+   828
+  ]
+ },
+ {
+  "group_id": "DUP-018",
+  "size": 2,
+  "canonical_branch": "fix/serialize-javascript-vulnerability",
+  "canonical_rule": "newest last-commit date, then lowercase name, then shortest, then A-Z",
+  "canonical_tip": "45c567693bd046d24dd25103029ba0b0867c6bda",
+  "canonical_date": "2026-03-04",
+  "canonical_insertions": 1548,
+  "canonical_files": 16,
+  "canonical_category": "security-review",
+  "matched_on": [
+   "identical content fingerprint (same net change)",
+   "identical tip commit"
+  ],
+  "branches": [
+   "feature/dx-innovation-features",
+   "fix/serialize-javascript-vulnerability"
+  ],
+  "insertions_if_all_kept": 3096,
+  "open_pr_numbers": [
+   685,
+   698
+  ]
+ },
+ {
+  "group_id": "DUP-019",
+  "size": 2,
+  "canonical_branch": "feature/predictive-prefetch-788",
+  "canonical_rule": "newest last-commit date, then lowercase name, then shortest, then A-Z",
+  "canonical_tip": "92a121f1459dfb62133c84f94304652350130d6f",
+  "canonical_date": "2026-03-19",
+  "canonical_insertions": 3629,
+  "canonical_files": 31,
+  "canonical_category": "security-review",
+  "matched_on": [
+   "identical content fingerprint (same net change)",
+   "identical tip commit"
+  ],
+  "branches": [
+   "feature/e2e-tests-780",
+   "feature/predictive-prefetch-788"
+  ],
+  "insertions_if_all_kept": 7258,
+  "open_pr_numbers": [
+   832,
+   833
+  ]
+ },
+ {
+  "group_id": "DUP-020",
+  "size": 2,
+  "canonical_branch": "feature/og-image-generation-684-v3",
+  "canonical_rule": "newest last-commit date, then lowercase name, then shortest, then A-Z",
+  "canonical_tip": "628cae6fc8602cfeb192809a6c4e057c93941ca8",
+  "canonical_date": "2026-04-01",
+  "canonical_insertions": 357,
+  "canonical_files": 18,
+  "canonical_category": "unclear",
+  "matched_on": [
+   "identical content fingerprint (same net change)",
+   "identical tip commit"
+  ],
+  "branches": [
+   "feature/og-image-generation-684-v3",
+   "fix/strict-null-checks-929"
+  ],
+  "insertions_if_all_kept": 714,
+  "open_pr_numbers": [
+   934
+  ]
+ },
+ {
+  "group_id": "DUP-021",
+  "size": 2,
+  "canonical_branch": "fix/author-profile-navigation-1395",
+  "canonical_rule": "newest last-commit date, then lowercase name, then shortest, then A-Z",
+  "canonical_tip": "2bc15aa63af1606a97c4b1a3d52308d9010b8c32",
+  "canonical_date": "2026-05-14",
+  "canonical_insertions": 2122,
+  "canonical_files": 24,
+  "canonical_category": "security-review",
+  "matched_on": [
+   "identical content fingerprint (same net change)",
+   "identical tip commit"
+  ],
+  "branches": [
+   "feature/otel-tracing-1371",
+   "fix/author-profile-navigation-1395"
+  ],
+  "insertions_if_all_kept": 4244,
+  "open_pr_numbers": [
+   1424,
+   1425
+  ]
+ },
+ {
+  "group_id": "DUP-022",
+  "size": 2,
+  "canonical_branch": "fix/ServiceStatus-tooltip-test",
+  "canonical_rule": "newest last-commit date, then lowercase name, then shortest, then A-Z",
+  "canonical_tip": "2efedcb42d79ebdcec1fc782a137efb6e59e1a3b",
+  "canonical_date": "2026-02-26",
+  "canonical_insertions": 9,
+  "canonical_files": 2,
+  "canonical_category": "unclear",
+  "matched_on": [
+   "identical content fingerprint (same net change)",
+   "identical tip commit"
+  ],
+  "branches": [
+   "fix/ServiceStatus-tooltip-test",
+   "pr-555"
+  ],
+  "insertions_if_all_kept": 18,
+  "open_pr_numbers": []
+ },
+ {
+  "group_id": "DUP-023",
+  "size": 2,
+  "canonical_branch": "fix/cache-warmer-hardcoded-keys",
+  "canonical_rule": "newest last-commit date, then lowercase name, then shortest, then A-Z",
+  "canonical_tip": "e033313ab06af0889e1e22d2938f07737f63af19",
+  "canonical_date": "2026-03-08",
+  "canonical_insertions": 11,
+  "canonical_files": 2,
+  "canonical_category": "unclear",
+  "matched_on": [
+   "identical content fingerprint (same net change)"
+  ],
+  "branches": [
+   "fix/cache-warmer-hardcoded-keys",
+   "fix/cacheWarmer-hardcoded-keys"
+  ],
+  "insertions_if_all_kept": 22,
+  "open_pr_numbers": [
+   745,
+   754
+  ]
+ },
+ {
+  "group_id": "DUP-024",
+  "size": 2,
+  "canonical_branch": "fix/csp-header-786",
+  "canonical_rule": "newest last-commit date, then lowercase name, then shortest, then A-Z",
+  "canonical_tip": "f08f44471a37528bcdbfac986f18c188b9fe46ff",
+  "canonical_date": "2026-03-13",
+  "canonical_insertions": 277,
+  "canonical_files": 4,
+  "canonical_category": "security-review",
+  "matched_on": [
+   "identical content fingerprint (same net change)",
+   "identical tip commit"
+  ],
+  "branches": [
+   "fix/csp-header-786",
+   "fix/middleware-787"
+  ],
+  "insertions_if_all_kept": 554,
+  "open_pr_numbers": [
+   790,
+   791
+  ]
+ },
+ {
+  "group_id": "DUP-025",
+  "size": 2,
+  "canonical_branch": "fix/docker-image-versions",
+  "canonical_rule": "newest last-commit date, then lowercase name, then shortest, then A-Z",
+  "canonical_tip": "e01efb247d6c07791826428db7d472a90f336c5f",
+  "canonical_date": "2026-02-26",
+  "canonical_insertions": 2,
+  "canonical_files": 1,
+  "canonical_category": "unclear",
+  "matched_on": [
+   "identical content fingerprint (same net change)",
+   "identical tip commit"
+  ],
+  "branches": [
+   "fix/docker-image-versions",
+   "pr-572"
+  ],
+  "insertions_if_all_kept": 4,
+  "open_pr_numbers": []
+ },
+ {
+  "group_id": "DUP-026",
+  "size": 2,
+  "canonical_branch": "fix/dockerfile-node-version-alignment",
+  "canonical_rule": "newest last-commit date, then lowercase name, then shortest, then A-Z",
+  "canonical_tip": "340626aa0591f7db784f4901c1b750664e4bc439",
+  "canonical_date": "2026-02-26",
+  "canonical_insertions": 3,
+  "canonical_files": 1,
+  "canonical_category": "unclear",
+  "matched_on": [
+   "identical content fingerprint (same net change)"
+  ],
+  "branches": [
+   "fix/dockerfile-node-version-alignment",
+   "fix/nodejs-version-alignment"
+  ],
+  "insertions_if_all_kept": 6,
+  "open_pr_numbers": []
+ },
+ {
+  "group_id": "DUP-027",
+  "size": 2,
+  "canonical_branch": "fix/issue-646-pwa-missing-icons",
+  "canonical_rule": "newest last-commit date, then lowercase name, then shortest, then A-Z",
+  "canonical_tip": "4deb989655382fa7715c88c616b82108cb0854f9",
+  "canonical_date": "2026-02-27",
+  "canonical_insertions": 6,
+  "canonical_files": 6,
+  "canonical_category": "unclear",
+  "matched_on": [
+   "near-identical after name normalisation (subjectJ=0.00, contentJ=0.83)"
+  ],
+  "branches": [
+   "fix/issue-646-pwa-missing-icons",
+   "fix/pwa-missing-icons"
+  ],
+  "insertions_if_all_kept": 6,
+  "open_pr_numbers": []
+ },
+ {
+  "group_id": "DUP-028",
+  "size": 2,
+  "canonical_branch": "fix/issue-705-bundle-analyzer",
+  "canonical_rule": "newest last-commit date, then lowercase name, then shortest, then A-Z",
+  "canonical_tip": "6e11b2c142012461729273ac2a31fbe571ea5866",
+  "canonical_date": "2026-03-05",
+  "canonical_insertions": 171,
+  "canonical_files": 4,
+  "canonical_category": "candidate-salvage",
+  "matched_on": [
+   "identical content fingerprint (same net change)",
+   "identical tip commit"
+  ],
+  "branches": [
+   "fix/issue-683-a11y",
+   "fix/issue-705-bundle-analyzer"
+  ],
+  "insertions_if_all_kept": 342,
+  "open_pr_numbers": [
+   706,
+   707
+  ]
+ },
+ {
+  "group_id": "DUP-029",
+  "size": 2,
+  "canonical_branch": "fix/issue-703-bundle-size-monitoring-v2",
+  "canonical_rule": "newest last-commit date, then lowercase name, then shortest, then A-Z",
+  "canonical_tip": "9e2e5d9749bd346ba7bf92d918afb0ce77ef72b9",
+  "canonical_date": "2026-03-05",
+  "canonical_insertions": 183,
+  "canonical_files": 4,
+  "canonical_category": "unclear",
+  "matched_on": [
+   "identical content fingerprint (same net change)",
+   "identical tip commit",
+   "near-identical after name normalisation (subjectJ=1.00, contentJ=1.00)"
+  ],
+  "branches": [
+   "fix/issue-703-bundle-size-monitoring",
+   "fix/issue-703-bundle-size-monitoring-v2"
+  ],
+  "insertions_if_all_kept": 366,
+  "open_pr_numbers": [
+   710
+  ]
+ },
+ {
+  "group_id": "DUP-030",
+  "size": 2,
+  "canonical_branch": "fix/logger-warn-signature-telemetry",
+  "canonical_rule": "newest last-commit date, then lowercase name, then shortest, then A-Z",
+  "canonical_tip": "60491697bc396e4a4e8a7199850ae0395b7bbf7e",
+  "canonical_date": "2026-02-26",
+  "canonical_insertions": 3,
+  "canonical_files": 2,
+  "canonical_category": "unclear",
+  "matched_on": [
+   "identical content fingerprint (same net change)"
+  ],
+  "branches": [
+   "fix/logger-warn-signature-telemetry",
+   "pr-566"
+  ],
+  "insertions_if_all_kept": 6,
+  "open_pr_numbers": []
+ },
+ {
+  "group_id": "DUP-031",
+  "size": 2,
+  "canonical_branch": "fix/middleware-consolidation-v2",
+  "canonical_rule": "newest last-commit date, then lowercase name, then shortest, then A-Z",
+  "canonical_tip": "4899423d0c91c835b83ca684e2f62f200813d4ff",
+  "canonical_date": "2026-05-06",
+  "canonical_insertions": 66,
+  "canonical_files": 6,
+  "canonical_category": "security-review",
+  "matched_on": [
+   "near-identical after name normalisation (subjectJ=0.00, contentJ=0.67)"
+  ],
+  "branches": [
+   "fix/middleware-consolidation",
+   "fix/middleware-consolidation-v2"
+  ],
+  "insertions_if_all_kept": 159,
+  "open_pr_numbers": [
+   953
+  ]
+ },
+ {
+  "group_id": "DUP-032",
+  "size": 2,
+  "canonical_branch": "fix/sec-001-npm-audit-vulnerabilities",
+  "canonical_rule": "newest last-commit date, then lowercase name, then shortest, then A-Z",
+  "canonical_tip": "38a049a6a7076d53484d1b3bb7a7170de8c77aff",
+  "canonical_date": "2026-05-08",
+  "canonical_insertions": 519,
+  "canonical_files": 6,
+  "canonical_category": "security-review",
+  "matched_on": [
+   "identical content fingerprint (same net change)",
+   "identical tip commit"
+  ],
+  "branches": [
+   "fix/sec-001-npm-audit-vulnerabilities",
+   "pr/TEST-002"
+  ],
+  "insertions_if_all_kept": 1038,
+  "open_pr_numbers": []
+ },
+ {
+  "group_id": "DUP-033",
+  "size": 2,
+  "canonical_branch": "fix/security-vulnerabilities",
+  "canonical_rule": "newest last-commit date, then lowercase name, then shortest, then A-Z",
+  "canonical_tip": "8e781c5f6ecb7d7c22a564f0e5ee6638b69b7262",
+  "canonical_date": "2026-05-14",
+  "canonical_insertions": 68,
+  "canonical_files": 2,
+  "canonical_category": "security-review",
+  "matched_on": [
+   "identical content fingerprint (same net change)"
+  ],
+  "branches": [
+   "fix/security-vulnerabilities",
+   "fix/security-vulns-2026"
+  ],
+  "insertions_if_all_kept": 136,
+  "open_pr_numbers": [
+   744,
+   1428
+  ]
+ },
+ {
+  "group_id": "DUP-034",
+  "size": 2,
+  "canonical_branch": "innovation-media-prefetch-og",
+  "canonical_rule": "newest last-commit date, then lowercase name, then shortest, then A-Z",
+  "canonical_tip": "d80af226f62e71c207c4f64f97e32a52710e91e1",
+  "canonical_date": "2026-03-11",
+  "canonical_insertions": 1642,
+  "canonical_files": 14,
+  "canonical_category": "candidate-salvage",
+  "matched_on": [
+   "identical content fingerprint (same net change)",
+   "identical tip commit"
+  ],
+  "branches": [
+   "innovation-media-prefetch-og",
+   "qa-add-tests"
+  ],
+  "insertions_if_all_kept": 3284,
+  "open_pr_numbers": [
+   779
+  ]
+ },
+ {
+  "group_id": "DUP-035",
+  "size": 2,
+  "canonical_branch": "pr/middleware-edge-optimization",
+  "canonical_rule": "newest last-commit date, then lowercase name, then shortest, then A-Z",
+  "canonical_tip": "838b17ca03493e1baabde4cb4118a758a4dc50de",
+  "canonical_date": "2026-03-19",
+  "canonical_insertions": 1539,
+  "canonical_files": 13,
+  "canonical_category": "security-review",
+  "matched_on": [
+   "identical content fingerprint (same net change)",
+   "identical tip commit"
+  ],
+  "branches": [
+   "pr/middleware-edge-optimization",
+   "test/coverage-increase-792"
+  ],
+  "insertions_if_all_kept": 3078,
+  "open_pr_numbers": [
+   830,
+   831
+  ]
+ },
+ {
+  "group_id": "DUP-036",
+  "size": 2,
+  "canonical_branch": "test/table-of-contents-tests",
+  "canonical_rule": "newest last-commit date, then lowercase name, then shortest, then A-Z",
+  "canonical_tip": "515a3c0069e4660126a021caa934e168b58d0859",
+  "canonical_date": "2026-03-07",
+  "canonical_insertions": 716,
+  "canonical_files": 2,
+  "canonical_category": "superseded",
+  "matched_on": [
+   "identical content fingerprint (same net change)",
+   "identical tip commit"
+  ],
+  "branches": [
+   "test/error-boundary-tests",
+   "test/table-of-contents-tests"
+  ],
+  "insertions_if_all_kept": 1432,
+  "open_pr_numbers": [
+   734,
+   735
+  ]
+ },
+ {
+  "group_id": "DUP-037",
+  "size": 2,
+  "canonical_branch": "test/qa-add-tests-summary-media-api-routes-759",
+  "canonical_rule": "newest last-commit date, then lowercase name, then shortest, then A-Z",
+  "canonical_tip": "24f39ab67a37dca9b699b760aff7f21a3057f893",
+  "canonical_date": "2026-03-09",
+  "canonical_insertions": 903,
+  "canonical_files": 3,
+  "canonical_category": "superseded",
+  "matched_on": [
+   "identical content fingerprint (same net change)",
+   "identical tip commit"
+  ],
+  "branches": [
+   "test/qa-add-tests-summary-media-api-routes-759",
+   "test/useDarkMode-hook-coverage-731"
+  ],
+  "insertions_if_all_kept": 1806,
+  "open_pr_numbers": [
+   740,
+   768
+  ]
+ },
+ {
+  "group_id": "DUP-038",
+  "size": 2,
+  "canonical_branch": "test/table-of-contents-component-729",
+  "canonical_rule": "newest last-commit date, then lowercase name, then shortest, then A-Z",
+  "canonical_tip": "c34d1af9f06663dbee6a400d0996f6a71d3b4eee",
+  "canonical_date": "2026-03-07",
+  "canonical_insertions": 821,
+  "canonical_files": 5,
+  "canonical_category": "unclear",
+  "matched_on": [
+   "identical content fingerprint (same net change)",
+   "identical tip commit"
+  ],
+  "branches": [
+   "test/reading-progress-component-718",
+   "test/table-of-contents-component-729"
+  ],
+  "insertions_if_all_kept": 1642,
+  "open_pr_numbers": [
+   739,
+   741
+  ]
+ }
+]
