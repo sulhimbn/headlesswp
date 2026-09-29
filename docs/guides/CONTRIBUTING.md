@@ -249,8 +249,7 @@ This project takes dependency security seriously. Follow these guidelines:
    ```
 
 3. **Version Strategy**
-   - **Apollo Client**: Stay on v3.x to avoid breaking changes
-   - **React/Next.js**: Update cautiously due to potential breaking changes
+   - **Next.js / React**: Update cautiously due to potential breaking changes
    - **Security patches**: Apply immediately regardless of version
    - **Dev dependencies**: Can be updated more frequently
 
@@ -276,17 +275,17 @@ This project takes dependency security seriously. Follow these guidelines:
 
 ## Security
 
-If you discover a security vulnerability, please follow our [Security Policy](./SECURITY.md) and report it privately.
+If you discover a security vulnerability, please follow our [Security Policy](./SECURITY.md) and report it privately. For the local setup, run, and PR workflow, see the [root CONTRIBUTING.md](../../CONTRIBUTING.md).
 
 ## Getting Help
 
-- 📖 Check [documentation](../README.md)
+- 📖 Check [documentation](../../README.md)
 - 🐛 [Open an issue](https://github.com/sulhimbn/headlesswp/issues)
 - 💬 Start a [discussion](https://github.com/sulhimbn/headlesswp/discussions)
 
 ## License
 
-By contributing, you agree that your contributions will be licensed under the [MIT License](LICENSE).
+By contributing, you agree that your contributions will be licensed under the [MIT License](../../LICENSE).
 
 ---
 
