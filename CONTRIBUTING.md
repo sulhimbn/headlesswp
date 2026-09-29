@@ -60,8 +60,10 @@ The app validates its environment at startup (`src/lib/config/envValidation.ts`,
 Start from the template and point them at your local WordPress instance:
 
 ```bash
-cp .env.example .env.local
+cp .env.example .env
 ```
+
+Use the name `.env` (not `.env.local`): Next.js reads both, but Docker Compose only reads `.env`, and the Docker services below need the `MYSQL_*` values from it.
 
 ```env
 NEXT_PUBLIC_WORDPRESS_URL=http://localhost:8080
@@ -72,7 +74,7 @@ WORDPRESS_URL=http://localhost:8080
 WORDPRESS_API_URL=http://localhost:8080/wp-json
 ```
 
-The rest of `.env.example` (database credentials, Sentry, content-summarization provider) is optional for frontend work. `.env.local` is git-ignored — never commit real credentials, and never edit `.env.example` with real values.
+The rest of `.env.example` (database credentials, Sentry, content-summarization provider) is optional for frontend work, but the `MYSQL_*` values are required by Docker Compose. `.env` is git-ignored — never commit real credentials, and never edit `.env.example` with real values.
 
 You can confirm the environment is valid at any time:
 
@@ -93,12 +95,12 @@ docker compose up -d wordpress db phpmyadmin
 | WordPress | http://localhost:8080 | complete the install at `/wp-admin/install.php` |
 | WordPress admin | http://localhost:8080/wp-admin | the admin account created during the install below |
 | REST API | http://localhost:8080/wp-json/wp/v2/ | public |
-| phpMyAdmin | http://localhost:8081 | `root` / `MYSQL_ROOT_PASSWORD` from `.env.local` |
+| phpMyAdmin | http://localhost:8081 | `root` / `MYSQL_ROOT_PASSWORD` from `.env` |
 
 If the WordPress container comes up empty, finish the 5-minute install:
 
 - manually at http://localhost:8080/wp-admin/install.php (you choose the admin user and password), or
-- via `./install-wordpress.sh` (reads `WP_ADMIN_USER` / `WP_ADMIN_PASSWORD` / `WP_ADMIN_EMAIL` from the environment; generates a random password when unset)
+- via `./install-wordpress.sh` (reads `WP_ADMIN_USER` / `WP_ADMIN_PASSWORD` / `WP_ADMIN_EMAIL` from the environment, so set them in `.env`; it generates a random password when `WP_ADMIN_PASSWORD` is unset)
 
 Then create a post in the WordPress admin so the frontend has content to render.
 
@@ -245,7 +247,7 @@ Follow Arrange–Act–Assert, name tests as `when X, it should Y`, test behavio
 
 | Symptom | Fix |
 | --- | --- |
-| App throws about missing environment variables on startup | Set `NEXT_PUBLIC_WORDPRESS_URL` and `NEXT_PUBLIC_WORDPRESS_API_URL` in `.env.local` |
+| App throws about missing environment variables on startup | Set `NEXT_PUBLIC_WORDPRESS_URL` and `NEXT_PUBLIC_WORDPRESS_API_URL` in `.env` |
 | Frontend renders nothing / API calls fail | Check `docker compose ps` and `curl http://localhost:8080/wp-json/wp/v2/posts` |
 | Port 3000 already in use | Something else owns it, or the `frontend` service from `docker compose up` is still running — stop it with `docker compose stop frontend` |
 | Type or build errors after pulling | `rm -rf .next node_modules && npm ci` |
