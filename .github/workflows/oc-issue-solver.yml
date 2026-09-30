@@ -1,8 +1,9 @@
 name: oc - issue solver
 
 on:
-  schedule:
-    - cron: '0/30 * * * *'
+  # schedule paused: agent jobs require LLM API secrets (IFLOW_API_KEY / GEMINI_API_KEY) that are not configured
+  # schedule:
+  #   - cron: '0/30 * * * *'
   workflow_dispatch:
 
 permissions:

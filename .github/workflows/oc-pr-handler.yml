@@ -1,8 +1,9 @@
 name: oc - pr handler
 
 on:
-  schedule:
-    - cron: '0 */3 * * *'
+  # schedule paused: agent jobs require LLM API secrets (IFLOW_API_KEY / GEMINI_API_KEY) that are not configured
+  # schedule:
+  #   - cron: '0 */3 * * *'
   workflow_dispatch:
 
 permissions:

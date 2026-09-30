@@ -1,8 +1,9 @@
 name: oc - maintainer
 
 on:
-  schedule:
-    - cron: '0 2 * * *'
+  # schedule paused: agent jobs require LLM API secrets (IFLOW_API_KEY / GEMINI_API_KEY) that are not configured
+  # schedule:
+  #   - cron: '0 2 * * *'
   workflow_dispatch:
 
 permissions:
