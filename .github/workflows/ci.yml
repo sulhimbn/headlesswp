@@ -78,7 +78,9 @@ jobs:
       - name: Build application
         run: npm run build
         env:
-          NEXT_PUBLIC_WORDPRESS_URL: ${{ secrets.WORDPRESS_URL }}
+          NEXT_PUBLIC_WORDPRESS_URL: ${{ secrets.WORDPRESS_URL || 'https://example.com' }}
+          NEXT_PUBLIC_WORDPRESS_API_URL: ${{ secrets.WORDPRESS_API_URL || 'https://example.com/wp-json/wp/v2' }}
+          NEXT_PUBLIC_SITE_URL: ${{ secrets.SITE_URL || secrets.WORDPRESS_URL || 'https://example.com' }}
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v6
