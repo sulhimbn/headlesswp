@@ -1,7 +1,8 @@
 name: on pull
 on:
-  schedule:
-    - cron: '0 * * * *' 
+  # schedule paused: agent jobs require LLM API secrets (IFLOW_API_KEY / GEMINI_API_KEY) that are not configured
+  # schedule:
+  #   - cron: '0 * * * *'
   pull_request:
   issues:
   push:
