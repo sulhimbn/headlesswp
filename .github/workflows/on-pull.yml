@@ -38,10 +38,10 @@ jobs:
 
       - name: Checkout Code
         uses: actions/checkout@v6
-        continue-on-error: true
         with:
           fetch-depth: 0
-          token: ${{ secrets.GH_TOKEN }}
+          token: ${{ github.token }}
+          persist-credentials: true
 
       - name: Setup Node.js
         uses: actions/setup-node@v6
@@ -57,14 +57,10 @@ jobs:
 
       - name: Branch Management
         run: |
-          git fetch --all
-          if git branch -r | grep "origin/agent-workspace"; then
-            git checkout agent-workspace
-            git pull origin agent-workspace
-          else
-            git checkout -b agent-workspace
-          fi
-          git merge origin/main --no-edit || echo "Merge conflict or already up to date"
+          git fetch --all --prune
+          echo "Event ref commit: $(git rev-parse HEAD)"
+          echo "Event sha:        ${{ github.sha }}"
+          git status --short --branch
 
       - name: Install Dependencies
         continue-on-error: true
@@ -84,6 +80,7 @@ jobs:
 
       - name: Auto-fix CI Failures
         if: steps.install-opencode.outputs.opencode_cli_installed == 'true'
+        continue-on-error: true
         run: |
           opencode run "$(cat <<'PROMPT'
           YOU ARE AN AUTONOMOUS SOFTWARE ENGINEERING AGENT.
