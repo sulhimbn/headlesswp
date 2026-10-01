@@ -10,6 +10,9 @@ import Pagination from '@/components/ui/Pagination'
 import EmptyState from '@/components/ui/EmptyState'
 import Badge from '@/components/ui/Badge'
 import SectionHeading from '@/components/ui/SectionHeading'
+import Breadcrumb from '@/components/ui/Breadcrumb'
+import MetaInfo from '@/components/ui/MetaInfo'
+import SocialShare from '@/components/ui/SocialShare'
 import { UI_TEXT } from '@/lib/constants/uiText'
 import type { WordPressPost } from '@/types/wordpress'
 
@@ -235,6 +238,60 @@ describe('Accessibility Tests', () => {
       render(<SectionHeading id="custom-id">Custom ID Heading</SectionHeading>)
       const heading = screen.getByRole('heading')
       expect(heading).toHaveAttribute('id', 'custom-id')
+    })
+  })
+
+  describe('Breadcrumb', () => {
+    it('should have no accessibility violations', async () => {
+      const { container } = render(<Breadcrumb items={[]} />)
+      const results = await axe(container)
+      expect(results).toHaveNoViolations()
+    })
+
+    it('should have navigation role with proper label', () => {
+      render(<Breadcrumb items={[]} />)
+      const nav = screen.getByRole('navigation', { name: 'Navigasi breadcrumb' })
+      expect(nav).toBeInTheDocument()
+    })
+
+    it('should have proper list structure', () => {
+      render(<Breadcrumb items={[{ label: 'News', href: '/news' }]} />)
+      const list = screen.getByRole('list')
+      expect(list).toBeInTheDocument()
+    })
+  })
+
+  describe('MetaInfo', () => {
+    it('should have no accessibility violations', async () => {
+      const { container } = render(<MetaInfo date="2026-01-15" author="John Doe" />)
+      const results = await axe(container)
+      expect(results).toHaveNoViolations()
+    })
+
+    it('should have proper semantic structure', () => {
+      render(<MetaInfo date="2026-01-15" author="John Doe" />)
+      const time = screen.getByRole('time')
+      expect(time).toBeInTheDocument()
+    })
+  })
+
+  describe('SocialShare', () => {
+    it('should have no accessibility violations', async () => {
+      const { container } = render(<SocialShare url="https://example.com" title="Test" />)
+      const results = await axe(container)
+      expect(results).toHaveNoViolations()
+    })
+
+    it('should have buttons with proper aria-labels', () => {
+      render(<SocialShare url="https://example.com" title="Test" />)
+      const twitterButton = screen.getByRole('button', { name: /Twitter/i })
+      expect(twitterButton).toBeInTheDocument()
+    })
+
+    it('should have copy link button', () => {
+      render(<SocialShare url="https://example.com" title="Test" />)
+      const copyButton = screen.getByRole('button', { name: /Salin tautan/i })
+      expect(copyButton).toBeInTheDocument()
     })
   })
 })
