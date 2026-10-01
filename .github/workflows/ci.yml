@@ -83,7 +83,7 @@ jobs:
           NEXT_PUBLIC_SITE_URL: ${{ secrets.SITE_URL || secrets.WORDPRESS_URL || 'https://example.com' }}
 
       - name: Upload build artifacts
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: build-output
           path: .next
