@@ -5,9 +5,9 @@ name: Stale PR cleanup
 # had gone stale or conflicting and roughly 20 were worth a maintainer's time.
 # This closes abandoned PRs so the queue stays reviewable.
 #
-# Only pull requests are handled (days-before-issue-stale: -1). Drafts are
-# exempt, and the branch is never deleted, so reopening and rebasing always
-# remains possible.
+# Only pull requests are handled (days-before-issue-stale and
+# days-before-issue-close are both -1). Drafts are exempt, and the branch is
+# never deleted, so reopening and rebasing always remains possible.
 
 on:
   schedule:
@@ -37,7 +37,13 @@ jobs:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
           # PRs only. Issues are triaged by a human in this repo.
+          # Both gates are needed. days-before-issue-stale: -1 stops issues
+          # being *marked* stale, but the close path is a separate check that
+          # only looks at days-before-issue-close. Leaving that unset falls
+          # back to days-before-close (default 7), so any issue that arrives
+          # already carrying the `stale` label would be closed here.
           days-before-issue-stale: -1
+          days-before-issue-close: -1
 
           # 30 days without activity -> stale, then 14 more -> closed.
           days-before-pr-stale: 30
