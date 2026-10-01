@@ -1,5 +1,5 @@
-import { GET as CacheGET, POST as CachePOST, DELETE as CacheDELETE } from '@/app/api/cache/route'
-import { getCacheStats, clearCache } from '@/lib/cache'
+import { GET as CacheGET, POST as CachePOST, PUT as CachePUT, DELETE as CacheDELETE } from '@/app/api/cache/route'
+import { getCacheStats, clearCache, exportCache, importCache } from '@/lib/cache'
 import { cacheWarmer } from '@/lib/services/cacheWarmer'
 import { logger } from '@/lib/utils/logger'
 import { resetAllRateLimitState } from '@/lib/api/rateLimitMiddleware'
@@ -29,7 +29,7 @@ jest.mock('next/server', () => ({
   }
 }))
 
-const { getCacheStats: mockGetCacheStats, clearCache: mockClearCache } = require('@/lib/cache')
+const { getCacheStats: mockGetCacheStats, clearCache: mockClearCache, exportCache: mockExportCache, importCache: mockImportCache } = require('@/lib/cache')
 const { cacheWarmer: mockCacheWarmer } = require('@/lib/services/cacheWarmer')
 const { logger: mockLogger } = require('@/lib/utils/logger')
 
@@ -266,6 +266,108 @@ describe('Cache API Routes', () => {
       expect(data.success).toBe(true)
       expect(data.message).toBe('Cache cleared for pattern: post:')
       expect(mockClearCache).toHaveBeenCalledWith('post:')
+    })
+  })
+
+  describe('GET /api/cache?action=export', () => {
+    it('should return 200 with exported cache data', async () => {
+      const exportRequest = {
+        url: 'http://localhost:3000/api/cache?action=export'
+      } as any
+      const mockExportData = {
+        version: '1.0.0',
+        exportedAt: '2024-01-01T00:00:00.000Z',
+        entries: [
+          { key: 'post:1', data: { title: 'Test' }, timestamp: 1234567890, ttl: 60000, dependencies: [], dependents: [] }
+        ],
+        stats: { hits: 10, misses: 2, sets: 12, deletes: 0, cascadeInvalidations: 0, dependencyRegistrations: 0 }
+      }
+      mockExportCache.mockReturnValue(mockExportData)
+
+      const response = await CacheGET(exportRequest)
+      const data = await response.json()
+
+      expect(response.status).toBe(200)
+      expect(data.success).toBe(true)
+      expect(data.data).toEqual(mockExportData)
+      expect(mockExportCache).toHaveBeenCalled()
+    })
+
+    it('should return 500 when export fails', async () => {
+      const exportRequest = {
+        url: 'http://localhost:3000/api/cache?action=export'
+      } as any
+      mockExportCache.mockImplementation(() => {
+        throw new Error('Export failed')
+      })
+
+      const response = await CacheGET(exportRequest)
+      const data = await response.json()
+
+      expect(response.status).toBe(500)
+      expect(data.success).toBe(false)
+      expect(data.error).toBe('Failed to export cache')
+    })
+  })
+
+  describe('PUT /api/cache (import)', () => {
+    it('should return 200 when cache is imported successfully', async () => {
+      const importRequest = {
+        url: 'http://localhost:3000/api/cache',
+        json: jest.fn().mockResolvedValue({
+          version: '1.0.0',
+          exportedAt: '2024-01-01T00:00:00.000Z',
+          entries: [
+            { key: 'post:1', data: { title: 'Test' }, timestamp: 1234567890, ttl: 60000, dependencies: [], dependents: [] }
+          ],
+          stats: { hits: 0, misses: 0, sets: 0, deletes: 0, cascadeInvalidations: 0, dependencyRegistrations: 0 }
+        })
+      } as any
+      mockImportCache.mockReturnValue(1)
+
+      const response = await CachePUT(importRequest)
+      const data = await response.json()
+
+      expect(response.status).toBe(200)
+      expect(data.success).toBe(true)
+      expect(data.entriesImported).toBe(1)
+      expect(mockImportCache).toHaveBeenCalled()
+    })
+
+    it('should return 400 when import data is invalid', async () => {
+      const importRequest = {
+        url: 'http://localhost:3000/api/cache',
+        json: jest.fn().mockResolvedValue({
+          entries: []
+        })
+      } as any
+
+      const response = await CachePUT(importRequest)
+      const data = await response.json()
+
+      expect(response.status).toBe(400)
+      expect(data.success).toBe(false)
+      expect(data.error).toBe('Invalid cache export data format')
+    })
+
+    it('should return 500 when import fails', async () => {
+      const importRequest = {
+        url: 'http://localhost:3000/api/cache',
+        json: jest.fn().mockResolvedValue({
+          version: '1.0.0',
+          exportedAt: '2024-01-01T00:00:00.000Z',
+          entries: []
+        })
+      } as any
+      mockImportCache.mockImplementation(() => {
+        throw new Error('Import failed')
+      })
+
+      const response = await CachePUT(importRequest)
+      const data = await response.json()
+
+      expect(response.status).toBe(500)
+      expect(data.success).toBe(false)
     })
   })
 })
