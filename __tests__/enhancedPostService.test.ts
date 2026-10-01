@@ -552,6 +552,40 @@ describe('enhancedPostService', () => {
       expect(result!.mediaUrl).toBe('https://example.com/media.jpg');
       expect(result!.mediaDimensions).toBeNull();
     });
+
+    it('should fall back to getMediaUrl when media metadata throws', async () => {
+      const mockPost: WordPressPost = {
+        id: 1,
+        title: { rendered: 'Post with failing metadata' },
+        content: { rendered: '<p>Content</p>' },
+        excerpt: { rendered: 'Excerpt' },
+        slug: 'post-with-failing-metadata',
+        date: '2024-01-01T00:00:00',
+        modified: '2024-01-01T00:00:00',
+        author: 1,
+        categories: [],
+        tags: [],
+        featured_media: 10,
+        status: 'publish',
+        type: 'post',
+        link: 'https://example.com/post-with-failing-metadata'
+      };
+
+      (wordpressAPI.getPost as jest.Mock).mockResolvedValue(mockPost);
+      (dataValidator.validatePost as jest.Mock).mockReturnValue({ valid: true, data: mockPost, errors: [] });
+      (wordpressAPI.getMediaMetadata as jest.Mock).mockRejectedValue(new Error('metadata unavailable'));
+      (wordpressAPI.getMediaUrl as jest.Mock).mockResolvedValue('https://example.com/recovered.jpg');
+      (wordpressAPI.getCategories as jest.Mock).mockResolvedValue([]);
+      (dataValidator.validateCategories as jest.Mock).mockReturnValue({ valid: true, data: [], errors: [] });
+      (wordpressAPI.getTags as jest.Mock).mockResolvedValue([]);
+      (dataValidator.validateTags as jest.Mock).mockReturnValue({ valid: true, data: [], errors: [] });
+
+      const result = await enhancedPostService.getPostBySlug('post-with-failing-metadata');
+
+      expect(result).not.toBeNull();
+      expect(result!.mediaUrl).toBe('https://example.com/recovered.jpg');
+      expect(result!.mediaDimensions).toBeNull();
+    });
   });
 
   describe('getPostById', () => {
