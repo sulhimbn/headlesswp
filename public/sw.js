@@ -1,4 +1,4 @@
-const CACHE_NAME = 'mitra-banten-news-v1';
+const CACHE_NAME = 'mitra-banten-news-v2';
 const OFFLINE_URL = '/offline.html';
 
 const STATIC_ASSETS = [
