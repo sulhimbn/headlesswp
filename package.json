@@ -10,7 +10,7 @@
     "start": "next start",
     "lint": "eslint src",
     "typecheck": "tsc --noEmit",
-    "analyze": "ANALYZE=true next build",
+    "analyze": "ANALYZE=true next build --webpack",
     "test": "jest",
     "test:watch": "jest --watch",
     "audit:security": "npm audit --audit-level=moderate",

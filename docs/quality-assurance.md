@@ -59,6 +59,13 @@ Autonomous QA specialist delivering small, safe, measurable improvements.
 
 ## Implemented Work
 
+### 2026-03-04
+- **Accessibility Testing**: Added axe-core accessibility tests to CI pipeline
+  - Tests in: `__tests__/accessibility.test.tsx`
+  - Coverage: Header, Footer, PostCard, SearchBar, Button, Pagination, EmptyState, Badge, SectionHeading
+  - Status: Already integrated in `npm run test` job
+  - Linked to Issue #683
+
 ### 2026-02-26
 - **PR: Add accessibility tests for SectionHeading component**
   - Added 5 tests for previously untested SectionHeading component
