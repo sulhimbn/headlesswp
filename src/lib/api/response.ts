@@ -1,4 +1,5 @@
 import { ApiError, createApiError } from './errors';
+import { createTimestamp } from '@/lib/utils/timestamp';
 
 export interface ApiMetadata {
   timestamp: string;
@@ -34,7 +35,7 @@ export function createSuccessResult<T>(
     data,
     error: null,
     metadata: {
-      timestamp: new Date().toISOString(),
+      timestamp: createTimestamp(),
       ...metadata
     },
     pagination
@@ -49,7 +50,7 @@ export function createErrorResult<T>(
     data: null as unknown as T,
     error,
     metadata: {
-      timestamp: new Date().toISOString(),
+      timestamp: createTimestamp(),
       ...metadata
     }
   };
@@ -82,7 +83,7 @@ export function createSuccessListResult<T>(
     data,
     error: null,
     metadata: {
-      timestamp: new Date().toISOString(),
+      timestamp: createTimestamp(),
       ...metadata
     },
     pagination

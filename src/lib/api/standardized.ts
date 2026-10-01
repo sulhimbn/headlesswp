@@ -11,6 +11,7 @@ import {
 } from './response';
 import { createApiError } from './errors';
 import { DEFAULT_PER_PAGE } from './config';
+import { createTimestamp } from '@/lib/utils/timestamp';
 
 async function getAllEntities<T>(
   entities: T[],
@@ -39,7 +40,7 @@ function createErrorListResult(
     data: [],
     error: createApiError(caughtError || new Error('API error'), endpoint),
     metadata: {
-      timestamp: new Date().toISOString(),
+      timestamp: createTimestamp(),
       endpoint,
       ...metadataOptions
     },

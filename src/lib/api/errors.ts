@@ -1,4 +1,5 @@
 import { AxiosError } from 'axios'
+import { createTimestamp } from '@/lib/utils/timestamp'
 
 export enum ApiErrorType {
   NETWORK_ERROR = 'NETWORK_ERROR',
@@ -42,7 +43,7 @@ export class ApiErrorImpl extends Error implements ApiError {
     this.statusCode = statusCode
     this.retryable = retryable
     this.originalError = originalError
-    this.timestamp = new Date().toISOString()
+    this.timestamp = createTimestamp()
     this.endpoint = endpoint
   }
 }

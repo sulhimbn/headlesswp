@@ -5,6 +5,7 @@ import {
   RETRY_INITIAL_DELAY
 } from './config';
 import { logger } from '@/lib/utils/logger';
+import { createTimestamp } from '@/lib/utils/timestamp';
 
 export interface HealthCheckResult {
   healthy: boolean;
@@ -32,7 +33,7 @@ export class HealthChecker {
     if (this.checkInProgress) {
       return {
         healthy: false,
-        timestamp: new Date().toISOString(),
+        timestamp: createTimestamp(),
         latency: 0,
         message: 'Health check already in progress'
       };
@@ -48,7 +49,7 @@ export class HealthChecker {
 
       const result: HealthCheckResult = {
         healthy: true,
-        timestamp: new Date().toISOString(),
+        timestamp: createTimestamp(),
         latency,
         message: 'WordPress API is healthy'
       };
@@ -65,7 +66,7 @@ export class HealthChecker {
 
       const result: HealthCheckResult = {
         healthy: false,
-        timestamp: new Date().toISOString(),
+        timestamp: createTimestamp(),
         latency,
         message: 'WordPress API is unhealthy',
         error: apiError.message
@@ -87,7 +88,7 @@ export class HealthChecker {
       setTimeout(() => {
         resolve({
           healthy: false,
-          timestamp: new Date().toISOString(),
+          timestamp: createTimestamp(),
           latency: timeout,
           message: 'Health check timed out'
         });
@@ -120,7 +121,7 @@ export class HealthChecker {
       } catch (error) {
         lastError = {
           healthy: false,
-          timestamp: new Date().toISOString(),
+          timestamp: createTimestamp(),
           latency: 0,
           message: 'Health check failed unexpectedly',
           error: error instanceof Error ? error.message : 'Unknown error'
