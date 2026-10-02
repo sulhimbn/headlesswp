@@ -232,7 +232,7 @@ Test coverage:
 4. Commit and push
 5. Create Pull Request
 
-See [Contributing Guide](docs/guides/CONTRIBUTING.md) for detailed guidelines.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for local setup, running the project, and the pull request workflow, and the [Contributing Guide](docs/guides/CONTRIBUTING.md) for extended guidelines.
 
 ## License
 
