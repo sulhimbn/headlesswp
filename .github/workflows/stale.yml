@@ -49,8 +49,10 @@ jobs:
           days-before-pr-stale: 30
           days-before-pr-close: 14
 
-          # A comment or push resets the clock; the stale label is removed so
-          # the next run starts from a clean state.
+          # ignore-pr-updates: the 30-day clock runs from the PR's *creation*
+          # date, not from its last activity. A comment or push does NOT reset
+          # it. That is deliberate — reaping is on age, because nobody is
+          # watching an abandoned PR. The exemptions below are the only opt-out.
           ignore-pr-updates: true
           remove-pr-stale-when-updated: true
           exempt-draft-pr: true
@@ -63,12 +65,15 @@ jobs:
           close-pr-label: closed-stale
 
           stale-pr-message: >
-            No activity for 30 days, so this pull request is marked stale.
+            This pull request was opened 30 days ago, so it is marked stale.
 
-            Comment to keep it open. Otherwise it closes automatically in 14 days.
+            It closes automatically 14 days after this label is applied. To keep
+            it open, assign a reviewer, add a milestone, or leave it in draft —
+            commenting alone does not stop this.
 
           close-pr-message: >
-            Closing after 44 days with no activity.
+            Closing 44 days after this pull request was opened, with no reviewer
+            assigned and no milestone.
 
             The branch was not deleted. Reopen and rebase onto current `main` if
             this is still wanted — but note `main` moves quickly here, so if your
