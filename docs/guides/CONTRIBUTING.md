@@ -116,6 +116,19 @@ npm run build
 - Address feedback promptly
 - Keep PR up to date with main branch
 
+### 6. Stale Pull Requests
+
+A scheduled workflow (`.github/workflows/stale.yml`) closes PRs that go 30 days
+without activity, and closes them 14 days after they are marked stale. Comment
+on a PR to reset the clock — the stale label is removed automatically.
+
+Drafts, PRs with an assignee, and PRs on a milestone are exempt. **Branches are
+never deleted**, so a closed PR can always be reopened and rebased.
+
+If your PR closes, rebase onto current `main` before reopening it. `main` in this
+repo moves quickly, and a diff that touches files rewritten in the meantime needs
+a full re-review rather than just a rebase.
+
 ## Issue Reporting
 
 ### Bug Reports

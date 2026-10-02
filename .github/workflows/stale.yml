@@ -1,0 +1,92 @@
+name: Stale PR cleanup
+
+# The autonomous workflows in this repo can open large batches of PRs. Without a
+# reaper they accumulate indefinitely: 269 open PRs had built up, of which 218
+# had gone stale or conflicting and roughly 20 were worth a maintainer's time.
+# This closes abandoned PRs so the queue stays reviewable.
+#
+# Only pull requests are handled (days-before-issue-stale and
+# days-before-issue-close are both -1). Drafts are exempt, and the branch is
+# never deleted, so reopening and rebasing always remains possible.
+
+on:
+  schedule:
+    # Hourly. Cheap: the listing is paginated once and each PR costs one call.
+    - cron: '17 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+concurrency:
+  group: stale-pr-cleanup
+  cancel-in-progress: true
+
+jobs:
+  cleanup:
+    name: Close stale PRs
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Close abandoned pull requests
+        uses: actions/stale@v9
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+          # PRs only. Issues are triaged by a human in this repo.
+          # Both gates are needed. days-before-issue-stale: -1 stops issues
+          # being *marked* stale, but the close path is a separate check that
+          # only looks at days-before-issue-close. Leaving that unset falls
+          # back to days-before-close (default 7), so any issue that arrives
+          # already carrying the `stale` label would be closed here.
+          days-before-issue-stale: -1
+          days-before-issue-close: -1
+
+          # 30 days without activity -> stale, then 14 more -> closed.
+          days-before-pr-stale: 30
+          days-before-pr-close: 14
+
+          # A comment or push resets the clock; the stale label is removed so
+          # the next run starts from a clean state.
+          ignore-pr-updates: true
+          remove-pr-stale-when-updated: true
+          exempt-draft-pr: true
+
+          # Never touch work that is in review or already has an owner.
+          exempt-all-pr-assignees: true
+          exempt-all-pr-milestones: true
+
+          stale-pr-label: stale
+          close-pr-label: closed-stale
+
+          stale-pr-message: >
+            No activity for 30 days, so this pull request is marked stale.
+
+            Comment to keep it open. Otherwise it closes automatically in 14 days.
+
+          close-pr-message: >
+            Closing after 44 days with no activity.
+
+            The branch was not deleted. Reopen and rebase onto current `main` if
+            this is still wanted — but note `main` moves quickly here, so if your
+            change touches files that have since been rewritten, the diff needs a
+            full re-review rather than just a rebase.
+
+          # Cap the work per run so a large backlog drains over several runs
+          # instead of tripping secondary rate limits.
+          operations-per-run: 100
+          ascending: true
+
+      - name: Report remaining queue depth
+        run: |
+          open=$(gh pr list --state open --limit 500 --json number -q 'length')
+          echo "Open pull requests remaining: $open"
+          if [ "$open" -gt 60 ]; then
+            echo "::warning::Open PR queue is $open (>60). Reviewer attention is diluted;"
+            echo "::warning::close or batch the oldest agent-authored PRs."
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
