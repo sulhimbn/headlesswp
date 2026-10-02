@@ -77,10 +77,19 @@ jobs:
           curl -fsSL https://opencode.ai/install | bash
           echo "$HOME/.opencode/bin" >> $GITHUB_PATH
 
+      # The cycle below calls a third-party inference endpoint (iFlow) that
+      # returns transient HTTP 500s. That upstream outage is not a defect in this
+      # repository, but it must not be able to redden main: retry with exponential
+      # backoff, then degrade to a warning annotation and carry on.
       - name: Architect Intelligence Cycle
         timeout-minutes: 30
+        continue-on-error: true
         run: |
-            opencode run /ulw-loop "
+          max_attempts=3
+          delay=30
+          for attempt in $(seq 1 "$max_attempts"); do
+            echo "::notice::Architect Intelligence Cycle — attempt ${attempt}/${max_attempts}"
+            if opencode run /ulw-loop "
             IF Github issue_count > 10 THEN enter MANAGER MODE. IF Github issue_count < 10 THEN enter CREATOR MODE.
 
             // MANAGER MODE
@@ -214,8 +223,22 @@ jobs:
             Never introduce complexity without measurable gain.
             Optimize for long-term maintainability and strategic leverage.
             " \
-            --model opencode/minimax-m2.5-free \
-            --share false
+              --model opencode/minimax-m2.5-free \
+              --share false
+            then
+              exit 0
+            else
+              status=$?
+              echo "::warning::Architect Intelligence Cycle attempt ${attempt}/${max_attempts} failed (exit ${status})."
+            fi
+            if [ "$attempt" -lt "$max_attempts" ]; then
+              echo "::notice::Retrying in ${delay}s before the next attempt..."
+              sleep "$delay"
+              delay=$(( delay * 2 ))
+            fi
+          done
+          echo "::warning::Architect Intelligence Cycle exhausted ${max_attempts} attempts; the upstream LLM endpoint is unavailable. Skipping the cycle for this run."
+          exit 0
 
   # ================================================================
   # STAGE 2 — SPECIALISTS (THE MUSCLE)
