@@ -32,7 +32,7 @@ jobs:
 
     steps:
       - name: Close abandoned pull requests
-        uses: actions/stale@v9
+        uses: actions/stale@v11
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
