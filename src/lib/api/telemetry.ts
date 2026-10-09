@@ -58,6 +58,15 @@ export class TelemetryCollector {
     }
   }
 
+  /**
+   * Chain an additional onEvent listener without replacing an existing one.
+   * Used by PERF-MON-002 to attach the Sentry export bridge.
+   */
+  addEventListener(listener: (event: TelemetryEvent) => void): void {
+    const prev = this.config.onEvent
+    this.config.onEvent = prev ? (event) => { prev(event); listener(event) } : listener
+  }
+
   getEvents(): TelemetryEvent[] {
     return [...this.events]
   }
@@ -99,6 +108,19 @@ export const telemetryCollector = new TelemetryCollector({
   maxEvents: 1000,
   flushInterval: 60000
 })
+
+// PERF-MON-002: attach the Sentry APM export bridge lazily (server-only,
+// no-op without DSN, sampled at 10%). The dynamic import keeps the client
+// bundle and unit-test graph free of the Sentry SDK via this path.
+if (typeof window === 'undefined' && process.env.NODE_ENV !== 'test') {
+  void import('./telemetryBridge').then(({ createSentryBridgeHandler, startAggregateFlush }) => {
+    const sampleRate = parseFloat(process.env.TELEMETRY_SAMPLE_RATE || '0.1')
+    telemetryCollector.addEventListener(createSentryBridgeHandler({
+      sampleRate: Number.isFinite(sampleRate) ? Math.min(Math.max(sampleRate, 0), 1) : 0.1
+    }))
+    startAggregateFlush(() => telemetryCollector.getStats())
+  }).catch(() => {})
+}
 
 export interface CircuitBreakerTelemetry {
   state: string
