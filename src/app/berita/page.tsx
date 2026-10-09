@@ -4,16 +4,52 @@ import PostCard from '@/components/post/PostCard'
 import Pagination from '@/components/ui/Pagination'
 import EmptyState from '@/components/ui/EmptyState'
 import SectionHeading from '@/components/ui/SectionHeading'
-import { PAGINATION_LIMITS } from '@/lib/api/config'
+import { PAGINATION_LIMITS, SITE_URL } from '@/lib/api/config'
 import dynamic from 'next/dynamic'
 import { UI_TEXT } from '@/lib/constants/uiText'
 import { PARSING } from '@/lib/constants/appConstants'
+import type { Metadata } from 'next'
 
 const Footer = dynamic(() => import('@/components/layout/Footer'), {
   loading: () => <div className="h-64 bg-[hsl(var(--color-background-dark))] mt-12" aria-hidden="true" />
 })
 
 export const revalidate = 300 // 5 minutes
+
+export async function generateMetadata(): Promise<Metadata> {
+  const pageUrl = `${SITE_URL}/berita`
+  const title = `${UI_TEXT.newsPage.heading} - Mitra Banten News`
+  const description = UI_TEXT.newsPage.subtitle
+
+  return {
+    title,
+    description,
+    alternates: {
+      canonical: pageUrl,
+    },
+    openGraph: {
+      title,
+      description,
+      url: pageUrl,
+      siteName: 'Mitra Banten News',
+      images: [
+        {
+          url: `${SITE_URL}/og-image.jpg`,
+          width: 1200,
+          height: 630,
+        },
+      ],
+      locale: 'id_ID',
+      type: 'website',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: [`${SITE_URL}/og-image.jpg`],
+    },
+  }
+}
 
 export default async function BeritaPage({
   searchParams,

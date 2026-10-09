@@ -24,9 +24,8 @@ Roadmaps, status reports, and planning documents
 
 ### [Backlog](./backlog/)
 Tasks, features, and backlog management
-- [TODO](./backlog/TODO.md) - Current TODO list
-- [Project Backlog](./backlog/project-backlog.md) - Detailed project backlog
-- [Backlog](./backlog/PROJECT_BACKLOG.md) - Alternative backlog view
+- [Backlog notes](./backlog/README.md) - Current backlog status (legacy docs archived)
+- [Task tracker](../task.md) - Active source of truth (see `docs/task.md`)
 
 ### [Governance](./governance/)
 Project governance, policies, and agent workflows

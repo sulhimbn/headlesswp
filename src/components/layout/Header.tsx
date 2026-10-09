@@ -14,6 +14,7 @@ const SearchBar = dynamic(() => import('@/components/ui/SearchBar'), { ssr: fals
 const NAVIGATION_ITEMS = [
   { href: '/', label: UI_TEXT.header.navigation.home },
   { href: '/berita', label: UI_TEXT.header.navigation.news },
+  { href: '/kategori', label: UI_TEXT.header.navigation.categories },
 ] as const
 
 export default memo(function Header() {

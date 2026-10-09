@@ -5,12 +5,48 @@ import PostCard from '@/components/post/PostCard'
 import SectionHeading from '@/components/ui/SectionHeading'
 import dynamic from 'next/dynamic'
 import { UI_TEXT } from '@/lib/constants/uiText'
+import { SITE_URL } from '@/lib/api/config'
+import type { Metadata } from 'next'
 
 const Footer = dynamic(() => import('@/components/layout/Footer'), {
   loading: () => <div className="h-64 bg-[hsl(var(--color-background-dark))] mt-12" aria-hidden="true" />
 })
 
 export const revalidate = 300 // 5 minutes
+
+export async function generateMetadata(): Promise<Metadata> {
+  const title = 'Mitra Banten News - Berita Terkini Banten'
+  const description = 'Portal berita terkini dan terpercaya dari Banten'
+
+  return {
+    title,
+    description,
+    alternates: {
+      canonical: SITE_URL,
+    },
+    openGraph: {
+      title,
+      description,
+      url: SITE_URL,
+      siteName: 'Mitra Banten News',
+      images: [
+        {
+          url: `${SITE_URL}/og-image.jpg`,
+          width: 1200,
+          height: 630,
+        },
+      ],
+      locale: 'id_ID',
+      type: 'website',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: [`${SITE_URL}/og-image.jpg`],
+    },
+  }
+}
 
 export default async function HomePage() {
   cacheInitializer.initialize().catch(() => {})

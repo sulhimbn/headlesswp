@@ -129,8 +129,23 @@ export const UI_TEXT = {
     },
     navigation: {
       home: 'Beranda',
-      news: 'Berita'
+      news: 'Berita',
+      categories: 'Kategori'
     }
+  },
+  categoryIndexPage: {
+    heading: 'Semua Kategori',
+    subtitle: 'Jelajahi berita berdasarkan kategori',
+    emptyTitle: 'Tidak ada kategori',
+    emptyDescription: 'Belum ada kategori untuk ditampilkan saat ini.',
+    articleCount: (count: number) => `${count} artikel`
+  },
+  tagIndexPage: {
+    heading: 'Semua Tag',
+    subtitle: 'Jelajahi berita berdasarkan tag',
+    emptyTitle: 'Tidak ada tag',
+    emptyDescription: 'Belum ada tag untuk ditampilkan saat ini.',
+    articleCount: (count: number) => `${count} artikel`
   },
   icon: {
     loading: 'Memuat'

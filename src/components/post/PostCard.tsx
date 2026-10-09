@@ -1,4 +1,4 @@
-import type { WordPressPost } from '@/types/wordpress'
+import type { WordPressPost, WordPressCategory, WordPressTag } from '@/types/wordpress'
 import Link from 'next/link'
 import Image from 'next/image'
 import { sanitizeHTML } from '@/lib/utils/sanitizeHTML'
@@ -6,12 +6,15 @@ import { UI_TEXT } from '@/lib/constants/uiText'
 import { formatDate } from '@/lib/utils/dateFormat'
 import { memo } from 'react'
 import { createArePropsEqual } from '@/lib/utils/memoization'
+import Badge from '@/components/ui/Badge'
 
 interface PostCardProps {
   post: WordPressPost
   mediaUrl?: string | null
   mediaDimensions?: { width: number; height: number } | null
   priority?: boolean
+  categoriesDetails?: WordPressCategory[]
+  tagsDetails?: WordPressTag[]
 }
 
 const POSTCARD_PROPS: (keyof PostCardProps)[] = [
@@ -19,17 +22,23 @@ const POSTCARD_PROPS: (keyof PostCardProps)[] = [
   'mediaUrl',
   'mediaDimensions',
   'priority',
+  'categoriesDetails',
+  'tagsDetails',
 ];
 
 const arePropsEqual = createArePropsEqual<PostCardProps>(POSTCARD_PROPS);
 
-function PostCardComponent({ post, mediaUrl, mediaDimensions, priority = false }: PostCardProps) {
+function PostCardComponent({ post, mediaUrl, mediaDimensions, priority = false, categoriesDetails = [], tagsDetails = [] }: PostCardProps) {
   const postTitleId = `post-title-${post.id}`
-  
+
   // Generate responsive sizes based on available dimensions
-  const sizes = mediaDimensions?.width 
+  const sizes = mediaDimensions?.width
     ? `(max-width: 768px) 100vw, (max-width: 1200px) 50vw, ${Math.min(mediaDimensions.width, 400)}px`
     : "(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw";
+
+  const visibleCategories = categoriesDetails.slice(0, 2)
+  const visibleTags = tagsDetails.slice(0, 3)
+  const hasBadges = visibleCategories.length > 0 || visibleTags.length > 0
 
   return (
     <article aria-labelledby={postTitleId} className="bg-[hsl(var(--color-surface))] rounded-[var(--radius-lg)] shadow-[var(--shadow-md)] overflow-hidden hover:shadow-[var(--shadow-lg)] transition-all duration-[var(--transition-normal)] focus-within:ring-2 focus-within:ring-[hsl(var(--color-primary))] focus-within:ring-offset-2">
@@ -50,6 +59,20 @@ function PostCardComponent({ post, mediaUrl, mediaDimensions, priority = false }
         </Link>
       )}
       <div className="p-4 sm:p-5 md:p-4">
+        {hasBadges && (
+          <div className="flex flex-wrap gap-2 mb-3" aria-label="Kategori dan tag artikel">
+            {visibleCategories.map((category) => (
+              <Badge key={`cat-${category.id}`} variant="category" href={`/kategori/${category.slug}`}>
+                {category.name}
+              </Badge>
+            ))}
+            {visibleTags.map((tag) => (
+              <Badge key={`tag-${tag.id}`} variant="tag" href={`/tag/${tag.slug}`}>
+                #{tag.name}
+              </Badge>
+            ))}
+          </div>
+        )}
         <h3 id={postTitleId} className="text-lg sm:text-xl md:text-lg font-semibold mb-2">
           <Link
             href={`/berita/${post.slug}`}

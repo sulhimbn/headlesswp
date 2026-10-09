@@ -18,6 +18,13 @@ tsconfig.tsbuildinfo
 
 coverage/
 
+# Playwright E2E artifacts (regenerated per run; CI uploads them instead)
+playwright-report/
+test-results/
+
+# Orchestration scratch (local blueprints, not for commit)
+workspace/
+
 # IDE
 .idea/
 .vscode/

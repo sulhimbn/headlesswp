@@ -10,12 +10,53 @@ import { UI_TEXT } from '@/lib/constants/uiText'
 import { PARSING } from '@/lib/constants/appConstants'
 import Icon from '@/components/ui/Icon'
 import type { PostWithMediaUrl } from '@/lib/services/IPostService'
+import { SITE_URL } from '@/lib/api/config'
+import type { Metadata } from 'next'
 
 const Footer = dynamic(() => import('@/components/layout/Footer'), {
   loading: () => <div className="h-64 bg-[hsl(var(--color-background-dark))] mt-12" aria-hidden="true" />
 })
 
 export const revalidate = 300 // 5 minutes
+
+export async function generateMetadata(): Promise<Metadata> {
+  const pageUrl = `${SITE_URL}/cari`
+  const title = 'Cari Berita - Mitra Banten News'
+  const description = 'Cari berita terkini dari Mitra Banten News berdasarkan kata kunci.'
+
+  return {
+    title,
+    description,
+    alternates: {
+      canonical: pageUrl,
+    },
+    robots: {
+      index: false,
+      follow: true,
+    },
+    openGraph: {
+      title,
+      description,
+      url: pageUrl,
+      siteName: 'Mitra Banten News',
+      images: [
+        {
+          url: `${SITE_URL}/og-image.jpg`,
+          width: 1200,
+          height: 630,
+        },
+      ],
+      locale: 'id_ID',
+      type: 'website',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: [`${SITE_URL}/og-image.jpg`],
+    },
+  }
+}
 
 interface SearchPageProps {
   searchParams: { q?: string; page?: string }
