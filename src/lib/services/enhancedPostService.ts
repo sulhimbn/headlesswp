@@ -88,6 +88,31 @@ async function enrichPostsWithMediaUrls(posts: WordPressPost[]): Promise<PostWit
   }));
 }
 
+/**
+ * Enrich a list of posts with media URLs plus category/tag detail objects
+ * resolved from the cached entity maps. No extra network requests beyond
+ * what the maps already trigger (cached, 30-60 min TTL).
+ */
+export async function enrichPostsWithTaxonomy(
+  posts: WordPressPost[]
+): Promise<Array<PostWithMediaUrl & { categoriesDetails: WordPressCategory[]; tagsDetails: WordPressTag[] }>> {
+  const [postsWithMedia, categoriesMap, tagsMap] = await Promise.all([
+    enrichPostsWithMediaUrls(posts),
+    getCategoriesMap(),
+    getTagsMap()
+  ]);
+
+  return postsWithMedia.map(post => ({
+    ...post,
+    categoriesDetails: post.categories
+      .map(id => categoriesMap.get(id))
+      .filter((cat): cat is WordPressCategory => cat !== undefined),
+    tagsDetails: post.tags
+      .map(id => tagsMap.get(id))
+      .filter((tag): tag is WordPressTag => tag !== undefined)
+  }));
+}
+
 function validatePostRelationships(
   post: WordPressPost,
   options: RelationshipValidatorOptions

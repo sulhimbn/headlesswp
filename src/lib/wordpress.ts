@@ -29,32 +29,32 @@ export const wordpressAPI: IWordPressAPI = {
 
   getCategories: createCollectionMethod<WordPressCategory>({
     endpoint: '/wp/v2/categories',
-    fields: 'id,name,slug'
+    fields: 'id,name,slug,description,count'
   }),
 
   getCategory: createItemMethod<WordPressCategory>({
     endpoint: '/wp/v2/categories',
-    fields: 'id,name,slug'
+    fields: 'id,name,slug,description,count'
   }),
 
   getCategoryById: createIdMethod<WordPressCategory>({
     endpoint: '/wp/v2/categories',
-    fields: 'id,name,slug'
+    fields: 'id,name,slug,description,count'
   }),
 
   getTags: createCollectionMethod<WordPressTag>({
     endpoint: '/wp/v2/tags',
-    fields: 'id,name'
+    fields: 'id,name,slug,description,count'
   }),
 
   getTag: createItemMethod<WordPressTag>({
     endpoint: '/wp/v2/tags',
-    fields: 'id,name'
+    fields: 'id,name,slug,description,count'
   }),
 
   getTagById: createIdMethod<WordPressTag>({
     endpoint: '/wp/v2/tags',
-    fields: 'id,name'
+    fields: 'id,name,slug,description,count'
   }),
 
   getMedia: async (id: number, signal?: AbortSignal): Promise<WordPressMedia> => {

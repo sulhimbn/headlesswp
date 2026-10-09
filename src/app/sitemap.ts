@@ -22,6 +22,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.9,
     },
     {
+      url: `${baseUrl}/kategori`,
+      lastModified: new Date(),
+      changeFrequency: 'daily',
+      priority: 0.7,
+    },
+    {
+      url: `${baseUrl}/tag`,
+      lastModified: new Date(),
+      changeFrequency: 'daily',
+      priority: 0.6,
+    },
+    {
       url: `${baseUrl}/cari`,
       lastModified: new Date(),
       changeFrequency: 'weekly',
@@ -35,9 +47,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }
 
   try {
-    const [postsResult, categoriesResult] = await Promise.all([
+    const [postsResult, categoriesResult, tagsResult] = await Promise.all([
       standardizedAPI.getAllPosts({ per_page: 100 }),
       standardizedAPI.getAllCategories(),
+      standardizedAPI.getAllTags(),
     ])
 
     const sitemapEntries: MetadataRoute.Sitemap = [...staticPages]
@@ -52,6 +65,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       sitemapEntries.push(...categoryUrls)
     }
 
+    if (isApiResultSuccessful(tagsResult)) {
+      const tagUrls: MetadataRoute.Sitemap = tagsResult.data.map((tag) => ({
+        url: `${baseUrl}/tag/${tag.slug}`,
+        lastModified: new Date(),
+        changeFrequency: 'weekly' as const,
+        priority: 0.6,
+      }))
+      sitemapEntries.push(...tagUrls)
+    }
+
     if (isApiResultSuccessful(postsResult)) {
       const postUrls: MetadataRoute.Sitemap = postsResult.data.map((post) => ({
         url: `${baseUrl}/berita/${post.slug}`,
@@ -60,6 +83,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         priority: 0.8,
       }))
       sitemapEntries.push(...postUrls)
+
+      // WP REST has no /users list endpoint wired in this project, so author
+      // URLs are derived from the unique author IDs present in the post feed.
+      const authorIds = [...new Set(postsResult.data.map((post) => post.author).filter((id) => id > 0))]
+      const authorUrls: MetadataRoute.Sitemap = authorIds.map((authorId) => ({
+        url: `${baseUrl}/author/${authorId}`,
+        lastModified: new Date(),
+        changeFrequency: 'monthly' as const,
+        priority: 0.5,
+      }))
+      sitemapEntries.push(...authorUrls)
     }
 
     cacheManager.set(cacheKeys.sitemap(), sitemapEntries, CACHE_TTL.SITEMAP)

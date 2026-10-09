@@ -209,6 +209,41 @@ describe('PostCard Component', () => {
     })
   })
 
+  describe('Category and Tag Badges (CAT-TAG-005)', () => {
+    const mockCategories = [
+      { id: 1, name: 'Politik', slug: 'politik', description: '', parent: 0, count: 5, link: '' },
+      { id: 2, name: 'Ekonomi', slug: 'ekonomi', description: '', parent: 0, count: 3, link: '' }
+    ]
+    const mockTags = [
+      { id: 10, name: 'banten', slug: 'banten', description: '', count: 7, link: '' }
+    ]
+
+    test('renders no badge container when details are absent', () => {
+      const { container } = render(<PostCard post={mockPost} mediaUrl={mockMediaUrl} />)
+      expect(container.querySelector('[aria-label="Kategori dan tag artikel"]')).not.toBeInTheDocument()
+    })
+
+    test('renders category badges linking to category detail pages', () => {
+      render(<PostCard post={mockPost} mediaUrl={mockMediaUrl} categoriesDetails={mockCategories} />)
+      const politik = screen.getByRole('link', { name: 'Politik' })
+      const ekonomi = screen.getByRole('link', { name: 'Ekonomi' })
+      expect(politik).toHaveAttribute('href', '/kategori/politik')
+      expect(ekonomi).toHaveAttribute('href', '/kategori/ekonomi')
+    })
+
+    test('renders tag badges linking to tag detail pages', () => {
+      render(<PostCard post={mockPost} mediaUrl={mockMediaUrl} tagsDetails={mockTags} />)
+      const tag = screen.getByRole('link', { name: '#banten' })
+      expect(tag).toHaveAttribute('href', '/tag/banten')
+    })
+
+    test('renders categories and tags together', () => {
+      render(<PostCard post={mockPost} mediaUrl={mockMediaUrl} categoriesDetails={mockCategories} tagsDetails={mockTags} />)
+      expect(screen.getByRole('link', { name: 'Politik' })).toBeInTheDocument()
+      expect(screen.getByRole('link', { name: '#banten' })).toBeInTheDocument()
+    })
+  })
+
   describe('Memoization (arePropsEqual)', () => {
     test('re-renders when post id changes', () => {
       const { rerender, getByRole } = render(<PostCard post={mockPost} mediaUrl={mockMediaUrl} />)
